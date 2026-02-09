@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useThemeState, PaletteIcon } from "./ThemeToggle";
 import { useActivePanel, requestGoToWork, requestGoToBio } from "./SectionSnapContext";
 import { useSidebar } from "@/lib/SidebarContext";
-import ThemePalette from "./ThemePalette";
 
 const navLinks = [
   { href: "/", label: "Home", disabled: false },
@@ -18,8 +16,6 @@ const navLinks = [
 export default function MobileNav() {
   const pathname = usePathname();
   const snapPanel = useActivePanel();
-  const themeState = useThemeState();
-  const [paletteOpen, setPaletteOpen] = useState(false);
   const { tocItems, backHref } = useSidebar();
 
   const isActive = (href: string) => {
@@ -106,38 +102,8 @@ export default function MobileNav() {
               })}
             </div>
           )}
-          {themeState.mounted && (
-            <button
-              onClick={() => setPaletteOpen((o) => !o)}
-              className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-[var(--color-muted)] transition-colors"
-              aria-label="Theme palette"
-              style={{ color: "var(--color-fg-secondary)" }}
-            >
-              <PaletteIcon />
-            </button>
-          )}
         </div>
       </nav>
-
-      {/* Mobile palette (bottom sheet) */}
-      <div className="lg:hidden">
-        <ThemePalette
-          open={paletteOpen}
-          onClose={() => setPaletteOpen(false)}
-          mode={themeState.mode}
-          coloredThemeName={themeState.coloredThemeName}
-          fontPairingName={themeState.fontPairingName}
-          fontSizeOffset={themeState.fontSizeOffset}
-          onSelectLight={themeState.selectLight}
-          onSelectDark={themeState.selectDark}
-          onSelectColored={themeState.selectColored}
-          onSelectFont={themeState.selectFont}
-          onIncreaseFontSize={themeState.increaseFontSize}
-          onDecreaseFontSize={themeState.decreaseFontSize}
-          onResetAll={themeState.resetAll}
-          isMobile
-        />
-      </div>
     </>
   );
 }

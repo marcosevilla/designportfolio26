@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Hero from "./Hero";
 import BackgroundTexture from "./BackgroundTexture";
+import DesktopSidebar from "./DesktopSidebar";
 import { setActivePanel } from "./SectionSnapContext";
 
 export default function HomeLayout({
@@ -31,15 +32,18 @@ export default function HomeLayout({
   }, []);
 
   return (
-    <>
-      <BackgroundTexture />
-      <section>
-        <Hero />
-      </section>
-      <section ref={workRef} className="mt-28">
-        {work}
-      </section>
-      {marquee}
-    </>
+    <div className="lg:flex lg:gap-10">
+      <DesktopSidebar />
+      <div className="flex-1 min-w-0">
+        <BackgroundTexture />
+        <section className="lg:-translate-x-[120px]">
+          <Hero />
+        </section>
+        <section ref={workRef} className="mt-28 lg:-translate-x-[120px]">
+          {work}
+        </section>
+        {marquee}
+      </div>
+    </div>
   );
 }

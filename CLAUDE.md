@@ -284,11 +284,10 @@ All scalable sizes use `calc(Npx + var(--font-size-offset) + var(--font-pairing-
 
 ### Nav Sidebar (DesktopSidebar.tsx)
 - **Nav mode** (default): Home, Work, Writing (disabled), Play (disabled) links
-- **TOC mode** (case study pages): ← Back link + TOC items from SidebarContext
-- **Font:** 16px weight 500 (nav links), 14px weight 400 (TOC items)
+- **TOC mode** (case study pages): ← Back link only (TOC moved to InlineTOC)
+- **Font:** 16px weight 500 (nav links)
 - **Active state:** Copper ✸ star + text springs 18px right
 - **Nav star:** spring stiffness 350, damping 28, y = activeIndex × 36
-- **TOC star:** spring stiffness 300, damping 34, y = DOM-measured offsetTop
 - **Hover:** Accent color + 8px right slide (spring 400/25)
 - **Icon buttons below nav:** Email, LinkedIn, Theme Palette, Marquee toggle — `gap-4`, `mt-8`, `pb-36`, hover: accent + 4px slide right
 - **Mobile (MobileNav.tsx):** Horizontal top bar, sticky, backdrop-blur, 14px font
@@ -300,7 +299,7 @@ All scalable sizes use `calc(Npx + var(--font-size-offset) + var(--font-pairing-
 - **No parallax** — simple scroll, no framer-motion transforms
 - **Background:** `var(--color-surface-raised)` at 40% opacity + `backdrop-blur-xl`
 - **Edges:** Sharp (`rounded-none`), 20px padding (`p-5`)
-- **Year labels:** 11px mono, `--color-fg-tertiary`, left of card (start year only, no ranges)
+- **Year labels:** 11px mono, `--color-fg-tertiary`, inside card above title (showYear prop)
 
 ### Card/List View Toggle (CaseStudyList)
 - **Two views:** Card (default) and List, toggled via icon buttons on "Work" header row
@@ -363,28 +362,36 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** Visual polish — hero indent, page transitions, typography, list view refinements
+- **Last worked on:** Git/Vercel deploy, case study layout restructure (full-width hero, inline TOC, centering)
 - **Completed this session:**
-  - Hero star indent: flex layout with 20px ✸ star in left column (lg+), aligns bio with project cards
-  - Page transition: backdrop-blur overlay (fades out 0.5s) — CSS filter on ancestors breaks position:fixed
-  - Case study hero h1s → Geist Pixel font (weight 700)
-  - H2 sections: 20px → 18px, display lineHeight: 1.2 → 1.5
-  - QuickStats: horizontal value|label layout, 2-col grid, card-style (sharp, 20px pad, no shadow)
-  - Case study content: removed px-4/sm:px-8 from max-w-content containers
-  - Work header: sentence case 16px (was uppercase 13px), solid divider (was dashed)
-  - List view: removed top border, showYear=true for all rows
-  - "Canary Technologies" → "Canary" in 4 MDX files, "sites" → "hotels" in checkin
-  - ViewToggleButton matching sidebar icon style (accent hover, spring x:4)
-  - Mobile preview: `next dev --hostname 0.0.0.0`
+  - Initialized git repo, pushed to GitHub (marcosevilla/designportfolio26)
+  - Fixed eslint ^8 → ^9 for Vercel deploy (eslint-config-next@16 requires eslint>=9)
+  - Site deployed to Vercel (root directory = `site`)
+  - H2 spacing: mb-8 → mb-3 across all 6 case studies
+  - Removed hero star indent from homepage Hero.tsx
+  - Marquee stars: 9px → 14px
+  - Year labels moved inside cards (showYear prop on CaseStudyCard), removed external indent wrapper
+  - ProgressBar rewritten: ref-based DOM manipulation for smooth 60fps (no React state re-renders)
+  - CaseStudyHero: full viewport width breakout (w-screen + calculated marginLeft), 2.5:1 aspect ratio
+  - InlineTOC.tsx (NEW): sticky vertical TOC below hero, reads from SidebarContext, 130px wide, lg+ only
+  - All 6 case study Content files: flex layout with InlineTOC + body content (max-w-[960px])
+  - DesktopSidebar: simplified TOC mode to "← Back" only (no TOC items, moved to InlineTOC)
+  - Homepage centering: lg:-translate-x-[120px] on HomeLayout sections
+  - body overflow-x: hidden (prevents horizontal scrollbar from hero viewport breakout)
 - **In progress:** P0-2 (TL;DR summary blocks). P0-1 (images) blocked on Figma export.
-- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). No git repo — should initialize.
+- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Homepage HomeLayout still uses translate-x centering hack — may want to revisit.
 - **Files modified this session:**
-  - `site/components/Hero.tsx` — flex indent with star
-  - `site/components/CaseStudyList.tsx` — ViewToggleButton, header style, solid divider
-  - `site/app/template.tsx` — backdrop-blur overlay transition
-  - `site/lib/typography.ts` — h2 18px, display lineHeight 1.5
-  - `site/components/case-study/CaseStudyHero.tsx` — Geist Pixel font
-  - `site/components/case-study/QuickStats.tsx` — horizontal layout redesign
-  - All 6 case study *Content.tsx — removed padding
-  - `site/content/fb-ordering.mdx`, `compendium.mdx`, `upsells.mdx`, `checkin.mdx` — company/metric updates
-  - `site/package.json` — dev hostname 0.0.0.0
+  - `.gitignore` (NEW) — excludes archive/, node_modules, .next, .env, .DS_Store, .claude/
+  - `site/package.json` — eslint ^8 → ^9
+  - `site/app/globals.css` — overflow-x: hidden on body
+  - `site/components/Hero.tsx` — removed star indent (flex wrapper + ✸ span)
+  - `site/components/Marquee.tsx` — star fontSize 9px → 14px
+  - `site/components/HomeLayout.tsx` — lg:-translate-x-[120px] centering
+  - `site/components/CaseStudyCard.tsx` — showYear prop, year inside card
+  - `site/components/CaseStudyList.tsx` — removed year indent wrapper
+  - `site/components/DesktopSidebar.tsx` — simplified TOC mode (Back only)
+  - `site/components/case-study/CaseStudyHero.tsx` — full viewport breakout, 2.5:1 aspect, useMediaQuery
+  - `site/components/case-study/ProgressBar.tsx` — ref-based smooth scroll
+  - `site/components/case-study/InlineTOC.tsx` (NEW) — sticky inline TOC
+  - All 6 case study *Content.tsx — mb-3 spacing, flex layout with InlineTOC
+  - `site/app/work/[slug]/CaseStudyPage.tsx` — removed translate

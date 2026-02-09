@@ -115,22 +115,7 @@ export default function Hero() {
   const visibleParaIndices = Array.from({ length: level }, (_, i) => i);
 
   return (
-    <section className="flex items-start gap-3">
-      {/* Star indicator — aligned with first line of heading, matches year label indent */}
-      <span
-        className="shrink-0 hidden lg:block text-[var(--color-accent)]"
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "20px",
-          lineHeight: "36px",
-          width: "26px",
-          textAlign: "center",
-        }}
-      >
-        ✸
-      </span>
-
-      <div className="flex-1 min-w-0">
+    <section>
         {/* Heading — streams in during intro, static after (hidden in dynamic bio mode) */}
         {!showDynamicBio && (
           <div className="sticky top-14 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-[var(--color-bg)]/90 backdrop-blur-sm lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
@@ -222,7 +207,6 @@ export default function Hero() {
             )}
           </motion.div>
         )}
-      </div>
     </section>
   );
 }

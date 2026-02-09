@@ -177,41 +177,11 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
             {studies.map((study, i) =>
               hasToggled.current ? (
                 <div key={study.slug} className="sm:col-span-2">
-                  <div className="flex items-start gap-3">
-                    <span
-                      className="shrink-0 hidden sm:block"
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "11px",
-                        color: "var(--color-fg-tertiary)",
-                        letterSpacing: "0.02em",
-                      }}
-                    >
-                      {study.year}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <CaseStudyCard study={study} cardSize="hero" />
-                    </div>
-                  </div>
+                  <CaseStudyCard study={study} cardSize="hero" showYear />
                 </div>
               ) : (
                 <FadeIn key={study.slug} delay={i * 0.08} className="sm:col-span-2">
-                  <div className="flex items-start gap-3">
-                    <span
-                      className="shrink-0 hidden sm:block"
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "11px",
-                        color: "var(--color-fg-tertiary)",
-                        letterSpacing: "0.02em",
-                      }}
-                    >
-                      {study.year}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <CaseStudyCard study={study} cardSize="hero" />
-                    </div>
-                  </div>
+                  <CaseStudyCard study={study} cardSize="hero" showYear />
                 </FadeIn>
               )
             )}

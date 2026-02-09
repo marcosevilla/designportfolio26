@@ -9,6 +9,7 @@ import TOCObserver from "@/components/case-study/TOCObserver";
 import NextProject from "@/components/case-study/NextProject";
 import PullQuote from "@/components/case-study/PullQuote";
 import ProgressBar from "@/components/case-study/ProgressBar";
+import InlineTOC from "@/components/case-study/InlineTOC";
 import FadeIn from "@/components/case-study/FadeIn";
 import { typescale } from "@/lib/typography";
 
@@ -45,7 +46,9 @@ export default function FBOrderingContent() {
           heroImageDescription="Hero shot — guest ordering flow on mobile"
         />
 
-        <div className="max-w-content mx-auto">
+        <div className="lg:flex lg:gap-8 max-w-[960px] mx-auto px-4 sm:px-8 lg:px-6">
+        <InlineTOC />
+        <div className="flex-1 min-w-0">
         {/* Quick Stats */}
         <FadeIn>
           <QuickStats items={STATS} />
@@ -58,7 +61,7 @@ export default function FBOrderingContent() {
             <FadeIn as="section" className="scroll-mt-24 pt-24" >
               <div id="problem" className="scroll-mt-24" />
               <h2
-                className="text-[var(--color-fg)] mb-8 tracking-tight"
+                className="text-[var(--color-fg)] mb-3 tracking-tight"
                 style={typescale.h2}
               >
                 The Problem
@@ -75,7 +78,7 @@ export default function FBOrderingContent() {
             <FadeIn as="section" className="scroll-mt-24 pt-32">
               <div id="solution" className="scroll-mt-24" />
               <h2
-                className="text-[var(--color-fg)] mb-8 tracking-tight"
+                className="text-[var(--color-fg)] mb-3 tracking-tight"
                 style={typescale.h2}
               >
                 The Solution
@@ -415,7 +418,7 @@ export default function FBOrderingContent() {
             <FadeIn as="section" className="scroll-mt-24 pt-32">
               <div id="gallery" className="scroll-mt-24" />
               <h2
-                className="text-[var(--color-fg)] mb-8 tracking-tight"
+                className="text-[var(--color-fg)] mb-3 tracking-tight"
                 style={typescale.h2}
               >
                 The Work
@@ -441,6 +444,7 @@ export default function FBOrderingContent() {
               />
             </FadeIn>
           </div>
+        </div>
         </div>
         </div>
       </article>

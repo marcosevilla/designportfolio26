@@ -33,9 +33,10 @@ const SUBTITLE_SIZES: Record<CardSize, string> = {
 interface CaseStudyCardProps {
   study: CaseStudyMeta;
   cardSize?: CardSize;
+  showYear?: boolean;
 }
 
-export default function CaseStudyCard({ study, cardSize = "standard" }: CaseStudyCardProps) {
+export default function CaseStudyCard({ study, cardSize = "standard", showYear = false }: CaseStudyCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
@@ -62,6 +63,19 @@ export default function CaseStudyCard({ study, cardSize = "standard" }: CaseStud
         {/* Content */}
         <div className={`relative z-10 flex flex-col h-full ${padding}`}>
           <div>
+              {showYear && (
+                <span
+                  className="block mb-2"
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "11px",
+                    color: "var(--color-fg-tertiary)",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {study.year}
+                </span>
+              )}
               <h3
                 className="leading-tight tracking-tight"
                 style={{

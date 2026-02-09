@@ -9,6 +9,7 @@ import TOCObserver from "@/components/case-study/TOCObserver";
 import NextProject from "@/components/case-study/NextProject";
 import ProgressBar from "@/components/case-study/ProgressBar";
 import FadeIn from "@/components/case-study/FadeIn";
+import InlineTOC from "@/components/case-study/InlineTOC";
 import { typescale } from "@/lib/typography";
 
 const STATS = [
@@ -45,7 +46,9 @@ export default function GeneralTaskContent() {
           heroImageDescription="Hero shot — General Task home page interface"
         />
 
-        <div className="max-w-content mx-auto">
+        <div className="lg:flex lg:gap-8 max-w-[960px] mx-auto px-4 sm:px-8 lg:px-6">
+        <InlineTOC />
+        <div className="flex-1 min-w-0">
         {/* Quick Stats */}
         <FadeIn>
           <QuickStats items={STATS} />
@@ -58,7 +61,7 @@ export default function GeneralTaskContent() {
             <FadeIn as="section" className="scroll-mt-24 pt-24">
               <div id="overview" className="scroll-mt-24" />
               <h2
-                className="text-[var(--color-fg)] mb-8 tracking-tight"
+                className="text-[var(--color-fg)] mb-3 tracking-tight"
                 style={typescale.h2}
               >
                 Overview
@@ -75,7 +78,7 @@ export default function GeneralTaskContent() {
             <FadeIn as="section" className="scroll-mt-24 pt-32">
               <div id="role" className="scroll-mt-24" />
               <h2
-                className="text-[var(--color-fg)] mb-8 tracking-tight"
+                className="text-[var(--color-fg)] mb-3 tracking-tight"
                 style={typescale.h2}
               >
                 My Role
@@ -352,6 +355,7 @@ export default function GeneralTaskContent() {
             subtitle="Building a scalable design system for a productivity startup"
             href="/work/design-system"
           />
+        </div>
         </div>
         </div>
       </article>

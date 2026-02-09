@@ -4,10 +4,10 @@ import { GeistSans } from "geist/font/sans";
 import { GeistPixelSquare } from "geist/font/pixel";
 import { Instrument_Serif, Instrument_Sans } from "next/font/google";
 import MobileNav from "@/components/MobileNav";
-import DesktopSidebar from "@/components/DesktopSidebar";
 import { MarqueeProvider } from "@/components/MarqueeContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import ViewportFade from "@/components/ViewportFade";
+import StickyFooter from "@/components/StickyFooter";
 import { Agentation } from "agentation";
 import "./globals.css";
 
@@ -49,15 +49,13 @@ export default function RootLayout({
                 Skip to content
               </a>
               <MobileNav />
-              <div className="lg:flex lg:gap-10 lg:max-w-[960px] lg:mx-auto lg:px-6">
-                <DesktopSidebar />
-                <main
-                  id="main"
-                  className="flex-1 min-w-0 pt-24 lg:pt-[18vh] pb-20 px-4 sm:px-8 lg:px-0"
-                >
-                  {children}
-                </main>
-              </div>
+              <main
+                id="main"
+                className="max-w-[960px] mx-auto pt-24 lg:pt-[18vh] pb-20 px-4 sm:px-8 lg:px-6"
+              >
+                {children}
+              </main>
+              <StickyFooter />
               <ViewportFade />
               {process.env.NODE_ENV === "development" && <Agentation />}
             </SidebarProvider>
