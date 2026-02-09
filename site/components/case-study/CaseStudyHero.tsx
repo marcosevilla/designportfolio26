@@ -38,12 +38,13 @@ export default function CaseStudyHero({
         <div className="max-w-content-lg mx-auto px-6 sm:px-10 w-full shrink-0">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 lg:gap-12 pb-8">
             <h1
+              data-editable="hero-title"
               className="text-white tracking-tight max-w-[700px]"
               style={{ ...typescale.caseStudyHero, fontFamily: "var(--font-geist-pixel-square)", fontWeight: 700 }}
             >
               {title}
             </h1>
-            <p className="text-white/80 max-w-[450px] lg:pt-2" style={typescale.subtitle}>
+            <p data-editable="hero-subtitle" className="text-white/80 max-w-[450px] lg:pt-2" style={typescale.subtitle}>
               {subtitle}
             </p>
           </div>

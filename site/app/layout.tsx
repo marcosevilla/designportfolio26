@@ -8,6 +8,10 @@ import { MarqueeProvider } from "@/components/MarqueeContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import ViewportFade from "@/components/ViewportFade";
 import StickyFooter from "@/components/StickyFooter";
+import { InlineEditorProvider } from "@/lib/InlineEditorContext";
+import FloatingToolbar from "@/components/dev/FloatingToolbar";
+import EditableOverlay from "@/components/dev/EditableOverlay";
+import SectionReorder from "@/components/dev/SectionReorder";
 import { Agentation } from "agentation";
 import "./globals.css";
 
@@ -49,12 +53,21 @@ export default function RootLayout({
                 Skip to content
               </a>
               <MobileNav />
-              <main
-                id="main"
-                className="max-w-[960px] mx-auto pt-24 lg:pt-[18vh] pb-20 px-4 sm:px-8 lg:px-6"
-              >
-                {children}
-              </main>
+              <InlineEditorProvider>
+                <main
+                  id="main"
+                  className="max-w-[960px] mx-auto pt-24 lg:pt-[18vh] pb-20 px-4 sm:px-8 lg:px-6"
+                >
+                  {children}
+                </main>
+                {process.env.NODE_ENV === "development" && (
+                  <>
+                    <EditableOverlay />
+                    <SectionReorder />
+                    <FloatingToolbar />
+                  </>
+                )}
+              </InlineEditorProvider>
               <StickyFooter />
               <ViewportFade />
               {process.env.NODE_ENV === "development" && <Agentation />}

@@ -15,6 +15,7 @@ export default function QuickStats({ items }: { items: Stat[] }) {
           style={{ padding: "20px" }}
         >
           <span
+            data-editable-stat-value={i}
             className="text-[var(--color-accent)] tracking-tight shrink-0"
             style={{
               fontFamily: "var(--font-display)",
@@ -25,7 +26,7 @@ export default function QuickStats({ items }: { items: Stat[] }) {
           >
             {item.value}
           </span>
-          <span className="text-[14px] text-[var(--color-fg-secondary)] leading-snug">
+          <span data-editable-stat-label={i} className="text-[14px] text-[var(--color-fg-secondary)] leading-snug">
             {item.label}
           </span>
         </div>
