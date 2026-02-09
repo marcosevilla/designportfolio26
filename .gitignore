@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Next.js build
+site/.next/
+site/out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Archive (old portfolio assets, 197MB)
+archive/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+.claude/

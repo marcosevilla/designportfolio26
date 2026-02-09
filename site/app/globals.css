@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PP Editorial New */
+@font-face {
+  font-family: "PP Editorial New";
+  src: url("/fonts/PPEditorialNew-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PP Editorial New";
+  src: url("/fonts/PPEditorialNew-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PP Editorial New";
+  src: url("/fonts/PPEditorialNew-UltralightItalic.woff2") format("woff2");
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* PP Formula */
+@font-face {
+  font-family: "PP Formula";
+  src: url("/fonts/PP-Formula-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PP Formula SemiExtended";
+  src: url("/fonts/PP-Formula-SemiExtendedBold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* GT Cinetype */
+@font-face {
+  font-family: "GT Cinetype";
+  src: url("/fonts/GT-Cinetype-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GT Cinetype";
+  src: url("/fonts/GT-Cinetype-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GT Cinetype";
+  src: url("/fonts/GT-Cinetype-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GT Cinetype Mono";
+  src: url("/fonts/GT-Cinetype-Mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --color-bg: #ffffff;
+  --color-fg: #1a1a1a;
+  --color-fg-secondary: rgba(17, 17, 17, 0.82);
+  --color-fg-tertiary: rgba(17, 17, 17, 0.35);
+  --color-surface: #fbfbfb;
+  --color-surface-raised: #f5f4f9;
+  --color-border: #e6e6e6;
+  --color-muted: #f3f3f3;
+  --color-accent: #B5651D;
+  --color-glow: #B5651D;
+
+  --font-display: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
+  --font-heading: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
+  --font-heading-style: normal;
+  --font-body: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
+  --font-mono: "GT Cinetype Mono", monospace;
+  --font-size-offset: 0px;
+  --font-pairing-boost: 0px;
+}
+
+.dark {
+  --color-bg: #0a0a0a;
+  --color-fg: #ededed;
+  --color-fg-secondary: rgba(237, 237, 237, 0.5);
+  --color-fg-tertiary: rgba(237, 237, 237, 0.35);
+  --color-surface: #141414;
+  --color-surface-raised: #1a1a1a;
+  --color-border: #2a2a2a;
+  --color-muted: #1e1e1e;
+  --color-accent: #D4915E;
+  --color-glow: #F5C28A;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: calc(16px + var(--font-size-offset) + var(--font-pairing-boost));
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-fg);
+  color: var(--color-bg);
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-size: 0.875rem;
+  transition: top 200ms;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Focus visible styles */
+*:focus-visible {
+  outline: 2px solid var(--color-fg);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Dotted link style */
+.dotted-link {
+  color: var(--color-fg-secondary);
+  text-decoration: none;
+  padding: 2px 2px 2px;
+  border-radius: 1px;
+  text-decoration: none;
+  border-bottom: 1.5px solid transparent;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.dotted-link:hover {
+  background-color: rgba(181, 101, 29, 0.1);
+  color: var(--color-accent);
+}
+
+.dotted-link:active {
+  border-bottom-color: var(--color-accent);
+}
+
+.dotted-link-arrow {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 9px;
+  line-height: 0;
+  color: var(--color-accent);
+  vertical-align: super;
+  margin-left: 1px;
+}
+
+.dotted-link--inline {
+  color: var(--color-accent);
+  border-bottom-color: transparent;
+}
+
+.dotted-link--inline:hover {
+  color: var(--color-fg);
+}
+
+.dotted-link--inline:active {
+  border-bottom-color: var(--color-fg);
+}
+
+/* Bento card — Stripe-style scale animation */
+.bento-card {
+  transform: scale(1);
+  transition: transform 400ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform;
+}
+
+.bento-card--hover {
+  transform: scale(1.01);
+  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bento-card__border {
+  transition: border-color 250ms ease, opacity 250ms ease;
+}
+
+.bento-card__glow-border {
+  transition: opacity 300ms ease;
+}
+
+.bento-card__glow {
+  transition: opacity 300ms ease;
+}
+
+/* Marquee animation */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee-scroll 30s linear infinite;
+}
+
+/* Blinking cursor for verbosity streaming */
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Gentle float for CTA button */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
