@@ -97,6 +97,8 @@ components/
 │   ├── NextProject.tsx
 │   ├── ProgressBar.tsx
 │   ├── FadeIn.tsx
+│   ├── TwoCol.tsx              # Two-column editorial layout (TwoCol, TwoCol.Left, TwoCol.Right)
+│   ├── SectionHeading.tsx      # Reusable H2 section heading with mono font + divider
 │   ├── SidebarTOCBridge.tsx    # Pushes TOC items into SidebarContext for sidebar display
 │   └── TOCObserver.tsx         # IntersectionObserver that tracks active TOC section
 ├── type-tuner/                 # Dev typography composition tool (Type Lab)
@@ -104,19 +106,22 @@ components/
 │   ├── TunerPanel.tsx          # Controls: font, size, weight, spacing, color, offset
 │   ├── TunerCanvas.tsx         # Live preview with selectable/editable text layers
 │   └── types.ts                # TypeLayer interface, font options, code generator
+├── dev/                         # Dev-only inline content editor
+│   ├── EditableOverlay.tsx      # DOM traversal, contentEditable, hover outlines
+│   ├── FloatingToolbar.tsx      # Toggle, save/revert, Cmd+E/S, placeholder count
+│   └── SectionReorder.tsx       # Section reorder panel with up/down buttons
 ├── dynamic-bio/                # Grid-based bio display mode
 ├── CaseStudyCard.tsx           # Homepage project cards (frosted glass, sharp edges)
 ├── CaseStudyList.tsx           # Card/list toggle, localStorage persistence, blur transition
 ├── CaseStudyListRow.tsx        # List view row (year | title | company·role | metric)
 ├── BackgroundTexture.tsx       # Perlin noise dot wave animation (SENSITIVE - commit before editing)
 ├── Hero.tsx                    # 5-phase intro animation with streaming text
-├── DesktopSidebar.tsx          # Sticky column sidebar (lg+), dual nav/TOC mode with ✸ star
-├── MobileNav.tsx               # Sticky top bar (<lg), nav links or ← Back on case studies
-├── HomeLayout.tsx              # BackgroundTexture + SectionSnap wrapper
-├── SectionSnap.tsx             # Two-panel system (bio/work) with rubber-band physics
-├── SectionSnapContext.tsx       # Cross-tree communication for sidebar ↔ SectionSnap
+├── DesktopSidebar.tsx          # Homepage-only sidebar (lg+), nav links with ✸ star
+├── MobileNav.tsx               # Sticky top bar (<lg only), nav links or ← Back
+├── StickyFooter.tsx            # Fixed bottom bar — email, LinkedIn, palette, marquee (all pages)
+├── HomeLayout.tsx              # BackgroundTexture + DesktopSidebar wrapper
 ├── Marquee.tsx                 # Scrolling quotes/testimonials
-├── MarqueeContext.tsx
+├── MarqueeContext.tsx          # Marquee visibility state
 ├── StreamingText.tsx           # Character-by-character text animation
 ├── ThemePalette.tsx            # Theme customization sidebar
 ├── ThemeToggle.tsx
@@ -170,7 +175,18 @@ const DEDICATED_ROUTES = new Set(["fb-ordering", "compendium", "upsells", "check
 ### Case Study Content Component Pattern
 Each dedicated case study has:
 - `page.tsx` - Metadata and wrapper (negative top margin for full-bleed hero)
-- `[Name]Content.tsx` - Rich component: full-bleed gradient hero, then post-hero content wrapped in `max-w-content mx-auto px-4 sm:px-8`
+- `[Name]Content.tsx` - Rich component: full-bleed gradient hero, then post-hero content in a two-column editorial layout
+
+### Two-Column Editorial Layout (TwoCol)
+All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by makingsoftware.com:
+- **Container**: `max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0` — below lg stays 500px centered, at lg+ expands to fill `<main>` (960px)
+- **Grid**: `lg:grid lg:grid-cols-2 lg:gap-x-10` — per-section (not one top-level grid), columns align uniformly across page
+- **Column width**: (912 - 40px gap) / 2 = 436px each
+- **Prose sections**: `TwoCol > TwoCol.Left` — left column with right empty (breathing room)
+- **Paired sections**: `TwoCol > TwoCol.Left + TwoCol.Right` — text left, image right (decision blocks)
+- **Full-width elements**: No TwoCol wrapper — QuickStats, hero images, PullQuotes, galleries, NextProject
+- **Mobile (<lg)**: Single column, unchanged from before
+- **Component**: `site/components/case-study/TwoCol.tsx` — compound component with `TwoCol.Left` and `TwoCol.Right`
 
 ### CaseStudyHero Gradient Colors
 | Study | gradient[0] | gradient[1] |
@@ -272,7 +288,8 @@ All scalable sizes use `calc(Npx + var(--font-size-offset) + var(--font-pairing-
 | H2 sections | `--font-heading` | 600 | 18px |
 | H3 subsections | `--font-heading` | 500 | 18px |
 | H4 sub-subsections | `--font-heading` | 500 | 16px |
-| Body / bio / case study | `--font-body` | 400 | 16px, line-height 28px |
+| Body / case study | `--font-body` | 400 | 14px, line-height 22px |
+| Subtitle / case study hero | `--font-body` | 400 | 14px, line-height 22px |
 | QuickStats value | `--font-display` | 700 | 20px (horizontal layout) |
 | PullQuote | `--font-body` | 300 | clamp(18-22px) |
 | Card titles | `--font-heading` | 500 | 18px |
@@ -282,15 +299,15 @@ All scalable sizes use `calc(Npx + var(--font-size-offset) + var(--font-pairing-
 
 ## Component & Interaction Specs
 
-### Nav Sidebar (DesktopSidebar.tsx)
-- **Nav mode** (default): Home, Work, Writing (disabled), Play (disabled) links
-- **TOC mode** (case study pages): ← Back link only (TOC moved to InlineTOC)
+### Nav Sidebar (DesktopSidebar.tsx — homepage only)
+- **Scope:** Rendered inside HomeLayout.tsx, only visible on homepage at lg+
+- **Nav mode:** Home, Work, Writing (disabled), Play (disabled) links
 - **Font:** 16px weight 500 (nav links)
 - **Active state:** Copper ✸ star + text springs 18px right
 - **Nav star:** spring stiffness 350, damping 28, y = activeIndex × 36
 - **Hover:** Accent color + 8px right slide (spring 400/25)
-- **Icon buttons below nav:** Email, LinkedIn, Theme Palette, Marquee toggle — `gap-4`, `mt-8`, `pb-36`, hover: accent + 4px slide right
-- **Mobile (MobileNav.tsx):** Horizontal top bar, sticky, backdrop-blur, 14px font
+- **Mobile (MobileNav.tsx):** Horizontal top bar, sticky, backdrop-blur, 14px font, lg:hidden
+- **StickyFooter.tsx:** Fixed bottom bar on all pages — Email, LinkedIn, Theme Palette, Marquee toggle icons, horizontally centered, frosted glass
 
 ### Bento Cards (CaseStudyCard)
 - **Hover scale:** `1.01x`, 350ms ease-out in / 400ms ease out (CSS, not Framer Motion)
@@ -362,36 +379,24 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** Git/Vercel deploy, case study layout restructure (full-width hero, inline TOC, centering)
+- **Last worked on:** Two-column editorial layout for all case studies, F&B content improvements, typography refinements
 - **Completed this session:**
-  - Initialized git repo, pushed to GitHub (marcosevilla/designportfolio26)
-  - Fixed eslint ^8 → ^9 for Vercel deploy (eslint-config-next@16 requires eslint>=9)
-  - Site deployed to Vercel (root directory = `site`)
-  - H2 spacing: mb-8 → mb-3 across all 6 case studies
-  - Removed hero star indent from homepage Hero.tsx
-  - Marquee stars: 9px → 14px
-  - Year labels moved inside cards (showYear prop on CaseStudyCard), removed external indent wrapper
-  - ProgressBar rewritten: ref-based DOM manipulation for smooth 60fps (no React state re-renders)
-  - CaseStudyHero: full viewport width breakout (w-screen + calculated marginLeft), 2.5:1 aspect ratio
-  - InlineTOC.tsx (NEW): sticky vertical TOC below hero, reads from SidebarContext, 130px wide, lg+ only
-  - All 6 case study Content files: flex layout with InlineTOC + body content (max-w-[960px])
-  - DesktopSidebar: simplified TOC mode to "← Back" only (no TOC items, moved to InlineTOC)
-  - Homepage centering: lg:-translate-x-[120px] on HomeLayout sections
-  - body overflow-x: hidden (prevents horizontal scrollbar from hero viewport breakout)
-- **In progress:** P0-2 (TL;DR summary blocks). P0-1 (images) blocked on Figma export.
-- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Homepage HomeLayout still uses translate-x centering hack — may want to revisit.
+  - Two-column editorial layout (`TwoCol` component) — created and rolled out to all 6 case studies
+  - F&B Ordering: new "From static content to revenue engine" Context section (5 paragraphs on APAC expansion, competitive losses, Guest Hub transformation, platform bet, scoping discipline)
+  - F&B Ordering: trimmed redundant paragraph from Problem section
+  - F&B Ordering: Gallery ("The Work") moved from bottom to after QuickStats
+  - F&B Ordering: subtitle rewritten to first-person with CMS + staff dashboard scope
+  - Body text changed to 14px/22px (was 16px/28px) — affects all case studies globally via typescale token
+  - Subtitle changed to 14px/22px — affects all case studies globally via typescale token
+  - Design system consolidation: `SectionHeading` component, shared `typescale.label`, `springs.ts`, unified Icons
+- **In progress:** P0-1 (images) blocked on Figma export.
+- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Git push requires PAT token (local credential marco-sevilla ≠ repo owner marcosevilla).
 - **Files modified this session:**
-  - `.gitignore` (NEW) — excludes archive/, node_modules, .next, .env, .DS_Store, .claude/
-  - `site/package.json` — eslint ^8 → ^9
-  - `site/app/globals.css` — overflow-x: hidden on body
-  - `site/components/Hero.tsx` — removed star indent (flex wrapper + ✸ span)
-  - `site/components/Marquee.tsx` — star fontSize 9px → 14px
-  - `site/components/HomeLayout.tsx` — lg:-translate-x-[120px] centering
-  - `site/components/CaseStudyCard.tsx` — showYear prop, year inside card
-  - `site/components/CaseStudyList.tsx` — removed year indent wrapper
-  - `site/components/DesktopSidebar.tsx` — simplified TOC mode (Back only)
-  - `site/components/case-study/CaseStudyHero.tsx` — full viewport breakout, 2.5:1 aspect, useMediaQuery
-  - `site/components/case-study/ProgressBar.tsx` — ref-based smooth scroll
-  - `site/components/case-study/InlineTOC.tsx` (NEW) — sticky inline TOC
-  - All 6 case study *Content.tsx — mb-3 spacing, flex layout with InlineTOC
-  - `site/app/work/[slug]/CaseStudyPage.tsx` — removed translate
+  - `site/components/case-study/TwoCol.tsx` (NEW) — two-column editorial layout compound component
+  - `site/app/work/fb-ordering/FBOrderingContent.tsx` — major rewrite: TwoCol layout, Context section, Gallery repositioned, subtitle rewritten
+  - `site/app/work/compendium/CompendiumContent.tsx` — TwoCol layout applied
+  - `site/app/work/upsells/UpsellsContent.tsx` — TwoCol layout applied
+  - `site/app/work/checkin/CheckinContent.tsx` — TwoCol layout applied
+  - `site/app/work/general-task/GeneralTaskContent.tsx` — TwoCol layout applied
+  - `site/app/work/design-system/DesignSystemContent.tsx` — TwoCol layout applied
+  - `site/lib/typography.ts` — body 14px/22px, subtitle 14px/22px, display 28px mono

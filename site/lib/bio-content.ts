@@ -49,7 +49,12 @@ export const PROMPTS = [
 ];
 
 export const MAX_LEVEL = PARAGRAPHS.length;
-export const HEADING_TEXT = "Hi, I'm Marco. I bring clarity to enterprise complexity. Visual craft is how I get there, paired with rigorous problem-framing and systems thinking that scales.";
+export const HEADING_LINES = [
+  { text: "MARCO SEVILLA", weight: 700 as const, font: "var(--font-mono)" },
+  { text: "I design software in San Francisco.", weight: 400 as const, font: "var(--font-body)" },
+  { text: "Currently at Canary where I simplify operational workflows for the largest hotel brands in the world.", weight: 400 as const, font: "var(--font-body)" },
+];
+export const HEADING_TEXT = HEADING_LINES.map(l => l.text).join(" ");
 export const HEADING_WORDS = HEADING_TEXT.split(" ");
 
 // ═══════════════════════════════════════════════════════════════════
@@ -76,7 +81,7 @@ export const BIO_VARIANTS: BioVariant[] = [
   // Row 0 (y=0, Most Concise)
   { x: 0, y: 0, heading: "Hey! I'm Marco.", paragraphs: [[{ text: "Product designer in SF. I make software that looks good and works even better." }]] },
   { x: 1, y: 0, heading: "Hi, I'm Marco.", paragraphs: [[{ text: "A product designer based in San Francisco. I focus on creating intuitive, visually polished software experiences." }]] },
-  { x: 2, y: 0, heading: "I'm Marco Sevilla.", paragraphs: [[{ text: "Product designer in San Francisco specializing in visual design and design systems. Currently at Canary Technologies." }]] },
+  { x: 2, y: 0, heading: "MARCO SEVILLA", paragraphs: [[{ text: "Product designer in San Francisco specializing in visual design and design systems. Currently at Canary Technologies." }]] },
   { x: 3, y: 0, heading: "Hi, I'm Marco. I design software in San Francisco.", paragraphs: [[{ text: "Product Designer at Canary Technologies. Seven years of experience building consumer and enterprise products." }]] },
   { x: 4, y: 0, heading: "Marco Sevilla — Product Designer", paragraphs: [[{ text: "Seven years of experience across consumer and enterprise software. Currently leading design initiatives at Canary Technologies." }]] },
   { x: 5, y: 0, heading: "Marco Sevilla, Senior Product Designer", paragraphs: [[{ text: "Specializing in design systems and visual craft. Seven years of experience building scalable platforms for global hospitality brands." }]] },
@@ -88,7 +93,7 @@ export const BIO_VARIANTS: BioVariant[] = [
   { x: 1, y: 1, heading: "Hi, I'm Marco.", paragraphs: [
     [{ text: "I'm a product designer in SF. I work at" }, { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" }, { text: ", where I design platforms used by millions of hotel guests across Marriott, Wyndham, and more." }],
   ] },
-  { x: 2, y: 1, heading: "I'm Marco Sevilla.", paragraphs: [
+  { x: 2, y: 1, heading: "MARCO SEVILLA", paragraphs: [
     [{ text: "Product designer in San Francisco. At" }, { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" }, { text: ", I design hospitality platforms serving major brands including Marriott, Wyndham, Best Western, and IHG." }],
   ] },
   { x: 3, y: 1, heading: "Hi, I'm Marco. I design software in San Francisco.", paragraphs: [
@@ -110,7 +115,7 @@ export const BIO_VARIANTS: BioVariant[] = [
     [{ text: "I'm a product designer based in San Francisco. At" }, { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" }, { text: ", I design hospitality platforms used by millions of guests worldwide." }],
     [{ text: "Previously, I designed experiences at" }, { text: "Vivino", href: "https://www.vivino.com/" }, { text: "," }, { text: "Vyond", href: "https://www.vyond.com/" }, { text: ", and" }, { text: "General Task", href: "https://www.generaltask.com/" }, { text: "." }],
   ] },
-  { x: 2, y: 2, heading: "I'm Marco Sevilla.", paragraphs: [
+  { x: 2, y: 2, heading: "MARCO SEVILLA", paragraphs: [
     [{ text: "Product designer in San Francisco with seven years of experience. Currently at" }, { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" }, { text: ", designing platforms for global hospitality brands." }],
     [{ text: "My background includes design work at" }, { text: "Vivino", href: "https://www.vivino.com/" }, { text: "," }, { text: "Vyond", href: "https://www.vyond.com/" }, { text: ", and" }, { text: "General Task", href: "https://www.generaltask.com/" }, { text: "— spanning consumer apps to enterprise tools." }],
   ] },
@@ -138,7 +143,7 @@ export const BIO_VARIANTS: BioVariant[] = [
     [{ text: "My journey includes helping millions discover wine at" }, { text: "Vivino", href: "https://www.vivino.com/" }, { text: ", democratizing video creation at" }, { text: "Vyond", href: "https://www.vyond.com/" }, { text: ", and building productivity tools at" }, { text: "General Task", href: "https://www.generaltask.com/" }, { text: "." }],
     [{ text: "I got into design through years of tinkering with computers growing up in the Bay Area — simulation games, video editing, photo manipulation. Technology as a creative outlet." }],
   ] },
-  { x: 2, y: 3, heading: "I'm Marco Sevilla. I design software in San Francisco.", paragraphs: [
+  { x: 2, y: 3, heading: "MARCO SEVILLA", paragraphs: [
     [{ text: "Product designer with seven years of experience across consumer and enterprise products. At" }, { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" }, { text: ", I design platforms serving millions of hotel guests globally." }],
     [{ text: "Before Canary, I helped democratize wine discovery at" }, { text: "Vivino", href: "https://www.vivino.com/" }, { text: ", made animated video production more accessible at" }, { text: "Vyond", href: "https://www.vyond.com/" }, { text: ", and built productivity tools at" }, { text: "General Task", href: "https://www.generaltask.com/" }, { text: "." }],
     [{ text: "My path to design started growing up in the Bay Area, spending hours on custom-built PCs creating worlds in simulation games and experimenting with digital media." }],
@@ -172,7 +177,7 @@ export const BIO_VARIANTS: BioVariant[] = [
     [{ text: "I got into design through tinkering — growing up in the Bay Area on custom PCs, creating in simulation games, experimenting with video and photo editing. Technology as a creative medium clicked for me early." }],
     [{ text: "I'm driven by the details: the micro-interactions, typography, and moments that make software feel human. Emerging technology and its impact on creativity is what keeps me pushing forward." }],
   ] },
-  { x: 2, y: 4, heading: "I'm Marco Sevilla. I design software in San Francisco.", paragraphs: [
+  { x: 2, y: 4, heading: "MARCO SEVILLA", paragraphs: [
     [{ text: "Product designer with seven years of experience. At" }, { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" }, { text: ", I work on hospitality platforms serving major hotel brands worldwide." }],
     [{ text: "Before Canary, I designed consumer experiences at" }, { text: "Vivino", href: "https://www.vivino.com/" }, { text: ", creative tools at" }, { text: "Vyond", href: "https://www.vyond.com/" }, { text: ", and productivity software at" }, { text: "General Task", href: "https://www.generaltask.com/" }, { text: "— spanning B2C and B2B products." }],
     [{ text: "My path to design started in the Bay Area, tinkering with custom-built PCs, creating in simulation games, and experimenting with digital media. That early fascination with technology as a creative tool shaped my career." }],
@@ -212,7 +217,7 @@ export const BIO_VARIANTS: BioVariant[] = [
     [{ text: "I'm driven by the details: the micro-interactions, the typography, the small moments that make software feel human. I'm also fascinated by emerging tech and how it'll transform creative work." }],
     [{ text: "Outside work, I'm a" }, { text: "photographer", href: "https://www.marcosevilla.photo/" }, { text: "(concerts and street photography), occasional web developer, and someone who's always experimenting. You might also catch me singing or playing pickleball." }],
   ] },
-  { x: 2, y: 5, heading: "I'm Marco Sevilla. I design software in San Francisco.", paragraphs: [
+  { x: 2, y: 5, heading: "MARCO SEVILLA", paragraphs: [
     [{ text: "Product designer with seven years of experience. At" }, { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" }, { text: ", I design hospitality platforms serving major hotel brands including Marriott, Wyndham, Best Western, and IHG." }],
     [{ text: "Before Canary, I designed consumer experiences at" }, { text: "Vivino", href: "https://www.vivino.com/" }, { text: "(wine discovery for millions), creative tools at" }, { text: "Vyond", href: "https://www.vyond.com/" }, { text: "(animated video production), and productivity software at" }, { text: "General Task", href: "https://www.generaltask.com/" }, { text: "(developer tools). This spans both B2C and B2B product work." }],
     [{ text: "My path to design started in the Bay Area, growing up on custom-built PCs, creating worlds in simulation games, and experimenting with digital media. That early fascination with technology as a creative tool shaped my career path." }],

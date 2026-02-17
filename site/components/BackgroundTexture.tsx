@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useEffect, useCallback, useState } from "react";
-import { TEXTURE_CONFIG } from "@/lib/texture-constants";
 
 interface Dot {
   x: number;
@@ -70,44 +69,125 @@ export function BackgroundTexture() {
   const timeRef = useRef<number>(0);
   const [mounted, setMounted] = useState(false);
 
+  // ─────────────────────────────────────────────────────────
+  // Background texture configuration
+  // ─────────────────────────────────────────────────────────
+  const params = {
+    wave: {
+      gridSpacing: 10,
+      dotSize: 0.5,
+      dotOpacity: 0.14,
+      speed: 0.01,
+      threshold: 0.45,
+      intensityMax: 0.7,
+      noiseScale: 0.0015,
+      dotGrowth: 2.0,
+      opacityMax: 0.35,
+      grainOpacity: 0.12,
+    },
+    colors: {
+      useCustomColors: false,
+      dotColor: "#888888",
+      glowColor: "#B5651D",
+    },
+    shape: {
+      type: "circle" as const,
+      rotation: 0,
+      lineWidth: 1,
+    },
+    hover: {
+      radius: 150,
+      dotGrowth: 1.4,
+      colorBlend: 0.7,
+      opacityMax: 0.18,
+      falloffPower: 1.2,
+    },
+  };
+
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
+
+  const isVisibleRef = useRef(true);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const initDots = useCallback((width: number, height: number) => {
+  const initDots = useCallback((width: number, height: number, spacing: number) => {
     const dots: Dot[] = [];
-    const { GRID_SPACING } = TEXTURE_CONFIG;
-
-    const cols = Math.ceil(width / GRID_SPACING) + 1;
-    const rows = Math.ceil(height / GRID_SPACING) + 1;
+    const cols = Math.ceil(width / spacing) + 1;
+    const rows = Math.ceil(height / spacing) + 1;
 
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         dots.push({
-          x: col * GRID_SPACING,
-          y: row * GRID_SPACING,
+          x: col * spacing,
+          y: row * spacing,
         });
       }
     }
     dotsRef.current = dots;
   }, []);
 
+  // Re-init dots when grid spacing changes
+  const gridSpacing = params.wave.gridSpacing;
+  useEffect(() => {
+    if (!mounted) return;
+    initDots(window.innerWidth, window.innerHeight, gridSpacing);
+  }, [mounted, gridSpacing, initDots]);
+
+  // Cache resolved colors — update on theme change, not every frame
+  const cachedColorsRef = useRef<{ dot: { r: number; g: number; b: number }; glow: { r: number; g: number; b: number } } | null>(null);
+
+  const refreshColors = useCallback(() => {
+    const p = paramsRef.current;
+    cachedColorsRef.current = {
+      dot: p.colors.useCustomColors
+        ? parseColor(p.colors.dotColor)
+        : parseColor(getComputedColor("--color-fg-tertiary")),
+      glow: p.colors.useCustomColors
+        ? parseColor(p.colors.glowColor)
+        : parseColor(getComputedColor("--color-glow")),
+    };
+  }, []);
+
+  // Refresh colors on mount and when theme/class changes
+  useEffect(() => {
+    if (!mounted) return;
+    refreshColors();
+
+    const observer = new MutationObserver(() => refreshColors());
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "style"],
+    });
+    return () => observer.disconnect();
+  }, [mounted, refreshColors]);
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Skip drawing when tab is hidden
+    if (document.hidden) {
+      animationRef.current = requestAnimationFrame(draw);
+      return;
+    }
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const { DOT_SIZE, DOT_OPACITY, HOVER_RADIUS } = TEXTURE_CONFIG;
+    const p = paramsRef.current;
     const mouse = mouseRef.current;
 
-    // Increment time (~10 second cycle)
-    timeRef.current += 0.002;
+    // Increment time
+    timeRef.current += p.wave.speed;
     const time = timeRef.current;
 
-    // Get colors from CSS variables
-    const dotColor = parseColor(getComputedColor("--color-fg-tertiary"));
-    const glowColor = parseColor(getComputedColor("--color-glow"));
+    // Use cached colors
+    if (!cachedColorsRef.current) refreshColors();
+    const dotColor = cachedColorsRef.current!.dot;
+    const glowColor = cachedColorsRef.current!.glow;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -117,23 +197,20 @@ export function BackgroundTexture() {
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       // Wave effect using Perlin noise (diagonal movement)
-      const noiseScale = 0.0015;
       const diagonalOffset = (dot.x + dot.y) * 0.0003;
       const noiseVal = noise2D(
-        dot.x * noiseScale + time + diagonalOffset,
-        dot.y * noiseScale + time * 0.6
+        dot.x * p.wave.noiseScale + time + diagonalOffset,
+        dot.y * p.wave.noiseScale + time * 0.6
       );
       // Normalize noise from [-1,1] to [0,1], apply threshold for more contrast
       const rawIntensity = (noiseVal + 1) * 0.5;
-      // Cut off lower values to create "empty" areas, then remap remaining range
-      const threshold = 0.45;
-      const waveIntensity = rawIntensity > threshold
-        ? Math.pow((rawIntensity - threshold) / (1 - threshold), 0.7) * 0.9
+      const waveIntensity = rawIntensity > p.wave.threshold
+        ? Math.pow((rawIntensity - p.wave.threshold) / (1 - p.wave.threshold), 0.7) * p.wave.intensityMax
         : 0;
 
       let color = dotColor;
-      let opacity = DOT_OPACITY;
-      let size = DOT_SIZE;
+      let opacity = p.wave.dotOpacity;
+      let size = p.wave.dotSize;
 
       // Apply wave effect
       color = {
@@ -141,32 +218,68 @@ export function BackgroundTexture() {
         g: Math.round(dotColor.g + (glowColor.g - dotColor.g) * waveIntensity),
         b: Math.round(dotColor.b + (glowColor.b - dotColor.b) * waveIntensity),
       };
-      opacity = DOT_OPACITY + (0.35 - DOT_OPACITY) * waveIntensity;
-      size = DOT_SIZE * (1 + waveIntensity * 2.0);
+      opacity = p.wave.dotOpacity + (p.wave.opacityMax - p.wave.dotOpacity) * waveIntensity;
+      size = p.wave.dotSize * (1 + waveIntensity * p.wave.dotGrowth);
 
       // Cursor hover effect (combines with wave)
-      if (dist < HOVER_RADIUS) {
-        const proximity = 1 - dist / HOVER_RADIUS;
-        const blend = Math.pow(proximity, 1.2);
+      if (dist < p.hover.radius) {
+        const proximity = 1 - dist / p.hover.radius;
+        const blend = Math.pow(proximity, p.hover.falloffPower);
 
         // Add to size
-        size += DOT_SIZE * proximity * 0.6;
+        size += p.wave.dotSize * proximity * p.hover.dotGrowth;
 
         // Blend more color toward glow
         color = {
-          r: Math.round(color.r + (glowColor.r - color.r) * blend * 0.7),
-          g: Math.round(color.g + (glowColor.g - color.g) * blend * 0.7),
-          b: Math.round(color.b + (glowColor.b - color.b) * blend * 0.7),
+          r: Math.round(color.r + (glowColor.r - color.r) * blend * p.hover.colorBlend),
+          g: Math.round(color.g + (glowColor.g - color.g) * blend * p.hover.colorBlend),
+          b: Math.round(color.b + (glowColor.b - color.b) * blend * p.hover.colorBlend),
         };
 
         // Add to opacity
-        opacity += (0.18 - opacity) * blend;
+        opacity += (p.hover.opacityMax - opacity) * blend;
       }
 
-      ctx.beginPath();
-      ctx.arc(dot.x, dot.y, size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${opacity})`;
-      ctx.fill();
+      const fillColor = `rgba(${color.r}, ${color.g}, ${color.b}, ${opacity})`;
+      const shapeType = p.shape.type;
+      const rotRad = (p.shape.rotation * Math.PI) / 180;
+
+      ctx.save();
+      ctx.translate(dot.x, dot.y);
+      if (rotRad !== 0) ctx.rotate(rotRad);
+
+      if (shapeType === "circle") {
+        ctx.beginPath();
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+      } else if (shapeType === "square") {
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(-size, -size, size * 2, size * 2);
+      } else if (shapeType === "diamond") {
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 1.4);
+        ctx.lineTo(size * 1.4, 0);
+        ctx.lineTo(0, size * 1.4);
+        ctx.lineTo(-size * 1.4, 0);
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+      } else if (shapeType === "cross") {
+        const w = size * 0.4;
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(-size, -w, size * 2, w * 2);
+        ctx.fillRect(-w, -size, w * 2, size * 2);
+      } else if (shapeType === "line") {
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 1.5);
+        ctx.lineTo(0, size * 1.5);
+        ctx.strokeStyle = fillColor;
+        ctx.lineWidth = p.shape.lineWidth;
+        ctx.stroke();
+      }
+
+      ctx.restore();
     }
 
     animationRef.current = requestAnimationFrame(draw);
@@ -186,7 +299,7 @@ export function BackgroundTexture() {
       canvas.style.height = `${window.innerHeight}px`;
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(dpr, dpr);
-      initDots(window.innerWidth, window.innerHeight);
+      initDots(window.innerWidth, window.innerHeight, paramsRef.current.wave.gridSpacing);
     };
 
     resize();
@@ -223,16 +336,6 @@ export function BackgroundTexture() {
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden="true">
-      {/* Paper grain layer */}
-      <svg className="absolute inset-0 w-full h-full opacity-[0.12]" aria-hidden="true">
-        <filter id="paper-grain">
-          <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="5" stitchTiles="stitch" />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#paper-grain)" />
-      </svg>
-
-      {/* Dots canvas */}
       <canvas ref={canvasRef} className="absolute inset-0" />
     </div>
   );

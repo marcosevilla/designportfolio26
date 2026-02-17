@@ -249,7 +249,13 @@ Use this checklist when reviewing each case study:
 
 *Last updated: 2026-02-07*
 
-### Recent Changes (2026-02-07)
+### Recent Changes (2026-02-16)
+- Two-column editorial layout (`TwoCol`) rolled out to all 6 case studies — uniform grid at lg+, prose left/image right pairings, full-width galleries/stats/quotes
+- F&B Ordering content: new "From static content to revenue engine" Context section, Gallery repositioned above Context, subtitle rewritten with CMS + staff dashboard scope
+- Typography: body and subtitle changed to 14px/22px (from 16px/28px)
+- Design system consolidation: SectionHeading component, shared typescale.label, springs.ts, unified Icons
+
+### Previous Changes (2026-02-07)
 - Full-bleed CaseStudyHero redesign: gradient backgrounds, split title/subtitle, mockup placeholders
 - Stripe-inspired content width system: 650px / 900px / 1264px tiers
 - Dialog overlay with case study content loading

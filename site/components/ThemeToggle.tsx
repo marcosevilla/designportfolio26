@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState, useCallback } from "react";
+import { PaletteIcon as PaletteIconComponent } from "./Icons";
 
 // ── Color themes ──────────────────────────────────────────────
 export const coloredThemes = [
@@ -100,21 +101,21 @@ export const fontPairings = [
     display: 'var(--font-geist-sans, "Geist"), system-ui, sans-serif',
     heading: 'var(--font-geist-sans, "Geist"), system-ui, sans-serif',
     body: 'var(--font-geist-sans, "Geist"), system-ui, sans-serif',
-    mono: '"GT Cinetype Mono", monospace',
+    mono: '"Departure Mono", monospace',
   },
   {
     name: "Formula",
     display: '"PP Formula SemiExtended", sans-serif',
     heading: '"PP Formula SemiExtended", sans-serif',
     body: '"GT Cinetype", sans-serif',
-    mono: '"GT Cinetype Mono", monospace',
+    mono: '"Departure Mono", monospace',
   },
   {
     name: "Serif",
     display: 'var(--font-instrument-serif, "Instrument Serif"), serif',
     heading: 'var(--font-instrument-sans, "Instrument Sans"), sans-serif',
     body: 'var(--font-instrument-sans, "Instrument Sans"), sans-serif',
-    mono: '"GT Cinetype Mono", monospace',
+    mono: '"Departure Mono", monospace',
     sizeBoost: 2,
   },
 ];
@@ -298,18 +299,8 @@ export function useThemeState() {
   };
 }
 
-// ── Palette icon ──────────────────────────────────────────────
-export function PaletteIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="7.5" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="8" cy="11" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="16" cy="11" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="10" cy="15.5" r="1.5" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
+// ── Palette icon (canonical in Icons.tsx) ─────────────────────
+export { PaletteIcon } from "./Icons";
 
 // ── Legacy exports for compatibility ──────────────────────────
 // Keep useThemeCycle for any references, but delegate to useThemeState
@@ -324,7 +315,7 @@ export function useThemeCycle() {
 }
 
 export function ThemeIcon({ mode }: { mode: ThemeMode }) {
-  return <PaletteIcon />;
+  return <PaletteIconComponent />;
 }
 
 // Mobile default export

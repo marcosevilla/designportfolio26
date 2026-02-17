@@ -22,7 +22,7 @@ Each case study is evaluated on the 10 non-negotiables from the playbook researc
 
 ### What needs attention across all 6
 
-1. **All case studies are too long for scanning.** The 60-second skim test fails — each is 200+ lines with dense paragraphs. A hiring manager or promotion reviewer will not read them end-to-end. Every case study needs ruthless editing or a clear visual hierarchy that lets someone get the story in 60 seconds and go deep selectively.
+1. ~~**All case studies are too long for scanning.**~~ Partially addressed: Two-column editorial layout adds visual breathing room and pairs text with images. Body text reduced to 14px/22px for tighter, more editorial feel. Further trimming of prose content still recommended.
 
 2. **No visuals anywhere yet.** Every visual is a TODO placeholder. This is the single biggest gap. Alicja Suska (1000+ reviews): annotated visuals are what people look at first and remember. The text-heavy format currently reads more like a project brief than a portfolio piece.
 
@@ -32,13 +32,15 @@ Each case study is evaluated on the 10 non-negotiables from the playbook researc
 
 5. **Missing "failed directions."** None of the 6 case studies show a design direction that was explored and rejected. This is one of the strongest signals of senior thinking — showing what you tried, why it didn't work, and how it informed the final direction. Even one rejected approach per case study would strengthen the portfolio significantly.
 
-6. **The opening hook is buried.** The Hero Section states the product description, but the actual hook — the business stakes, the "why now" — doesn't appear until The Problem section. Consider pulling one sentence of stakes into the hero.
+6. **The opening hook is buried.** The Hero Section states the product description, but the actual hook — the business stakes, the "why now" — doesn't appear until The Problem section. Consider pulling one sentence of stakes into the hero. *(F&B partially addressed: new "From static content to revenue engine" Context section adds business stakes early, subtitle rewritten to be more compelling.)*
 
 ---
 
 ## Case Study #1: F&B Mobile Ordering
 
 **Overall: Strongest case study in the portfolio.** Highest ownership (100%), most detailed, best business context.
+
+**Recent improvements (2026-02-16):** New "From static content to revenue engine" Context section (APAC expansion, competitive losses, Guest Hub transformation, platform bet, scoping discipline). Gallery moved above Context for immediate visual impact. Subtitle rewritten: "Designing an end-to-end mobile ordering system for hotels: Guest ordering experience, a CMS for hotel menu content, and a staff dashboard that streamlined F&B fulfillment." Two-column editorial layout with paired text+image decision blocks. Body text 14px/22px.
 
 | Criterion | Rating | Notes |
 |---|---|---|
@@ -218,4 +220,4 @@ Each case study is evaluated on the 10 non-negotiables from the playbook researc
 
 ---
 
-*Assessment completed February 2026. Based on research from HubSpot, Figma, GV, Tanner Christensen, Alicja Suska, and 15+ other sources. See CASE-STUDY-PLAYBOOK.md for full source list.*
+*Assessment completed February 2026. Updated 2026-02-16 with F&B content improvements and two-column layout rollout. Based on research from HubSpot, Figma, GV, Tanner Christensen, Alicja Suska, and 15+ other sources. See CASE-STUDY-PLAYBOOK.md for full source list.*

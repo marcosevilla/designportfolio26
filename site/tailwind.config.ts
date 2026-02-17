@@ -12,7 +12,7 @@ const config: Config = {
         sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
       },
       maxWidth: {
-        content: "650px",
+        content: "500px",
         "content-md": "800px",
         "content-lg": "1060px",
       },

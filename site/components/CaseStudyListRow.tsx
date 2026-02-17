@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { CaseStudyMeta } from "@/lib/types";
+import { typescale } from "@/lib/typography";
+import { SPRING_SNAP } from "@/lib/springs";
 
 interface CaseStudyListRowProps {
   study: CaseStudyMeta;
@@ -27,12 +29,7 @@ export default function CaseStudyListRow({ study, showYear }: CaseStudyListRowPr
         {/* Year column — shows only for first item in group */}
         <span
           className="shrink-0 w-[48px]"
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            color: "var(--color-fg-tertiary)",
-            letterSpacing: "0.02em",
-          }}
+          style={{ ...typescale.label, color: "var(--color-fg-tertiary)" }}
         >
           {showYear ? study.year : ""}
         </span>
@@ -47,7 +44,7 @@ export default function CaseStudyListRow({ study, showYear }: CaseStudyListRowPr
             color: hovered ? "var(--color-accent)" : "var(--color-fg)",
           }}
           animate={{ x: hovered ? 8 : 0 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          transition={SPRING_SNAP}
         >
           {study.title}
         </motion.span>
@@ -59,12 +56,7 @@ export default function CaseStudyListRow({ study, showYear }: CaseStudyListRowPr
         {study.company && (
           <span
             className="hidden sm:inline shrink-0"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "11px",
-              color: "var(--color-fg-tertiary)",
-              letterSpacing: "0.02em",
-            }}
+            style={{ ...typescale.label, color: "var(--color-fg-tertiary)" }}
           >
             {study.company}{study.role ? ` · ${study.role}` : ""}
           </span>
@@ -74,13 +66,7 @@ export default function CaseStudyListRow({ study, showYear }: CaseStudyListRowPr
         {study.metric && (
           <span
             className="hidden md:inline shrink-0 text-right"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "11px",
-              color: "var(--color-fg-secondary)",
-              letterSpacing: "0.02em",
-              minWidth: "100px",
-            }}
+            style={{ ...typescale.label, color: "var(--color-fg-secondary)", minWidth: "100px" }}
           >
             {study.metric}
           </span>

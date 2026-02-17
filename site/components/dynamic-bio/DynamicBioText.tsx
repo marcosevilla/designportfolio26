@@ -119,7 +119,7 @@ export function DynamicBioText({ position, className }: DynamicBioTextProps) {
                   reducedMotion={reducedMotion}
                 />
               ) : (
-                heading.replace("I'm", "I\u2019m")
+                heading
               )}
             </h1>
 

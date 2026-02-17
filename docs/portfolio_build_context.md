@@ -40,9 +40,10 @@ Marco is a designer with minimal coding experience but interested in React/JS an
 ### Layout
 - **Fixed left sidebar nav** (100px wide) on desktop, collapses to horizontal top bar on mobile (`md` breakpoint)
 - **Stripe-inspired content width system** with three tiers:
-  - `max-w-content` (650px) — body text pages (/writing, /play), post-hero case study content
+  - `max-w-content` (650px) — body text pages (/writing, /play), case study content below lg
   - `max-w-content-md` (900px) — bio panel, dialog inner content, case study hero inner
   - `max-w-content-lg` (1264px) — work panel, dialog sheet, /work index
+- **Case study two-column editorial layout** (lg+ only): `max-w-content lg:max-w-none lg:px-0` expands within 960px `<main>`. Uniform `lg:grid lg:grid-cols-2 lg:gap-x-10` per-section via `TwoCol` component. Prose in left column (right empty), decision blocks paired (text left, image right), galleries/stats/quotes full-width.
 - **`layout.tsx` provides only vertical padding** (`pt-24 md:pt-[18vh] pb-20`) — each page handles its own `max-width` and horizontal padding (`px-4 sm:px-8` = 16px mobile, 32px tablet+)
 - Sidebar padding: `px-8 pb-8 pt-[22vh]` (matches main content vertical alignment on desktop)
 

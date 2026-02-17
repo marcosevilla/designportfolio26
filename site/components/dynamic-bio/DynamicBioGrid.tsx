@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
+import { SPRING_SNAP } from "@/lib/springs";
 import { GridPosition } from "@/lib/bio-content";
 
 const GRID_SIZE = 6;
@@ -185,7 +186,7 @@ export function DynamicBioGrid({ position, onPositionChange, disabled }: Dynamic
               y: displayPosition.y,
               scale: isDragging ? 1.1 : 1,
             }}
-            transition={isDragging ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 25 }}
+            transition={isDragging ? { duration: 0 } : SPRING_SNAP}
             onPointerDown={handlePointerDown}
           />
         </div>

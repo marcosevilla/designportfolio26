@@ -56,7 +56,7 @@ export default function RootLayout({
               <InlineEditorProvider>
                 <main
                   id="main"
-                  className="max-w-[960px] mx-auto pt-24 lg:pt-[18vh] pb-20 px-4 sm:px-8 lg:px-6"
+                  className="max-w-[960px] mx-auto pb-20 px-4 sm:px-8 lg:px-6"
                 >
                   {children}
                 </main>
@@ -70,7 +70,9 @@ export default function RootLayout({
               </InlineEditorProvider>
               <StickyFooter />
               <ViewportFade />
-              {process.env.NODE_ENV === "development" && <Agentation />}
+              {process.env.NODE_ENV === "development" && (
+                <Agentation />
+              )}
             </SidebarProvider>
           </MarqueeProvider>
         </ThemeProvider>

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SPRING_HEAVY } from "@/lib/springs";
+import { CloseIcon, ChevronUpIcon, ChevronDownIcon, ListIcon } from "../Icons";
 import { useInlineEditor } from "@/lib/InlineEditorContext";
 import { EDITOR_SERVER_URL } from "@/lib/editor-types";
 
@@ -216,7 +218,7 @@ export default function SectionReorder() {
             initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 500, damping: 32 }}
+            transition={SPRING_HEAVY}
             className="mb-2 w-64 backdrop-blur-xl border border-[var(--color-border)] overflow-hidden"
             style={{ background: "var(--color-surface-raised)" }}
           >
@@ -233,16 +235,7 @@ export default function SectionReorder() {
                 className="w-5 h-5 flex items-center justify-center hover:text-[var(--color-accent)]"
                 style={{ color: "var(--color-fg-tertiary)" }}
               >
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
+                <CloseIcon />
               </button>
             </div>
 
@@ -267,16 +260,7 @@ export default function SectionReorder() {
                       style={{ color: "var(--color-fg-tertiary)" }}
                       title="Move up"
                     >
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M4 10l4-4 4 4" />
-                      </svg>
+                      <ChevronUpIcon />
                     </button>
                     <button
                       onClick={() => moveSection(i, 1)}
@@ -285,16 +269,7 @@ export default function SectionReorder() {
                       style={{ color: "var(--color-fg-tertiary)" }}
                       title="Move down"
                     >
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M4 6l4 4 4-4" />
-                      </svg>
+                      <ChevronDownIcon />
                     </button>
                   </div>
                 </div>
@@ -319,16 +294,7 @@ export default function SectionReorder() {
           color: open ? "var(--color-accent)" : "var(--color-fg-secondary)",
         }}
       >
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path d="M2 4h12M2 8h12M2 12h12" />
-        </svg>
+        <ListIcon size={12} />
         Sections
       </button>
     </div>

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SPRING_HEAVY } from "@/lib/springs";
+import { MinusIcon, ResetIcon, PlusIcon } from "./Icons";
 import {
   coloredThemes,
   fontPairings,
@@ -87,7 +89,7 @@ export default function ThemePalette({
     initial: { scale: 0.85, opacity: 0 },
     animate: { scale: 1, opacity: 1 },
     exit: { scale: 0.85, opacity: 0 },
-    transition: { type: "spring" as const, stiffness: 500, damping: 32 },
+    transition: SPRING_HEAVY,
   };
 
   const mobileMotion = {
@@ -229,9 +231,7 @@ export default function ThemePalette({
             opacity: fontSizeOffset <= -4 ? 0.35 : 1,
           }}
         >
-          <svg width={m ? "18" : "14"} height={m ? "18" : "14"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <MinusIcon size={m ? 18 : 14} />
         </button>
         <button
           onClick={onResetAll}
@@ -239,10 +239,7 @@ export default function ThemePalette({
           className="flex items-center justify-center rounded-none aspect-square"
           style={actionBtnStyle}
         >
-          <svg width={m ? "18" : "14"} height={m ? "18" : "14"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="1 4 1 10 7 10" />
-            <path d="M3.51 15a9 9 0 105.64-11.36L1 10" />
-          </svg>
+          <ResetIcon size={m ? 18 : 14} />
         </button>
         <button
           onClick={onIncreaseFontSize}
@@ -254,10 +251,7 @@ export default function ThemePalette({
             opacity: fontSizeOffset >= 4 ? 0.35 : 1,
           }}
         >
-          <svg width={m ? "18" : "14"} height={m ? "18" : "14"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <PlusIcon size={m ? 18 : 14} />
         </button>
       </div>
 

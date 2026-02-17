@@ -1,15 +1,106 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { PARAGRAPHS, PROMPTS, MAX_LEVEL, HEADING_WORDS, HEADING_TEXT } from "@/lib/bio-content";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { PARAGRAPHS, PROMPTS, MAX_LEVEL, HEADING_LINES } from "@/lib/bio-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
 import { useIsMobile } from "@/hooks/useMediaQuery";
 import { useDynamicBio } from "@/lib/dynamic-bio-store";
-import { RenderParagraph, StreamingParagraph, StreamingWords } from "./StreamingText";
+import { RenderParagraph, StreamingParagraph } from "./StreamingText";
 import InlineExpandButton from "./InlineExpandButton";
 import { DynamicBioText } from "./dynamic-bio";
+import TwoCol from "./TwoCol";
+
+type HeadingLine = { text: string; weight: number; font?: string };
+
+function StreamingHeadingLines({
+  lines,
+  stream,
+  onComplete,
+  reducedMotion,
+}: {
+  lines: HeadingLine[];
+  stream: boolean;
+  onComplete: () => void;
+  reducedMotion: boolean;
+}) {
+  // Build a flat list of words, each tagged with its line index
+  const wordsWithLine = useMemo(() => {
+    const result: { word: string; lineIdx: number }[] = [];
+    lines.forEach((line, lineIdx) => {
+      line.text.split(" ").forEach((word) => {
+        result.push({ word, lineIdx });
+      });
+    });
+    return result;
+  }, [lines]);
+
+  const total = wordsWithLine.length;
+  const [visibleCount, setVisibleCount] = useState(
+    !stream || reducedMotion ? total : 0
+  );
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (!stream || reducedMotion) {
+      if (stream) onComplete();
+      return;
+    }
+    let i = 0;
+    const reveal = () => {
+      i++;
+      setVisibleCount(i);
+      if (i < total) {
+        timerRef.current = setTimeout(reveal, 40);
+      } else {
+        timerRef.current = setTimeout(onComplete, 300);
+      }
+    };
+    timerRef.current = setTimeout(reveal, 40);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [stream, total, onComplete, reducedMotion]);
+
+  // Group visible words back into lines
+  const visible = wordsWithLine.slice(0, visibleCount);
+
+  return (
+    <>
+      {lines.map((line, lineIdx) => {
+        const lineWords = visible.filter((w) => w.lineIdx === lineIdx);
+        if (lineWords.length === 0 && stream) return null;
+        return (
+          <span
+            key={lineIdx}
+            style={{
+              fontWeight: line.weight,
+              fontFamily: line.font,
+              display: "block",
+              marginBottom: lineIdx < lines.length - 1 ? "0.5em" : undefined,
+            }}
+          >
+            {stream
+              ? lineWords.map((w, i) => (
+                  <motion.span
+                    key={i}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.25 }}
+                    style={{ display: "inline" }}
+                  >
+                    {i > 0 ? " " : ""}
+                    {w.word}
+                  </motion.span>
+                ))
+              : line.text}
+          </span>
+        );
+      })}
+    </>
+  );
+}
 
 const LOADING_DELAY = 1200;
 const INTRO_LOADING_DELAY = 1800;
@@ -33,7 +124,7 @@ function markIntroSeen() {
   }
 }
 
-export default function Hero() {
+export default function Hero({ children }: { children?: React.ReactNode }) {
   const reducedMotion = usePrefersReducedMotion();
   const isMobile = useIsMobile();
   const dynamicBio = useDynamicBio();
@@ -115,45 +206,63 @@ export default function Hero() {
   const visibleParaIndices = Array.from({ length: level }, (_, i) => i);
 
   return (
-    <section>
-        {/* Heading — streams in during intro, static after (hidden in dynamic bio mode) */}
-        {!showDynamicBio && (
-          <div className="sticky top-14 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-[var(--color-bg)]/90 backdrop-blur-sm lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
-            <h1
-              className="tracking-tight"
-              style={typescale.display}
-            >
-              {introPhase === "subtitle" ? (
-                <StreamingWords words={HEADING_WORDS} onComplete={onHeadingComplete} reducedMotion={reducedMotion} />
-              ) : introPhase === "star1" ? null : (
-                <>Hi, I{"\u2019"}m Marco. I bring clarity to enterprise complexity. <span style={{ fontFamily: "var(--font-geist-pixel-square)", fontWeight: 700 }}>Visual craft</span> is how I get there, paired with rigorous problem-framing and systems thinking that scales.</>
-              )}
-            </h1>
-          </div>
+    <>
+        {/* Heading — streams in during intro, static after; swapped for DynamicBioText in dynamic mode */}
+        {showDynamicBio ? (
+          <TwoCol>
+            <TwoCol.Left>
+              <DynamicBioText position={dynamicBio.gridPosition} />
+            </TwoCol.Left>
+          </TwoCol>
+        ) : (
+          <TwoCol>
+            <TwoCol.Left>
+              <div className="sticky top-14 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-[var(--color-bg)]/90 backdrop-blur-sm lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
+                <h1
+                  className="tracking-tight"
+                  style={{
+                    ...typescale.display,
+                  }}
+                >
+                  {introPhase === "star1" ? null : (
+                    <StreamingHeadingLines
+                      lines={HEADING_LINES}
+                      stream={introPhase === "subtitle"}
+                      onComplete={onHeadingComplete}
+                      reducedMotion={reducedMotion}
+                    />
+                  )}
+                </h1>
+              </div>
+            </TwoCol.Left>
+          </TwoCol>
         )}
 
         {/* Intro loading star */}
         {(introPhase === "star1" || introPhase === "star2") && (
-          <div className={introPhase === "star1" ? "mt-4" : "mt-8"}>
-            <span className="text-[var(--color-accent)] text-[16px] animate-[blink-cursor_1s_step-end_infinite]">
-              ✸
-            </span>
-          </div>
+          <TwoCol>
+            <TwoCol.Left>
+              <div className={introPhase === "star1" ? "mt-4" : "mt-8"}>
+                <span className="text-[var(--color-accent)] text-[16px] animate-[blink-cursor_1s_step-end_infinite]">
+                  ✸
+                </span>
+              </div>
+            </TwoCol.Left>
+          </TwoCol>
         )}
 
-        {/* Bio section — visible once intro reaches bio phase */}
-        {(introPhase === "bio" || introDone) && (
-          <motion.div
-            className={showDynamicBio ? "" : "mt-8 text-[var(--color-fg-secondary)] leading-[28px]"}
-            initial={false}
-            animate={{ opacity: 1 }}
-          >
-            {showDynamicBio ? (
-              /* Dynamic Bio Mode — includes heading + text controlled by grid in palette */
-              <DynamicBioText position={dynamicBio.gridPosition} />
-            ) : (
-              /* Classic Bio Mode — progressive disclosure */
-              <>
+        {/* Slot for content between heading and bio (e.g. work section) */}
+        {children}
+
+        {/* Bio section — visible once intro reaches bio phase, hidden in dynamic mode */}
+        {(introPhase === "bio" || introDone) && !showDynamicBio && (
+          <TwoCol>
+            <TwoCol.Left>
+              <motion.div
+                className="mt-28 text-[var(--color-fg-secondary)] leading-[28px]"
+                initial={false}
+                animate={{ opacity: 1 }}
+              >
                 <AnimatePresence mode="sync">
                   {visibleParaIndices.map((pIdx) => {
                     const isLastVisible = pIdx === level - 1;
@@ -202,11 +311,10 @@ export default function Hero() {
                     </span>
                   </div>
                 )}
-
-              </>
-            )}
-          </motion.div>
+              </motion.div>
+            </TwoCol.Left>
+          </TwoCol>
         )}
-    </section>
+    </>
   );
 }

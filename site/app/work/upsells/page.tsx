@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function UpsellsPage() {
   return (
-    <div className="-mt-24 lg:-mt-[18vh] pb-20">
+    <div className="pb-20">
       <UpsellsContent />
     </div>
   );

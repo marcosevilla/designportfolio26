@@ -4,8 +4,10 @@ import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { SPRING_SNAP } from "@/lib/springs";
 import { useRouter } from "next/navigation";
-import { useThemeState, PaletteIcon } from "./ThemeToggle";
+import { useThemeState } from "./ThemeToggle";
+import { PaletteIcon } from "./Icons";
 import { useMarquee } from "./MarqueeContext";
 import { useActivePanel, requestGoToWork, requestGoToBio } from "./SectionSnapContext";
 import { useDynamicBio } from "@/lib/dynamic-bio-store";
@@ -46,7 +48,7 @@ function SidebarIcon({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       animate={{ x: hovered ? 4 : 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      transition={SPRING_SNAP}
     >
       {children}
     </Tag>

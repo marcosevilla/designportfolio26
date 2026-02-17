@@ -26,7 +26,7 @@ export const FONT_OPTIONS: FontOption[] = [
   { label: "PP Formula", value: '"PP Formula", sans-serif', weights: [800] },
   { label: "PP Editorial New", value: '"PP Editorial New", serif', weights: [200, 400], hasItalic: true },
   { label: "GT Cinetype", value: '"GT Cinetype", sans-serif', weights: [300, 400, 700] },
-  { label: "GT Cinetype Mono", value: '"GT Cinetype Mono", monospace', weights: [400] },
+  { label: "Departure Mono", value: '"Departure Mono", monospace', weights: [400] },
   { label: "Instrument Serif", value: "var(--font-instrument-serif), serif", weights: [400] },
   { label: "Instrument Sans", value: "var(--font-instrument-sans), sans-serif", weights: [400, 500, 600, 700] },
   { label: "Geist Sans", value: "var(--font-geist-sans), sans-serif", weights: [400, 500, 600, 700] },

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { SPRING_SLOW } from "@/lib/springs";
 import { useMarquee } from "./MarqueeContext";
 
 const quotes = [
@@ -73,7 +74,7 @@ export default function Marquee() {
           initial={{ y: "-100%" }}
           animate={{ y: 0 }}
           exit={{ y: "-100%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          transition={SPRING_SLOW}
         >
           <div
             className="flex items-center whitespace-nowrap py-4 marquee-track"

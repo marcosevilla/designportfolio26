@@ -1,5 +1,7 @@
 "use client";
 
+import { typescale } from "@/lib/typography";
+
 interface Stat {
   value: string;
   label: string;
@@ -17,12 +19,7 @@ export default function QuickStats({ items }: { items: Stat[] }) {
           <span
             data-editable-stat-value={i}
             className="text-[var(--color-accent)] tracking-tight shrink-0"
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "20px",
-              fontWeight: 700,
-              lineHeight: 1.1,
-            }}
+            style={typescale.statValue}
           >
             {item.value}
           </span>

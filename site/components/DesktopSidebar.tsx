@@ -6,12 +6,13 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useActivePanel, requestGoToWork, requestGoToBio } from "./SectionSnapContext";
 import { useSidebar } from "@/lib/SidebarContext";
+import { typescale } from "@/lib/typography";
+import { SPRING_SNAP } from "@/lib/springs";
+import { BackChevronIcon } from "./Icons";
 
 const navLinks = [
   { href: "/", label: "Home", disabled: false },
   { href: "/#work", label: "Work", disabled: false },
-  { href: "/writing", label: "Writing", disabled: true },
-  { href: "/play", label: "Play", disabled: true },
 ];
 
 export default function DesktopSidebar() {
@@ -51,7 +52,7 @@ export default function DesktopSidebar() {
   const navStarY = activeIndex * 36;
 
   return (
-      <aside className="hidden lg:flex sticky top-0 h-screen w-[200px] shrink-0 flex-col pt-[18vh] pb-20">
+      <aside className="hidden lg:flex fixed top-[18vh] flex-col" style={{ left: "48px", width: "130px" }}>
         {/* Items list */}
         <div className="flex-1 min-h-0">
           {isTocMode ? (
@@ -62,9 +63,7 @@ export default function DesktopSidebar() {
                 className="flex items-center gap-1 text-[14px] transition-colors hover:text-[var(--color-accent)]"
                 style={{ color: "var(--color-fg-secondary)" }}
               >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10 12L6 8l4-4" />
-                </svg>
+                <BackChevronIcon />
                 Back
               </Link>
             </div>
@@ -120,7 +119,7 @@ export default function DesktopSidebar() {
                     {link.disabled ? (
                       <span
                         className="block"
-                        style={{ fontSize: "16px", fontWeight: 500, color: textColor, cursor: "default" }}
+                        style={{ ...typescale.nav, color: textColor, cursor: "default" }}
                       >
                         {link.label}
                       </span>
@@ -128,18 +127,14 @@ export default function DesktopSidebar() {
                       <Link
                         href={link.href}
                         className="block transition-colors"
-                        style={{ fontSize: "16px", fontWeight: 500 }}
+                        style={typescale.nav}
                         onMouseEnter={() => setHoveredIndex(index)}
                         onClick={(e) => handleLinkClick(e, link.href)}
                       >
                         <motion.span
                           className="inline-block"
                           animate={{ x: active ? 18 : isHovered ? 8 : 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 400,
-                            damping: 25,
-                          }}
+                          transition={SPRING_SNAP}
                           style={{ color: textColor }}
                         >
                           {link.label}

@@ -5,12 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useActivePanel, requestGoToWork, requestGoToBio } from "./SectionSnapContext";
 import { useSidebar } from "@/lib/SidebarContext";
+import { typescale } from "@/lib/typography";
+import { BackChevronIcon } from "./Icons";
 
 const navLinks = [
   { href: "/", label: "Home", disabled: false },
   { href: "/#work", label: "Work", disabled: false },
-  { href: "/writing", label: "Writing", disabled: true },
-  { href: "/play", label: "Play", disabled: true },
 ];
 
 export default function MobileNav() {
@@ -52,9 +52,7 @@ export default function MobileNav() {
               className="flex items-center gap-1 text-[14px] transition-colors"
               style={{ color: "var(--color-fg-secondary)" }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 12L6 8l4-4" />
-              </svg>
+              <BackChevronIcon />
               Back
             </Link>
           ) : (
@@ -68,7 +66,7 @@ export default function MobileNav() {
                     <span
                       key={link.href}
                       className="flex items-center gap-1"
-                      style={{ fontSize: "14px", color: "var(--color-fg-tertiary)", cursor: "default" }}
+                      style={{ ...typescale.navMobile, color: "var(--color-fg-tertiary)", cursor: "default" }}
                     >
                       {link.label}
                     </span>
@@ -80,7 +78,7 @@ export default function MobileNav() {
                     key={link.href}
                     href={link.href}
                     className="flex items-center gap-1 transition-colors"
-                    style={{ fontSize: "14px" }}
+                    style={typescale.navMobile}
                     onClick={(e) => handleLinkClick(e, link.href)}
                   >
                     {active && (

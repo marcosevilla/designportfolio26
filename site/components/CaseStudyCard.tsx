@@ -3,6 +3,7 @@
 import { useRef, useCallback } from "react";
 import Link from "next/link";
 import type { CaseStudyMeta } from "@/lib/types";
+import FBCardPreview from "./fb-showcase/FBCardPreview";
 
 export type CardSize = "hero" | "large" | "medium" | "standard" | "wide";
 
@@ -49,15 +50,25 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
 
   const padding = "p-5";
 
+  const handleMouseEnter = useCallback(() => {
+    cardRef.current?.classList.add("bento-card--hover");
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    cardRef.current?.classList.remove("bento-card--hover");
+  }, []);
+
   return (
     <div
       ref={cardRef}
       className="bento-card relative group"
       onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Link
         href={`/work/${study.slug}`}
-        className="block w-full text-left relative overflow-hidden rounded-none bg-[var(--color-surface-raised)]/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.02)] cursor-pointer"
+        className="block w-full text-left relative overflow-hidden rounded-none bg-[var(--color-surface-raised)] shadow-[0_12px_40px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.02)] cursor-pointer"
         style={{ aspectRatio: ASPECT_RATIOS[cardSize] }}
       >
         {/* Content */}
@@ -103,6 +114,9 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
           {/* Future mockup slot */}
           <div className="flex-1" />
         </div>
+
+        {/* F&B dashboard screenshot */}
+        {study.slug === "fb-ordering" && <FBCardPreview />}
 
         {/* Default border — always visible */}
         <div

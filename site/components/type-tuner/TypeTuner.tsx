@@ -152,7 +152,7 @@ export default function TypeTuner() {
       }),
       createLayer({
         text: "Always earn rewards, and pay for the check right from the app",
-        fontFamily: '"GT Cinetype Mono", monospace',
+        fontFamily: '"Departure Mono", monospace',
         fontSize: 14,
         fontWeight: 400,
         color: "#FFFFFF",

@@ -32,18 +32,17 @@ export default function HomeLayout({
   }, []);
 
   return (
-    <div className="lg:flex lg:gap-10">
+    <div className="pt-24 lg:pt-[18vh]">
       <DesktopSidebar />
-      <div className="flex-1 min-w-0">
-        <BackgroundTexture />
-        <section className="lg:-translate-x-[120px]">
-          <Hero />
-        </section>
-        <section ref={workRef} className="mt-28 lg:-translate-x-[120px]">
-          {work}
-        </section>
-        {marquee}
+      <BackgroundTexture />
+      <div className="px-4 sm:px-8 lg:px-0">
+        <Hero>
+          <section ref={workRef} className="mt-28" id="work">
+            {work}
+          </section>
+        </Hero>
       </div>
+      {marquee}
     </div>
   );
 }

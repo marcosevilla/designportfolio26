@@ -20,10 +20,9 @@ function scaledClamp(min: string, preferred: string, max: string): string {
 export const typescale = {
   /** Hero H1, DynamicBio H1 */
   display: {
-    fontFamily: "var(--font-display)",
-    fontSize: scaled("24px"),
-    fontStyle: "var(--font-heading-style)",
-    lineHeight: 1.5,
+    fontFamily: "var(--font-mono)",
+    fontSize: scaled("28px"),
+    lineHeight: 1.4,
   } as CSSProperties,
 
   /** Case Study Hero title */
@@ -44,9 +43,9 @@ export const typescale = {
 
   /** H2 — Case study sections */
   h2: {
-    fontFamily: "var(--font-heading)",
+    fontFamily: "var(--font-mono)",
     fontSize: scaled("18px"),
-    fontWeight: 600,
+    fontWeight: 400,
     lineHeight: 1.2,
   } as CSSProperties,
 
@@ -68,20 +67,21 @@ export const typescale = {
 
   /** Case study body text */
   body: {
-    fontSize: scaled("16px"),
-    lineHeight: "28px",
+    fontSize: scaled("14px"),
+    lineHeight: "22px",
   } as CSSProperties,
 
   /** Case study hero subtitle, NextProject description */
   subtitle: {
-    fontSize: scaled("16px"),
-    lineHeight: "28px",
+    fontSize: scaled("14px"),
+    lineHeight: "22px",
   } as CSSProperties,
 
   /** QuickStats large number */
   statValue: {
-    fontFamily: "var(--font-display)",
-    fontSize: scaledClamp("28px", "4vw", "36px"),
+    fontFamily: "var(--font-mono)",
+    fontSize: "20px",
+    fontWeight: 400,
     lineHeight: 1.1,
   } as CSSProperties,
 
@@ -97,5 +97,26 @@ export const typescale = {
     fontFamily: "var(--font-display)",
     fontSize: scaled("20px"),
     lineHeight: 1.2,
+  } as CSSProperties,
+
+  /** Mono label — year badges, card meta, filter pills, list row details */
+  label: {
+    fontFamily: "var(--font-mono)",
+    fontSize: "11px",
+    letterSpacing: "0.02em",
+  } as CSSProperties,
+
+  /** Nav links — desktop 16px, mobile 14px */
+  nav: {
+    fontFamily: "var(--font-mono)",
+    fontWeight: 400,
+    fontSize: "16px",
+  } as CSSProperties,
+
+  /** Nav links — mobile variant */
+  navMobile: {
+    fontFamily: "var(--font-mono)",
+    fontWeight: 400,
+    fontSize: "14px",
   } as CSSProperties,
 } as const;
