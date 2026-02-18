@@ -10,6 +10,7 @@ import ProgressBar from "@/components/case-study/ProgressBar";
 import FadeIn from "@/components/case-study/FadeIn";
 import InlineTOC from "@/components/case-study/InlineTOC";
 import SectionHeading from "@/components/case-study/SectionHeading";
+import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
 
@@ -40,12 +41,13 @@ export default function CheckinContent() {
         <InlineTOC />
         <div className="max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0 pt-24 lg:pt-[18vh]">
         {/* Title + Subtitle */}
-        <TwoCol>
-          <TwoCol.Left>
-            <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Modernizing Hotel Software</h1>
-            <p className="mt-3 text-[var(--color-fg-secondary)]" style={typescale.subtitle}>Designing digital check-in, compendium, and omni-channel communication solutions for the world's largest hotel chains.</p>
-          </TwoCol.Left>
-        </TwoCol>
+        <div>
+          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Modernizing Hotel Software</h1>
+          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
+        </div>
+
+        {/* Hero Image */}
+        <CaseStudyHeroImage description="Hotel Check-in — guest and admin flows" />
 
         {/* Quick Stats */}
         <FadeIn>

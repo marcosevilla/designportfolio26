@@ -21,8 +21,8 @@ export const typescale = {
   /** Hero H1, DynamicBio H1 */
   display: {
     fontFamily: "var(--font-mono)",
-    fontSize: scaled("28px"),
-    lineHeight: 1.4,
+    fontSize: scaled("40px"),
+    lineHeight: 1.25,
   } as CSSProperties,
 
   /** Case Study Hero title */

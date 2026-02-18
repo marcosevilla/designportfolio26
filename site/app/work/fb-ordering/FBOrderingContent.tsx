@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import QuickStats from "@/components/case-study/QuickStats";
 import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
@@ -11,6 +12,12 @@ import ProgressBar from "@/components/case-study/ProgressBar";
 import InlineTOC from "@/components/case-study/InlineTOC";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
+import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
+import ProjectDetails from "@/components/case-study/ProjectDetails";
+import BrowserMockup from "@/components/fb-showcase/BrowserMockup";
+import MobileShowcase from "@/components/fb-showcase/MobileShowcase";
+import SystemArchitecture from "@/components/fb-showcase/SystemArchitecture";
+import RoadmapEvolution from "@/components/fb-showcase/RoadmapEvolution";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
 
@@ -32,6 +39,91 @@ const TOC_ITEMS = [
   { id: "reflection", label: "Reflection" },
 ];
 
+const PRINCIPLES = [
+  {
+    number: "01",
+    title: "Cut scope aggressively",
+    summary: "We weren\u2019t building DoorDash for hotels \u2014 we were solving a specific operational pain point.",
+    detail: "The market was full of full-stack restaurant platforms and consumer ordering apps. Staying disciplined about what we wouldn\u2019t build (no multi-vendor marketplaces, no kitchen operations, no consumer-facing discovery) let us ship a focused product in four months. Every feature had to pass one test: does this help a hotel get a guest\u2019s food order to staff faster?\n\nOne example: we originally planned to build the Ordering Outlet as its own standalone page, but after further research we realized we could abstract it into the existing Compendium system \u2014 reducing product surface area and eliminating an entire layer of future UI maintenance.",
+  },
+  {
+    number: "02",
+    title: "Don\u2019t reinvent the wheel",
+    summary: "We studied dozens of ordering platforms to internalize proven patterns, then adapted them for hotels.",
+    detail: "Uber Eats, Toast, Square, DoorDash, Lightspeed \u2014 we dissected how each handles menus, modifiers, cart state, and checkout. Rather than designing from scratch, we adopted conventions guests already understand (tap to add, cart summary, one-tap submit) and layered in hotel-specific needs like room charge billing, delivery type selection, and reservation-linked identity.",
+  },
+  {
+    number: "03",
+    title: "Make it extensible",
+    summary: "The first use case was in-room dining, but the architecture needed to support what comes next.",
+    detail: "We designed the object model (ordering outlets, menus, items, modifier groups) to be context-agnostic. The same structure that powers room service can support poolside ordering, spa bookings, activity reservations, and restaurant table-side ordering \u2014 without a redesign. The delivery-type abstraction became the key: swap the fulfillment context, and the rest of the system adapts.",
+  },
+];
+
+function DesignPrinciples() {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+      {PRINCIPLES.map((p, i) => {
+        const isOpen = openIdx === i;
+        return (
+          <button
+            key={i}
+            onClick={() => setOpenIdx(isOpen ? null : i)}
+            className="text-left rounded-lg border p-4 transition-all duration-200 cursor-pointer"
+            style={{
+              backgroundColor: isOpen
+                ? "color-mix(in oklch, var(--color-accent) 4%, var(--color-bg))"
+                : "var(--color-bg)",
+              borderColor: isOpen
+                ? "color-mix(in oklch, var(--color-accent) 25%, var(--color-border))"
+                : "var(--color-border)",
+            }}
+          >
+            <div className="flex items-baseline gap-2 mb-2">
+              <span
+                className="text-[var(--color-accent)]"
+                style={{ ...typescale.label }}
+              >
+                {p.number}
+              </span>
+              <span
+                className="text-[var(--color-fg)]"
+                style={{ ...typescale.label, textTransform: "uppercase" }}
+              >
+                {p.title}
+              </span>
+            </div>
+            <p
+              className="text-[var(--color-fg-secondary)]"
+              style={{ fontSize: "13px", lineHeight: 1.5 }}
+            >
+              {p.summary}
+            </p>
+            <div
+              className="grid transition-[grid-template-rows] duration-300 ease-out"
+              style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+            >
+              <div className="overflow-hidden">
+                {p.detail.split("\n\n").map((paragraph, j) => (
+                  <p
+                    key={j}
+                    className={`${j === 0 ? "mt-3" : "mt-2"} text-[var(--color-fg-secondary)]`}
+                    style={{ fontSize: "13px", lineHeight: 1.5 }}
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function FBOrderingContent() {
   return (
     <>
@@ -43,13 +135,36 @@ export default function FBOrderingContent() {
         <InlineTOC />
         <div className="max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0 pt-24 lg:pt-[18vh]">
 
-        {/* Title + Subtitle */}
-        <TwoCol>
-          <TwoCol.Left>
-            <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>F&B Mobile Ordering</h1>
-            <p className="mt-3 text-[var(--color-fg-secondary)]" style={typescale.subtitle}>Designing an end-to-end mobile ordering system for hotels: Guest ordering experience, a CMS for hotel menu content, and a staff dashboard that streamlined F&amp;B fulfillment.</p>
-          </TwoCol.Left>
-        </TwoCol>
+        {/* Title + Subtitle + Project Details */}
+        <div className="lg:grid lg:gap-x-20 lg:items-start" style={{ gridTemplateColumns: "2fr 1fr" }}>
+          <div>
+            <h1 className="tracking-tight text-[var(--color-fg)] whitespace-nowrap" style={typescale.display}>F&B Mobile Ordering</h1>
+            <p className="mt-3 text-[var(--color-fg-secondary)]">I led the design of a mobile ordering system for hotels, expanding Canary&apos;s product suite into new revenue channels — spanning guest ordering, a menu CMS, and a staff fulfillment dashboard. The product went from concept to production in four months, shipping 93 of 100 scoped issues across three connected surfaces.</p>
+          </div>
+          <div className="mt-6 lg:mt-[52px] overflow-hidden">
+            <ProjectDetails rows={[
+              { label: "Company", value: "Canary Technologies", content: "Hotel software platform serving 20,000+ properties worldwide." },
+              { label: "Timeline", value: "Oct 2024 – Feb 2025", content: "Designed and shipped in a 4-day sprint, iterated over 4 months." },
+              { label: "Team", value: "In-stay pod (9)", content: "Marco Sevilla — Lead Designer · Nicolas Garnier — Product Lead · Becca Aleynik — Product Manager · Andrea Bradshaw — Eng Lead · Joanne Chevalier — SWE · Austin Irvine — SWE · Adil Shaikh — SWE · Grant Jenkins — SWE · Luciano Guasco — SWE" },
+              { label: "Scope", value: "20+ shipped", content: "", groups: [
+                { heading: "Guest Ordering", items: ["Menu browsing & item customization", "Cart & checkout with room charge", "Order status tracking", "Real-time order notifications"] },
+                { heading: "Staff Dashboard", items: ["Order queue & fulfillment view", "Order detail side sheet with accept/deny", "Delivery type configuration (in-room, poolside, etc.)"] },
+                { heading: "Menu CMS", items: ["Categories, items & modifier management", "Supplemental fees & tax rules", "Multi-property menu templating"] },
+              ] },
+            ]} />
+          </div>
+        </div>
+
+        {/* Hero Image — browser mockup with dashboard screenshot */}
+        <div className="mt-16">
+          <BrowserMockup
+            src="/images/fb-ordering/fb-ordering-dashboard.png"
+            alt="F&B ordering dashboard — order detail side sheet open"
+            url="app.canarytech.net/fb-orders"
+            width={1344}
+            height={787}
+          />
+        </div>
 
         {/* Quick Stats */}
         <FadeIn>
@@ -58,11 +173,13 @@ export default function FBOrderingContent() {
 
         {/* ── Visual Gallery ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-16">
-          <SectionHeading id="gallery">The Work</SectionHeading>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <FadeIn><ImagePlaceholder description="Guest menu browsing on mobile" aspectRatio="3/4" /></FadeIn>
-            <FadeIn delay={0.1}><ImagePlaceholder description="Item detail with modifiers and special requests" aspectRatio="3/4" /></FadeIn>
-            <FadeIn><ImagePlaceholder description="Cart review and order submission" aspectRatio="3/4" /></FadeIn>
+          <SectionHeading id="gallery">Design highlights</SectionHeading>
+          {/* Mobile screens — overlapping phone frames */}
+          <FadeIn className="mt-10">
+            <MobileShowcase />
+          </FadeIn>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-10">
             <FadeIn delay={0.1}><ImagePlaceholder description="Order confirmation with ETA" aspectRatio="3/4" /></FadeIn>
             <FadeIn><ImagePlaceholder description="Staff fulfillment dashboard — new orders" aspectRatio="16/9" /></FadeIn>
             <FadeIn delay={0.1}><ImagePlaceholder description="Staff order detail with approve/deny" aspectRatio="16/9" /></FadeIn>
@@ -121,9 +238,26 @@ export default function FBOrderingContent() {
 
           <TwoCol className="mt-10">
             <TwoCol.Left>
-              <SectionHeading level={3}>Key Design Decisions</SectionHeading>
+              <SectionHeading>Design approach</SectionHeading>
             </TwoCol.Left>
           </TwoCol>
+
+          <DesignPrinciples />
+
+          {/* Roadmap evolution — between principles and decision blocks */}
+          <FadeIn className="mt-16">
+            <TwoCol>
+              <TwoCol.Left>
+                <SectionHeading level={4}>Shaping the roadmap</SectionHeading>
+                <p>
+                  We didn&apos;t build a linear roadmap and execute top-to-bottom. Research, design, and development ran in parallel &mdash; and the roadmap evolved as assumptions got tested. Features we initially planned got descoped when research revealed they weren&apos;t essential for launch. Others emerged from customer conversations we didn&apos;t expect. The final shipped scope looks nothing like the first draft.
+                </p>
+              </TwoCol.Left>
+              <TwoCol.Right>
+                <RoadmapEvolution />
+              </TwoCol.Right>
+            </TwoCol>
+          </FadeIn>
 
           {/* Decision blocks — paired: text left, image right */}
           <div className="space-y-14 mt-6">
@@ -160,13 +294,13 @@ export default function FBOrderingContent() {
                 <TwoCol.Left>
                   <SectionHeading level={4}>3. Five system objects as the IA backbone</SectionHeading>
                   <p>
-                    The design is built on five interconnected objects: Service Locations, Menus, Item Library, Modifier Sets, and Orders. This object model meant hotels manage items in one place and compose menus flexibly — pricing can be overridden per menu without duplicating items.
+                    The design is built on five interconnected objects: Ordering Outlets, Menus, Items, Modifier Groups, and Orders. This object model meant hotels manage items in one place and compose menus flexibly — pricing can be overridden per menu without duplicating items.
                   </p>
                 </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="System object relationship diagram" aspectRatio="16/9" />
-                </TwoCol.Right>
               </TwoCol>
+              <div className="mt-8">
+                <SystemArchitecture />
+              </div>
             </FadeIn>
 
             <FadeIn>

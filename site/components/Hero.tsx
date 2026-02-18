@@ -12,7 +12,7 @@ import InlineExpandButton from "./InlineExpandButton";
 import { DynamicBioText } from "./dynamic-bio";
 import TwoCol from "./TwoCol";
 
-type HeadingLine = { text: string; weight: number; font?: string };
+type HeadingLine = { text: string; weight: number; font?: string; size?: string; lineHeight?: number };
 
 function StreamingHeadingLines({
   lines,
@@ -77,8 +77,10 @@ function StreamingHeadingLines({
             style={{
               fontWeight: line.weight,
               fontFamily: line.font,
+              fontSize: line.size,
+              lineHeight: line.lineHeight,
               display: "block",
-              marginBottom: lineIdx < lines.length - 1 ? "0.5em" : undefined,
+              marginBottom: lineIdx < lines.length - 1 ? "0.75em" : undefined,
             }}
           >
             {stream

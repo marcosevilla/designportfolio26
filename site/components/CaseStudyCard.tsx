@@ -71,6 +71,19 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
         className="block w-full text-left relative overflow-hidden rounded-none bg-[var(--color-surface-raised)] shadow-[0_12px_40px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.02)] cursor-pointer"
         style={{ aspectRatio: ASPECT_RATIOS[cardSize] }}
       >
+        {/* Dotted grid paper texture */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `
+              linear-gradient(var(--color-border) 1px, transparent 1px),
+              linear-gradient(90deg, var(--color-border) 1px, transparent 1px)
+            `,
+            backgroundSize: "16px 16px",
+            opacity: 0.35,
+          }}
+        />
+
         {/* Content */}
         <div className={`relative z-10 flex flex-col h-full ${padding}`}>
           <div>
@@ -90,7 +103,7 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
               <h3
                 className="leading-tight tracking-tight"
                 style={{
-                  fontFamily: "var(--font-heading)",
+                  fontFamily: "var(--font-mono)",
                   fontWeight: 500,
                   fontSize: TITLE_SIZES[cardSize],
                   color: "var(--color-fg)",

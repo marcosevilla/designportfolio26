@@ -11,6 +11,7 @@ import ProgressBar from "@/components/case-study/ProgressBar";
 import FadeIn from "@/components/case-study/FadeIn";
 import InlineTOC from "@/components/case-study/InlineTOC";
 import SectionHeading from "@/components/case-study/SectionHeading";
+import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
 
@@ -43,12 +44,13 @@ export default function UpsellsContent() {
         <div className="max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0 pt-24 lg:pt-[18vh]">
 
         {/* Title + Subtitle */}
-        <TwoCol>
-          <TwoCol.Left>
-            <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Upsells Forms</h1>
-            <p className="mt-3 text-[var(--color-fg-secondary)]" style={typescale.subtitle}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
-          </TwoCol.Left>
-        </TwoCol>
+        <div>
+          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Upsells Forms</h1>
+          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
+        </div>
+
+        {/* Hero Image */}
+        <CaseStudyHeroImage description="Upsells — form builder and guest experience" />
 
         {/* Quick Stats */}
         <FadeIn>

@@ -10,6 +10,7 @@ import ProgressBar from "@/components/case-study/ProgressBar";
 import FadeIn from "@/components/case-study/FadeIn";
 import InlineTOC from "@/components/case-study/InlineTOC";
 import SectionHeading from "@/components/case-study/SectionHeading";
+import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
 
@@ -42,12 +43,13 @@ export default function GeneralTaskContent() {
         <InlineTOC />
         <div className="max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0 pt-24 lg:pt-[18vh]">
         {/* Title + Subtitle */}
-        <TwoCol>
-          <TwoCol.Left>
-            <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Building Productivity Software for Engineers</h1>
-            <p className="mt-3 text-[var(--color-fg-secondary)]" style={typescale.subtitle}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
-          </TwoCol.Left>
-        </TwoCol>
+        <div>
+          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Building Productivity Software for Engineers</h1>
+          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
+        </div>
+
+        {/* Hero Image */}
+        <CaseStudyHeroImage description="General Task — product overview" />
 
         {/* Quick Stats */}
         <FadeIn>

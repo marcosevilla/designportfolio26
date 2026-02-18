@@ -21,7 +21,7 @@ export default function BrowserMockup({ src, alt, url, width, height }: BrowserM
     >
       {/* Title bar */}
       <div
-        className="flex items-center gap-2 px-3.5 py-2.5"
+        className="flex items-center gap-2 px-3 py-1.5"
         style={{
           backgroundColor: "var(--color-surface, #fff)",
           borderBottom: "1px solid var(--color-border, #e6e6e6)",
@@ -29,9 +29,9 @@ export default function BrowserMockup({ src, alt, url, width, height }: BrowserM
       >
         {/* Traffic lights */}
         <div className="flex gap-1.5 shrink-0">
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#FF5F57" }} />
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#FEBC2E" }} />
-          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#28C840" }} />
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#FF5F57" }} />
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#FEBC2E" }} />
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#28C840" }} />
         </div>
 
         {/* URL bar */}
@@ -40,7 +40,7 @@ export default function BrowserMockup({ src, alt, url, width, height }: BrowserM
             className="flex-1 flex items-center justify-center mx-8"
           >
             <div
-              className="px-3 py-1 rounded-md text-center w-full max-w-[280px]"
+              className="px-3 py-0.5 rounded-md text-center w-full max-w-[280px]"
               style={{
                 backgroundColor: "var(--color-muted, #f3f3f3)",
                 fontFamily: "var(--font-mono)",
@@ -56,13 +56,13 @@ export default function BrowserMockup({ src, alt, url, width, height }: BrowserM
       </div>
 
       {/* Screenshot content */}
-      <div className="relative">
+      <div className="relative" style={{ backgroundColor: "var(--color-surface, #fff)" }}>
         <Image
           src={src}
           alt={alt}
           width={width}
           height={height}
-          style={{ display: "block", width: "100%", height: "auto" }}
+          style={{ display: "block", width: "100%", height: "auto", borderRadius: 0 }}
           quality={90}
         />
       </div>

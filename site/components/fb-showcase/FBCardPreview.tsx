@@ -1,21 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import BrowserMockup from "./BrowserMockup";
 
 export default function FBCardPreview() {
   return (
     <>
-      {/* Mesh gradient background — visible on hover */}
+      {/* Solid accent background — visible on hover */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-        style={{
-          background: `
-            radial-gradient(ellipse 120% 100% at 10% 20%, color-mix(in oklch, var(--color-accent) 30%, transparent), transparent 70%),
-            radial-gradient(ellipse 100% 120% at 90% 80%, color-mix(in oklch, var(--color-accent) 20%, #3D63DD 15%), transparent 65%),
-            radial-gradient(ellipse 80% 80% at 50% 50%, color-mix(in oklch, var(--color-accent) 15%, #F16682 10%), transparent 70%)
-          `,
-          filter: "blur(60px) saturate(1.1)",
-        }}
+        style={{ backgroundColor: "color-mix(in oklch, var(--color-accent) 12%, transparent)" }}
       />
 
       {/* Screenshot container */}
@@ -27,7 +21,7 @@ export default function FBCardPreview() {
         <div
           className="fb-preview-slider w-full h-full flex items-center justify-center"
           style={{
-            transform: "translate(30%, 40%)",
+            transform: "translate(20%, 24%)",
             transition: "transform 700ms cubic-bezier(0.22, 1, 0.36, 1)",
             padding: "0 20px",
           }}
@@ -57,13 +51,39 @@ export default function FBCardPreview() {
             </div>
           </div>
         </div>
+
+        {/* Mobile phone mock — positioned bottom-left, slides up on hover */}
+        <div
+          className="fb-phone-mock absolute"
+          style={{
+            left: "4%",
+            bottom: "-15%",
+            width: "18%",
+            transform: "translateY(0px)",
+            transition: "transform 700ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms ease",
+            opacity: 0.6,
+            zIndex: 10,
+          }}
+        >
+          <Image
+            src="/images/fb-ordering/fb-browse-menu.png"
+            alt="F&B mobile ordering — browse menu"
+            width={924}
+            height={1928}
+            style={{ width: "100%", height: "auto", display: "block" }}
+            quality={85}
+          />
+        </div>
       </div>
 
-      {/* Tailwind can't transition inline transforms via group-hover, so use a hidden checkbox trick —
-           instead, apply the hover transform via a style tag scoped to this component */}
+      {/* Tailwind can't transition inline transforms via group-hover, so use a style tag */}
       <style>{`
         .group:hover .fb-preview-slider {
-          transform: translate(4%, 30%) !important;
+          transform: translate(6%, 14%) !important;
+        }
+        .group:hover .fb-phone-mock {
+          transform: translateY(-35px) !important;
+          opacity: 1 !important;
         }
       `}</style>
     </>

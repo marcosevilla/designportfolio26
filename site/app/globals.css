@@ -121,6 +121,11 @@ body {
   background-color: var(--color-bg);
   color: var(--color-fg);
   transition: background-color 0.3s ease, color 0.3s ease;
+  background-image:
+    linear-gradient(color-mix(in oklch, var(--color-border) 15%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--color-border) 15%, transparent) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-attachment: fixed;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

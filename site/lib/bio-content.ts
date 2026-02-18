@@ -50,9 +50,8 @@ export const PROMPTS = [
 
 export const MAX_LEVEL = PARAGRAPHS.length;
 export const HEADING_LINES = [
-  { text: "MARCO SEVILLA", weight: 700 as const, font: "var(--font-mono)" },
-  { text: "I design software in San Francisco.", weight: 400 as const, font: "var(--font-body)" },
-  { text: "Currently at Canary where I simplify operational workflows for the largest hotel brands in the world.", weight: 400 as const, font: "var(--font-body)" },
+  { text: "MARCO SEVILLA", weight: 700 as const, font: "var(--font-mono)", size: "28px", lineHeight: 1.4 },
+  { text: "I design software in San Francisco. Currently at Canary where I simplify operational workflows for the largest hotel brands in the world.", weight: 400 as const, font: "var(--font-body)", size: "20px", lineHeight: 1.6 },
 ];
 export const HEADING_TEXT = HEADING_LINES.map(l => l.text).join(" ");
 export const HEADING_WORDS = HEADING_TEXT.split(" ");

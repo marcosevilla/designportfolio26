@@ -125,9 +125,23 @@ components/
 ├── StreamingText.tsx           # Character-by-character text animation
 ├── ThemePalette.tsx            # Theme customization sidebar
 ├── ThemeToggle.tsx
+├── TwoCol.tsx                  # Two-column editorial layout (shared: homepage + case studies)
+├── Icons.tsx                   # Shared icon components (Grid, List, Filter, Close)
 ├── ViewportFade.tsx            # Footer gradient overlay
 ├── InlineExpandButton.tsx
-└── FadeIn.tsx                  # Scroll-triggered fade animation (global)
+├── FadeIn.tsx                  # Scroll-triggered fade animation (global)
+└── fb-showcase/                # F&B interactive components
+    ├── BrowserMockup.tsx       # Browser chrome frame (traffic lights + URL bar)
+    ├── FBCardPreview.tsx       # Card hover: crossfade screenshots + mesh gradient + phone mock
+    ├── MobileShowcase.tsx      # 4 overlapping phone mocks (landing, menu, detail, cart)
+    ├── RoadmapEvolution.tsx    # Vertical animated timeline (16 nodes, SVG arrows, hover popovers)
+    ├── SystemArchitecture.tsx  # System architecture diagram
+    └── DesignPrinciples.tsx    # Design approach principles
+
+lib/
+├── springs.ts                  # Shared spring configs (SPRING_HEAVY, SPRING_SNAP)
+├── study-tags.ts               # Tag filtering logic for case study list
+└── typography.ts               # Typescale tokens
 
 content/                        # MDX case study metadata
 ├── fb-ordering.mdx
@@ -142,6 +156,8 @@ public/images/
 ├── general-task/               # General Task images
 ├── design-system/              # Design System images
 └── fb-ordering/
+    ├── fb-ordering-table.png   # Dashboard table view (default state)
+    └── fb-ordering-dashboard.png # Dashboard with side sheet (hover state)
 ```
 
 ## Case Studies
@@ -255,6 +271,7 @@ All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by 
 | PP Formula | 800 | No |
 | GT Cinetype | 300, 400, 700 | No |
 | GT Cinetype Mono | 400 | No |
+| Departure Mono | 400 | No |
 
 External fonts via `next/font` in `layout.tsx`: Geist Sans, Geist Pixel Square, Instrument Serif, Instrument Sans.
 
@@ -264,7 +281,7 @@ External fonts via `next/font` in `layout.tsx`: Geist Sans, Geist Pixel Square, 
 | `--font-display` | `Geist Sans, system-ui, sans-serif` |
 | `--font-heading` | `Geist Sans, system-ui, sans-serif` |
 | `--font-body` | `Geist Sans, system-ui, sans-serif` |
-| `--font-mono` | `"GT Cinetype Mono", monospace` |
+| `--font-mono` | `"Departure Mono", monospace` |
 | `--font-heading-style` | `normal` |
 | `--font-size-offset` | `0px` (user adjustable -4px to +4px) |
 | `--font-pairing-boost` | `0px` (per-pairing, e.g. Instrument Serif +2px) |
@@ -314,13 +331,13 @@ All scalable sizes use `calc(Npx + var(--font-size-offset) + var(--font-pairing-
 - **Border glow:** Mouse-tracking radial gradient, 200px radius, 70% falloff, `var(--color-accent)`, CSS mask-composite
 - **Inner glow:** 5% opacity radial accent gradient at cursor position
 - **No parallax** — simple scroll, no framer-motion transforms
-- **Background:** `var(--color-surface-raised)` at 40% opacity + `backdrop-blur-xl`
+- **Background:** `var(--color-surface-raised)` (opaque)
 - **Edges:** Sharp (`rounded-none`), 20px padding (`p-5`)
 - **Year labels:** 11px mono, `--color-fg-tertiary`, inside card above title (showYear prop)
 
 ### Card/List View Toggle (CaseStudyList)
 - **Two views:** Card (default) and List, toggled via icon buttons on "Work" header row
-- **Toggle buttons:** ViewToggleButton with spring hover (x: 4px, stiffness 400/25) + accent color. Active = accent, inactive = fg-secondary.
+- **Toggle buttons:** ViewToggleButton with instant hover color (accent on hover). Active = accent, inactive = fg-secondary.
 - **Transition:** AnimatePresence mode="wait", blur 4px + opacity fade, 200ms easeInOut
 - **Persistence:** localStorage key `work-view-mode`, SSR-safe (hydrated flag)
 - **FadeIn:** Only on initial page load; after first toggle, `hasToggled` ref skips FadeIn
@@ -379,24 +396,21 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** Two-column editorial layout for all case studies, F&B content improvements, typography refinements
+- **Last worked on:** F&B case study — Roadmap Evolution v2 (vertical timeline), mobile phone mocks, card preview polish
 - **Completed this session:**
-  - Two-column editorial layout (`TwoCol` component) — created and rolled out to all 6 case studies
-  - F&B Ordering: new "From static content to revenue engine" Context section (5 paragraphs on APAC expansion, competitive losses, Guest Hub transformation, platform bet, scoping discipline)
-  - F&B Ordering: trimmed redundant paragraph from Problem section
-  - F&B Ordering: Gallery ("The Work") moved from bottom to after QuickStats
-  - F&B Ordering: subtitle rewritten to first-person with CMS + staff dashboard scope
-  - Body text changed to 14px/22px (was 16px/28px) — affects all case studies globally via typescale token
-  - Subtitle changed to 14px/22px — affects all case studies globally via typescale token
-  - Design system consolidation: `SectionHeading` component, shared `typescale.label`, `springs.ts`, unified Icons
-- **In progress:** P0-1 (images) blocked on Figma export.
-- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Git push requires PAT token (local credential marco-sevilla ≠ repo owner marcosevilla).
+  - Roadmap Evolution v2: complete rewrite from horizontal chip-reorder to vertical animated timeline with 16 chronological nodes, SVG dashed arrows drawing between them, 2 pivot/fork moments (side-by-side old→new), phase labels (RESEARCH/DESIGN/DEVELOPMENT/PIVOT/FUTURE), hover-pause with description popovers, ~14.2s looping animation, ref-based timer engine
+  - Roadmap moved into `TwoCol.Right` (was full-width below)
+  - Mobile phone mocks: replaced 3 mocks with 4 new Figma downloads (landing page, browse menu, item detail, cart review), overlapping horizontal layout (12% overlap), labels with 3.5% left offset to align with phone edges
+  - F&B card preview phone mock: added "browse menu" phone image to homepage F&B card, positioned bottom-left, slides up on hover overlapping desktop mock
+  - Polished F&B card default/hover positions: desktop `translate(20%, 24%)` → `translate(6%, 14%)`, phone at `left:4% bottom:-15% width:18% opacity:0.6` → `translateY(-35px) opacity:1`
+- **In progress:** F&B card preview positioning still being tuned (user reviewing latest values)
+- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Git push requires auth from user's terminal. Next.js image quality warnings (quality 90 not in configured qualities).
 - **Files modified this session:**
-  - `site/components/case-study/TwoCol.tsx` (NEW) — two-column editorial layout compound component
-  - `site/app/work/fb-ordering/FBOrderingContent.tsx` — major rewrite: TwoCol layout, Context section, Gallery repositioned, subtitle rewritten
-  - `site/app/work/compendium/CompendiumContent.tsx` — TwoCol layout applied
-  - `site/app/work/upsells/UpsellsContent.tsx` — TwoCol layout applied
-  - `site/app/work/checkin/CheckinContent.tsx` — TwoCol layout applied
-  - `site/app/work/general-task/GeneralTaskContent.tsx` — TwoCol layout applied
-  - `site/app/work/design-system/DesignSystemContent.tsx` — TwoCol layout applied
-  - `site/lib/typography.ts` — body 14px/22px, subtitle 14px/22px, display 28px mono
+  - `site/components/fb-showcase/RoadmapEvolution.tsx` — complete rewrite (vertical timeline v2)
+  - `site/components/fb-showcase/FBCardPreview.tsx` — added phone mock, polished default/hover positions
+  - `site/components/fb-showcase/MobileShowcase.tsx` — 4 phones, overlap layout, label alignment
+  - `site/app/work/fb-ordering/FBOrderingContent.tsx` — roadmap into TwoCol.Right, spacing for mobile mocks
+  - `site/public/images/fb-ordering/fb-landing-page.png` (NEW)
+  - `site/public/images/fb-ordering/fb-browse-menu.png` (RE-DOWNLOADED)
+  - `site/public/images/fb-ordering/fb-item-detail.png` (RE-DOWNLOADED)
+  - `site/public/images/fb-ordering/fb-cart-review.png` (RE-DOWNLOADED)
