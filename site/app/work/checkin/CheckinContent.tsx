@@ -1,7 +1,7 @@
 "use client";
 
 import QuickStats from "@/components/case-study/QuickStats";
-import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
+
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import SidebarTOCBridge from "@/components/case-study/SidebarTOCBridge";
 import TOCObserver from "@/components/case-study/TOCObserver";
@@ -96,9 +96,10 @@ export default function CheckinContent() {
             </TwoCol>
 
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Hotel staff-facing dashboard design with guest ID photo for easy recognition"
-                aspectRatio="16/9"
+              <img
+                src="/images/checkin/dashboard.png"
+                alt="Hotel staff-facing dashboard design with guest ID photo for easy recognition"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 
@@ -111,9 +112,10 @@ export default function CheckinContent() {
             </TwoCol>
 
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Guest check-in details with ID and payment card side-by-side comparison"
-                aspectRatio="16/9"
+              <img
+                src="/images/checkin/details.png"
+                alt="Guest check-in details with ID and payment card side-by-side comparison"
+                className="w-full rounded-lg"
               />
             </FadeIn>
           </ExpandableSection>
@@ -131,9 +133,10 @@ export default function CheckinContent() {
             </TwoCol>
 
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Mobile interface — digital directory with amenities, policies, and dining options"
-                aspectRatio="9/16"
+              <img
+                src="/images/checkin/compendium-mobile.png"
+                alt="Mobile interface — digital directory with amenities, policies, and dining options"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 
@@ -146,9 +149,10 @@ export default function CheckinContent() {
             </TwoCol>
 
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Content management system (CMS) for hotel staff to customize their compendium"
-                aspectRatio="16/9"
+              <img
+                src="/images/checkin/compendium-cms.png"
+                alt="Content management system (CMS) for hotel staff to customize their compendium"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 

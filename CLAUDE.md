@@ -52,6 +52,11 @@ Reference docs live in `docs/`. Read the relevant ones based on the task — don
 ## Case Studies (Markdown Drafts)
 Written case study content lives in `case-studies/`. Each `.md` file contains the narrative draft for a case study. Read the relevant one when working on a specific case study page.
 
+## Obsidian Vault Boundary
+Case study critiques and career strategy context live in Obsidian — **do not duplicate here.**
+- **Vault:** `~/Documents/marcowits/Canary/portfolio/critiques/` — per-study design critiques (reflective)
+- Read critiques for context when refining case study content, but don't copy them into this project.
+
 ## Project Overview
 A Next.js 14 portfolio site for a product designer, featuring case studies with rich interactive components.
 
@@ -396,21 +401,14 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** F&B case study — Roadmap Evolution v2 (vertical timeline), mobile phone mocks, card preview polish
+- **Last worked on:** Infrastructure — fixed Vercel deploy blocker, set up SSH for git push
 - **Completed this session:**
-  - Roadmap Evolution v2: complete rewrite from horizontal chip-reorder to vertical animated timeline with 16 chronological nodes, SVG dashed arrows drawing between them, 2 pivot/fork moments (side-by-side old→new), phase labels (RESEARCH/DESIGN/DEVELOPMENT/PIVOT/FUTURE), hover-pause with description popovers, ~14.2s looping animation, ref-based timer engine
-  - Roadmap moved into `TwoCol.Right` (was full-width below)
-  - Mobile phone mocks: replaced 3 mocks with 4 new Figma downloads (landing page, browse menu, item detail, cart review), overlapping horizontal layout (12% overlap), labels with 3.5% left offset to align with phone edges
-  - F&B card preview phone mock: added "browse menu" phone image to homepage F&B card, positioned bottom-left, slides up on hover overlapping desktop mock
-  - Polished F&B card default/hover positions: desktop `translate(20%, 24%)` → `translate(6%, 14%)`, phone at `left:4% bottom:-15% width:18% opacity:0.6` → `translateY(-35px) opacity:1`
-- **In progress:** F&B card preview positioning still being tuned (user reviewing latest values)
-- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Git push requires auth from user's terminal. Next.js image quality warnings (quality 90 not in configured qualities).
+  - Updated `next-mdx-remote` from v5.0.0 → v6.0.0 to fix CVE-2026-0969 (Vercel was blocking deploys)
+  - Set up SSH key auth for GitHub (replaced broken HTTPS credential helper)
+  - Remote URL switched to `git@github.com:marcosevilla/designportfolio26.git`
+  - Homebrew installation guided (user installing separately)
+- **In progress:** Nothing — clean state
+- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Next.js image quality warnings (quality 90 not in configured qualities).
 - **Files modified this session:**
-  - `site/components/fb-showcase/RoadmapEvolution.tsx` — complete rewrite (vertical timeline v2)
-  - `site/components/fb-showcase/FBCardPreview.tsx` — added phone mock, polished default/hover positions
-  - `site/components/fb-showcase/MobileShowcase.tsx` — 4 phones, overlap layout, label alignment
-  - `site/app/work/fb-ordering/FBOrderingContent.tsx` — roadmap into TwoCol.Right, spacing for mobile mocks
-  - `site/public/images/fb-ordering/fb-landing-page.png` (NEW)
-  - `site/public/images/fb-ordering/fb-browse-menu.png` (RE-DOWNLOADED)
-  - `site/public/images/fb-ordering/fb-item-detail.png` (RE-DOWNLOADED)
-  - `site/public/images/fb-ordering/fb-cart-review.png` (RE-DOWNLOADED)
+  - `site/package.json` — bumped next-mdx-remote to ^6.0.0
+  - `site/package-lock.json` — updated lockfile

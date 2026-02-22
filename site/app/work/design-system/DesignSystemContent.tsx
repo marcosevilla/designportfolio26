@@ -1,7 +1,7 @@
 "use client";
 
 import QuickStats from "@/components/case-study/QuickStats";
-import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
+
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import SidebarTOCBridge from "@/components/case-study/SidebarTOCBridge";
 import TOCObserver from "@/components/case-study/TOCObserver";
@@ -131,9 +131,10 @@ export default function DesignSystemContent() {
           </TwoCol>
 
           <FadeIn className="my-8">
-            <ImagePlaceholder
-              description="General Task's revamped design system overview"
-              aspectRatio="16/9"
+            <img
+              src="/images/design-system/design-system.png"
+              alt="General Task's revamped design system overview"
+              className="w-full rounded-lg"
             />
           </FadeIn>
 
@@ -179,9 +180,10 @@ export default function DesignSystemContent() {
           </TwoCol>
 
           <FadeIn className="my-8">
-            <ImagePlaceholder
-              description="Typography scale and type styles"
-              aspectRatio="16/9"
+            <img
+              src="/images/design-system/typography.png"
+              alt="Typography scale and type styles"
+              className="w-full rounded-lg"
             />
           </FadeIn>
 
@@ -217,9 +219,10 @@ export default function DesignSystemContent() {
           </TwoCol>
 
           <FadeIn className="my-8">
-            <ImagePlaceholder
-              description="Component library showcase"
-              aspectRatio="16/9"
+            <img
+              src="/images/design-system/components.png"
+              alt="Component library showcase"
+              className="w-full rounded-lg"
             />
           </FadeIn>
 
@@ -247,9 +250,10 @@ export default function DesignSystemContent() {
           </TwoCol>
 
           <FadeIn className="my-8">
-            <ImagePlaceholder
-              description="Task items redesigned for current and future integrations"
-              aspectRatio="16/9"
+            <img
+              src="/images/design-system/task-items.png"
+              alt="Task items redesigned for current and future integrations"
+              className="w-full rounded-lg"
             />
           </FadeIn>
 
@@ -275,16 +279,18 @@ export default function DesignSystemContent() {
           </TwoCol>
 
           <FadeIn className="my-8">
-            <ImagePlaceholder
-              description="Figma design document and documentation structure"
-              aspectRatio="16/9"
+            <img
+              src="/images/design-system/figma-doc.png"
+              alt="Figma design document and documentation structure"
+              className="w-full rounded-lg"
             />
           </FadeIn>
 
           <FadeIn className="my-8">
-            <ImagePlaceholder
-              description="Design tokens documentation"
-              aspectRatio="16/9"
+            <img
+              src="/images/design-system/tokens.png"
+              alt="Design tokens documentation"
+              className="w-full rounded-lg"
             />
           </FadeIn>
         </ExpandableSection>
@@ -341,9 +347,10 @@ export default function DesignSystemContent() {
           </TwoCol>
 
           <FadeIn className="my-8">
-            <ImagePlaceholder
-              description="Design library audit findings"
-              aspectRatio="16/9"
+            <img
+              src="/images/design-system/audit.png"
+              alt="Design library audit findings"
+              className="w-full rounded-lg"
             />
           </FadeIn>
 

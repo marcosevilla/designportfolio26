@@ -181,8 +181,8 @@ export default function FBOrderingContent() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-10">
             <FadeIn delay={0.1}><ImagePlaceholder description="Order confirmation with ETA" aspectRatio="3/4" /></FadeIn>
-            <FadeIn><ImagePlaceholder description="Staff fulfillment dashboard — new orders" aspectRatio="16/9" /></FadeIn>
-            <FadeIn delay={0.1}><ImagePlaceholder description="Staff order detail with approve/deny" aspectRatio="16/9" /></FadeIn>
+            <FadeIn><img src="/images/fb-ordering/fb-ordering-table.png" alt="Staff fulfillment dashboard — new orders" className="w-full rounded-lg" /></FadeIn>
+            <FadeIn delay={0.1}><img src="/images/fb-ordering/fb-ordering-dashboard.png" alt="Staff order detail with approve/deny" className="w-full rounded-lg" /></FadeIn>
             <FadeIn><ImagePlaceholder description="Hotel admin — delivery type setup" aspectRatio="16/9" /></FadeIn>
             <FadeIn delay={0.1}><ImagePlaceholder description="Supplemental fees and taxes configuration" aspectRatio="16/9" /></FadeIn>
           </div>
@@ -270,7 +270,7 @@ export default function FBOrderingContent() {
                   </p>
                 </TwoCol.Left>
                 <TwoCol.Right>
-                  <ImagePlaceholder description="Menu landing screen" aspectRatio="3/2" />
+                  <img src="/images/fb-ordering/fb-landing-page.png" alt="Menu landing screen" className="w-full rounded-lg" />
                 </TwoCol.Right>
               </TwoCol>
             </FadeIn>

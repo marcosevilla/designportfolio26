@@ -1,7 +1,7 @@
 "use client";
 
 import QuickStats from "@/components/case-study/QuickStats";
-import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
+
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import SidebarTOCBridge from "@/components/case-study/SidebarTOCBridge";
 import TOCObserver from "@/components/case-study/TOCObserver";
@@ -144,9 +144,10 @@ export default function GeneralTaskContent() {
             </TwoCol>
 
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="User research synthesis and key insights"
-                aspectRatio="16/9"
+              <img
+                src="/images/general-task/research.png"
+                alt="User research synthesis and key insights"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 
@@ -188,9 +189,10 @@ export default function GeneralTaskContent() {
               </TwoCol.Left>
             </TwoCol>
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Early paper sketches exploring layout options"
-                aspectRatio="16/9"
+              <img
+                src="/images/general-task/sketches.png"
+                alt="Early paper sketches exploring layout options"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 
@@ -203,9 +205,10 @@ export default function GeneralTaskContent() {
               </TwoCol.Left>
             </TwoCol>
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Wireframes showing folder card components and states"
-                aspectRatio="16/9"
+              <img
+                src="/images/general-task/wireframes-folders.png"
+                alt="Wireframes showing folder card components and states"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 
@@ -221,9 +224,10 @@ export default function GeneralTaskContent() {
               </TwoCol.Left>
             </TwoCol>
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Wireframe evolution from grid to two-column layout"
-                aspectRatio="16/9"
+              <img
+                src="/images/general-task/wireframes-home.png"
+                alt="Wireframe evolution from grid to two-column layout"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 
@@ -236,9 +240,10 @@ export default function GeneralTaskContent() {
               </TwoCol.Left>
             </TwoCol>
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="High fidelity visual design explorations"
-                aspectRatio="16/9"
+              <img
+                src="/images/general-task/visual-design.png"
+                alt="High fidelity visual design explorations"
+                className="w-full rounded-lg"
               />
             </FadeIn>
 
@@ -251,15 +256,17 @@ export default function GeneralTaskContent() {
               </TwoCol.Left>
             </TwoCol>
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Final design — General Task home page"
-                aspectRatio="16/9"
+              <img
+                src="/images/general-task/final-designs.png"
+                alt="Final design — General Task home page"
+                className="w-full rounded-lg"
               />
             </FadeIn>
             <FadeIn className="my-8">
-              <ImagePlaceholder
-                description="Final design — Task detail view"
-                aspectRatio="16/9"
+              <img
+                src="/images/general-task/final-designs-2.png"
+                alt="Final design — Task detail view"
+                className="w-full rounded-lg"
               />
             </FadeIn>
           </ExpandableSection>
