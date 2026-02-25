@@ -1,11 +1,43 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import type { CaseStudyMeta } from "@/lib/types";
 import FBCardPreview from "./fb-showcase/FBCardPreview";
 
 export type CardSize = "hero" | "large" | "medium" | "standard" | "wide";
+
+export interface PreviewDialParams {
+  dashX: number; dashY: number;
+  dashHoverX: number; dashHoverY: number;
+  dashTransitionMs: number; dashPadding: number;
+  phoneLeft: number; phoneBottom: number; phoneWidth: number;
+  phoneHoverY: number; phoneOpacity: number; phoneHoverOpacity: number;
+  tintStrength: number; crossfadeMs: number;
+}
+
+export interface CardDialParams {
+  default: { opacity: number; scale: number; borderRadius: number; padding: number };
+  hover: { scale: number; opacity: number; transitionMs: number };
+  shadow: { offsetY: number; blur: number; opacity: number };
+  hoverShadow: { offsetY: number; blur: number; opacity: number };
+  glow: { radius: number; borderOpacity: number; innerOpacity: number; falloff: number };
+  gridOpacity: number;
+  gridSize: number;
+  borderOpacity: number;
+  preview?: PreviewDialParams;
+}
+
+const DEFAULT_PARAMS: CardDialParams = {
+  default: { opacity: 1, scale: 1, borderRadius: 0, padding: 20 },
+  hover: { scale: 1.01, opacity: 1, transitionMs: 700 },
+  shadow: { offsetY: 8, blur: 13, opacity: 0.01 },
+  hoverShadow: { offsetY: 11, blur: 19, opacity: 0.08 },
+  glow: { radius: 250, borderOpacity: 1, innerOpacity: 0.1, falloff: 70 },
+  gridOpacity: 0.4,
+  gridSize: 14,
+  borderOpacity: 0.54,
+};
 
 const ASPECT_RATIOS: Record<CardSize, string> = {
   hero: "16 / 9",
@@ -35,10 +67,13 @@ interface CaseStudyCardProps {
   study: CaseStudyMeta;
   cardSize?: CardSize;
   showYear?: boolean;
+  dialParams?: CardDialParams;
 }
 
-export default function CaseStudyCard({ study, cardSize = "standard", showYear = false }: CaseStudyCardProps) {
+export default function CaseStudyCard({ study, cardSize = "standard", showYear = false, dialParams }: CaseStudyCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const p = dialParams ?? DEFAULT_PARAMS;
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const el = cardRef.current;
@@ -48,28 +83,54 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
     el.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
   }, []);
 
-  const padding = "p-5";
-
   const handleMouseEnter = useCallback(() => {
-    cardRef.current?.classList.add("bento-card--hover");
+    setIsHovered(true);
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    cardRef.current?.classList.remove("bento-card--hover");
+    setIsHovered(false);
   }, []);
+
+  // When using dials, drive everything inline; otherwise use CSS classes
+  const useDials = !!dialParams;
+  const currentScale = isHovered ? p.hover.scale : p.default.scale;
+  const currentOpacity = isHovered ? p.hover.opacity : p.default.opacity;
+  const currentShadow = isHovered
+    ? `0 ${p.hoverShadow.offsetY}px ${p.hoverShadow.blur}px rgba(0,0,0,${p.hoverShadow.opacity})`
+    : `0 ${p.shadow.offsetY}px ${p.shadow.blur}px rgba(0,0,0,${p.shadow.opacity})`;
 
   return (
     <div
       ref={cardRef}
-      className="bento-card relative group"
+      className={`relative group ${useDials ? "" : "bento-card"}`}
       onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={(e) => {
+        handleMouseEnter();
+        if (!useDials) cardRef.current?.classList.add("bento-card--hover");
+        handleMouseMove(e as unknown as React.MouseEvent);
+      }}
+      onMouseLeave={() => {
+        handleMouseLeave();
+        if (!useDials) cardRef.current?.classList.remove("bento-card--hover");
+      }}
+      style={useDials ? {
+        transform: `scale(${currentScale})`,
+        opacity: currentOpacity,
+        transition: `transform ${p.hover.transitionMs}ms cubic-bezier(0.22, 1, 0.36, 1), opacity ${p.hover.transitionMs}ms ease, box-shadow ${p.hover.transitionMs}ms ease`,
+        willChange: "transform",
+      } : undefined}
     >
       <Link
         href={`/work/${study.slug}`}
-        className="block w-full text-left relative overflow-hidden rounded-none bg-[var(--color-surface-raised)] shadow-[0_12px_40px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.02)] cursor-pointer"
-        style={{ aspectRatio: ASPECT_RATIOS[cardSize] }}
+        className={`block w-full text-left relative overflow-hidden cursor-pointer ${useDials ? "" : "rounded-none bg-[var(--color-surface-raised)] shadow-[0_12px_40px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.02)]"}`}
+        style={{
+          aspectRatio: ASPECT_RATIOS[cardSize],
+          ...(useDials ? {
+            backgroundColor: "var(--color-surface-raised)",
+            boxShadow: currentShadow,
+            borderRadius: `${p.default.borderRadius}px`,
+          } : {}),
+        }}
       >
         {/* Dotted grid paper texture */}
         <div
@@ -79,13 +140,17 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
               linear-gradient(var(--color-border) 1px, transparent 1px),
               linear-gradient(90deg, var(--color-border) 1px, transparent 1px)
             `,
-            backgroundSize: "16px 16px",
-            opacity: 0.35,
+            backgroundSize: useDials ? `${p.gridSize}px ${p.gridSize}px` : "16px 16px",
+            opacity: useDials ? p.gridOpacity : 0.35,
+            borderRadius: useDials ? `${p.default.borderRadius}px` : undefined,
           }}
         />
 
         {/* Content */}
-        <div className={`relative z-10 flex flex-col h-full ${padding}`}>
+        <div
+          className="relative z-10 flex flex-col h-full"
+          style={{ padding: useDials ? `${p.default.padding}px` : "20px" }}
+        >
           <div>
               {showYear && (
                 <span
@@ -129,35 +194,39 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
         </div>
 
         {/* F&B dashboard screenshot */}
-        {study.slug === "fb-ordering" && <FBCardPreview />}
+        {study.slug === "fb-ordering" && <FBCardPreview previewDials={p.preview} />}
 
         {/* Default border — always visible */}
         <div
-          className="absolute inset-0 rounded-none pointer-events-none"
+          className="absolute inset-0 pointer-events-none"
           style={{
             border: "1px solid var(--color-border)",
-            opacity: 0.5,
+            opacity: useDials ? p.borderOpacity : 0.5,
+            borderRadius: useDials ? `${p.default.borderRadius}px` : "0px",
           }}
         />
 
         {/* Mouse-tracking accent border glow (desktop only) */}
         <div
-          className="absolute inset-0 rounded-none pointer-events-none hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className="absolute inset-0 pointer-events-none hidden sm:block transition-opacity duration-200"
           style={{
-            background: "radial-gradient(200px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), var(--color-accent), transparent 70%)",
+            background: `radial-gradient(${useDials ? p.glow.radius : 200}px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), var(--color-accent), transparent ${useDials ? p.glow.falloff : 70}%)`,
             mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
             maskComposite: "exclude",
             WebkitMaskComposite: "xor" as any,
             padding: "1px",
-            borderRadius: "0px",
+            borderRadius: useDials ? `${p.default.borderRadius}px` : "0px",
+            opacity: isHovered ? (useDials ? p.glow.borderOpacity : 1) : 0,
           }}
         />
 
         {/* Mouse-tracking inner glow (desktop only) */}
         <div
-          className="absolute inset-0 rounded-none pointer-events-none hidden sm:block opacity-0 group-hover:opacity-[0.05] transition-opacity duration-200"
+          className="absolute inset-0 pointer-events-none hidden sm:block transition-opacity duration-200"
           style={{
-            background: "radial-gradient(200px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), var(--color-accent), transparent 70%)",
+            background: `radial-gradient(${useDials ? p.glow.radius : 200}px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), var(--color-accent), transparent ${useDials ? p.glow.falloff : 70}%)`,
+            borderRadius: useDials ? `${p.default.borderRadius}px` : "0px",
+            opacity: isHovered ? (useDials ? p.glow.innerOpacity : 0.05) : 0,
           }}
         />
       </Link>

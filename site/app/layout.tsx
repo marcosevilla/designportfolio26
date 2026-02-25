@@ -13,6 +13,8 @@ import FloatingToolbar from "@/components/dev/FloatingToolbar";
 import EditableOverlay from "@/components/dev/EditableOverlay";
 import SectionReorder from "@/components/dev/SectionReorder";
 import { Agentation } from "agentation";
+import { DialRoot } from "dialkit";
+import "dialkit/styles.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -71,7 +73,10 @@ export default function RootLayout({
               <StickyFooter />
               <ViewportFade />
               {process.env.NODE_ENV === "development" && (
-                <Agentation />
+                <>
+                  <Agentation />
+                  <DialRoot position="top-right" />
+                </>
               )}
             </SidebarProvider>
           </MarqueeProvider>
