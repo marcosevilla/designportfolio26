@@ -71,7 +71,7 @@ A Next.js 14 portfolio site for a product designer, featuring case studies with 
 
 ```
 app/
-├── page.tsx                    # Homepage with case study grid
+├── page.tsx                    # Homepage (conditionally renders Teaser or full site)
 ├── work/
 │   ├── [slug]/                 # Dynamic route for MDX-based case studies
 │   │   ├── page.tsx
@@ -134,6 +134,7 @@ components/
 ├── Icons.tsx                   # Shared icon components (Grid, List, Filter, Close)
 ├── ViewportFade.tsx            # Footer gradient overlay
 ├── InlineExpandButton.tsx
+├── Teaser.tsx                  # Coming-soon page with @paper-design/shaders-react Dithering + DialKit controls
 ├── FadeIn.tsx                  # Scroll-triggered fade animation (global)
 └── fb-showcase/                # F&B interactive components
     ├── BrowserMockup.tsx       # Browser chrome frame (traffic lights + URL bar)
@@ -391,7 +392,7 @@ npm run dev      # Starts on localhost:3000 with 0.0.0.0 binding for mobile prev
 ```
 
 ## Image Strategy
-Images are downloaded to `public/images/[case-study]/` but currently use `ImagePlaceholder` components. To use real images, replace placeholders with Next.js `Image` components.
+Images are in `public/images/[case-study]/`. Check-in, Design System, and General Task are fully wired up (no placeholders). F&B has 10 remaining, Compendium 15, Upsells 17 — all need Figma exports.
 
 ## Session End
 Before ending any session:
@@ -401,14 +402,20 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** Infrastructure — fixed Vercel deploy blocker, set up SSH for git push
+- **Last worked on:** Teaser page with Paper shader + Paper MCP design import
 - **Completed this session:**
-  - Updated `next-mdx-remote` from v5.0.0 → v6.0.0 to fix CVE-2026-0969 (Vercel was blocking deploys)
-  - Set up SSH key auth for GitHub (replaced broken HTTPS credential helper)
-  - Remote URL switched to `git@github.com:marcosevilla/designportfolio26.git`
-  - Homebrew installation guided (user installing separately)
-- **In progress:** Nothing — clean state
-- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). Next.js image quality warnings (quality 90 not in configured qualities).
+  - Built teaser/coming-soon page with `@paper-design/shaders-react` Dithering shader (copper warp effect, full viewport)
+  - Added comprehensive DialKit controls (20 sliders): shader params, HSL color for front/back/bg, typography sizing/tracking/opacity, layout spacing/offset, icon size/opacity
+  - Gated homepage with `NEXT_PUBLIC_TEASER_MODE=true` env var in `.env.local` — flip to `false` to reveal full portfolio
+  - Imported portfolio project cards into Paper MCP (6 cards in bento grid layout)
+  - Started F&B case study import into Paper (title section built, browser mockup pending)
+- **In progress:**
+  - F&B case study Paper import — only title section done, rest of page not yet built
+  - 42 ImagePlaceholders remain (F&B 10, Compendium 15, Upsells 17) — all need Figma exports
+  - Teaser page needs tuning — user hasn't finalized dial values yet
+- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). 2 commits unpushed to origin. Uncommitted teaser changes on working tree.
 - **Files modified this session:**
-  - `site/package.json` — bumped next-mdx-remote to ^6.0.0
-  - `site/package-lock.json` — updated lockfile
+  - `site/components/Teaser.tsx` — new: full-viewport dither shader teaser with DialKit controls
+  - `site/app/page.tsx` — conditional rendering: Teaser or full homepage based on env var
+  - `site/.env.local` — new: `NEXT_PUBLIC_TEASER_MODE=true`
+  - `site/package.json` — added `@paper-design/shaders-react` dependency
