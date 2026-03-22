@@ -5,6 +5,7 @@ export const STUDY_TAGS: Record<string, string[]> = {
   "checkin": ["Enterprise", "Mobile", "Desktop", "Revenue Impact", "Workflow", "Design Systems"],
   "general-task": ["0→1", "Desktop", "Founding Designer"],
   "design-system": ["0→1", "Desktop", "Design Systems", "Founding Designer"],
+  "ai-workflow": ["AI", "Workflow", "Desktop"],
 };
 
 /** All unique tags, sorted alphabetically. */

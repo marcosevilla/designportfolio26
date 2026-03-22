@@ -7,7 +7,7 @@ interface Props {
 }
 
 // These case studies have dedicated routes with custom React components
-const DEDICATED_ROUTES = new Set(["fb-ordering", "compendium", "upsells", "checkin", "general-task", "design-system"]);
+const DEDICATED_ROUTES = new Set(["fb-ordering", "compendium", "upsells", "checkin", "general-task", "design-system", "ai-workflow"]);
 
 // Disable dynamic params since all current case studies have dedicated routes
 export const dynamicParams = false;
