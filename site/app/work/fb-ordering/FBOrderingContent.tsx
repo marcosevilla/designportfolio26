@@ -144,7 +144,7 @@ export default function FBOrderingContent() {
           <div className="mt-6 lg:mt-[52px] overflow-hidden">
             <ProjectDetails rows={[
               { label: "Company", value: "Canary Technologies", content: "Hotel software platform serving 20,000+ properties worldwide." },
-              { label: "Timeline", value: "Oct 2024 – Feb 2025", content: "Designed and shipped in a 4-day sprint, iterated over 4 months." },
+              { label: "Timeline", value: "Aug 2025 – Feb 2026", content: "Research to GA launch. Core ordering flow designed in a 4-day sprint, iterated over 6 months." },
               { label: "Team", value: "In-stay pod (9)", content: "Marco Sevilla — Lead Designer · Nicolas Garnier — Product Lead · Becca Aleynik — Product Manager · Andrea Bradshaw — Eng Lead · Joanne Chevalier — SWE · Austin Irvine — SWE · Adil Shaikh — SWE · Grant Jenkins — SWE · Luciano Guasco — SWE" },
               { label: "Scope", value: "20+ shipped", content: "", groups: [
                 { heading: "Guest Ordering", items: ["Menu browsing & item customization", "Cart & checkout with room charge", "Order status tracking", "Real-time order notifications"] },

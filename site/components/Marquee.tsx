@@ -67,6 +67,8 @@ export default function Marquee() {
         <motion.div
           key="marquee"
           className="fixed top-0 left-0 w-screen z-50 overflow-hidden"
+          role="marquee"
+          aria-label="Testimonials from colleagues"
           style={{
             backgroundColor: "var(--color-surface)",
             borderBottom: "1px solid var(--color-border)",

@@ -3,6 +3,8 @@ import WorkContent from "./WorkContent";
 
 export const metadata = {
   title: "Work — Marco Sevilla",
+  description:
+    "Case studies in hospitality technology, productivity tools, and design systems. Product design work from Canary Technologies and General Task.",
 };
 
 export default function WorkPage() {

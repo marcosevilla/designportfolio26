@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "Upsells Forms — Marco Sevilla",
   description:
     "A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.",
+  openGraph: {
+    title: "Upsells Forms — Marco Sevilla",
+    description:
+      "A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.",
+  },
 };
 
 export default function UpsellsPage() {

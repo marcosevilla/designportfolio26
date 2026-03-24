@@ -20,12 +20,29 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Marco Sevilla — Product Designer",
   description:
-    "Product Designer crafting revenue-driving experiences in hospitality technology.",
+    "Product Designer crafting revenue-driving experiences in hospitality technology. Currently at Canary Technologies, designing platforms for Marriott, Wyndham, Best Western, and IHG.",
+  metadataBase: new URL("https://marcosevilla.com"),
   openGraph: {
     title: "Marco Sevilla — Product Designer",
     description:
-      "Product Designer crafting revenue-driving experiences in hospitality technology.",
+      "Product Designer crafting revenue-driving experiences in hospitality technology. Currently at Canary Technologies, designing platforms for Marriott, Wyndham, Best Western, and IHG.",
+    url: "https://marcosevilla.com",
+    siteName: "Marco Sevilla",
     type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Marco Sevilla — Product Designer",
+    description:
+      "Product Designer crafting revenue-driving experiences in hospitality technology.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "https://marcosevilla.com",
   },
 };
 

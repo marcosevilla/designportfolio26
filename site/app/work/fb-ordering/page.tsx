@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "F&B Mobile Ordering — Marco Sevilla",
   description:
     "A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.",
+  openGraph: {
+    title: "F&B Mobile Ordering — Marco Sevilla",
+    description:
+      "A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.",
+  },
 };
 
 export default function FBOrderingPage() {

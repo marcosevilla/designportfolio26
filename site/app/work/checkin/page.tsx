@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "Hotel Check-in — Marco Sevilla",
   description:
     "Modernizing software for the world's largest global hotel chains. Designing seamless digital check-in, compendium, and omni-channel communication solutions.",
+  openGraph: {
+    title: "Hotel Check-in — Marco Sevilla",
+    description:
+      "Modernizing software for the world's largest global hotel chains. Designing seamless digital check-in, compendium, and omni-channel communication solutions.",
+  },
 };
 
 export default function CheckinPage() {

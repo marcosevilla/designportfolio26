@@ -3,6 +3,8 @@ import { typescale } from "@/lib/typography";
 
 export const metadata = {
   title: "Play — Marco Sevilla",
+  description:
+    "Experiments, side projects, and creative explorations by Marco Sevilla.",
 };
 
 export default function PlayPage() {

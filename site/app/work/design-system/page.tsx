@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "Design System — Marco Sevilla",
   description:
     "Creating a design system for a productivity startup. Championing and executing a visual language overhaul to streamline product development.",
+  openGraph: {
+    title: "Design System — Marco Sevilla",
+    description:
+      "Creating a design system for a productivity startup. Championing and executing a visual language overhaul to streamline product development.",
+  },
 };
 
 export default function DesignSystemPage() {

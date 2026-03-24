@@ -120,7 +120,7 @@ export default function Teaser() {
             </svg>
           </a>
           <a
-            href="https://linkedin.com/in/marcosevilla"
+            href="https://www.linkedin.com/in/marcogsevilla/"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn"

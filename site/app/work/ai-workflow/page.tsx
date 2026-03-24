@@ -4,7 +4,12 @@ import AIWorkflowContent from "./AIWorkflowContent";
 export const metadata: Metadata = {
   title: "How I Work with AI — Marco Sevilla",
   description:
-    "A designer's daily practice with Claude Code, MCP integrations, and self-improving workflows",
+    "A designer's daily practice with Claude Code, MCP integrations, and self-improving workflows.",
+  openGraph: {
+    title: "How I Work with AI — Marco Sevilla",
+    description:
+      "A designer's daily practice with Claude Code, MCP integrations, and self-improving workflows.",
+  },
 };
 
 export default function AIWorkflowPage() {

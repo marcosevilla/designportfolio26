@@ -3,6 +3,8 @@ import { typescale } from "@/lib/typography";
 
 export const metadata = {
   title: "Writing — Marco Sevilla",
+  description:
+    "Thoughts on product design, design systems, and building software. By Marco Sevilla.",
 };
 
 export default function WritingPage() {

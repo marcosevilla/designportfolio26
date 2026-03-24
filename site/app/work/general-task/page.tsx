@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "General Task — Marco Sevilla",
   description:
     "Building productivity software for Software Engineers. Designing a web-based task management tool that streamlines workflows for developers.",
+  openGraph: {
+    title: "General Task — Marco Sevilla",
+    description:
+      "Building productivity software for Software Engineers. Designing a web-based task management tool that streamlines workflows for developers.",
+  },
 };
 
 export default function GeneralTaskPage() {
