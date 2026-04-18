@@ -1315,6 +1315,7 @@ Expected files to delete:
 - `GT-Cinetype-Regular.woff2`
 - `GT-Cinetype-Bold.woff2`
 - `DepartureMono-Regular.woff2`
+- `GT-Cinetype-Mono.woff2` (legacy — was the previous `--font-mono` before Departure Mono replaced it)
 
 - [ ] **Step 3: Delete the files**
 
@@ -1328,6 +1329,7 @@ rm "site/public/fonts/PPEditorialNew-Regular.woff2" \
    "site/public/fonts/GT-Cinetype-Light.woff2" \
    "site/public/fonts/GT-Cinetype-Regular.woff2" \
    "site/public/fonts/GT-Cinetype-Bold.woff2" \
+   "site/public/fonts/GT-Cinetype-Mono.woff2" \
    "site/public/fonts/DepartureMono-Regular.woff2"
 ```
 
