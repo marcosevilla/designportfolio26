@@ -19,8 +19,8 @@ export default function ExpandableSection({
       {/* Desktop: always visible, no toggle */}
       <div className="hidden md:block">
         <h2
-          className="text-[var(--color-fg)] mb-8 tracking-tight"
-          style={typescale.h2}
+          className="mt-12 mb-8"
+          style={typescale.sectionLabel}
         >
           {title}
         </h2>
@@ -36,8 +36,7 @@ export default function ExpandableSection({
           aria-controls={`${id}-content`}
         >
           <h2
-            className="text-[var(--color-fg)] tracking-tight"
-            style={typescale.h2}
+            style={typescale.sectionLabel}
           >
             {title}
           </h2>

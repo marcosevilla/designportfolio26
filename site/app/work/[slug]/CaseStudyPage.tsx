@@ -48,7 +48,7 @@ export default function CaseStudyPage({ study }: Props) {
                 if (!paragraph.trim()) return null;
                 if (paragraph.startsWith("## ")) {
                   return (
-                    <h2 key={i} className="text-[var(--color-fg)] mt-10 mb-4 tracking-tight" style={typescale.h2}>
+                    <h2 key={i} className="mt-12 mb-4" style={typescale.sectionLabel}>
                       {paragraph.replace("## ", "")}
                     </h2>
                   );
