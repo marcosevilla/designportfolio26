@@ -47,7 +47,7 @@ export const typescale = {
   /** Section label — case study h2 ("Problem", "Solution") rendered as small tertiary label */
   sectionLabel: {
     fontFamily: "var(--font-sans)",
-    fontSize: "12px",
+    fontSize: "14px",
     fontWeight: 500,
     lineHeight: 1.4,
     color: "var(--color-fg-tertiary)",
