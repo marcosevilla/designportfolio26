@@ -2,81 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PP Editorial New */
-@font-face {
-  font-family: "PP Editorial New";
-  src: url("/fonts/PPEditorialNew-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "PP Editorial New";
-  src: url("/fonts/PPEditorialNew-Italic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "PP Editorial New";
-  src: url("/fonts/PPEditorialNew-UltralightItalic.woff2") format("woff2");
-  font-weight: 200;
-  font-style: italic;
-  font-display: swap;
-}
-
-/* PP Formula */
-@font-face {
-  font-family: "PP Formula";
-  src: url("/fonts/PP-Formula-ExtraBold.woff2") format("woff2");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "PP Formula SemiExtended";
-  src: url("/fonts/PP-Formula-SemiExtendedBold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* GT Cinetype */
-@font-face {
-  font-family: "GT Cinetype";
-  src: url("/fonts/GT-Cinetype-Light.woff2") format("woff2");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "GT Cinetype";
-  src: url("/fonts/GT-Cinetype-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "GT Cinetype";
-  src: url("/fonts/GT-Cinetype-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Departure Mono";
-  src: url("/fonts/DepartureMono-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   --color-bg: #ffffff;
   --color-fg: #1a1a1a;
@@ -89,13 +14,9 @@
   --color-accent: #B5651D;
   --color-glow: #B5651D;
 
-  --font-display: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
-  --font-heading: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
-  --font-heading-style: normal;
-  --font-body: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
-  --font-mono: "Departure Mono", monospace;
+  --font-sans: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
+  --font-mono-system: ui-monospace, Menlo, Monaco, monospace;
   --font-size-offset: 0px;
-  --font-pairing-boost: 0px;
 }
 
 .dark {
@@ -116,8 +37,8 @@ html {
 }
 
 body {
-  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  font-size: calc(16px + var(--font-size-offset) + var(--font-pairing-boost));
+  font-family: var(--font-sans);
+  font-size: calc(16px + var(--font-size-offset));
   background-color: var(--color-bg);
   color: var(--color-fg);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -178,7 +99,7 @@ body {
 }
 
 .dotted-link-arrow {
-  font-family: var(--font-body), system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 9px;
   line-height: 0;
   color: var(--color-accent);
