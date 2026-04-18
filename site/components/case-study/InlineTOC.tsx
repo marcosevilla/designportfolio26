@@ -73,7 +73,7 @@ export default function InlineTOC() {
                 href={`#${item.id}`}
                 onClick={(e) => handleClick(e, item.id)}
                 className="block transition-colors"
-                style={{ fontSize: "13px", fontFamily: "var(--font-mono)", fontWeight: 400, lineHeight: "20px" }}
+                style={{ fontSize: "13px", fontWeight: 400, lineHeight: "20px" }}
                 onMouseEnter={() => setHoveredIndex(index)}
               >
                 <motion.span
