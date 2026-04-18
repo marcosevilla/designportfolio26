@@ -19,7 +19,7 @@ export default function ExpandableSection({
       {/* Desktop: always visible, no toggle */}
       <div className="hidden md:block">
         <h2
-          className="mt-12 mb-8"
+          className="mt-12 mb-3"
           style={typescale.sectionLabel}
         >
           {title}
