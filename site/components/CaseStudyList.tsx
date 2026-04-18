@@ -221,8 +221,7 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           <h2
             className="tracking-tight"
             style={{
-              fontFamily: "var(--font-heading)",
-              fontSize: "calc(16px + var(--font-size-offset) + var(--font-pairing-boost))",
+              fontSize: "calc(16px + var(--font-size-offset))",
               fontWeight: 500,
               color: "var(--color-fg-secondary)",
             }}

@@ -48,19 +48,19 @@ const ASPECT_RATIOS: Record<CardSize, string> = {
 };
 
 const TITLE_SIZES: Record<CardSize, string> = {
-  hero: "calc(18px + var(--font-size-offset) + var(--font-pairing-boost))",
-  large: "calc(18px + var(--font-size-offset) + var(--font-pairing-boost))",
-  medium: "calc(18px + var(--font-size-offset) + var(--font-pairing-boost))",
-  standard: "calc(18px + var(--font-size-offset) + var(--font-pairing-boost))",
-  wide: "calc(18px + var(--font-size-offset) + var(--font-pairing-boost))",
+  hero: "calc(18px + var(--font-size-offset))",
+  large: "calc(18px + var(--font-size-offset))",
+  medium: "calc(18px + var(--font-size-offset))",
+  standard: "calc(18px + var(--font-size-offset))",
+  wide: "calc(18px + var(--font-size-offset))",
 };
 
 const SUBTITLE_SIZES: Record<CardSize, string> = {
-  hero: "calc(15px + var(--font-size-offset) + var(--font-pairing-boost))",
-  large: "calc(14px + var(--font-size-offset) + var(--font-pairing-boost))",
-  medium: "calc(14px + var(--font-size-offset) + var(--font-pairing-boost))",
-  standard: "calc(14px + var(--font-size-offset) + var(--font-pairing-boost))",
-  wide: "calc(14px + var(--font-size-offset) + var(--font-pairing-boost))",
+  hero: "calc(15px + var(--font-size-offset))",
+  large: "calc(14px + var(--font-size-offset))",
+  medium: "calc(14px + var(--font-size-offset))",
+  standard: "calc(14px + var(--font-size-offset))",
+  wide: "calc(14px + var(--font-size-offset))",
 };
 
 interface CaseStudyCardProps {
@@ -156,10 +156,8 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
                 <span
                   className="block mb-2"
                   style={{
-                    fontFamily: "var(--font-mono)",
                     fontSize: "11px",
                     color: "var(--color-fg-tertiary)",
-                    letterSpacing: "0.02em",
                   }}
                 >
                   {study.year}
@@ -168,7 +166,6 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
               <h3
                 className="leading-tight tracking-tight"
                 style={{
-                  fontFamily: "var(--font-mono)",
                   fontWeight: 500,
                   fontSize: TITLE_SIZES[cardSize],
                   color: "var(--color-fg)",
@@ -179,7 +176,6 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
               <p
                 className="mt-1.5"
                 style={{
-                  fontFamily: "var(--font-body)",
                   fontSize: SUBTITLE_SIZES[cardSize],
                   lineHeight: 1.5,
                   color: "var(--color-fg-secondary)",

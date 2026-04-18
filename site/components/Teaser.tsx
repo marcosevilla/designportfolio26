@@ -68,7 +68,7 @@ export default function Teaser() {
       >
         <h1
           style={{
-            fontFamily: "'Departure Mono', var(--font-mono), monospace",
+            fontFamily: "var(--font-mono-system)",
             fontSize: `${dials.nameSizePx}px`,
             fontWeight: 400,
             color: `rgba(26, 26, 26, ${dials.textOpacity})`,
@@ -80,7 +80,7 @@ export default function Teaser() {
         </h1>
         <p
           style={{
-            fontFamily: "var(--font-body), system-ui, sans-serif",
+            fontFamily: "var(--font-sans)",
             fontSize: `${dials.taglineSizePx}px`,
             color: `rgba(26, 26, 26, ${dials.textOpacity * 0.6})`,
             lineHeight: 1.5,

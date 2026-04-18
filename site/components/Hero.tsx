@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { PARAGRAPHS, PROMPTS, MAX_LEVEL, HEADING_LINES } from "@/lib/bio-content";
+import { PARAGRAPHS, PROMPTS, MAX_LEVEL, HERO_NAME, HERO_STATEMENT } from "@/lib/bio-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
 import { useIsMobile } from "@/hooks/useMediaQuery";
@@ -12,31 +12,19 @@ import InlineExpandButton from "./InlineExpandButton";
 import { DynamicBioText } from "./dynamic-bio";
 import TwoCol from "./TwoCol";
 
-type HeadingLine = { text: string; weight: number; font?: string; size?: string; lineHeight?: number };
-
-function StreamingHeadingLines({
-  lines,
+function StreamingStatement({
+  text,
   stream,
   onComplete,
   reducedMotion,
 }: {
-  lines: HeadingLine[];
+  text: string;
   stream: boolean;
   onComplete: () => void;
   reducedMotion: boolean;
 }) {
-  // Build a flat list of words, each tagged with its line index
-  const wordsWithLine = useMemo(() => {
-    const result: { word: string; lineIdx: number }[] = [];
-    lines.forEach((line, lineIdx) => {
-      line.text.split(" ").forEach((word) => {
-        result.push({ word, lineIdx });
-      });
-    });
-    return result;
-  }, [lines]);
-
-  const total = wordsWithLine.length;
+  const words = useMemo(() => text.split(" "), [text]);
+  const total = words.length;
   const [visibleCount, setVisibleCount] = useState(
     !stream || reducedMotion ? total : 0
   );
@@ -63,43 +51,24 @@ function StreamingHeadingLines({
     };
   }, [stream, total, onComplete, reducedMotion]);
 
-  // Group visible words back into lines
-  const visible = wordsWithLine.slice(0, visibleCount);
+  if (!stream) {
+    return <>{text}</>;
+  }
 
   return (
     <>
-      {lines.map((line, lineIdx) => {
-        const lineWords = visible.filter((w) => w.lineIdx === lineIdx);
-        if (lineWords.length === 0 && stream) return null;
-        return (
-          <span
-            key={lineIdx}
-            style={{
-              fontWeight: line.weight,
-              fontFamily: line.font,
-              fontSize: line.size,
-              lineHeight: line.lineHeight,
-              display: "block",
-              marginBottom: lineIdx < lines.length - 1 ? "0.75em" : undefined,
-            }}
-          >
-            {stream
-              ? lineWords.map((w, i) => (
-                  <motion.span
-                    key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.25 }}
-                    style={{ display: "inline" }}
-                  >
-                    {i > 0 ? " " : ""}
-                    {w.word}
-                  </motion.span>
-                ))
-              : line.text}
-          </span>
-        );
-      })}
+      {words.slice(0, visibleCount).map((w, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
+          style={{ display: "inline" }}
+        >
+          {i > 0 ? " " : ""}
+          {w}
+        </motion.span>
+      ))}
     </>
   );
 }
@@ -220,15 +189,25 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
           <TwoCol>
             <TwoCol.Left>
               <div className="sticky top-14 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-[var(--color-bg)]/90 backdrop-blur-sm lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
-                <h1
-                  className="tracking-tight"
+                <span
+                  className="block mb-3"
                   style={{
-                    ...typescale.display,
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                    color: "var(--color-fg-tertiary)",
+                    lineHeight: 1.4,
                   }}
                 >
+                  {HERO_NAME}
+                </span>
+                <h1
+                  className="tracking-tight"
+                  style={typescale.display}
+                >
                   {introPhase === "star1" ? null : (
-                    <StreamingHeadingLines
-                      lines={HEADING_LINES}
+                    <StreamingStatement
+                      text={HERO_STATEMENT}
                       stream={introPhase === "subtitle"}
                       onComplete={onHeadingComplete}
                       reducedMotion={reducedMotion}

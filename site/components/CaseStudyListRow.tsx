@@ -38,9 +38,8 @@ export default function CaseStudyListRow({ study, showYear }: CaseStudyListRowPr
         <motion.span
           className="shrink-0"
           style={{
-            fontFamily: "var(--font-heading)",
             fontWeight: 500,
-            fontSize: "calc(16px + var(--font-size-offset) + var(--font-pairing-boost))",
+            fontSize: "calc(16px + var(--font-size-offset))",
             color: hovered ? "var(--color-accent)" : "var(--color-fg)",
           }}
           animate={{ x: hovered ? 8 : 0 }}

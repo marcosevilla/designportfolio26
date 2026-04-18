@@ -40,7 +40,7 @@ export default function CaseStudyHero({
             <h1
               data-editable="hero-title"
               className="text-white tracking-tight max-w-[700px]"
-              style={{ ...typescale.caseStudyHero, fontFamily: "var(--font-mono)", fontWeight: 400 }}
+              style={typescale.caseStudyHero}
             >
               {title}
             </h1>

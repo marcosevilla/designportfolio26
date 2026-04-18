@@ -82,6 +82,7 @@ app/
 │   ├── checkin/                # Dedicated custom case study
 │   ├── general-task/           # Dedicated custom case study
 │   ├── design-system/          # Dedicated custom case study
+│   ├── ai-workflow/            # Dedicated "How I Work with AI" page
 │   ├── page.tsx                # Work collection page
 │   └── WorkContent.tsx
 ├── dev/
@@ -177,6 +178,7 @@ These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + 
 4. **Hotel Check-in** (`/work/checkin`) - Canary Technologies, 2024
 5. **General Task** (`/work/general-task`) - General Task, 2022
 6. **Design System** (`/work/design-system`) - General Task, 2022
+7. **How I Work with AI** (`/work/ai-workflow`) - Personal, 2026
 
 ### Homepage Card Order
 1. F&B Ordering (newest Canary work, 100% ownership)
@@ -191,7 +193,7 @@ These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + 
 ### DEDICATED_ROUTES
 In `app/work/[slug]/page.tsx`, case studies with custom pages are excluded from static generation:
 ```typescript
-const DEDICATED_ROUTES = new Set(["fb-ordering", "compendium", "upsells", "checkin", "general-task", "design-system"]);
+const DEDICATED_ROUTES = new Set(["fb-ordering", "compendium", "upsells", "checkin", "general-task", "design-system", "ai-workflow"]);
 ```
 
 ### Case Study Content Component Pattern
@@ -269,56 +271,45 @@ All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by 
 
 ## Typography
 
-### Font Stack (self-hosted in `/public/fonts/`, `@font-face` in globals.css)
-| Font | Weights | Italic |
-|------|---------|--------|
-| PP Editorial New | 200, 400 | Yes |
-| PP Formula SemiExtended | 700 | No |
-| PP Formula | 800 | No |
-| GT Cinetype | 300, 400, 700 | No |
-| GT Cinetype Mono | 400 | No |
-| Departure Mono | 400 | No |
+Consolidated to single Geist Sans family in April 2026 (see `docs/superpowers/specs/2026-04-18-typography-consolidation-design.md`).
 
-External fonts via `next/font` in `layout.tsx`: Geist Sans, Geist Pixel Square, Instrument Serif, Instrument Sans.
+### Font Stack
+Single family. Geist Sans loaded via `next/font/sans` in `layout.tsx`. No self-hosted `.woff2` files. Representational components (URL bar, arch diagrams, teaser) use `var(--font-mono-system)` = `ui-monospace, Menlo, Monaco, monospace`.
 
 ### Font CSS Variables
 | Variable | Default |
 |----------|---------|
-| `--font-display` | `Geist Sans, system-ui, sans-serif` |
-| `--font-heading` | `Geist Sans, system-ui, sans-serif` |
-| `--font-body` | `Geist Sans, system-ui, sans-serif` |
-| `--font-mono` | `"Departure Mono", monospace` |
-| `--font-heading-style` | `normal` |
-| `--font-size-offset` | `0px` (user adjustable -4px to +4px) |
-| `--font-pairing-boost` | `0px` (per-pairing, e.g. Instrument Serif +2px) |
-
-### Font Pairings (selectable via Theme Palette)
-| Role | Default | Formula | Serif |
-|------|---------|---------|-------|
-| Display | Geist Sans | PP Formula SemiExtended | Instrument Serif |
-| Heading | Geist Sans | PP Formula SemiExtended | Instrument Sans |
-| Body | Geist Sans | GT Cinetype | Instrument Sans |
-| Mono | GT Cinetype Mono | GT Cinetype Mono | GT Cinetype Mono |
+| `--font-sans` | `var(--font-geist-sans), system-ui, sans-serif` |
+| `--font-mono-system` | `ui-monospace, Menlo, Monaco, monospace` (representational only) |
+| `--font-size-offset` | `0px` (user adjustable -4px to +4px via Theme Palette) |
 
 ### Typescale (defined in `site/lib/typography.ts`)
-All scalable sizes use `calc(Npx + var(--font-size-offset) + var(--font-pairing-boost))`.
+Three weights system-wide: 400 body/labels, 500 titles/UI, 600 hero emphasis. All 18px+ elements use `letter-spacing: -0.01em`.
 
-| Element | Font var | Weight | Size |
-|---------|----------|--------|------|
-| Hero H1 | `--font-display` | 700 | 24px |
-| Case Study Hero | `--font-display` | 700 | clamp(24-28px) |
-| Page headings | `--font-heading` | 700 | 24px |
-| H2 sections | `--font-heading` | 600 | 18px |
-| H3 subsections | `--font-heading` | 500 | 18px |
-| H4 sub-subsections | `--font-heading` | 500 | 16px |
-| Body / case study | `--font-body` | 400 | 14px, line-height 22px |
-| Subtitle / case study hero | `--font-body` | 400 | 14px, line-height 22px |
-| QuickStats value | `--font-display` | 700 | 20px (horizontal layout) |
-| PullQuote | `--font-body` | 300 | clamp(18-22px) |
-| Card titles | `--font-heading` | 500 | 18px |
-| Card subtitles | `--font-body` | 400 | 14px |
-| Marquee quotes | `--font-body` | 400 | 14px |
-| Nav (fixed, no offset) | `--font-body` | 500 | 16px desktop, 14px mobile |
+| Element | Weight | Size | Notes |
+|---------|--------|------|-------|
+| Hero statement (h1) — homepage | 600 | clamp(28-32px) | `typescale.display`, streams word-by-word during intro |
+| Hero name label — homepage | 400 | 14px | Inline in Hero.tsx, tertiary color, always visible |
+| Case study hero h1 | 600 | clamp(28-32px) | `typescale.caseStudyHero` |
+| Case study hero subtitle | 400 | 14px / 22 line-height | `typescale.subtitle` |
+| Section h2 (case study) | 500 | 14px | `typescale.sectionLabel` — tertiary color, acts as small label above section content. NOT a large heading. |
+| Section h3 | 500 | 18px | `typescale.h3` |
+| Section h4 | 500 | 16px | `typescale.h4` |
+| Body / case study prose | 400 | 14px / 22 line-height | `typescale.body` |
+| QuickStats value | 500 | 24px | `typescale.statValue` |
+| PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
+| NextProject title | 500 | 22px | `typescale.nextProjectTitle` |
+| Card title | 500 | 18px | Inline styles in CaseStudyCard.tsx |
+| Card subtitle | 400 | 14-15px | Inline styles |
+| List row title | 500 | 16px | Inline in CaseStudyListRow.tsx |
+| List row meta / year / metric | 400 | 11px | `typescale.label`, tertiary |
+| Nav (desktop) | 400 | 16px | `typescale.nav` |
+| Nav (mobile) | 400 | 14px | `typescale.navMobile` |
+| Page titles (/work, /writing) | 500 | 24px | `typescale.pageTitle` |
+| Marquee | 400 | 14px | inline |
+
+### Theme Palette
+Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No font-pairing picker — removed April 2026.
 
 ## Component & Interaction Specs
 
@@ -360,6 +351,7 @@ All scalable sizes use `calc(Npx + var(--font-size-offset) + var(--font-pairing-
 | checkin | Canary | Product designer | 4,500+ hotels |
 | general-task | General Task | Founding designer | 0→1 product |
 | design-system | General Task | Founding designer | 0→1 system |
+| ai-workflow | Personal | Designer + builder | Daily AI practice |
 
 ### Homepage Scroll
 - **Single continuous scroll** — SectionSnap deleted, replaced by normal document flow
@@ -402,20 +394,20 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** Teaser page with Paper shader + Paper MCP design import
+- **Last worked on:** "How I Work with AI" page + teaser mode off
 - **Completed this session:**
-  - Built teaser/coming-soon page with `@paper-design/shaders-react` Dithering shader (copper warp effect, full viewport)
-  - Added comprehensive DialKit controls (20 sliders): shader params, HSL color for front/back/bg, typography sizing/tracking/opacity, layout spacing/offset, icon size/opacity
-  - Gated homepage with `NEXT_PUBLIC_TEASER_MODE=true` env var in `.env.local` — flip to `false` to reveal full portfolio
-  - Imported portfolio project cards into Paper MCP (6 cards in bento grid layout)
-  - Started F&B case study import into Paper (title section built, browser mockup pending)
+  - Added dedicated "How I Work with AI" page at `/work/ai-workflow` — 5 sections: Overview, The Setup, MCP Integrations, Self-Improving System, Building Real Software, What I've Learned
+  - Registered route in DEDICATED_ROUTES, added tags to study-tags.ts, created MDX frontmatter (order: 7)
+  - Flipped `NEXT_PUBLIC_TEASER_MODE=false` in `.env.local` — full portfolio now live
+  - Verified: tsc passes, page renders 200, homepage renders 200
 - **In progress:**
-  - F&B case study Paper import — only title section done, rest of page not yet built
   - 42 ImagePlaceholders remain (F&B 10, Compendium 15, Upsells 17) — all need Figma exports
-  - Teaser page needs tuning — user hasn't finalized dial values yet
-- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). 2 commits unpushed to origin. Uncommitted teaser changes on working tree.
+  - Teaser page dial values not finalized (but teaser is now off)
+- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). 4 commits unpushed to origin.
 - **Files modified this session:**
-  - `site/components/Teaser.tsx` — new: full-viewport dither shader teaser with DialKit controls
-  - `site/app/page.tsx` — conditional rendering: Teaser or full homepage based on env var
-  - `site/.env.local` — new: `NEXT_PUBLIC_TEASER_MODE=true`
-  - `site/package.json` — added `@paper-design/shaders-react` dependency
+  - `site/app/work/ai-workflow/page.tsx` — new: metadata wrapper
+  - `site/app/work/ai-workflow/AIWorkflowContent.tsx` — new: full content component
+  - `site/content/ai-workflow.mdx` — new: frontmatter for card/list rendering
+  - `site/app/work/[slug]/page.tsx` — added "ai-workflow" to DEDICATED_ROUTES
+  - `site/lib/study-tags.ts` — added ai-workflow tags
+  - `site/.env.local` — flipped teaser mode to false

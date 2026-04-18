@@ -18,7 +18,7 @@ export default function SectionHeading({ id, level = 2, children }: SectionHeadi
     return (
       <>
         {id && <div id={id} className="scroll-mt-24" />}
-        <h2 className="text-[var(--color-fg)] mb-3 tracking-tight" style={typescale.h2}>
+        <h2 className="mt-12 mb-3" style={typescale.sectionLabel}>
           {children}
         </h2>
       </>

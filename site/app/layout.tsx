@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
-import { GeistPixelSquare } from "geist/font/pixel";
-import { Instrument_Serif, Instrument_Sans } from "next/font/google";
 import MobileNav from "@/components/MobileNav";
 import { MarqueeProvider } from "@/components/MarqueeContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
@@ -46,24 +44,13 @@ export const metadata: Metadata = {
   },
 };
 
-const instrumentSerif = Instrument_Serif({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-instrument-serif",
-});
-
-const instrumentSans = Instrument_Sans({
-  subsets: ["latin"],
-  variable: "--font-instrument-sans",
-});
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistPixelSquare.variable} ${instrumentSerif.variable} ${instrumentSans.variable}`}>
+    <html lang="en" suppressHydrationWarning className={GeistSans.variable}>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <MarqueeProvider>

@@ -94,51 +94,6 @@ export function clearColoredTheme() {
   vars.forEach((v) => root.style.removeProperty(v));
 }
 
-// ── Font pairings ─────────────────────────────────────────────
-export const fontPairings = [
-  {
-    name: "Default",
-    display: 'var(--font-geist-sans, "Geist"), system-ui, sans-serif',
-    heading: 'var(--font-geist-sans, "Geist"), system-ui, sans-serif',
-    body: 'var(--font-geist-sans, "Geist"), system-ui, sans-serif',
-    mono: '"Departure Mono", monospace',
-  },
-  {
-    name: "Formula",
-    display: '"PP Formula SemiExtended", sans-serif',
-    heading: '"PP Formula SemiExtended", sans-serif',
-    body: '"GT Cinetype", sans-serif',
-    mono: '"Departure Mono", monospace',
-  },
-  {
-    name: "Serif",
-    display: 'var(--font-instrument-serif, "Instrument Serif"), serif',
-    heading: 'var(--font-instrument-sans, "Instrument Sans"), sans-serif',
-    body: 'var(--font-instrument-sans, "Instrument Sans"), sans-serif',
-    mono: '"Departure Mono", monospace',
-    sizeBoost: 2,
-  },
-];
-
-export type FontPairing = (typeof fontPairings)[0] & { headingStyle?: string; sizeBoost?: number };
-
-export function applyFontPairing(pairing: FontPairing) {
-  const root = document.documentElement;
-  root.style.setProperty("--font-display", pairing.display);
-  root.style.setProperty("--font-heading", pairing.heading);
-  root.style.setProperty("--font-body", pairing.body);
-  root.style.setProperty("--font-mono", pairing.mono);
-  root.style.setProperty("--font-heading-style", pairing.headingStyle || "normal");
-  root.style.setProperty("--font-pairing-boost", `${pairing.sizeBoost || 0}px`);
-}
-
-export function clearFontPairing() {
-  const root = document.documentElement;
-  ["--font-display", "--font-heading", "--font-body", "--font-mono", "--font-heading-style", "--font-pairing-boost"].forEach((v) =>
-    root.style.removeProperty(v)
-  );
-}
-
 // ── Font size scaling ─────────────────────────────────────────
 const FONT_SIZE_MIN = -4; // -4px → 12px body
 const FONT_SIZE_MAX = 4;  // +4px → 20px body
@@ -158,7 +113,6 @@ export function useThemeState() {
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useState<ThemeMode>("light");
   const [coloredThemeName, setColoredThemeName] = useState<string | null>(null);
-  const [fontPairingName, setFontPairingName] = useState("Default");
   const [fontSizeOffset, setFontSizeOffset] = useState(0);
 
   useEffect(() => {
@@ -179,16 +133,6 @@ export function useThemeState() {
       setMode(savedMode);
     } else {
       setMode(theme === "dark" ? "dark" : "light");
-    }
-
-    // Restore font pairing
-    const savedFont = localStorage.getItem("font-pairing");
-    if (savedFont) {
-      const found = fontPairings.find((p) => p.name === savedFont);
-      if (found) {
-        setFontPairingName(found.name);
-        if (found.name !== "Default") applyFontPairing(found);
-      }
     }
 
     // Restore font size
@@ -235,18 +179,6 @@ export function useThemeState() {
     [setTheme]
   );
 
-  const selectFont = useCallback((name: string) => {
-    const pairing = fontPairings.find((p) => p.name === name);
-    if (!pairing) return;
-    if (pairing.name === "Default") {
-      clearFontPairing();
-    } else {
-      applyFontPairing(pairing);
-    }
-    setFontPairingName(pairing.name);
-    localStorage.setItem("font-pairing", pairing.name);
-  }, []);
-
   const increaseFontSize = useCallback(() => {
     setFontSizeOffset((prev) => {
       const next = Math.min(prev + FONT_SIZE_STEP, FONT_SIZE_MAX);
@@ -273,10 +205,6 @@ export function useThemeState() {
     setColoredThemeName(null);
     localStorage.setItem("theme-mode", "light");
     localStorage.removeItem("colored-theme-name");
-    // Reset font to default
-    clearFontPairing();
-    setFontPairingName("Default");
-    localStorage.setItem("font-pairing", "Default");
     // Reset font size
     clearFontSizeOffset();
     setFontSizeOffset(0);
@@ -287,12 +215,10 @@ export function useThemeState() {
     mounted,
     mode,
     coloredThemeName,
-    fontPairingName,
     fontSizeOffset,
     selectLight,
     selectDark,
     selectColored,
-    selectFont,
     increaseFontSize,
     decreaseFontSize,
     resetAll,

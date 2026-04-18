@@ -2,64 +2,69 @@ import type { CSSProperties } from "react";
 
 /**
  * Shared typescale for the portfolio.
- * All scalable sizes include var(--font-size-offset) and var(--font-pairing-boost)
+ * All scalable sizes include var(--font-size-offset)
  * so they respond to the Theme Palette font-size slider.
  */
 
 const off = "var(--font-size-offset)";
-const boost = "var(--font-pairing-boost)";
 
 function scaled(base: string): string {
-  return `calc(${base} + ${off} + ${boost})`;
+  return `calc(${base} + ${off})`;
 }
 
 function scaledClamp(min: string, preferred: string, max: string): string {
-  return `clamp(calc(${min} + ${off} + ${boost}), calc(${preferred} + ${off} + ${boost}), calc(${max} + ${off} + ${boost}))`;
+  return `clamp(calc(${min} + ${off}), calc(${preferred} + ${off}), calc(${max} + ${off}))`;
 }
 
 export const typescale = {
-  /** Hero H1, DynamicBio H1 */
+  /** Hero H1 (homepage statement) + DynamicBio H1 */
   display: {
-    fontFamily: "var(--font-mono)",
-    fontSize: scaled("40px"),
-    lineHeight: 1.25,
+    fontFamily: "var(--font-sans)",
+    fontSize: scaledClamp("28px", "3vw", "32px"),
+    fontWeight: 600,
+    lineHeight: 1.2,
+    letterSpacing: "-0.01em",
   } as CSSProperties,
 
   /** Case Study Hero title */
   caseStudyHero: {
-    fontFamily: "var(--font-display)",
-    fontSize: scaledClamp("24px", "3vw", "28px"),
-    fontStyle: "var(--font-heading-style)",
+    fontFamily: "var(--font-sans)",
+    fontSize: scaledClamp("28px", "3vw", "32px"),
+    fontWeight: 600,
     lineHeight: 1.15,
+    letterSpacing: "-0.01em",
   } as CSSProperties,
 
   /** Page titles — /work, /writing, /play */
   pageTitle: {
-    fontFamily: "var(--font-heading)",
+    fontFamily: "var(--font-sans)",
     fontSize: scaled("24px"),
-    fontWeight: 700,
+    fontWeight: 500,
     lineHeight: 1.2,
+    letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** H2 — Case study sections */
-  h2: {
-    fontFamily: "var(--font-mono)",
-    fontSize: scaled("18px"),
-    fontWeight: 400,
-    lineHeight: 1.2,
+  /** Section label — case study h2 ("Problem", "Solution") rendered as small tertiary label */
+  sectionLabel: {
+    fontFamily: "var(--font-sans)",
+    fontSize: "14px",
+    fontWeight: 500,
+    lineHeight: 1.4,
+    color: "var(--color-fg-tertiary)",
   } as CSSProperties,
 
   /** H3 — Subsections */
   h3: {
-    fontFamily: "var(--font-heading)",
+    fontFamily: "var(--font-sans)",
     fontSize: scaled("18px"),
     fontWeight: 500,
     lineHeight: 1.3,
+    letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** H4 — Sub-subsections (heading font differentiates from body) */
+  /** H4 — Sub-subsections */
   h4: {
-    fontFamily: "var(--font-heading)",
+    fontFamily: "var(--font-sans)",
     fontSize: scaled("16px"),
     fontWeight: 500,
     lineHeight: 1.4,
@@ -77,45 +82,51 @@ export const typescale = {
     lineHeight: "22px",
   } as CSSProperties,
 
-  /** QuickStats large number */
+  /** QuickStats value — big number */
   statValue: {
-    fontFamily: "var(--font-mono)",
-    fontSize: "20px",
-    fontWeight: 400,
+    fontFamily: "var(--font-sans)",
+    fontSize: "24px",
+    fontWeight: 500,
     lineHeight: 1.1,
+    letterSpacing: "-0.01em",
   } as CSSProperties,
 
   /** PullQuote text */
   pullQuote: {
+    fontFamily: "var(--font-sans)",
     fontSize: scaledClamp("18px", "2.5vw", "22px"),
-    fontWeight: 300,
+    fontWeight: 400,
     lineHeight: 1.4,
+    letterSpacing: "-0.01em",
   } as CSSProperties,
 
   /** NextProject title */
   nextProjectTitle: {
-    fontFamily: "var(--font-display)",
-    fontSize: scaled("20px"),
+    fontFamily: "var(--font-sans)",
+    fontSize: scaled("22px"),
+    fontWeight: 500,
     lineHeight: 1.2,
+    letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** Mono label — year badges, card meta, filter pills, list row details */
+  /** Small sans label — year badges, card meta, list row details (replaces old mono label) */
   label: {
-    fontFamily: "var(--font-mono)",
+    fontFamily: "var(--font-sans)",
     fontSize: "11px",
-    letterSpacing: "0.02em",
+    fontWeight: 400,
+    letterSpacing: 0,
   } as CSSProperties,
 
-  /** Nav links — desktop 16px, mobile 14px */
+  /** Nav links — desktop 16px, sans */
   nav: {
-    fontFamily: "var(--font-mono)",
+    fontFamily: "var(--font-sans)",
     fontWeight: 400,
     fontSize: "16px",
   } as CSSProperties,
 
   /** Nav links — mobile variant */
   navMobile: {
-    fontFamily: "var(--font-mono)",
+    fontFamily: "var(--font-sans)",
     fontWeight: 400,
     fontSize: "14px",
   } as CSSProperties,

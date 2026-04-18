@@ -43,7 +43,7 @@ export default function BrowserMockup({ src, alt, url, width, height }: BrowserM
               className="px-3 py-0.5 rounded-md text-center w-full max-w-[280px]"
               style={{
                 backgroundColor: "var(--color-muted, #f3f3f3)",
-                fontFamily: "var(--font-mono)",
+                fontFamily: "var(--font-mono-system)",
                 fontSize: "10px",
                 color: "var(--color-fg-tertiary)",
                 letterSpacing: "0.01em",

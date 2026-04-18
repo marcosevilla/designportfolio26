@@ -80,7 +80,7 @@ export default function Marquee() {
         >
           <div
             className="flex items-center whitespace-nowrap py-4 marquee-track"
-            style={{ fontSize: "calc(14px + var(--font-size-offset) + var(--font-pairing-boost))", fontFamily: "var(--font-body)", fontWeight: 400 }}
+            style={{ fontSize: "calc(14px + var(--font-size-offset))", fontWeight: 400 }}
           >
             <div className="inline-flex shrink-0">
               <QuoteSet />

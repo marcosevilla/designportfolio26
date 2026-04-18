@@ -6,7 +6,6 @@ import { SPRING_HEAVY } from "@/lib/springs";
 import { MinusIcon, ResetIcon, PlusIcon } from "./Icons";
 import {
   coloredThemes,
-  fontPairings,
   type ThemeMode,
 } from "./ThemeToggle";
 import { DynamicBioGrid } from "./dynamic-bio";
@@ -19,7 +18,6 @@ interface ThemePaletteProps {
   onClose: () => void;
   mode: ThemeMode;
   coloredThemeName: string | null;
-  fontPairingName: string;
   fontSizeOffset: number;
   bioMode?: BioMode;
   gridPosition?: GridPosition;
@@ -28,7 +26,6 @@ interface ThemePaletteProps {
   onSelectLight: () => void;
   onSelectDark: () => void;
   onSelectColored: (name: string) => void;
-  onSelectFont: (name: string) => void;
   onIncreaseFontSize: () => void;
   onDecreaseFontSize: () => void;
   onResetAll: () => void;
@@ -46,7 +43,6 @@ export default function ThemePalette({
   onClose,
   mode,
   coloredThemeName,
-  fontPairingName,
   fontSizeOffset,
   bioMode,
   gridPosition,
@@ -55,7 +51,6 @@ export default function ThemePalette({
   onSelectLight,
   onSelectDark,
   onSelectColored,
-  onSelectFont,
   onIncreaseFontSize,
   onDecreaseFontSize,
   onResetAll,
@@ -167,48 +162,6 @@ export default function ThemePalette({
               cursor: "pointer",
             }}
           />
-        ))}
-      </div>
-
-      {/* Font pairing cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap,
-          marginTop: m ? "12px" : "8px",
-        }}
-      >
-        {fontPairings.map((p) => (
-          <button
-            key={p.name}
-            onClick={() => onSelectFont(p.name)}
-            aria-label={`${p.name} font pairing`}
-            className="flex items-center justify-center rounded-none aspect-square"
-            style={{
-              backgroundColor: "var(--color-bg)",
-              border: "1px solid var(--color-border)",
-              boxShadow:
-                fontPairingName === p.name
-                  ? "0 0 0 2px var(--color-accent)"
-                  : "none",
-              transition: "box-shadow 200ms ease",
-              cursor: "pointer",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: p.display,
-                fontSize: m ? "22px" : "15px",
-                fontWeight: 700,
-                fontStyle: (p as any).headingStyle || "normal",
-                color: "var(--color-fg)",
-                lineHeight: 1,
-              }}
-            >
-              Aa
-            </span>
-          </button>
         ))}
       </div>
 
