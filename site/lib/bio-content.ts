@@ -51,7 +51,6 @@ export const PROMPTS = [
 export const MAX_LEVEL = PARAGRAPHS.length;
 export const HERO_NAME = "Marco Sevilla";
 export const HERO_STATEMENT = "I design software in San Francisco. Currently at Canary where I simplify operational workflows for the largest hotel brands in the world.";
-export const HEADING_WORDS = HERO_STATEMENT.split(" ");
 
 // ═══════════════════════════════════════════════════════════════════
 // Dynamic Bio Content (for 2D grid mode)
