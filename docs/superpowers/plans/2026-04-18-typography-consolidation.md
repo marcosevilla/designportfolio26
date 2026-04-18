@@ -837,14 +837,16 @@ The h1 now uses the updated typescale.caseStudyHero (sans weight 600)."
 
 ---
 
-## Task 9: Convert SectionHeading h2 to sectionLabel
+## Task 9: Convert case study h2s to sectionLabel
 
 **Files:**
 - Modify: `site/components/case-study/SectionHeading.tsx`
+- Modify: `site/components/case-study/ExpandableSection.tsx` (used by 6 of 7 case studies for major sections)
+- Modify: `site/app/work/[slug]/CaseStudyPage.tsx` (MDX fallback renderer)
 
-**Goal:** h2 branch renders a small sentence-case tertiary label using `typescale.sectionLabel`. Semantics stay `<h2>`. h3/h4 branches unchanged.
+**Goal:** Every `typescale.h2` consumer switches to `typescale.sectionLabel`. Semantics stay `<h2>` for screen readers; only visual treatment changes.
 
-- [ ] **Step 1: Update h2 branch**
+- [ ] **Step 1: Update SectionHeading.tsx — h2 branch**
 
 In `site/components/case-study/SectionHeading.tsx`, replace the h2 branch (lines 17–26):
 
@@ -876,24 +878,107 @@ if (level === 2) {
 }
 ```
 
-Changes:
-- `typescale.h2` → `typescale.sectionLabel`
-- Added `mt-12` (48px top margin) so the small label has clear separation from the preceding section content
-- Removed `text-[var(--color-fg)]` (label color comes from `typescale.sectionLabel.color` = tertiary)
-- Removed `tracking-tight` (labels at 12px don't want negative tracking)
+Changes: `typescale.h2` → `typescale.sectionLabel`; add `mt-12` top margin for section separation; remove `text-[var(--color-fg)]` (color comes from sectionLabel = tertiary); remove `tracking-tight` (negative tracking doesn't help at 12px).
 
-- [ ] **Step 2: TypeScript check**
+- [ ] **Step 2: Update ExpandableSection.tsx — desktop h2**
 
-Automatic. Expected: No errors. (The deleted `typescale.h2` would have been flagged in Task 3 if consumers referenced it — this is the only consumer.)
+In `site/components/case-study/ExpandableSection.tsx`, replace lines 20–27 (desktop block):
 
-- [ ] **Step 3: Commit**
+Before:
+```tsx
+<div className="hidden md:block">
+  <h2
+    className="text-[var(--color-fg)] mb-8 tracking-tight"
+    style={typescale.h2}
+  >
+    {title}
+  </h2>
+  {children}
+</div>
+```
+
+After:
+```tsx
+<div className="hidden md:block">
+  <h2
+    className="mt-12 mb-8"
+    style={typescale.sectionLabel}
+  >
+    {title}
+  </h2>
+  {children}
+</div>
+```
+
+- [ ] **Step 3: Update ExpandableSection.tsx — mobile h2**
+
+In the same file, replace lines 36–43 (mobile collapsible button):
+
+Before:
+```tsx
+<h2
+  className="text-[var(--color-fg)] tracking-tight"
+  style={typescale.h2}
+>
+  {title}
+</h2>
+```
+
+After:
+```tsx
+<h2
+  style={typescale.sectionLabel}
+>
+  {title}
+</h2>
+```
+
+(No `mt-12` on mobile because the collapsible button already has its own `mb-4` spacing; adding `mt-12` would double-space. The `mb-4` in the parent button provides visual rhythm between collapsed sections.)
+
+Note: The mobile collapsible's expand chevron next to the 12px label is a tight tap target visually. Test on narrow viewports during Task 13 pilot QA. If the chevron+label combo feels too cramped, the escape hatch is bumping `sectionLabel.fontSize` to "14px" in `typography.ts` (applies everywhere consistently).
+
+- [ ] **Step 4: Update CaseStudyPage.tsx — fallback MDX h2**
+
+In `site/app/work/[slug]/CaseStudyPage.tsx`, replace lines 49–55:
+
+Before:
+```tsx
+if (paragraph.startsWith("## ")) {
+  return (
+    <h2 key={i} className="text-[var(--color-fg)] mt-10 mb-4 tracking-tight" style={typescale.h2}>
+      {paragraph.replace("## ", "")}
+    </h2>
+  );
+}
+```
+
+After:
+```tsx
+if (paragraph.startsWith("## ")) {
+  return (
+    <h2 key={i} className="mt-12 mb-4" style={typescale.sectionLabel}>
+      {paragraph.replace("## ", "")}
+    </h2>
+  );
+}
+```
+
+Note: `CaseStudyPage.tsx` renders for any slug NOT in `DEDICATED_ROUTES`. Currently all 7 live case studies are dedicated, so this path may be dormant — but keeping it consistent avoids future surprises.
+
+- [ ] **Step 5: TypeScript check**
+
+Run from `site/`: `npx tsc --noEmit`
+Expected: Zero errors — all `typescale.h2` consumers are now migrated to `typescale.sectionLabel`.
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add site/components/case-study/SectionHeading.tsx
-git commit -m "Convert case study h2 to small sentence-case tertiary label
+git add site/components/case-study/SectionHeading.tsx site/components/case-study/ExpandableSection.tsx "site/app/work/[slug]/CaseStudyPage.tsx"
+git commit -m "Convert case study h2s to small sentence-case tertiary labels
 
-Uses typescale.sectionLabel (12px weight 500 tertiary). Semantics stay
-<h2> for screen readers. mt-12 added for visual section separation."
+All three h2 consumers (SectionHeading, ExpandableSection desktop+mobile,
+CaseStudyPage fallback) now use typescale.sectionLabel. <h2> semantics
+preserved for screen readers. Visual treatment: 12px weight 500 tertiary."
 ```
 
 ---
