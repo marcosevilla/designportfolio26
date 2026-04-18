@@ -82,7 +82,6 @@ export default function StickyFooter() {
           onClose={() => setPaletteOpen(false)}
           mode={themeState.mode}
           coloredThemeName={themeState.coloredThemeName}
-          fontPairingName={themeState.fontPairingName}
           fontSizeOffset={themeState.fontSizeOffset}
           bioMode={dynamicBio.mode}
           gridPosition={dynamicBio.gridPosition}
@@ -91,7 +90,6 @@ export default function StickyFooter() {
           onSelectLight={themeState.selectLight}
           onSelectDark={themeState.selectDark}
           onSelectColored={themeState.selectColored}
-          onSelectFont={themeState.selectFont}
           onIncreaseFontSize={themeState.increaseFontSize}
           onDecreaseFontSize={themeState.decreaseFontSize}
           onResetAll={themeState.resetAll}
@@ -106,12 +104,10 @@ export default function StickyFooter() {
           onClose={() => setPaletteOpen(false)}
           mode={themeState.mode}
           coloredThemeName={themeState.coloredThemeName}
-          fontPairingName={themeState.fontPairingName}
           fontSizeOffset={themeState.fontSizeOffset}
           onSelectLight={themeState.selectLight}
           onSelectDark={themeState.selectDark}
           onSelectColored={themeState.selectColored}
-          onSelectFont={themeState.selectFont}
           onIncreaseFontSize={themeState.increaseFontSize}
           onDecreaseFontSize={themeState.decreaseFontSize}
           onResetAll={themeState.resetAll}
