@@ -169,7 +169,7 @@ function HConnector({
       {label && (
         <span
           className="text-[var(--color-fg-secondary)] whitespace-nowrap mt-1"
-          style={{ fontSize: "8px", fontFamily: "var(--font-mono)", letterSpacing: "0.02em" }}
+          style={{ fontSize: "8px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.02em" }}
         >
           {label}
         </span>
@@ -248,7 +248,7 @@ export default function SystemArchitecture() {
       <div className="p-6 pb-0">
         <div
           className="uppercase tracking-widest mb-5 text-[var(--color-fg-secondary)]"
-          style={{ fontSize: "9px", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}
+          style={{ fontSize: "9px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.1em" }}
         >
           Information architecture
         </div>
@@ -264,7 +264,7 @@ export default function SystemArchitecture() {
           >
             <div
               className="uppercase tracking-widest mb-3 text-[var(--color-fg)]"
-              style={{ fontSize: "10px", fontFamily: "var(--font-mono)", letterSpacing: "0.08em", fontWeight: 500 }}
+              style={{ fontSize: "10px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.08em", fontWeight: 500 }}
             >
               Staff dashboard
             </div>
@@ -343,7 +343,7 @@ export default function SystemArchitecture() {
           >
             <div
               className="uppercase tracking-widest mb-3 text-[var(--color-fg)]"
-              style={{ fontSize: "10px", fontFamily: "var(--font-mono)", letterSpacing: "0.08em", fontWeight: 500 }}
+              style={{ fontSize: "10px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.08em", fontWeight: 500 }}
             >
               Guest experience
             </div>
@@ -412,7 +412,7 @@ export default function SystemArchitecture() {
       <div className="p-6">
         <div
           className="uppercase tracking-widest mb-4 text-[var(--color-fg-secondary)]"
-          style={{ fontSize: "9px", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}
+          style={{ fontSize: "9px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.1em" }}
         >
           System objects
         </div>
@@ -488,7 +488,7 @@ export default function SystemArchitecture() {
       >
         <span
           className="text-[var(--color-fg-tertiary)]"
-          style={{ fontSize: "9px", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}
+          style={{ fontSize: "9px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.05em" }}
         >
           BUILT ON
         </span>
