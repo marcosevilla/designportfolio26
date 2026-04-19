@@ -90,7 +90,9 @@ function drawBell(
   const effectiveHeight = bellHeight * (1 - pulse);
   const { accent, accentSoft, fgTertiary } = frame.palette;
 
-  for (let y = cy - effectiveHeight; y <= cy + 2; y++) {
+  const yStart = Math.floor(cy - effectiveHeight);
+  const yEnd = Math.ceil(cy + 2);
+  for (let y = yStart; y <= yEnd; y++) {
     for (let x = cx - bellRadius; x <= cx + bellRadius; x++) {
       const dx = (x - cx) / bellRadius;
       const dy = (y - cy) / effectiveHeight;
