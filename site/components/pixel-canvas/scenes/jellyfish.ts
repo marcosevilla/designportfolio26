@@ -26,8 +26,8 @@ export const DEFAULT_CONFIG: JellyfishConfig = {
   pulseAmplitude: 0.12,
   varianceIntervalAvg: 7,
   varianceMultiplier: 1.7,
-  oralArmCount: 3,
-  oralArmLength: 28,
+  oralArmCount: 4,
+  oralArmLength: 14,
   oralArmLag: 0.08,
 };
 
@@ -97,10 +97,10 @@ function drawBell(
   const effectiveHeight = bellHeight * (1 - pulse);
   const { accent, accentSoft, fgTertiary } = frame.palette;
 
-  // Bell extends from top of dome (dy = -1) down to a rounded underside (dy ≈ 0.55).
-  // The radial perturbation naturally scallops the edges; the underside tapers in
-  // toward the bell opening where oral arms and tentacles will emerge.
-  const BELL_UNDERSIDE = 0.55;
+  // Bell extends from dy = -1 (top of dome) down to a rounded underside at dy ≈ 0.3.
+  // Keeps the classic mushroom-dome silhouette; the radial perturbation scallops the
+  // edges naturally. Oral arms and tentacles emerge from the bell opening below.
+  const BELL_UNDERSIDE = 0.3;
   const yStart = Math.floor(cy - effectiveHeight);
   const yEnd = Math.ceil(cy + BELL_UNDERSIDE * effectiveHeight + 1);
   for (let y = yStart; y <= yEnd; y++) {
@@ -140,20 +140,21 @@ function drawOralArms(
   const { accent, accentSoft } = frame.palette;
   // Lag → the oral arms "hang" behind the bell — they contract and release slightly after.
   const armSquish = lagPulse * 0.3; // arms compress 30% of pulse
-  const startY = bellCenterY + 2; // just below the bell skirt
+  // Start inside the bell opening so arms appear to emerge from the skirt.
+  // Bell is drawn after oral arms → the upper portion is naturally occluded.
+  const startY = bellCenterY - 2;
 
   for (let i = 0; i < oralArmCount; i++) {
     const tArm = oralArmCount === 1 ? 0 : (i / (oralArmCount - 1)) * 2 - 1; // -1..1
-    const rootX = cx + tArm * (bellRadius * 0.35);
+    const rootX = cx + tArm * (bellRadius * 0.3);
     const armLen = oralArmLength * (1 - armSquish);
-    const segmentCount = Math.round(armLen / 2);
 
-    for (let seg = 0; seg < segmentCount; seg++) {
-      const tSeg = seg / segmentCount; // 0..1 along arm
+    for (let seg = 0; seg < armLen; seg++) {
+      const tSeg = seg / armLen; // 0..1 along arm
       // Frilly wiggle: each segment offsets by sin of seg + pulse-driven phase
-      const wiggle = Math.sin(seg * 0.8 + frame.t * 2 + i) * (1 + tSeg * 1.5);
-      const x = rootX + wiggle * 0.6;
-      const y = startY + seg * 2;
+      const wiggle = Math.sin(seg * 0.6 + frame.t * 2 + i) * (1 + tSeg * 1.5);
+      const x = rootX + wiggle * 0.5;
+      const y = startY + seg;
       // Width taper from 2px at top to 1px at tip
       const width = tSeg < 0.5 ? 2 : 1;
       const color = tSeg < 0.3 ? accent : accentSoft;
@@ -189,8 +190,8 @@ export function createJellyfishScene(
         }
       }
 
-      drawBell(ctx, state, frame, pulse);
       drawOralArms(ctx, state, frame, pulse, lagPulse);
+      drawBell(ctx, state, frame, pulse);
     },
   };
 }
