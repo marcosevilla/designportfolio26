@@ -90,8 +90,12 @@ function drawBell(
   const effectiveHeight = bellHeight * (1 - pulse);
   const { accent, accentSoft, fgTertiary } = frame.palette;
 
+  // Bell extends from top of dome (dy = -1) down to a rounded underside (dy ≈ 0.55).
+  // The radial perturbation naturally scallops the edges; the underside tapers in
+  // toward the bell opening where oral arms and tentacles will emerge.
+  const BELL_UNDERSIDE = 0.55;
   const yStart = Math.floor(cy - effectiveHeight);
-  const yEnd = Math.ceil(cy + 2);
+  const yEnd = Math.ceil(cy + BELL_UNDERSIDE * effectiveHeight + 1);
   for (let y = yStart; y <= yEnd; y++) {
     for (let x = cx - bellRadius; x <= cx + bellRadius; x++) {
       const dx = (x - cx) / bellRadius;
@@ -99,7 +103,7 @@ function drawBell(
       const angle = Math.atan2(dy, dx);
       const perturb = 1 + 0.06 * Math.cos(angle * ribs);
       const r = Math.sqrt(dx * dx + dy * dy) / perturb;
-      if (dy > 0.15) continue;
+      if (dy > BELL_UNDERSIDE) continue;
       if (r > 1) continue;
 
       const highlight = Math.max(0, -dx * 0.5 - dy * 0.5);
