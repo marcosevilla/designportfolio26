@@ -12,6 +12,9 @@ export type JellyfishConfig = {
   pulseAmplitude: number;     // fraction of bellHeight to compress
   varianceIntervalAvg: number; // seconds (mean of exponential distribution)
   varianceMultiplier: number;  // amplitude scale for the big pulse
+  oralArmCount: number;
+  oralArmLength: number;
+  oralArmLag: number; // seconds — how much oral arm trails the bell pulse
 };
 
 export const DEFAULT_CONFIG: JellyfishConfig = {
@@ -23,6 +26,9 @@ export const DEFAULT_CONFIG: JellyfishConfig = {
   pulseAmplitude: 0.12,
   varianceIntervalAvg: 7,
   varianceMultiplier: 1.7,
+  oralArmCount: 3,
+  oralArmLength: 28,
+  oralArmLag: 0.08,
 };
 
 type PulseEvent = {
@@ -36,6 +42,7 @@ type State = {
   config: JellyfishConfig;
   nextVarianceEventAt: number;
   activeEvent: PulseEvent | null;
+  pulseHistory: Array<{ t: number; value: number }>; // for lag sampling
 };
 
 function sampleExponential(mean: number): number {
@@ -121,6 +128,40 @@ function drawBell(
   }
 }
 
+function drawOralArms(
+  ctx: CanvasRenderingContext2D,
+  state: State,
+  frame: FrameCtx,
+  pulse: number,
+  lagPulse: number
+): void {
+  const { bellRadius, bellCenterY, oralArmCount, oralArmLength } = state.config;
+  const cx = frame.width / 2;
+  const { accent, accentSoft } = frame.palette;
+  // Lag → the oral arms "hang" behind the bell — they contract and release slightly after.
+  const armSquish = lagPulse * 0.3; // arms compress 30% of pulse
+  const startY = bellCenterY + 2; // just below the bell skirt
+
+  for (let i = 0; i < oralArmCount; i++) {
+    const tArm = oralArmCount === 1 ? 0 : (i / (oralArmCount - 1)) * 2 - 1; // -1..1
+    const rootX = cx + tArm * (bellRadius * 0.35);
+    const armLen = oralArmLength * (1 - armSquish);
+    const segmentCount = Math.round(armLen / 2);
+
+    for (let seg = 0; seg < segmentCount; seg++) {
+      const tSeg = seg / segmentCount; // 0..1 along arm
+      // Frilly wiggle: each segment offsets by sin of seg + pulse-driven phase
+      const wiggle = Math.sin(seg * 0.8 + frame.t * 2 + i) * (1 + tSeg * 1.5);
+      const x = rootX + wiggle * 0.6;
+      const y = startY + seg * 2;
+      // Width taper from 2px at top to 1px at tip
+      const width = tSeg < 0.5 ? 2 : 1;
+      const color = tSeg < 0.3 ? accent : accentSoft;
+      rect(ctx, x - Math.floor(width / 2), y, width, 1, color);
+    }
+  }
+}
+
 export function createJellyfishScene(
   config: JellyfishConfig = DEFAULT_CONFIG
 ): Scene<State> {
@@ -130,10 +171,26 @@ export function createJellyfishScene(
       config: { ...config },
       nextVarianceEventAt: sampleExponential(config.varianceIntervalAvg),
       activeEvent: null,
+      pulseHistory: [],
     }),
     draw: (ctx, state, frame) => {
       const pulse = pulseAt(frame.t, state);
+      // Track pulse history for lag
+      state.pulseHistory.push({ t: frame.t, value: pulse });
+      // Trim history older than ~1 second (60 frames at 60fps)
+      while (state.pulseHistory.length > 60) state.pulseHistory.shift();
+      // Lookup lagged pulse value from history
+      const lagTarget = frame.t - state.config.oralArmLag;
+      let lagPulse = pulse;
+      for (let i = state.pulseHistory.length - 1; i >= 0; i--) {
+        if (state.pulseHistory[i].t <= lagTarget) {
+          lagPulse = state.pulseHistory[i].value;
+          break;
+        }
+      }
+
       drawBell(ctx, state, frame, pulse);
+      drawOralArms(ctx, state, frame, pulse, lagPulse);
     },
   };
 }
