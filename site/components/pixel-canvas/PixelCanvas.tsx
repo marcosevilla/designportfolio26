@@ -26,7 +26,6 @@ export default function PixelCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const paletteRef = useRef<Palette | null>(null);
   const reducedMotionRef = useRef(false);
-  const pausedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -70,12 +69,6 @@ export default function PixelCanvas({
     );
     io.observe(canvas);
 
-    // Visibility API — pause on tab switch
-    const onVisibility = () => {
-      pausedRef.current = document.hidden || !intersecting;
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-
     const stop = startEngine({
       ctx,
       scene,
@@ -91,7 +84,6 @@ export default function PixelCanvas({
       themeObserver.disconnect();
       mql.removeEventListener("change", onReducedChange);
       io.disconnect();
-      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [mounted, scene, widthCssPx, heightCssPx, pixelScale]);
 
