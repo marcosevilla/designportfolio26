@@ -9,6 +9,9 @@ function rgbFromCssVar(varName: string, fallback: string): string {
   return raw || fallback;
 }
 
+// Mid-gray fallback when a CSS var is missing or unparseable.
+const PARSE_FALLBACK_RGB = { r: 136, g: 136, b: 136 };
+
 function parseRgb(s: string): { r: number; g: number; b: number } {
   const hexMatch = s.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
   if (hexMatch) {
@@ -26,7 +29,12 @@ function parseRgb(s: string): { r: number; g: number; b: number } {
       b: parseInt(rgbMatch[3], 10),
     };
   }
-  return { r: 136, g: 136, b: 136 };
+  return PARSE_FALLBACK_RGB;
+}
+
+function normalize(s: string): string {
+  const { r, g, b } = parseRgb(s);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function blend(a: string, b: string, t: number): string {
@@ -39,9 +47,11 @@ function blend(a: string, b: string, t: number): string {
 }
 
 export function readPalette(): Palette {
-  const accent = rgbFromCssVar("--color-accent", "#B5651D");
-  const fgTertiary = rgbFromCssVar("--color-fg-tertiary", "rgba(17,17,17,0.35)");
-  const bg = rgbFromCssVar("--color-bg", "#ffffff");
+  const accent = normalize(rgbFromCssVar("--color-accent", "#B5651D"));
+  const fgTertiary = normalize(
+    rgbFromCssVar("--color-fg-tertiary", "rgba(17,17,17,0.35)")
+  );
+  const bg = normalize(rgbFromCssVar("--color-bg", "#ffffff"));
   const accentSoft = blend(accent, bg, 0.55);
   return { accent, accentSoft, fgTertiary, bg };
 }
