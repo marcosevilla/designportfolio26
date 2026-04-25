@@ -1,0 +1,11 @@
+{
+  "name": "portfolio-2026-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ascii:convert": "node scripts/video-to-ascii.mjs"
+  },
+  "devDependencies": {
+    "jimp": "^0.22.12"
+  }
+}

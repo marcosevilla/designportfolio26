@@ -25,3 +25,9 @@ Thumbs.db
 # Claude Code
 .claude/
 .superpowers/
+
+# Local video sources for offline ASCII conversion
+source-videos/*
+!source-videos/.gitkeep
+# Offline converter temp frames
+tmp/
