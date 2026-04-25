@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Hero from "./Hero";
-import BackgroundTexture from "./BackgroundTexture";
+import { BackgroundTexture } from "./BackgroundTexture";
 import DesktopSidebar from "./DesktopSidebar";
 import { setActivePanel } from "./SectionSnapContext";
 

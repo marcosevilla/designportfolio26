@@ -149,5 +149,3 @@ export function DynamicBioText({ position, className }: DynamicBioTextProps) {
     </div>
   );
 }
-
-export default DynamicBioText;

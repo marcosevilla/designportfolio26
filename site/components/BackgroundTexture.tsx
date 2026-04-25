@@ -341,4 +341,3 @@ export function BackgroundTexture() {
   );
 }
 
-export default BackgroundTexture;

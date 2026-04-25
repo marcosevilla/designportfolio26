@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import { PARAGRAPHS, PROMPTS, MAX_LEVEL, HERO_NAME, HERO_STATEMENT } from "@/lib/bio-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
@@ -77,6 +77,8 @@ const LOADING_DELAY = 1200;
 const INTRO_LOADING_DELAY = 1800;
 const INTRO_STORAGE_KEY = "portfolio-intro-seen";
 
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 type IntroPhase = "star1" | "subtitle" | "star2" | "bio" | "done";
 
 function hasSeenIntro(): boolean {
@@ -111,8 +113,8 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
   // Show dynamic mode only on desktop and when enabled
   const showDynamicBio = dynamicBio.isDynamic && !isMobile && introDone;
 
-  // Check sessionStorage + reduced motion on mount (client only)
-  useEffect(() => {
+  // Check sessionStorage + reduced motion before paint to avoid flash-of-blank-heading
+  useIsomorphicLayoutEffect(() => {
     if (reducedMotion || hasSeenIntro()) {
       setIntroPhase("done");
     }

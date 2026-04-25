@@ -211,5 +211,3 @@ export function DynamicBioGrid({ position, onPositionChange, disabled }: Dynamic
     </div>
   );
 }
-
-export default DynamicBioGrid;
