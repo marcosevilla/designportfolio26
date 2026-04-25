@@ -31,3 +31,5 @@ source-videos/*
 !source-videos/.gitkeep
 # Offline converter temp frames
 tmp/
+# Root node_modules (in addition to site/node_modules)
+/node_modules/
