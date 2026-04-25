@@ -4,15 +4,12 @@ import { useState } from "react";
 import QuickStats from "@/components/case-study/QuickStats";
 import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
-import SidebarTOCBridge from "@/components/case-study/SidebarTOCBridge";
-import TOCObserver from "@/components/case-study/TOCObserver";
 import NextProject from "@/components/case-study/NextProject";
 import PullQuote from "@/components/case-study/PullQuote";
-import ProgressBar from "@/components/case-study/ProgressBar";
-import InlineTOC from "@/components/case-study/InlineTOC";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
+import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import ProjectDetails from "@/components/case-study/ProjectDetails";
 import BrowserMockup from "@/components/fb-showcase/BrowserMockup";
 import MobileShowcase from "@/components/fb-showcase/MobileShowcase";
@@ -126,15 +123,7 @@ function DesignPrinciples() {
 
 export default function FBOrderingContent() {
   return (
-    <>
-      <ProgressBar />
-      <SidebarTOCBridge items={TOC_ITEMS} />
-      <TOCObserver sectionIds={TOC_ITEMS.map(i => i.id)} />
-
-      <article className="text-[var(--color-fg-secondary)]" style={typescale.body}>
-        <InlineTOC />
-        <div className="max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0 pt-24 lg:pt-[18vh]">
-
+    <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* Title + Subtitle + Project Details */}
         <div className="lg:grid lg:gap-x-20 lg:items-start" style={{ gridTemplateColumns: "2fr 1fr" }}>
           <div>
@@ -582,9 +571,6 @@ export default function FBOrderingContent() {
             href="/work/compendium"
           />
         </FadeIn>
-
-        </div>
-      </article>
-    </>
+    </CaseStudyShell>
   );
 }
