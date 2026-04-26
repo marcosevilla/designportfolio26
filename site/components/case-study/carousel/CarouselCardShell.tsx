@@ -32,7 +32,7 @@ export default function CarouselCardShell({
       onClick={onClick}
       aria-label={`Open ${study.title}`}
       aria-current={isActive ? "true" : undefined}
-      className="relative block overflow-hidden text-left"
+      className="relative block overflow-hidden text-left focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-[var(--color-accent)]"
       style={{
         // Default desktop dimensions; mobile override comes from carousel container
         width: "var(--carousel-card-w, 320px)",
