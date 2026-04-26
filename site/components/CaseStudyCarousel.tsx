@@ -1,56 +1,52 @@
 "use client";
 
+import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
+import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
-import { typescale } from "@/lib/typography";
 
 interface CaseStudyCarouselProps {
   studies: CaseStudyMeta[];
 }
 
-/**
- * Placeholder. Full implementation lands via the carousel-view plan
- * (docs/superpowers/plans/2026-04-26-carousel-view.md). Tasks 1-23
- * progressively replace this with the registry-based shell + drag mechanics.
- */
+const CARD_W = 320;
+const CARD_H = 420;
+const GAP = 24;
+
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
+  const handleCardClick = (slug: string) => {
+    // wired up in Task 17 (useExpandAndNavigate)
+    console.log("clicked", slug);
+  };
+
   return (
     <div
-      className="relative overflow-hidden"
+      className="relative"
       style={{
-        border: "1px dashed var(--color-border)",
-        padding: "48px 16px",
+        // Viewport-edge breakout — overrides the parent column width
+        marginLeft: "calc(-50vw + 50%)",
+        marginRight: "calc(-50vw + 50%)",
+        // Set CSS vars consumed by CarouselCardShell
+        ["--carousel-card-w" as string]: `${CARD_W}px`,
+        ["--carousel-card-h" as string]: `${CARD_H}px`,
       }}
     >
       <div
-        className="flex gap-4 overflow-x-auto pb-4"
-        style={{ scrollSnapType: "x mandatory" }}
+        className="flex justify-center"
+        style={{ gap: `${GAP}px`, padding: "32px 0" }}
       >
-        {studies.map((study) => (
-          <div
-            key={study.slug}
-            className="shrink-0 flex flex-col justify-end"
-            style={{
-              width: "280px",
-              height: "360px",
-              backgroundColor: "var(--color-surface-raised)",
-              padding: "20px",
-              scrollSnapAlign: "start",
-            }}
-          >
-            <div style={{ ...typescale.label, color: "var(--color-fg-tertiary)" }}>
-              {study.year}
-            </div>
-            <div style={{ ...typescale.h4, color: "var(--color-fg)", marginTop: "4px" }}>
-              {study.title}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div
-        className="absolute top-2 left-2"
-        style={{ ...typescale.label, color: "var(--color-fg-tertiary)" }}
-      >
-        carousel placeholder · Phase 1 implementation pending (see plan)
+        {studies.map((study, i) => {
+          const Custom = CAROUSEL_CARDS[study.slug];
+          const cardProps: CarouselCardProps = {
+            study,
+            isActive: i === 0,
+            onClick: () => handleCardClick(study.slug),
+          };
+          return Custom ? (
+            <Custom key={study.slug} {...cardProps} />
+          ) : (
+            <CarouselCardShell key={study.slug} {...cardProps} />
+          );
+        })}
       </div>
     </div>
   );
