@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import type { CaseStudyMeta } from "@/lib/types";
+import FBOrderingCarouselCard from "./FBOrderingCarouselCard";
 
 export interface CarouselCardProps {
   study: CaseStudyMeta;
@@ -7,9 +8,6 @@ export interface CarouselCardProps {
   onClick: () => void;
 }
 
-/**
- * Maps case study slug → custom carousel card component.
- * Studies without a registered component fall back to <CarouselCardShell> with no children
- * (shell auto-renders the gradient from study.gradient).
- */
-export const CAROUSEL_CARDS: Record<string, ComponentType<CarouselCardProps>> = {};
+export const CAROUSEL_CARDS: Record<string, ComponentType<CarouselCardProps>> = {
+  "fb-ordering": FBOrderingCarouselCard,
+};
