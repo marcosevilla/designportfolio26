@@ -5,15 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import FadeIn from "./FadeIn";
 import CaseStudyCard from "./CaseStudyCard";
 import CaseStudyListRow from "./CaseStudyListRow";
+import CaseStudyCarousel from "./CaseStudyCarousel";
 import type { CaseStudyMeta } from "@/lib/types";
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
-import { GridIcon, ListIcon, FilterIcon, CloseIcon } from "./Icons";
+import { GridIcon, ListIcon, CarouselIcon, FilterIcon, CloseIcon } from "./Icons";
 
 // ── View mode persistence ──
 
-type ViewMode = "cards" | "list";
+type ViewMode = "cards" | "list" | "carousel";
 const STORAGE_KEY = "work-view-mode";
 
 function useViewMode(): [ViewMode, (mode: ViewMode) => void, boolean] {
@@ -23,7 +24,7 @@ function useViewMode(): [ViewMode, (mode: ViewMode) => void, boolean] {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === "list") setMode("list");
+      if (saved === "list" || saved === "carousel") setMode(saved);
     } catch {}
     setHydrated(true);
   }, []);
@@ -200,6 +201,13 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
               >
                 <ListIcon />
               </ViewToggleButton>
+              <ViewToggleButton
+                active={viewMode === "carousel"}
+                onClick={() => handleSetView("carousel")}
+                label="Carousel view"
+              >
+                <CarouselIcon />
+              </ViewToggleButton>
             </div>
           )}
         </div>
@@ -329,7 +337,7 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
 
       {/* Content area with blur transition */}
       <AnimatePresence mode="wait" initial={false}>
-        {viewMode === "cards" ? (
+        {viewMode === "cards" && (
           <motion.div
             key={`cards-view-${filterKey}`}
             className="grid grid-cols-1 sm:grid-cols-2 gap-4"
@@ -353,7 +361,8 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
               );
             })}
           </motion.div>
-        ) : (
+        )}
+        {viewMode === "list" && (
           <motion.div
             key={`list-view-${filterKey}`}
             initial={{ opacity: 0, filter: "blur(4px)" }}
@@ -361,9 +370,20 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
             exit={{ opacity: 0, filter: "blur(4px)" }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            {filteredStudies.map((study, i) => (
+            {filteredStudies.map((study) => (
               <CaseStudyListRow key={study.slug} study={study} showYear={true} />
             ))}
+          </motion.div>
+        )}
+        {viewMode === "carousel" && (
+          <motion.div
+            key={`carousel-view-${filterKey}`}
+            initial={{ opacity: 0, filter: "blur(4px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(4px)" }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          >
+            <CaseStudyCarousel studies={filteredStudies} />
           </motion.div>
         )}
       </AnimatePresence>
