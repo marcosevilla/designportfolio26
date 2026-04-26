@@ -8,21 +8,12 @@ import {
   coloredThemes,
   type ThemeMode,
 } from "./ThemeToggle";
-import { DynamicBioGrid } from "./dynamic-bio";
-import type { GridPosition } from "@/lib/bio-content";
-
-type BioMode = "classic" | "dynamic";
-
 interface ThemePaletteProps {
   open: boolean;
   onClose: () => void;
   mode: ThemeMode;
   coloredThemeName: string | null;
   fontSizeOffset: number;
-  bioMode?: BioMode;
-  gridPosition?: GridPosition;
-  onBioModeToggle?: () => void;
-  onGridPositionChange?: (position: GridPosition) => void;
   onSelectLight: () => void;
   onSelectDark: () => void;
   onSelectColored: (name: string) => void;
@@ -44,10 +35,6 @@ export default function ThemePalette({
   mode,
   coloredThemeName,
   fontSizeOffset,
-  bioMode,
-  gridPosition,
-  onBioModeToggle,
-  onGridPositionChange,
   onSelectLight,
   onSelectDark,
   onSelectColored,
@@ -208,60 +195,6 @@ export default function ThemePalette({
         </button>
       </div>
 
-      {/* Dynamic Bio section (desktop only) */}
-      {!m && bioMode && onBioModeToggle && (
-        <div style={{ marginTop: "8px" }}>
-          {/* Toggle header */}
-          <button
-            onClick={onBioModeToggle}
-            aria-label={`Switch to ${bioMode === "classic" ? "dynamic" : "classic"} bio mode`}
-            className="flex items-center justify-between w-full rounded-none px-3 py-2"
-            style={actionBtnStyle}
-          >
-            <span className="text-[11px] uppercase tracking-wide">
-              Dynamic Bio
-            </span>
-            <div
-              className="relative rounded-full transition-colors duration-200"
-              style={{
-                width: "32px",
-                height: "18px",
-                backgroundColor: bioMode === "dynamic" ? "var(--color-accent)" : "var(--color-border)",
-              }}
-            >
-              <div
-                className="absolute top-[2px] rounded-full transition-transform duration-200"
-                style={{
-                  width: "14px",
-                  height: "14px",
-                  backgroundColor: "var(--color-bg)",
-                  transform: bioMode === "dynamic" ? "translateX(16px)" : "translateX(2px)",
-                }}
-              />
-            </div>
-          </button>
-
-          {/* Grid (shown when dynamic mode is enabled) */}
-          <AnimatePresence>
-            {bioMode === "dynamic" && gridPosition && onGridPositionChange && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                style={{ overflow: "hidden" }}
-              >
-                <div className="pt-3 flex justify-center">
-                  <DynamicBioGrid
-                    position={gridPosition}
-                    onPositionChange={onGridPositionChange}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
     </>
   );
 

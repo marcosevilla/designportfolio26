@@ -2,30 +2,22 @@
 
 import Image from "next/image";
 import BrowserMockup from "./BrowserMockup";
-import type { PreviewDialParams } from "../CaseStudyCard";
 
-interface FBCardPreviewProps {
-  previewDials?: PreviewDialParams;
-}
-
-export default function FBCardPreview({ previewDials }: FBCardPreviewProps) {
-  const d = previewDials;
-
-  // Resolve values — use dials if provided, otherwise static defaults
-  const dashX = d?.dashX ?? 30;
-  const dashY = d?.dashY ?? 26;
-  const dashHoverX = d?.dashHoverX ?? 10;
-  const dashHoverY = d?.dashHoverY ?? 30;
-  const dashTransitionMs = d?.dashTransitionMs ?? 1280;
-  const dashPadding = d?.dashPadding ?? 37;
-  const phoneLeft = d?.phoneLeft ?? 3;
-  const phoneBottom = d?.phoneBottom ?? -32;
-  const phoneWidth = d?.phoneWidth ?? 28;
-  const phoneHoverY = d?.phoneHoverY ?? -27;
-  const phoneOpacity = d?.phoneOpacity ?? 1;
-  const phoneHoverOpacity = d?.phoneHoverOpacity ?? 1;
-  const tintStrength = d?.tintStrength ?? 0;
-  const crossfadeMs = d?.crossfadeMs ?? 330;
+export default function FBCardPreview() {
+  const dashX = 30;
+  const dashY = 26;
+  const dashHoverX = 10;
+  const dashHoverY = 30;
+  const dashTransitionMs = 1280;
+  const dashPadding = 37;
+  const phoneLeft = 3;
+  const phoneBottom = -32;
+  const phoneWidth = 28;
+  const phoneHoverY = -27;
+  const phoneOpacity = 1;
+  const phoneHoverOpacity = 1;
+  const tintStrength = 0;
+  const crossfadeMs = 330;
 
   return (
     <>

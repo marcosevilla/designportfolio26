@@ -3,9 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import FadeIn from "./FadeIn";
-import { useDialKit } from "dialkit";
 import CaseStudyCard from "./CaseStudyCard";
-import type { CardDialParams } from "./CaseStudyCard";
 import CaseStudyListRow from "./CaseStudyListRow";
 import type { CaseStudyMeta } from "@/lib/types";
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
@@ -92,56 +90,6 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
   const [viewMode, setViewMode, hydrated] = useViewMode();
   const hasToggled = useRef(false);
   const showYears = getShowYear(studies);
-
-  // Single DialKit panel — controls only the F&B Ordering card
-  const cardDials = useDialKit("Card Hover", {
-    default: {
-      opacity: [1, 0, 1],
-      scale: [1, 0.9, 1.1],
-      borderRadius: [0, 0, 24],
-      padding: [20, 0, 48],
-    },
-    hover: {
-      scale: [1.01, 1, 1.1],
-      opacity: [1, 0, 1],
-      transitionMs: [700, 100, 1500],
-    },
-    shadow: {
-      offsetY: [8, 0, 40],
-      blur: [13, 0, 80],
-      opacity: [0.01, 0, 0.2],
-    },
-    hoverShadow: {
-      offsetY: [11, 0, 40],
-      blur: [19, 0, 80],
-      opacity: [0.08, 0, 0.3],
-    },
-    glow: {
-      radius: [250, 50, 400],
-      borderOpacity: [1, 0, 1],
-      innerOpacity: [0.1, 0, 0.2],
-      falloff: [70, 30, 100],
-    },
-    gridOpacity: [0.4, 0, 1],
-    gridSize: [14, 4, 48],
-    borderOpacity: [0.54, 0, 1],
-    preview: {
-      dashX: [30, -20, 50],
-      dashY: [26, -20, 50],
-      dashHoverX: [10, -20, 50],
-      dashHoverY: [30, -20, 50],
-      dashTransitionMs: [1280, 200, 2000],
-      dashPadding: [37, 0, 60],
-      phoneLeft: [3, -10, 30],
-      phoneBottom: [-32, -40, 10],
-      phoneWidth: [28, 5, 40],
-      phoneHoverY: [-27, -80, 0],
-      phoneOpacity: [1, 0, 1],
-      phoneHoverOpacity: [1, 0, 1],
-      tintStrength: [0, 0, 40],
-      crossfadeMs: [330, 100, 1000],
-    },
-  }) as unknown as CardDialParams;
 
   // ── Filter state ──
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -394,14 +342,13 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
               const isFirst = i === 0;
               const colClass = isFirst ? "sm:col-span-2" : "";
               const size = isFirst ? "hero" : "large";
-              const isFB = study.slug === "fb-ordering";
               return hasToggled.current ? (
                 <div key={study.slug} className={colClass}>
-                  <CaseStudyCard study={study} cardSize={size} showYear dialParams={isFB ? cardDials : undefined} />
+                  <CaseStudyCard study={study} cardSize={size} showYear />
                 </div>
               ) : (
                 <FadeIn key={study.slug} delay={i * 0.08} className={colClass}>
-                  <CaseStudyCard study={study} cardSize={size} showYear dialParams={isFB ? cardDials : undefined} />
+                  <CaseStudyCard study={study} cardSize={size} showYear />
                 </FadeIn>
               );
             })}

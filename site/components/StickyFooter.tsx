@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback } from "react";
 import { useThemeState } from "./ThemeToggle";
 import { useMarquee } from "./MarqueeContext";
-import { useDynamicBio } from "@/lib/dynamic-bio-store";
 import ThemePalette from "./ThemePalette";
 import { EmailIcon, LinkedInIcon, PaletteIcon, SmileyIcon } from "./Icons";
 
@@ -42,7 +41,6 @@ export default function StickyFooter() {
   const paletteButtonRef = useRef<HTMLDivElement>(null);
   const [anchorPos, setAnchorPos] = useState<{ top: number; left: number } | null>(null);
   const themeState = useThemeState();
-  const dynamicBio = useDynamicBio();
 
   const togglePalette = useCallback(() => {
     if (!paletteOpen && paletteButtonRef.current) {
@@ -83,10 +81,6 @@ export default function StickyFooter() {
           mode={themeState.mode}
           coloredThemeName={themeState.coloredThemeName}
           fontSizeOffset={themeState.fontSizeOffset}
-          bioMode={dynamicBio.mode}
-          gridPosition={dynamicBio.gridPosition}
-          onBioModeToggle={dynamicBio.toggleMode}
-          onGridPositionChange={dynamicBio.setGridPosition}
           onSelectLight={themeState.selectLight}
           onSelectDark={themeState.selectDark}
           onSelectColored={themeState.selectColored}
