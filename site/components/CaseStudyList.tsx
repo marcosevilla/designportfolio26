@@ -42,6 +42,9 @@ function useViewMode(): [ViewMode, (mode: ViewMode) => void, boolean] {
 
 // ── View toggle button ──
 
+// Sized + spaced like ActionIcon in HeroActions so the work-toggle row
+// reads as the same family as the email / linkedin / palette / smiley icons
+// next to the "Marco Sevilla" name at the top of the page.
 function ViewToggleButton({
   active,
   onClick,
@@ -57,7 +60,7 @@ function ViewToggleButton({
     <button
       onClick={onClick}
       aria-label={label}
-      className="flex items-center justify-start hover:text-[var(--color-accent)]"
+      className="flex items-center justify-center transition-colors hover:text-[var(--color-accent)]"
       style={{
         color: active
           ? "var(--color-accent)"
@@ -174,7 +177,7 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
                 onClick={() => setFilterOpen((o) => !o)}
                 label="Filter projects"
               >
-                <FilterIcon />
+                <FilterIcon size={14} />
               </ViewToggleButton>
               <div className="w-px h-4" style={{ backgroundColor: "var(--color-border)" }} />
               <ViewToggleButton
@@ -182,21 +185,21 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
                 onClick={() => handleSetView("cards")}
                 label="Card view"
               >
-                <GridIcon />
+                <GridIcon size={14} />
               </ViewToggleButton>
               <ViewToggleButton
                 active={viewMode === "list"}
                 onClick={() => handleSetView("list")}
                 label="List view"
               >
-                <ListIcon />
+                <ListIcon size={14} />
               </ViewToggleButton>
               <ViewToggleButton
                 active={viewMode === "carousel"}
                 onClick={() => handleSetView("carousel")}
                 label="Carousel view"
               >
-                <CarouselIcon />
+                <CarouselIcon size={14} />
               </ViewToggleButton>
             </div>
           )}
