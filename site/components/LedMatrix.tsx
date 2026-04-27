@@ -46,14 +46,6 @@ const RIPPLE_RING_STAGGER_MS = 360;
 const RIPPLE_RING_DECAY = 0.66;
 const RIPPLE_GLOW_CAP = 0.45;
 
-// ── Hover (hydrophobic repulsion) ────────────────────────────────────────
-// Cursor pushes dots away from itself within HOVER_REPEL_RADIUS, with a
-// smooth falloff. Closer dots get pushed harder, up to HOVER_MAX_DISP_FRAC
-// of the cell spacing. Replaces the previous flashlight effect.
-const HOVER_REPEL_RADIUS = 110;
-const HOVER_MAX_DISP_FRAC = 1.6;
-const HOVER_FADE_RATE = 0.12;
-
 // ── Idle Perlin ──────────────────────────────────────────────────────────
 const IDLE_INTERVAL_MIN_MS = 3500;
 const IDLE_INTERVAL_MAX_MS = 9000;
@@ -322,12 +314,6 @@ uniform sampler2D u_feedbackTex;
 uniform sampler2D u_lissajousTex;
 uniform vec2 u_gridSize; // (cols, rows)
 
-// Hover (hydrophobic repulsion — dots flee the cursor)
-uniform vec2 u_hoverPos;
-uniform float u_hoverAlpha;
-uniform float u_hoverRepelRadius;
-uniform float u_hoverMaxDisp;
-
 // Click ripples — vec4(x, y, age, strength) per ring
 #define MAX_RIPPLES 16
 uniform int u_rippleCount;
@@ -391,20 +377,6 @@ void main() {
   // Grid cell + center + dot mask
   vec2 cellIdx = floor(uv / u_spacing);
   vec2 cellCenter = (cellIdx + 0.5) * u_spacing;
-
-  // Hydrophobic repulsion — push the dot's render position away from the
-  // cursor (cellIdx stays natural, only the rendered footprint moves so
-  // dots near the cursor visibly flee, leaving a clear zone underneath).
-  if (u_hoverAlpha > 0.001) {
-    vec2 fromMouse = cellCenter - u_hoverPos;
-    float dM = length(fromMouse);
-    if (dM < u_hoverRepelRadius && dM > 0.001) {
-      float t = 1.0 - dM / u_hoverRepelRadius;
-      t = t * t; // smooth falloff
-      cellCenter += (fromMouse / dM) * t * u_hoverMaxDisp * u_hoverAlpha;
-    }
-  }
-
   float distToDot = distance(uv, cellCenter);
 
   // Rounded-rect corner mask in cell space
@@ -734,10 +706,6 @@ export default function LedMatrix() {
     const uSceneSparkles = u("u_sceneSparkles");
     const uSceneWaveform = u("u_sceneWaveform");
     const uSceneChladni = u("u_sceneChladni");
-    const uHoverPos = u("u_hoverPos");
-    const uHoverAlpha = u("u_hoverAlpha");
-    const uHoverRepelRadius = u("u_hoverRepelRadius");
-    const uHoverMaxDisp = u("u_hoverMaxDisp");
     const uRippleCount = u("u_rippleCount");
     const uRipples = u("u_ripples");
     const uSparkleCount = u("u_sparkleCount");
@@ -834,10 +802,6 @@ export default function LedMatrix() {
     const ripples: Ripple[] = [];
     const idleWaves: IdleWave[] = [];
     let nextIdleAt = 0;
-    let cursorX = 0;
-    let cursorY = 0;
-    let cursorTargetAlpha = 0;
-    let cursorAlpha = 0;
     const analyzer = new AudioAnalyzer();
     let analysis: AnalysisSnapshot | null = null;
 
@@ -915,9 +879,6 @@ export default function LedMatrix() {
       const curBarPhase = analysis?.barPhase ?? 0;
       if (curBarPhase < 0.1 && prevBarPhase > 0.9) barIndex++;
       prevBarPhase = curBarPhase;
-
-      // Cursor smoothing
-      cursorAlpha += (cursorTargetAlpha - cursorAlpha) * HOVER_FADE_RATE;
 
       // Boot fade
       const bootP = Math.min(1, (now - t0) / BOOT_FADE_MS);
@@ -1304,11 +1265,6 @@ export default function LedMatrix() {
       gl.uniform1i(uSceneWaveform, scenes.has("waveform") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneChladni, scenes.has("chladni") && d.master.enabled ? 1 : 0);
 
-      gl.uniform2f(uHoverPos, cursorX * dpr, cursorY * dpr);
-      gl.uniform1f(uHoverAlpha, cursorAlpha);
-      gl.uniform1f(uHoverRepelRadius, HOVER_REPEL_RADIUS * dpr);
-      gl.uniform1f(uHoverMaxDisp, SPACING * HOVER_MAX_DISP_FRAC * dpr);
-
       gl.uniform1i(uRippleCount, visibleRipples);
       gl.uniform4fv(uRipples, rippleArr);
 
@@ -1366,17 +1322,6 @@ export default function LedMatrix() {
     };
     canvas.addEventListener("click", handleClick);
 
-    const handleMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      cursorX = e.clientX - rect.left;
-      cursorY = e.clientY - rect.top;
-      cursorTargetAlpha = 1;
-    };
-    const handleLeave = () => { cursorTargetAlpha = 0; };
-    canvas.addEventListener("mousemove", handleMove);
-    canvas.addEventListener("mouseenter", handleMove);
-    canvas.addEventListener("mouseleave", handleLeave);
-
     const handleResize = () => resize();
     window.addEventListener("resize", handleResize);
 
@@ -1389,9 +1334,6 @@ export default function LedMatrix() {
     return () => {
       cancelAnimationFrame(raf);
       canvas.removeEventListener("click", handleClick);
-      canvas.removeEventListener("mousemove", handleMove);
-      canvas.removeEventListener("mouseenter", handleMove);
-      canvas.removeEventListener("mouseleave", handleLeave);
       window.removeEventListener("resize", handleResize);
       themeObserver.disconnect();
       gl.deleteProgram(program);
