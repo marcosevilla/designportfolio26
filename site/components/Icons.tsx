@@ -18,41 +18,44 @@ export function BackChevronIcon({ size = 14, className }: IconProps) {
 
 // ── View toggles ──
 
+// All view-toggle icons use viewBox 24×24 with strokeWidth 1.5, matching the
+// EmailIcon / LinkedInIcon / PaletteIcon / SmileyIcon family rendered by
+// HeroActions. Same proportional stroke weight regardless of render size.
 export function GridIcon({ size = 16, className }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect x="2" y="2" width="5" height="5" />
-      <rect x="9" y="2" width="5" height="5" />
-      <rect x="2" y="9" width="5" height="5" />
-      <rect x="9" y="9" width="5" height="5" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="4" y="4" width="6" height="6" />
+      <rect x="14" y="4" width="6" height="6" />
+      <rect x="4" y="14" width="6" height="6" />
+      <rect x="14" y="14" width="6" height="6" />
     </svg>
   );
 }
 
 export function ListIcon({ size = 16, className }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <line x1="2" y1="4" x2="14" y2="4" />
-      <line x1="2" y1="8" x2="14" y2="8" />
-      <line x1="2" y1="12" x2="14" y2="12" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
     </svg>
   );
 }
 
 export function CarouselIcon({ size = 16, className }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect x="2" y="5" width="3" height="6" />
-      <rect x="6.5" y="3" width="3" height="10" />
-      <rect x="11" y="5" width="3" height="6" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="4" y="8" width="4" height="8" />
+      <rect x="10" y="5" width="4" height="14" />
+      <rect x="16" y="8" width="4" height="8" />
     </svg>
   );
 }
 
 export function FilterIcon({ size = 16, className }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M2 4h12M4 8h8M6 12h4" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 6h18M6 12h12M9 18h6" />
     </svg>
   );
 }
