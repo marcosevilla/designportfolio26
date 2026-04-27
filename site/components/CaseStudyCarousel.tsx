@@ -104,12 +104,15 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const settleTo = (index: number) => {
     const clamped = Math.max(0, Math.min(studies.length - 1, index));
     animRef.current?.stop();
-    // Reset velocity so a rapidly-cancelled prior animation doesn't carry its
-    // momentum into the new one and cause a runaway overshoot.
+    console.log("[settleTo]", { index, clamped, target: -clamped * SPREAD, offsetXBefore: offsetX.get() });
     animRef.current = animate(offsetX, -clamped * SPREAD, { ...SETTLE_SPRING, velocity: 0 });
   };
 
-  const onPanStart = () => {
+  // Capture start position on pointer-down rather than onPanStart, because
+  // framer-motion's onPan can fire BEFORE onPanStart in some cases — and if
+  // panStartOffsetRef is still stale, the first pan event sets offsetX to
+  // (0 + info.offset.x), snapping the whole carousel to card 0.
+  const onPointerDown = () => {
     animRef.current?.stop();
     panStartOffsetRef.current = offsetX.get();
   };
@@ -130,6 +133,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     const projected = offsetX.get() + info.velocity.x * VELOCITY_FACTOR;
     const clamped = Math.max(minOffset, Math.min(maxOffset, projected));
     const snapIndex = Math.round(-clamped / SPREAD);
+    console.log("[onPanEnd]", { offsetXNow: offsetX.get(), velocity: info.velocity.x, projected, snapIndex });
     settleTo(snapIndex);
   };
 
@@ -196,7 +200,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
         ref={trackRef}
         className="relative flex items-center justify-center"
         style={{ width: "100%", height: `${CARD_H + 64}px`, touchAction: "pan-y" }}
-        onPanStart={onPanStart}
+        onPointerDown={onPointerDown}
         onPan={onPan}
         onPanEnd={onPanEnd}
       >
