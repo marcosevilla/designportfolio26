@@ -1,7 +1,8 @@
 /** All available visualizer scenes. Each is an entirely different "system"
  *  layered behavior preset rather than a tweak on the existing one. */
 export type VisualizerScene =
-  | "spectrum"     // bass disks + concentric frequency rings + sparkles (current)
+  | "waveform"     // oscilloscope — direct audio waveform across the matrix
+  | "spectrum"     // bass disks + concentric frequency rings + sparkles
   | "chladni"      // nodal sand plate — sound sculpts geometric patterns
   | "drumhead"     // 2D wave equation — onsets tap a drum
   | "feedback"     // last frame is rotated/zoomed/decayed and re-drawn — trails
@@ -16,6 +17,7 @@ export type SceneMeta = {
 };
 
 export const SCENES: SceneMeta[] = [
+  { id: "waveform",    label: "Waveform",    hint: "Oscilloscope of the audio signal" },
   { id: "spectrum",    label: "Spectrum",    hint: "Disks + rings + sparkles" },
   { id: "chladni",     label: "Chladni",     hint: "Nodal sand plate" },
   { id: "drumhead",    label: "Drumhead",    hint: "Wave-equation drumhead" },

@@ -3,6 +3,7 @@
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES, type VisualizerScene } from "@/lib/visualizer-scenes";
 import {
+  WaveformSceneIcon,
   SpectrumSceneIcon,
   ChladniSceneIcon,
   DrumheadSceneIcon,
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 
 const ICONS: Record<VisualizerScene, React.FC<{ size?: number }>> = {
+  waveform: WaveformSceneIcon,
   spectrum: SpectrumSceneIcon,
   chladni: ChladniSceneIcon,
   drumhead: DrumheadSceneIcon,

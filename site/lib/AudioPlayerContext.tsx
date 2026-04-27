@@ -36,6 +36,8 @@ interface AudioPlayerState {
   closeSession: () => void;
   // Visualizer
   getFrequencyData: (() => Uint8Array | null) | null;
+  /** Time-domain (waveform) samples — one byte per sample, 128 = silence. */
+  getTimeDomainData: (() => Uint8Array | null) | null;
   /** AudioContext sample rate (e.g., 44100, 48000). Null until first play. */
   getSampleRate: () => number | null;
 }
@@ -58,6 +60,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const freqDataRef = useRef<Uint8Array | null>(null);
+  const timeDataRef = useRef<Uint8Array | null>(null);
 
   // Spotify-style rewind tracking
   const prevPressedAtRef = useRef<number>(0);
@@ -149,6 +152,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       sourceRef.current = src;
       analyserRef.current = an;
       freqDataRef.current = new Uint8Array(new ArrayBuffer(an.frequencyBinCount));
+      timeDataRef.current = new Uint8Array(new ArrayBuffer(an.fftSize));
     } catch (err) {
       // Some browsers (Safari iOS) block MediaElementSource when the audio
       // is cross-origin; fall through silently — playback still works without
@@ -234,6 +238,14 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     return buf;
   }, []);
 
+  const getTimeDomainData = useCallback(() => {
+    const an = analyserRef.current;
+    const buf = timeDataRef.current;
+    if (!an || !buf) return null;
+    an.getByteTimeDomainData(buf as Uint8Array<ArrayBuffer>);
+    return buf;
+  }, []);
+
   const getSampleRate = useCallback(() => {
     return audioCtxRef.current?.sampleRate ?? null;
   }, []);
@@ -258,6 +270,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       closePanel,
       closeSession,
       getFrequencyData,
+      getTimeDomainData,
       getSampleRate,
     }),
     [
@@ -279,6 +292,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       closePanel,
       closeSession,
       getFrequencyData,
+      getTimeDomainData,
       getSampleRate,
     ]
   );

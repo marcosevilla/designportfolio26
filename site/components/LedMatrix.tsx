@@ -197,6 +197,7 @@ export default function LedMatrix() {
     isPlaying: audio.isPlaying,
     track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
+    getTimeDomainData: audio.getTimeDomainData,
     getSampleRate: audio.getSampleRate,
     scenes: activeScenes,
   });
@@ -204,6 +205,7 @@ export default function LedMatrix() {
     isPlaying: audio.isPlaying,
     track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
+    getTimeDomainData: audio.getTimeDomainData,
     getSampleRate: audio.getSampleRate,
     scenes: activeScenes,
   };
@@ -481,6 +483,24 @@ export default function LedMatrix() {
 
       // ── Per-frame scene state updates (before the per-dot loop) ──────────
       const scenes = aState.scenes;
+
+      // WAVEFORM — sample audio's time-domain data once per frame and cache
+      // the y-position for each column. The per-dot loop just reads from it.
+      let waveformY: Float32Array | null = null;
+      if (scenes.has("waveform") && audioMix > 0.01) {
+        const td = aState.getTimeDomainData?.();
+        if (td) {
+          waveformY = new Float32Array(cols);
+          const half = cssH / 2;
+          const amp = half * 0.85; // a bit of margin so peaks don't clip
+          for (let c = 0; c < cols; c++) {
+            const sampleIdx = Math.floor((c / cols) * td.length);
+            const sample = td[Math.min(sampleIdx, td.length - 1)];
+            const a = (sample - 128) / 128; // -1..1
+            waveformY[c] = half + a * amp;
+          }
+        }
+      }
 
       // CHLADNI — modes drift smoothly + rotation + phase. Strong onsets
       // snap to a new random (m, n) for occasional dramatic shape changes.
@@ -977,6 +997,21 @@ export default function LedMatrix() {
               const v = persistA[cellIdx];
               if (v > 0.01) {
                 addColor(v * audioMix, midsCol);
+              }
+            }
+
+            // ── WAVEFORM scene ────────────────────────────────────────────
+            // Oscilloscope: each column samples the audio signal; dots near
+            // the resulting line glow. The simplest possible visualizer —
+            // it's literally the shape of the sound.
+            if (masterEnabled && audioMix > 0.01 && scenes.has("waveform") && waveformY) {
+              const lineY = waveformY[cellC];
+              const dy = py - lineY;
+              const thickness = 6;
+              if (Math.abs(dy) < thickness) {
+                const u = Math.abs(dy) / thickness;
+                const fall = 0.5 * (1 + Math.cos(Math.PI * u));
+                addColor(fall * audioMix, midsCol);
               }
             }
 

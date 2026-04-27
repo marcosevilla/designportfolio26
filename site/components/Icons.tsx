@@ -168,6 +168,14 @@ export function SkipForwardIcon({ size = 18, className, style }: IconProps) {
 
 // ── Visualizer scenes ──
 
+export function WaveformSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M2 12 Q5 5, 8 12 T14 12 T20 12 T26 12" />
+    </svg>
+  );
+}
+
 export function SpectrumSceneIcon({ size = 14, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
