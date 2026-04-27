@@ -140,20 +140,45 @@ export default function ScrambleText({
 
   return (
     <span aria-label={text}>
-      {chars.map((c, i) => (
-        <span
-          key={i}
-          aria-hidden="true"
-          style={{
-            opacity: visible[i] ? 1 : 0,
-            color: charColors[i] ?? undefined,
-            display: "inline-block",
-            whiteSpace: "pre",
-          }}
-        >
-          {c}
-        </span>
-      ))}
+      {chars.map((c, i) => {
+        const finalChar = text[i];
+        const isScrambling = c !== finalChar || charColors[i] !== null;
+        return (
+          <span
+            key={i}
+            aria-hidden="true"
+            style={{
+              position: "relative",
+              display: "inline-block",
+              whiteSpace: "pre",
+            }}
+          >
+            {/* Layout reserver — always the final char, locks slot width so
+                line wrapping is identical from frame 0 through settle. */}
+            <span
+              style={{
+                visibility: isScrambling ? "hidden" : "visible",
+                opacity: visible[i] ? 1 : 0,
+              }}
+            >
+              {finalChar}
+            </span>
+            {/* Scramble overlay — random char on top, doesn't affect layout. */}
+            {isScrambling && (
+              <span
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  opacity: visible[i] ? 1 : 0,
+                  color: charColors[i] ?? undefined,
+                }}
+              >
+                {c}
+              </span>
+            )}
+          </span>
+        );
+      })}
     </span>
   );
 }

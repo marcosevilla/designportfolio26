@@ -1,0 +1,356 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+
+// Geometry
+const SPACING = 5;          // px between dot centers
+const DOT_BASE = 2;         // px diameter at rest
+const DOT_BLOOM = 3;        // px diameter when fully lit
+const HEIGHT = 200;         // px
+const CORNER_RADIUS = 12;   // px — rounded-rect mask, dots outside are skipped
+
+// Boot
+const BOOT_FADE_MS = 400;
+
+// Ripples — pebble-in-water: each click emits a stagger of concentric rings
+const RIPPLE_TOTAL_MS = 2800;       // per-ring lifetime
+const RIPPLE_CROSS_MS = 2000;       // time for one ring to traverse the longer axis
+const RIPPLE_RING_PX = 9;           // wavefront thickness (soft bell falloff)
+const RIPPLE_RING_COUNT = 4;        // rings emitted per click
+const RIPPLE_RING_STAGGER_MS = 360; // delay between successive rings being born
+const RIPPLE_RING_DECAY = 0.66;     // each subsequent ring's intensity multiplier
+const RIPPLE_GLOW_CAP = 0.45;       // overall max-glow ceiling — keeps it subtle
+
+// Hover — soft cursor flashlight
+const HOVER_RADIUS = 56;            // px — flashlight reach
+const HOVER_INTENSITY = 0.4;        // max contribution at the cursor center
+const HOVER_FADE_RATE = 0.12;       // exponential approach per frame (60fps ≈ ~86ms half-life)
+
+// Idle Perlin waves — randomly triggered, varying strength
+const IDLE_INTERVAL_MIN_MS = 3500;
+const IDLE_INTERVAL_MAX_MS = 9000;
+const IDLE_DURATION_MIN_MS = 6000;
+const IDLE_DURATION_MAX_MS = 12000;
+const IDLE_INTENSITY_MIN = 0.18;
+const IDLE_INTENSITY_MAX = 0.55;
+const IDLE_NOISE_SCALE = 0.018;     // spatial frequency
+const IDLE_NOISE_TIME_RATE = 0.00018; // temporal drift
+
+type Ripple = { x: number; y: number; t0: number; strength: number };
+type IdleWave = {
+  t0: number;
+  duration: number;
+  intensity: number;
+  ox: number; // noise offset
+  oy: number;
+  drift: number;
+};
+
+// ── Tiny 2D value-noise (smooth, deterministic) ─────────────────────────
+// Not true Perlin, but gives the same visual character — smooth, organic,
+// no axis-aligned artefacts at our scale — and is small + fast.
+const PERM_SIZE = 256;
+const PERM = (() => {
+  const p = new Uint8Array(PERM_SIZE * 2);
+  const base = new Uint8Array(PERM_SIZE);
+  for (let i = 0; i < PERM_SIZE; i++) base[i] = i;
+  // Deterministic shuffle (xorshift)
+  let s = 0x9e3779b9;
+  for (let i = PERM_SIZE - 1; i > 0; i--) {
+    s ^= s << 13; s ^= s >>> 17; s ^= s << 5;
+    const j = (s >>> 0) % (i + 1);
+    const tmp = base[i]; base[i] = base[j]; base[j] = tmp;
+  }
+  for (let i = 0; i < PERM_SIZE * 2; i++) p[i] = base[i & (PERM_SIZE - 1)];
+  return p;
+})();
+
+function smooth(t: number) {
+  return t * t * (3 - 2 * t);
+}
+
+function valueNoise2D(x: number, y: number): number {
+  const xi = Math.floor(x) & (PERM_SIZE - 1);
+  const yi = Math.floor(y) & (PERM_SIZE - 1);
+  const xf = x - Math.floor(x);
+  const yf = y - Math.floor(y);
+  const v00 = PERM[PERM[xi] + yi] / 255;
+  const v10 = PERM[PERM[xi + 1] + yi] / 255;
+  const v01 = PERM[PERM[xi] + yi + 1] / 255;
+  const v11 = PERM[PERM[xi + 1] + yi + 1] / 255;
+  const u = smooth(xf);
+  const v = smooth(yf);
+  const a = v00 + (v10 - v00) * u;
+  const b = v01 + (v11 - v01) * u;
+  return a + (b - a) * v; // 0..1
+}
+
+// ── Color helpers ────────────────────────────────────────────────────────
+function parseColor(c: string): [number, number, number] {
+  const s = c.trim();
+  if (s.startsWith("#")) {
+    const hex = s.slice(1);
+    const full = hex.length === 3 ? hex.split("").map((x) => x + x).join("") : hex;
+    return [
+      parseInt(full.slice(0, 2), 16),
+      parseInt(full.slice(2, 4), 16),
+      parseInt(full.slice(4, 6), 16),
+    ];
+  }
+  const m = s.match(/rgba?\(\s*(\d+)\s*[,\s]\s*(\d+)\s*[,\s]\s*(\d+)/);
+  if (m) return [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])];
+  return [180, 180, 180];
+}
+
+export default function LedMatrix() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let dpr = window.devicePixelRatio || 1;
+    let cssW = 0;
+    let cssH = HEIGHT;
+    let cols = 0;
+    let rows = 0;
+
+    let offColor: [number, number, number] = [230, 230, 230];
+    let onColor: [number, number, number] = [181, 101, 29];
+
+    const refreshColors = () => {
+      const styles = getComputedStyle(document.documentElement);
+      const offRaw = styles.getPropertyValue("--color-border").trim();
+      const onRaw = styles.getPropertyValue("--color-accent").trim();
+      if (offRaw) offColor = parseColor(offRaw);
+      if (onRaw) onColor = parseColor(onRaw);
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      cssW = rect.width;
+      cssH = HEIGHT;
+      dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      cols = Math.floor(cssW / SPACING);
+      rows = Math.floor(cssH / SPACING);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    refreshColors();
+    resize();
+
+    const ripples: Ripple[] = [];
+    const idleWaves: IdleWave[] = [];
+    let nextIdleAt = 0;
+
+    // Cursor flashlight state
+    let cursorX = 0;
+    let cursorY = 0;
+    let cursorTargetAlpha = 0; // 1 when over canvas, 0 when not
+    let cursorAlpha = 0;       // smoothed value, drives the actual glow
+
+    const t0 = performance.now();
+    let raf = 0;
+
+    const scheduleNextIdle = (now: number) => {
+      nextIdleAt = now + IDLE_INTERVAL_MIN_MS + Math.random() * (IDLE_INTERVAL_MAX_MS - IDLE_INTERVAL_MIN_MS);
+    };
+    scheduleNextIdle(t0);
+
+    const draw = (now: number) => {
+      const bootP = Math.min(1, (now - t0) / BOOT_FADE_MS);
+
+      // Smooth cursor fade in/out
+      cursorAlpha += (cursorTargetAlpha - cursorAlpha) * HOVER_FADE_RATE;
+
+      // Spawn idle waves
+      if (!reducedMotion && now >= nextIdleAt) {
+        idleWaves.push({
+          t0: now,
+          duration: IDLE_DURATION_MIN_MS + Math.random() * (IDLE_DURATION_MAX_MS - IDLE_DURATION_MIN_MS),
+          intensity: IDLE_INTENSITY_MIN + Math.random() * (IDLE_INTENSITY_MAX - IDLE_INTENSITY_MIN),
+          ox: Math.random() * 1000,
+          oy: Math.random() * 1000,
+          drift: 0.6 + Math.random() * 0.8,
+        });
+        scheduleNextIdle(now);
+      }
+
+      // Cull expired
+      for (let i = idleWaves.length - 1; i >= 0; i--) {
+        if (now - idleWaves[i].t0 > idleWaves[i].duration) idleWaves.splice(i, 1);
+      }
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        if (now - ripples[i].t0 > RIPPLE_TOTAL_MS) ripples.splice(i, 1);
+      }
+
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const maxAxis = Math.max(cssW, cssH);
+
+      for (let r = 0; r < rows; r++) {
+        const py = (r + 0.5) * SPACING;
+        for (let c = 0; c < cols; c++) {
+          const px = (c + 0.5) * SPACING;
+
+          // Rounded-rect mask: skip dots in the corner regions whose centers
+          // fall outside a circle of CORNER_RADIUS around the corner center.
+          const dxL = CORNER_RADIUS - px;
+          const dxR = px - (cssW - CORNER_RADIUS);
+          const dyT = CORNER_RADIUS - py;
+          const dyB = py - (cssH - CORNER_RADIUS);
+          const cx = dxL > 0 ? dxL : dxR > 0 ? dxR : 0;
+          const cy = dyT > 0 ? dyT : dyB > 0 ? dyB : 0;
+          if (cx > 0 && cy > 0 && cx * cx + cy * cy > CORNER_RADIUS * CORNER_RADIUS) continue;
+
+          let lit = 0; // 0..1
+
+          if (!reducedMotion) {
+            // Idle waves contribution
+            for (let i = 0; i < idleWaves.length; i++) {
+              const w = idleWaves[i];
+              const age = now - w.t0;
+              const t = age / w.duration; // 0..1
+              const env = Math.sin(t * Math.PI); // 0..1..0
+              if (env <= 0) continue;
+              const n = valueNoise2D(
+                px * IDLE_NOISE_SCALE + w.ox,
+                py * IDLE_NOISE_SCALE + w.oy + age * IDLE_NOISE_TIME_RATE * w.drift
+              );
+              // Threshold → only the brighter half of noise lights up
+              const v = Math.max(0, n - 0.5) * 2;
+              lit += env * w.intensity * v;
+            }
+
+            // Ripple contributions (each ring is its own entry).
+            // Wavefront uses a smooth cosine bell so dots ease in and out
+            // of brightness instead of having a hard triangular edge.
+            // Lifetime envelope is a sine arc — bloom in, bloom out.
+            let rippleLit = 0;
+            for (let i = 0; i < ripples.length; i++) {
+              const rp = ripples[i];
+              const age = now - rp.t0;
+              if (age < 0) continue; // not yet born (staggered ring)
+              const radius = (age / RIPPLE_CROSS_MS) * maxAxis;
+              const dx = px - rp.x;
+              const dy = py - rp.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const offFront = Math.abs(dist - radius);
+              if (offFront < RIPPLE_RING_PX) {
+                const u = offFront / RIPPLE_RING_PX; // 0 at front, 1 at edge
+                const ringIntensity = 0.5 * (1 + Math.cos(Math.PI * u));
+                const tLife = age / RIPPLE_TOTAL_MS; // 0..1
+                const ageEnv = Math.sin(tLife * Math.PI); // 0→1→0 bell
+                rippleLit += ringIntensity * ageEnv * rp.strength;
+              }
+            }
+            lit += Math.min(rippleLit, 1) * RIPPLE_GLOW_CAP;
+
+            // Cursor flashlight — soft radial bloom under the mouse.
+            if (cursorAlpha > 0.001) {
+              const dxC = px - cursorX;
+              const dyC = py - cursorY;
+              const distC = Math.sqrt(dxC * dxC + dyC * dyC);
+              if (distC < HOVER_RADIUS) {
+                const u = distC / HOVER_RADIUS;
+                const fall = 0.5 * (1 + Math.cos(Math.PI * u)); // cosine bell, 1 at center → 0 at edge
+                lit += fall * HOVER_INTENSITY * cursorAlpha;
+              }
+            }
+          }
+
+          if (lit > 1) lit = 1;
+
+          // Color: lerp off → on
+          const rC = offColor[0] + (onColor[0] - offColor[0]) * lit;
+          const gC = offColor[1] + (onColor[1] - offColor[1]) * lit;
+          const bC = offColor[2] + (onColor[2] - offColor[2]) * lit;
+          // Boot fade applies to alpha
+          const alpha = bootP;
+
+          const size = DOT_BASE + (DOT_BLOOM - DOT_BASE) * lit;
+
+          ctx.fillStyle = `rgba(${rC | 0},${gC | 0},${bC | 0},${alpha})`;
+          ctx.beginPath();
+          ctx.arc(px, py, size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    if (reducedMotion) {
+      // Render once, no animation
+      draw(t0 + BOOT_FADE_MS);
+      return () => {};
+    }
+
+    raf = requestAnimationFrame(draw);
+
+    const handleClick = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const t = performance.now();
+      // Pebble in water: emit a stagger of concentric rings, each weaker than
+      // the last, born at evenly spaced offsets from the click time.
+      for (let i = 0; i < RIPPLE_RING_COUNT; i++) {
+        ripples.push({
+          x,
+          y,
+          t0: t + i * RIPPLE_RING_STAGGER_MS,
+          strength: Math.pow(RIPPLE_RING_DECAY, i),
+        });
+      }
+    };
+    canvas.addEventListener("click", handleClick);
+
+    const handleMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      cursorX = e.clientX - rect.left;
+      cursorY = e.clientY - rect.top;
+      cursorTargetAlpha = 1;
+    };
+    const handleLeave = () => {
+      cursorTargetAlpha = 0;
+    };
+    canvas.addEventListener("mousemove", handleMove);
+    canvas.addEventListener("mouseenter", handleMove);
+    canvas.addEventListener("mouseleave", handleLeave);
+
+    const handleResize = () => resize();
+    window.addEventListener("resize", handleResize);
+
+    // Track theme/palette changes so colors stay in sync
+    const themeObserver = new MutationObserver(() => refreshColors());
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-colored-theme", "style"],
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      canvas.removeEventListener("click", handleClick);
+      canvas.removeEventListener("mousemove", handleMove);
+      canvas.removeEventListener("mouseenter", handleMove);
+      canvas.removeEventListener("mouseleave", handleLeave);
+      window.removeEventListener("resize", handleResize);
+      themeObserver.disconnect();
+    };
+  }, [reducedMotion]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ display: "block", width: "100%", height: HEIGHT }}
+      aria-hidden="true"
+    />
+  );
+}

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Hero from "./Hero";
-import { setActivePanel } from "./SectionSnapContext";
+import LedMatrix from "./LedMatrix";
 
 export default function HomeLayout({
   work,
@@ -11,29 +10,14 @@ export default function HomeLayout({
   work: React.ReactNode;
   marquee: React.ReactNode;
 }) {
-  const workRef = useRef<HTMLDivElement>(null);
-
-  // Drive sidebar nav state via IntersectionObserver
-  useEffect(() => {
-    const el = workRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setActivePanel(entry.isIntersecting ? "work" : "bio");
-      },
-      { threshold: 0.05 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div className="pt-24 lg:pt-[18vh]">
       <div className="max-w-[550px] mx-auto px-4 sm:px-8">
+        <div className="mb-8">
+          <LedMatrix />
+        </div>
         <Hero>
-          <section ref={workRef} className="mt-28" id="work">
+          <section className="mt-12" id="work">
             {work}
           </section>
         </Hero>

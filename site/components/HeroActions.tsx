@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { useThemeState } from "./ThemeToggle";
 import { useMarquee } from "./MarqueeContext";
 import ThemePalette from "./ThemePalette";
-import { EmailIcon, LinkedInIcon, PaletteIcon, SmileyIcon } from "./Icons";
+import { EmailIcon, LinkedInIcon, MusicNoteIcon, PaletteIcon, SmileyIcon } from "./Icons";
 
 function ActionIcon({
   label,
@@ -75,6 +75,10 @@ export default function HeroActions() {
           onClick={toggleMarquee}
         >
           <SmileyIcon size={14} style={{ opacity: marqueeVisible ? 1 : 0.4 }} />
+        </ActionIcon>
+        {/* Placeholder — music player coming soon */}
+        <ActionIcon label="Music player (coming soon)">
+          <MusicNoteIcon size={14} style={{ opacity: 0.4 }} />
         </ActionIcon>
       </div>
 

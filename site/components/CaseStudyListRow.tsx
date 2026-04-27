@@ -22,9 +22,8 @@ export default function CaseStudyListRow({ study }: CaseStudyListRowProps) {
     >
       <div
         className="flex items-baseline gap-4 py-3"
-        style={{ borderBottom: "1px solid var(--color-border)" }}
+        style={{ borderBottom: "1px dashed var(--color-border)" }}
       >
-        {/* Title — spring nudge on hover */}
         <motion.span
           className="shrink-0"
           style={{
