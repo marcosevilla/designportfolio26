@@ -525,16 +525,21 @@ void main() {
   }
 
   // ── WAVEFORM scene ───────────────────────────────────────────────────
+  // Plateau-with-falloff shape: solid bright core + soft edge so the line
+  // reads as a clean stroke against busy backgrounds. Uses palette[3]
+  // (air, the lightest slot) for max contrast vs darker effects, with a
+  // strong intensity multiplier so it dominates the per-dot blend.
   if (u_sceneWaveform && audioMix > 0.01 && u_waveformLen > 0) {
     int col = int(cellIdx.x);
     if (col >= 0 && col < u_waveformLen) {
       float lineY = u_waveformY[col];
-      float dy = uv.y - lineY;
-      float thickness = 6.0;
-      if (abs(dy) < thickness) {
-        float u = abs(dy) / thickness;
-        float fall = 0.5 * (1.0 + cos(PI * u));
-        addColor(lit, wColor, wTotal, fall * audioMix, u_palette[1]);
+      float dy = abs(uv.y - lineY);
+      float thickness = 10.0;
+      if (dy < thickness) {
+        float u = dy / thickness;
+        // Plateau in inner 45% (full brightness), then steep linear falloff
+        float fall = u < 0.45 ? 1.0 : max(0.0, 1.0 - (u - 0.45) / 0.55);
+        addColor(lit, wColor, wTotal, fall * 1.6 * audioMix, u_palette[3]);
       }
     }
   }
@@ -1150,18 +1155,21 @@ export default function LedMatrix() {
         chladniPhaseY += 0.0028 + 0.005 * highsGroup;
       }
 
-      // ── Waveform — pre-compute y per column ────────────────────────
+      // ── Waveform — pre-compute y per column. Values are stored in
+      //   physical (dpr-scaled) pixels since the shader works in those.
+      //   Amplitude is set to (cssH - SPACING) / 2 so the trace's max
+      //   reach lands on the top/bottom dot centers — snug fit to grid.
       const waveformLen = Math.min(MAX_WAVEFORM, Math.floor(cssW / SPACING));
       if (scenes.has("waveform") && audioMix > 0.01) {
         const td = aState.getTimeDomainData?.();
         if (td) {
           const half = cssH / 2;
-          const amp = half * 0.85;
+          const amp = (cssH - SPACING) / 2;
           for (let c = 0; c < waveformLen; c++) {
             const sampleIdx = Math.floor((c / waveformLen) * td.length);
             const sample = td[Math.min(sampleIdx, td.length - 1)];
             const a = (sample - 128) / 128;
-            waveformArr[c] = half + a * amp;
+            waveformArr[c] = (half + a * amp) * dpr;
           }
         }
       }
