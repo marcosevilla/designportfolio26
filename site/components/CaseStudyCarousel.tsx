@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity, animate, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -18,20 +18,78 @@ const RUBBER_BAND = 0.15;
 const VELOCITY_FACTOR = 0.3;
 const SETTLE_SPRING = { type: "spring" as const, stiffness: 180, damping: 18, mass: 1 };
 
+// ─── Per-card component ────────────────────────────────────────────────────────
+// Extracted so useTransform hooks are always called at the top level (not inside
+// a .map loop), which prevents framer-motion from recreating derived MotionValues
+// on parent re-renders and causing the drag-reset bug.
+
+interface CarouselItemProps {
+  study: CaseStudyMeta;
+  index: number;
+  activeIndex: number;
+  offsetX: MotionValue<number>;
+  rotate: MotionValue<number>;
+  isActive: boolean;
+  onCardClick: (slug: string) => void;
+}
+
+function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick }: CarouselItemProps) {
+  const x = useTransform(offsetX, (v) => v + index * SPREAD);
+  const scale = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.85, 0.92, 1.0, 0.92, 0.85]);
+  const opacity = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.4, 0.7, 1.0, 0.7, 0.4]);
+
+  const Custom = CAROUSEL_CARDS[study.slug];
+  const Card = Custom ?? CarouselCardShell;
+  const cardProps: CarouselCardProps = {
+    study,
+    isActive,
+    onClick: () => onCardClick(study.slug),
+  };
+
+  return (
+    <motion.div
+      className="absolute"
+      style={{
+        left: "50%",
+        top: "50%",
+        x,
+        scale,
+        opacity,
+        rotate,
+        translateX: `-${CARD_W / 2}px`,
+        translateY: `-${CARD_H / 2}px`,
+        zIndex: isActive ? 10 : 5 - Math.abs(index - activeIndex),
+      }}
+    >
+      <Card {...cardProps} />
+    </motion.div>
+  );
+}
+
+// ─── Main carousel ─────────────────────────────────────────────────────────────
+
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const offsetX = useMotionValue(0);
   const velocity = useVelocity(offsetX);
   const rotate = useTransform(velocity, [-1500, 0, 1500], [3, 0, -3], { clamp: true });
   const [activeIndex, setActiveIndex] = useState(0);
+  // Keep a ref in sync with state so callbacks always read the latest value
+  // without needing to be re-created on every render.
+  const activeIndexRef = useRef(0);
   const animRef = useRef<AnimationPlaybackControls | null>(null);
   const panStartOffsetRef = useRef(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const lastWheelTimeRef = useRef(0);
 
   const minOffset = -(studies.length - 1) * SPREAD;
   const maxOffset = 0;
 
   useMotionValueEvent(offsetX, "change", (v) => {
     const idx = Math.max(0, Math.min(studies.length - 1, Math.round(-v / SPREAD)));
-    if (idx !== activeIndex) setActiveIndex(idx);
+    if (idx !== activeIndexRef.current) {
+      activeIndexRef.current = idx;
+      setActiveIndex(idx);
+    }
   });
 
   const settleTo = (index: number) => {
@@ -68,6 +126,50 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     console.log("clicked", slug);
   };
 
+  // ─── Trackpad horizontal scroll ──────────────────────────────────────────────
+  // Attached via addEventListener with passive:false so e.preventDefault() works.
+  // Discrete tick-based advancement (one card per 300ms debounce) matches the
+  // snap UX and prevents overshooting on sustained swipes.
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+
+    const handler = (e: WheelEvent) => {
+      // Only handle horizontal intent; let vertical pass through for page scroll.
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 5) return;
+      e.preventDefault();
+
+      const now = performance.now();
+      if (now - lastWheelTimeRef.current < 300) return;
+      lastWheelTimeRef.current = now;
+
+      const direction = e.deltaX > 0 ? 1 : -1;
+      settleTo(activeIndexRef.current + direction);
+    };
+
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+    // settleTo reads offsetX (stable MotionValue) and studies.length (stable).
+    // activeIndexRef is always current — no need to list activeIndex here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studies.length]);
+
+  // ─── Arrow key navigation ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        settleTo(activeIndexRef.current - 1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        settleTo(activeIndexRef.current + 1);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studies.length]);
+
   return (
     <div
       className="relative"
@@ -80,47 +182,25 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
       }}
     >
       <motion.div
+        ref={trackRef}
         className="absolute inset-0"
         style={{ touchAction: "pan-y" }}
         onPanStart={onPanStart}
         onPan={onPan}
         onPanEnd={onPanEnd}
       >
-        {studies.map((study, i) => {
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const x = useTransform(offsetX, (v) => v + i * SPREAD);
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const scale = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.85, 0.92, 1.0, 0.92, 0.85]);
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const opacity = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.4, 0.7, 1.0, 0.7, 0.4]);
-          const Custom = CAROUSEL_CARDS[study.slug];
-          const cardProps: CarouselCardProps = {
-            study,
-            isActive: i === activeIndex,
-            onClick: () => handleCardClick(study.slug),
-          };
-          const Card = Custom ?? CarouselCardShell;
-
-          return (
-            <motion.div
-              key={study.slug}
-              className="absolute"
-              style={{
-                left: "50%",
-                top: "50%",
-                x,
-                scale,
-                opacity,
-                rotate,
-                translateX: `-${CARD_W / 2}px`,
-                translateY: `-${CARD_H / 2}px`,
-                zIndex: i === activeIndex ? 10 : 5 - Math.abs(i - activeIndex),
-              }}
-            >
-              <Card {...cardProps} />
-            </motion.div>
-          );
-        })}
+        {studies.map((study, i) => (
+          <CarouselItem
+            key={study.slug}
+            study={study}
+            index={i}
+            activeIndex={activeIndex}
+            offsetX={offsetX}
+            rotate={rotate}
+            isActive={i === activeIndex}
+            onCardClick={handleCardClick}
+          />
+        ))}
       </motion.div>
     </div>
   );
