@@ -198,16 +198,6 @@ export function ChladniSceneIcon({ size = 14, className, style }: IconProps) {
   );
 }
 
-export function DrumheadSceneIcon({ size = 14, className, style }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <circle cx="12" cy="12" r="3" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="9" />
-    </svg>
-  );
-}
-
 export function FeedbackSceneIcon({ size = 14, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>

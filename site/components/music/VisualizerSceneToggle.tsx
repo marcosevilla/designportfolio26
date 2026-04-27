@@ -6,7 +6,6 @@ import {
   WaveformSceneIcon,
   SparklesSceneIcon,
   ChladniSceneIcon,
-  DrumheadSceneIcon,
   FeedbackSceneIcon,
   LissajousSceneIcon,
 } from "@/components/Icons";
@@ -21,7 +20,6 @@ const ICONS: Record<VisualizerScene, React.FC<{ size?: number }>> = {
   waveform: WaveformSceneIcon,
   sparkles: SparklesSceneIcon,
   chladni: ChladniSceneIcon,
-  drumhead: DrumheadSceneIcon,
   feedback: FeedbackSceneIcon,
   lissajous: LissajousSceneIcon,
 };

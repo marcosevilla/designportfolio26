@@ -182,56 +182,6 @@ void main() {
   gl_Position = vec4(a_pos, 0.0, 1.0);
 }`;
 
-// ── Drumhead simulation shader ────────────────────────────────────────────
-// 2D wave equation step with damping. R = current displacement, G = previous
-// (becomes "previous" by virtue of being the old current after swap),
-// B = display envelope (smooth attack/release on |displacement|).
-const DRUMHEAD_FRAG_SRC = `#version 300 es
-precision highp float;
-uniform sampler2D u_input;
-uniform vec2 u_gridSize;
-uniform vec4 u_impulse;     // x, y, amp, _ (amp=0 means no injection)
-uniform float u_c2;
-uniform float u_damp;
-uniform float u_envRise;
-uniform float u_envFall;
-out vec4 outColor;
-void main() {
-  vec2 pix = gl_FragCoord.xy;
-  vec2 cell = floor(pix);
-  vec2 puv = (cell + 0.5) / u_gridSize;
-  vec4 here = texture(u_input, puv);
-  float c = here.r;
-  float p = here.g;
-
-  if (cell.x <= 0.0 || cell.x >= u_gridSize.x - 1.0 || cell.y <= 0.0 || cell.y >= u_gridSize.y - 1.0) {
-    outColor = vec4(0.0, c, here.b * u_envFall, 1.0);
-    return;
-  }
-
-  vec2 ts = 1.0 / u_gridSize;
-  float lap = texture(u_input, puv + vec2(-ts.x, 0.0)).r
-            + texture(u_input, puv + vec2( ts.x, 0.0)).r
-            + texture(u_input, puv + vec2(0.0, -ts.y)).r
-            + texture(u_input, puv + vec2(0.0,  ts.y)).r
-            - 4.0 * c;
-  float next = (2.0 * c - p + u_c2 * lap) * u_damp;
-
-  if (u_impulse.z > 0.0) {
-    float dx = cell.x - u_impulse.x;
-    float dy = cell.y - u_impulse.y;
-    float d2 = dx * dx + dy * dy;
-    if (d2 < 2.25) next += u_impulse.z;
-    else if (d2 < 4.0) next += u_impulse.z * 0.35;
-  }
-
-  // Display envelope on |next|: rises fast, decays slow
-  float target = abs(next);
-  float env = (target > here.b) ? here.b + (target - here.b) * u_envRise : here.b * u_envFall;
-
-  outColor = vec4(next, c, env, 1.0);
-}`;
-
 // ── Feedback simulation shader ────────────────────────────────────────────
 // Persistent brightness in R channel. Warps the previous frame (rotation +
 // zoom + decay) and adds bass-disk + sparkle injection. Per-band onset
@@ -360,13 +310,11 @@ uniform float u_barPhase;
 uniform bool u_sceneSparkles;
 uniform bool u_sceneWaveform;
 uniform bool u_sceneChladni;
-uniform bool u_sceneDrumhead;
 uniform bool u_sceneFeedback;
 uniform bool u_sceneLissajous;
 uniform int u_lissajousColorIdx;  // 0..3, indexes u_palette — cycles per bar
 
 // Buffer-backed scene samplers (cols x rows simulation textures)
-uniform sampler2D u_drumheadTex;
 uniform sampler2D u_feedbackTex;
 uniform sampler2D u_lissajousTex;
 uniform vec2 u_gridSize; // (cols, rows)
@@ -566,19 +514,6 @@ void main() {
     }
   }
 
-  // ── DRUMHEAD scene ───────────────────────────────────────────────────
-  if (u_sceneDrumhead && audioMix > 0.01) {
-    vec2 cuv = (cellIdx + 0.5) / u_gridSize;
-    vec4 dh = texture(u_drumheadTex, cuv);
-    float env = dh.b;
-    if (env > 0.012) {
-      float m = tanh(env * 1.6);
-      // sign of current displacement tints crests vs. troughs
-      vec3 col = dh.r >= 0.0 ? u_palette[0] : u_palette[2];
-      addColor(lit, wColor, wTotal, m * audioMix, col);
-    }
-  }
-
   // ── FEEDBACK scene ───────────────────────────────────────────────────
   if (u_sceneFeedback && audioMix > 0.01) {
     vec2 cuv = (cellIdx + 0.5) / u_gridSize;
@@ -711,7 +646,6 @@ export default function LedMatrix() {
 
     const program = linkProgram(gl, VERTEX_SRC, FRAGMENT_SRC);
     if (!program) return;
-    const drumheadProgram = linkProgram(gl, VERTEX_SRC, DRUMHEAD_FRAG_SRC);
     const feedbackProgram = linkProgram(gl, VERTEX_SRC, FEEDBACK_FRAG_SRC);
     const lissajousProgram = linkProgram(gl, VERTEX_SRC, LISSAJOUS_FRAG_SRC);
 
@@ -720,7 +654,6 @@ export default function LedMatrix() {
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const aPos = gl.getAttribLocation(program, "a_pos");
-    const aPosDH = drumheadProgram ? gl.getAttribLocation(drumheadProgram, "a_pos") : -1;
     const aPosFB = feedbackProgram ? gl.getAttribLocation(feedbackProgram, "a_pos") : -1;
     const aPosLJ = lissajousProgram ? gl.getAttribLocation(lissajousProgram, "a_pos") : -1;
 
@@ -751,10 +684,8 @@ export default function LedMatrix() {
       return { texA: a.tex, texB: b.tex, fboA: a.fbo, fboB: b.fbo };
     };
 
-    let drumheadPair: SimPair | null = null;
     let feedbackPair: SimPair | null = null;
     let lissajousPair: SimPair | null = null;
-    let drumheadCurrent: "A" | "B" = "A"; // which texture holds the latest state
     let feedbackCurrent: "A" | "B" = "A";
     let lissajousCurrent: "A" | "B" = "A";
 
@@ -766,13 +697,10 @@ export default function LedMatrix() {
       gl.deleteFramebuffer(p.fboB);
     };
     const reallocSimPairs = (cols: number, rows: number) => {
-      cleanupSimPair(drumheadPair);
       cleanupSimPair(feedbackPair);
       cleanupSimPair(lissajousPair);
-      drumheadPair = makeSimPair(cols, rows);
       feedbackPair = makeSimPair(cols, rows);
       lissajousPair = makeSimPair(cols, rows);
-      drumheadCurrent = "A";
       feedbackCurrent = "A";
       lissajousCurrent = "A";
     };
@@ -817,27 +745,14 @@ export default function LedMatrix() {
     const uMidsGroup = u("u_midsGroup");
     const uHighsGroup = u("u_highsGroup");
     const uMoodIntensity = u("u_moodIntensity");
-    const uSceneDrumhead = u("u_sceneDrumhead");
     const uSceneFeedback = u("u_sceneFeedback");
     const uSceneLissajous = u("u_sceneLissajous");
     const uLissajousColorIdx = u("u_lissajousColorIdx");
-    const uDrumheadTex = u("u_drumheadTex");
     const uFeedbackTex = u("u_feedbackTex");
     const uLissajousTex = u("u_lissajousTex");
     const uGridSizeMain = u("u_gridSize");
 
     // Simulation program uniforms
-    const dhU = drumheadProgram
-      ? {
-          input: gl.getUniformLocation(drumheadProgram, "u_input"),
-          gridSize: gl.getUniformLocation(drumheadProgram, "u_gridSize"),
-          impulse: gl.getUniformLocation(drumheadProgram, "u_impulse"),
-          c2: gl.getUniformLocation(drumheadProgram, "u_c2"),
-          damp: gl.getUniformLocation(drumheadProgram, "u_damp"),
-          envRise: gl.getUniformLocation(drumheadProgram, "u_envRise"),
-          envFall: gl.getUniformLocation(drumheadProgram, "u_envFall"),
-        }
-      : null;
     const fbU = feedbackProgram
       ? {
           input: gl.getUniformLocation(feedbackProgram, "u_input"),
@@ -1244,43 +1159,6 @@ export default function LedMatrix() {
         return current === "A" ? "B" : "A";
       };
 
-      // DRUMHEAD — kick = strong center-low impulse, snare = mid impulse,
-      // hat = small fast tap. Spread positions by drum so they read distinctly.
-      if (scenes.has("drumhead") && drumheadProgram && dhU && audioMix > 0.01) {
-        let impX = -1, impY = -1, impAmp = 0;
-        const drums = analysis?.drums;
-        if (drums?.kick.onset && drums.kick.strength > 0.15) {
-          // Kick anywhere, full-strength impulse
-          impX = Math.floor(Math.random() * (cols - 4)) + 2;
-          impY = Math.floor(Math.random() * (rows - 4)) + 2;
-          impAmp = 0.6 + drums.kick.strength * 0.9;
-        } else if (drums?.snare.onset && drums.snare.strength > 0.15) {
-          // Snare — middle band of grid, smaller amp
-          impX = Math.floor(Math.random() * (cols - 4)) + 2;
-          impY = Math.floor(rows * 0.4 + Math.random() * rows * 0.2);
-          impAmp = 0.4 + drums.snare.strength * 0.6;
-        } else if (drums?.hat.onset && drums.hat.strength > 0.12) {
-          // Hat — tiny fast tap
-          impX = Math.floor(Math.random() * (cols - 4)) + 2;
-          impY = Math.floor(rows * 0.15 + Math.random() * rows * 0.25);
-          impAmp = 0.25 + drums.hat.strength * 0.4;
-        }
-        // Wave speed pulses with the beat: c² jumps briefly at the start of
-        // each beat so wavefronts accelerate on the downbeat tick.
-        const beatPhaseDH = analysis?.beatPhase ?? 0;
-        const beatPulseDH = beatPhaseDH < 0.2 ? 1 - beatPhaseDH / 0.2 : 0;
-        const c2 = 0.16 + 0.05 * beatPulseDH;
-        drumheadCurrent = runSim(drumheadProgram, aPosDH, drumheadPair, drumheadCurrent, () => {
-          gl.uniform1i(dhU.input, 0);
-          gl.uniform2f(dhU.gridSize, cols, rows);
-          gl.uniform4f(dhU.impulse, impX, impY, impAmp, 0);
-          gl.uniform1f(dhU.c2, c2);
-          gl.uniform1f(dhU.damp, 0.985);
-          gl.uniform1f(dhU.envRise, 0.55);
-          gl.uniform1f(dhU.envFall, 0.93);
-        });
-      }
-
       // FEEDBACK — rotation pulses at BPM. A spike at the start of each
       // detected beat (decays over the first quarter-beat) makes the warp
       // "tick" with the music instead of cruising at constant rate.
@@ -1366,20 +1244,12 @@ export default function LedMatrix() {
       gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
       // Bind simulation textures to dedicated texture units
-      const drumheadTex = drumheadPair
-        ? drumheadCurrent === "A" ? drumheadPair.texA : drumheadPair.texB
-        : null;
       const feedbackTex = feedbackPair
         ? feedbackCurrent === "A" ? feedbackPair.texA : feedbackPair.texB
         : null;
       const lissajousTex = lissajousPair
         ? lissajousCurrent === "A" ? lissajousPair.texA : lissajousPair.texB
         : null;
-      if (drumheadTex) {
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, drumheadTex);
-        gl.uniform1i(uDrumheadTex, 1);
-      }
       if (feedbackTex) {
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, feedbackTex);
@@ -1391,7 +1261,6 @@ export default function LedMatrix() {
         gl.uniform1i(uLissajousTex, 3);
       }
       gl.uniform2f(uGridSizeMain, cols, rows);
-      gl.uniform1i(uSceneDrumhead, scenes.has("drumhead") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneFeedback, scenes.has("feedback") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneLissajous, scenes.has("lissajous") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uLissajousColorIdx, ((barIndex % 4) + 4) % 4);
@@ -1513,10 +1382,8 @@ export default function LedMatrix() {
       window.removeEventListener("resize", handleResize);
       themeObserver.disconnect();
       gl.deleteProgram(program);
-      if (drumheadProgram) gl.deleteProgram(drumheadProgram);
       if (feedbackProgram) gl.deleteProgram(feedbackProgram);
       if (lissajousProgram) gl.deleteProgram(lissajousProgram);
-      cleanupSimPair(drumheadPair);
       cleanupSimPair(feedbackPair);
       cleanupSimPair(lissajousPair);
       gl.deleteBuffer(vbo);
