@@ -321,29 +321,37 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
         {studies[activeIndex]?.title}, card {activeIndex + 1} of {studies.length}
       </div>
       <motion.div
-        ref={trackRef}
-        className="relative flex items-center justify-center"
-        style={{ width: "100%", height: `${CARD_H + 64}px`, touchAction: "pan-y" }}
-        onPointerDown={onPointerDown}
-        onPan={onPan}
-        onPanEnd={onPanEnd}
+        animate={{
+          filter: expandingSlug ? "blur(6px)" : "blur(0px)",
+          opacity: expandingSlug ? 0.4 : 1,
+        }}
+        transition={{ duration: 0.3 }}
       >
-        {studies.map((study, i) => (
-          <CarouselItem
-            key={study.slug}
-            study={study}
-            index={i}
-            activeIndex={activeIndex}
-            offsetX={offsetX}
-            rotate={rotate}
-            isActive={i === activeIndex}
-            onCardClick={handleCardClick}
-            spread={SPREAD}
-            cardW={CARD_W}
-            cardH={CARD_H}
-            isExpanding={expandingSlug === study.slug}
-          />
-        ))}
+        <motion.div
+          ref={trackRef}
+          className="relative flex items-center justify-center"
+          style={{ width: "100%", height: `${CARD_H + 64}px`, touchAction: "pan-y" }}
+          onPointerDown={onPointerDown}
+          onPan={onPan}
+          onPanEnd={onPanEnd}
+        >
+          {studies.map((study, i) => (
+            <CarouselItem
+              key={study.slug}
+              study={study}
+              index={i}
+              activeIndex={activeIndex}
+              offsetX={offsetX}
+              rotate={rotate}
+              isActive={i === activeIndex}
+              onCardClick={handleCardClick}
+              spread={SPREAD}
+              cardW={CARD_W}
+              cardH={CARD_H}
+              isExpanding={expandingSlug === study.slug}
+            />
+          ))}
+        </motion.div>
       </motion.div>
     </div>
   );
