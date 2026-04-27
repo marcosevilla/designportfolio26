@@ -46,9 +46,12 @@ const RIPPLE_RING_STAGGER_MS = 360;
 const RIPPLE_RING_DECAY = 0.66;
 const RIPPLE_GLOW_CAP = 0.45;
 
-// ── Hover flashlight ─────────────────────────────────────────────────────
-const HOVER_RADIUS = 56;
-const HOVER_INTENSITY = 0.4;
+// ── Hover (hydrophobic repulsion) ────────────────────────────────────────
+// Cursor pushes dots away from itself within HOVER_REPEL_RADIUS, with a
+// smooth falloff. Closer dots get pushed harder, up to HOVER_MAX_DISP_FRAC
+// of the cell spacing. Replaces the previous flashlight effect.
+const HOVER_REPEL_RADIUS = 75;
+const HOVER_MAX_DISP_FRAC = 0.7;
 const HOVER_FADE_RATE = 0.12;
 
 // ── Idle Perlin ──────────────────────────────────────────────────────────
@@ -319,9 +322,11 @@ uniform sampler2D u_feedbackTex;
 uniform sampler2D u_lissajousTex;
 uniform vec2 u_gridSize; // (cols, rows)
 
-// Hover
+// Hover (hydrophobic repulsion — dots flee the cursor)
 uniform vec2 u_hoverPos;
 uniform float u_hoverAlpha;
+uniform float u_hoverRepelRadius;
+uniform float u_hoverMaxDisp;
 
 // Click ripples — vec4(x, y, age, strength) per ring
 #define MAX_RIPPLES 16
@@ -386,6 +391,20 @@ void main() {
   // Grid cell + center + dot mask
   vec2 cellIdx = floor(uv / u_spacing);
   vec2 cellCenter = (cellIdx + 0.5) * u_spacing;
+
+  // Hydrophobic repulsion — push the dot's render position away from the
+  // cursor (cellIdx stays natural, only the rendered footprint moves so
+  // dots near the cursor visibly flee, leaving a clear zone underneath).
+  if (u_hoverAlpha > 0.001) {
+    vec2 fromMouse = cellCenter - u_hoverPos;
+    float dM = length(fromMouse);
+    if (dM < u_hoverRepelRadius && dM > 0.001) {
+      float t = 1.0 - dM / u_hoverRepelRadius;
+      t = t * t; // smooth falloff
+      cellCenter += (fromMouse / dM) * t * u_hoverMaxDisp * u_hoverAlpha;
+    }
+  }
+
   float distToDot = distance(uv, cellCenter);
 
   // Rounded-rect corner mask in cell space
@@ -565,16 +584,6 @@ void main() {
   }
   addColor(lit, wColor, wTotal, min(rippleLit, 1.0) * 0.45, u_onColor);
 
-  // ── Hover flashlight ─────────────────────────────────────────────────
-  if (u_hoverAlpha > 0.001) {
-    float distC = distance(uv, u_hoverPos);
-    if (distC < 56.0) {
-      float u = distC / 56.0;
-      float fall = 0.5 * (1.0 + cos(PI * u));
-      addColor(lit, wColor, wTotal, fall * 0.4 * u_hoverAlpha, u_onColor);
-    }
-  }
-
   // ── Compose ─────────────────────────────────────────────────────────
   if (lit > 1.0) lit = 1.0;
   vec3 litCol = u_offColor;
@@ -727,6 +736,8 @@ export default function LedMatrix() {
     const uSceneChladni = u("u_sceneChladni");
     const uHoverPos = u("u_hoverPos");
     const uHoverAlpha = u("u_hoverAlpha");
+    const uHoverRepelRadius = u("u_hoverRepelRadius");
+    const uHoverMaxDisp = u("u_hoverMaxDisp");
     const uRippleCount = u("u_rippleCount");
     const uRipples = u("u_ripples");
     const uSparkleCount = u("u_sparkleCount");
@@ -1295,6 +1306,8 @@ export default function LedMatrix() {
 
       gl.uniform2f(uHoverPos, cursorX * dpr, cursorY * dpr);
       gl.uniform1f(uHoverAlpha, cursorAlpha);
+      gl.uniform1f(uHoverRepelRadius, HOVER_REPEL_RADIUS * dpr);
+      gl.uniform1f(uHoverMaxDisp, SPACING * HOVER_MAX_DISP_FRAC * dpr);
 
       gl.uniform1i(uRippleCount, visibleRipples);
       gl.uniform4fv(uRipples, rippleArr);
