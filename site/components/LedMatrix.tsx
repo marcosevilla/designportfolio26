@@ -986,38 +986,48 @@ export default function LedMatrix() {
             sCfg.density *
             audioMix
         );
+        // Per-drum bursts: kick = main bass-color burst, snare = mid burst,
+        // hat = many tiny high-color sparkles. This gives the field clear
+        // drum lineages instead of one global onset signature.
         let burstCount = 0;
-        if (
-          onsetThisFrame &&
-          analysis &&
-          bassGroup > 0.32 &&
-          bassGroup - prevSparklesBass > 0.1
-        ) {
-          burstCount = Math.floor(
-            (SPARKLES_BURST_BASE + SPARKLES_BURST_PER_BEAT * beat) * sCfg.onsetBurst
-          );
+        let snareBurst = 0;
+        let hatBurst = 0;
+        if (analysis) {
+          const k = analysis.drums.kick;
+          const s = analysis.drums.snare;
+          const h = analysis.drums.hat;
+          if (k.onset) {
+            burstCount = Math.floor(
+              (SPARKLES_BURST_BASE + SPARKLES_BURST_PER_BEAT * k.strength) * sCfg.onsetBurst
+            );
+          }
+          if (s.onset) snareBurst = Math.floor(8 + s.strength * 16 * sCfg.onsetBurst);
+          if (h.onset) hatBurst = Math.floor(6 + h.strength * 14 * sCfg.onsetBurst);
         }
         prevSparklesBass = bassGroup;
 
-        const spawn = continuous + burstCount;
-        for (let i = 0; i < spawn; i++) {
+        // Helper: spawn a sparkle with optional forced color index (for drum bursts).
+        // forcedColor=null → weighted random by current band content (continuous spawns).
+        const pushSparkle = (forcedColor: number | null) => {
           const isBig = Math.random() < sCfg.bigChance;
           const life = isBig
             ? SPARKLES_BIG_LIFE_MIN + Math.random() * (SPARKLES_BIG_LIFE_MAX - SPARKLES_BIG_LIFE_MIN)
             : SPARKLES_LIFE_MIN_MS + Math.random() * (SPARKLES_LIFE_MAX_MS - SPARKLES_LIFE_MIN_MS);
           const size = isBig ? 2.0 + Math.random() * 2.5 : 0.5 + Math.random() * 1.0;
           const intensity = (0.6 + Math.random() * 0.7) * sCfg.intensity * (isBig ? 1.2 : 1);
-          const wB = (bandsArr ? (bandsArr[0] + bandsArr[1]) : 0.5) * 2.2 + 0.4;
-          const wM = bandsArr ? (bandsArr[2] + bandsArr[3]) : 0.3;
-          const wH = bandsArr ? (bandsArr[4] + bandsArr[5] + bandsArr[6]) : 0.2;
-          const wA = bandsArr ? bandsArr[7] : 0.1;
-          const total = wB + wM + wH + wA;
-          let r = Math.random() * total;
-          let colorIdx = 0;
-          if ((r -= wB) < 0) colorIdx = 0;
-          else if ((r -= wM) < 0) colorIdx = 1;
-          else if ((r -= wH) < 0) colorIdx = 2;
-          else colorIdx = 3;
+          let colorIdx = forcedColor ?? 0;
+          if (forcedColor === null) {
+            const wB = (bandsArr ? (bandsArr[0] + bandsArr[1]) : 0.5) * 2.2 + 0.4;
+            const wM = bandsArr ? (bandsArr[2] + bandsArr[3]) : 0.3;
+            const wH = bandsArr ? (bandsArr[4] + bandsArr[5] + bandsArr[6]) : 0.2;
+            const wA = bandsArr ? bandsArr[7] : 0.1;
+            const total = wB + wM + wH + wA;
+            let r = Math.random() * total;
+            if ((r -= wB) < 0) colorIdx = 0;
+            else if ((r -= wM) < 0) colorIdx = 1;
+            else if ((r -= wH) < 0) colorIdx = 2;
+            else colorIdx = 3;
+          }
           sparkles.push({
             x: Math.random() * cssW,
             y: Math.random() * cssH,
@@ -1027,7 +1037,17 @@ export default function LedMatrix() {
             intensity,
             colorIdx,
           });
-        }
+        };
+
+        // Continuous spawns — weighted random color (always)
+        for (let i = 0; i < continuous; i++) pushSparkle(null);
+        // Kick burst — bass color
+        for (let i = 0; i < burstCount; i++) pushSparkle(0);
+        // Snare burst — mids color (smaller, more dynamic)
+        for (let i = 0; i < snareBurst; i++) pushSparkle(1);
+        // Hat burst — air color (lots of small fast)
+        for (let i = 0; i < hatBurst; i++) pushSparkle(3);
+
       }
       // Cull and cap
       for (let i = sparkles.length - 1; i >= 0; i--) {
@@ -1042,11 +1062,17 @@ export default function LedMatrix() {
         const nSinusoid = Math.cos(tDrift * 0.5) * 1.6;
         const mAudio = (analysis?.bands.bass ?? 0) * 2.2 + (analysis?.bands.lowMid ?? 0) * 1.6;
         const nAudio = (analysis?.bands.highMid ?? 0) * 2.2 + (analysis?.bands.air ?? 0) * 1.8;
+        // Mode jumps gate on a strong KICK landing on the downbeat (beatPhase
+        // near 0 or near 1 — the beat boundary). This makes dramatic shape
+        // changes feel musical instead of arbitrary.
+        const beatPhase = analysis?.beatPhase ?? 0;
+        const onDownbeat = beatPhase < 0.18 || beatPhase > 0.82;
+        const kick = analysis?.drums.kick;
         if (
-          onsetThisFrame &&
-          analysis &&
-          analysis.beatStrength > 0.45 &&
-          Math.random() < 0.55
+          kick?.onset &&
+          kick.strength > 0.35 &&
+          onDownbeat &&
+          Math.random() < 0.6
         ) {
           const choices: [number, number][] = [
             [1, 2], [1, 3], [2, 3], [2, 5], [3, 4], [3, 5],
@@ -1152,18 +1178,26 @@ export default function LedMatrix() {
         return current === "A" ? "B" : "A";
       };
 
-      // DRUMHEAD
+      // DRUMHEAD — kick = strong center-low impulse, snare = mid impulse,
+      // hat = small fast tap. Spread positions by drum so they read distinctly.
       if (scenes.has("drumhead") && drumheadProgram && dhU && audioMix > 0.01) {
         let impX = -1, impY = -1, impAmp = 0;
-        if (
-          onsetThisFrame &&
-          analysis &&
-          analysis.beatStrength > 0.2 &&
-          bassGroup > 0.15
-        ) {
+        const drums = analysis?.drums;
+        if (drums?.kick.onset && drums.kick.strength > 0.15) {
+          // Kick anywhere, full-strength impulse
           impX = Math.floor(Math.random() * (cols - 4)) + 2;
           impY = Math.floor(Math.random() * (rows - 4)) + 2;
-          impAmp = 0.55 + analysis.beatStrength * 0.85;
+          impAmp = 0.6 + drums.kick.strength * 0.9;
+        } else if (drums?.snare.onset && drums.snare.strength > 0.15) {
+          // Snare — middle band of grid, smaller amp
+          impX = Math.floor(Math.random() * (cols - 4)) + 2;
+          impY = Math.floor(rows * 0.4 + Math.random() * rows * 0.2);
+          impAmp = 0.4 + drums.snare.strength * 0.6;
+        } else if (drums?.hat.onset && drums.hat.strength > 0.12) {
+          // Hat — tiny fast tap
+          impX = Math.floor(Math.random() * (cols - 4)) + 2;
+          impY = Math.floor(rows * 0.15 + Math.random() * rows * 0.25);
+          impAmp = 0.25 + drums.hat.strength * 0.4;
         }
         drumheadCurrent = runSim(drumheadProgram, aPosDH, drumheadPair, drumheadCurrent, () => {
           gl.uniform1i(dhU.input, 0);

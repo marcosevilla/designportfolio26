@@ -78,6 +78,19 @@ export const PLAYLIST: Track[] = [
     },
     mood: "chill",
   },
+  {
+    src: "/audio/track-5.mp3",
+    title: "Untitled Five",
+    artist: "Marco's Picks",
+    // Midnight neon — navy kicks, royal purple mids, neon-pink highs, gold air
+    palette: {
+      bass: "#1E40AF",   // blue-800
+      mids: "#7C3AED",   // violet-600
+      highs: "#F472B6",  // pink-400
+      air: "#FBBF24",    // amber-400
+    },
+    mood: "dark",
+  },
 ];
 
 // Mood modulators — global scalars applied to the visualizer per track.
