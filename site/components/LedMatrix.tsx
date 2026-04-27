@@ -254,9 +254,10 @@ export default function LedMatrix() {
     resize();
 
     // ── Scene-specific persistent buffers (re-allocated on resize) ────────
-    // drumhead: ping-pong wave state on a cols×rows grid
+    // drumhead: ping-pong wave state + per-cell display envelope (smooth attack/release)
     let waveA: Float32Array = new Float32Array(0);
     let waveB: Float32Array = new Float32Array(0);
+    let waveEnv: Float32Array = new Float32Array(0);
     // spectrogram: cols×rows ring buffer (column = time, row = freq)
     let specBuf: Float32Array = new Float32Array(0);
     let specCursor = 0;
@@ -270,6 +271,7 @@ export default function LedMatrix() {
       const total = cols * rows;
       waveA = new Float32Array(total);
       waveB = new Float32Array(total);
+      waveEnv = new Float32Array(total);
       specBuf = new Float32Array(total);
       specCursor = 0;
       persistA = new Float32Array(total);
@@ -409,37 +411,57 @@ export default function LedMatrix() {
       // ── Per-frame scene state updates (before the per-dot loop) ──────────
       const activeSceneFrame = aState.scene;
 
-      // DRUMHEAD — 2D wave equation, ping-pong buffers, onsets inject impulses
+      // DRUMHEAD — 2D wave equation, ping-pong buffers + per-cell display
+      // envelope so the rendered brightness is smooth (Lissajous-like
+      // attack/release) instead of the raw, twitchy |u|. Impulses are
+      // gated on beat strength so quiet passages stay calm.
       if (activeSceneFrame === "drumhead" && audioMix > 0.01) {
-        // Inject impulse on global onset, scaled by beat strength
-        if (onsetThisFrame && analysis) {
+        // Inject impulse only on stronger onsets — gives the field room to breathe
+        if (
+          onsetThisFrame &&
+          analysis &&
+          analysis.beatStrength > 0.2 &&
+          analysis.bassGroup > 0.15
+        ) {
           const cx = Math.floor(Math.random() * (cols - 4)) + 2;
           const cy = Math.floor(Math.random() * (rows - 4)) + 2;
-          const amp = 1.0 + analysis.beatStrength * 1.5;
-          // Slightly diffuse the impulse for smoother propagation
+          const amp = 0.55 + analysis.beatStrength * 0.85;
           for (let dy = -1; dy <= 1; dy++) {
             for (let dx = -1; dx <= 1; dx++) {
               const i = (cy + dy) * cols + (cx + dx);
-              if (i >= 0 && i < waveA.length) waveA[i] += amp * (dx === 0 && dy === 0 ? 1 : 0.4);
+              if (i >= 0 && i < waveA.length)
+                waveA[i] += amp * (dx === 0 && dy === 0 ? 1 : 0.35);
             }
           }
         }
-        // Two physics sub-steps per frame for faster propagation
+        // One sub-step per frame, faster damping → cleaner decay
         const c2 = 0.16;
-        const damp = 0.992;
-        for (let step = 0; step < 2; step++) {
-          for (let r = 1; r < rows - 1; r++) {
-            for (let c = 1; c < cols - 1; c++) {
-              const i = r * cols + c;
-              const lap =
-                waveA[i - 1] + waveA[i + 1] + waveA[i - cols] + waveA[i + cols] - 4 * waveA[i];
-              waveB[i] = (2 * waveA[i] - waveB[i] + c2 * lap) * damp;
-            }
+        const damp = 0.985;
+        for (let r = 1; r < rows - 1; r++) {
+          for (let c = 1; c < cols - 1; c++) {
+            const i = r * cols + c;
+            const lap =
+              waveA[i - 1] + waveA[i + 1] + waveA[i - cols] + waveA[i + cols] - 4 * waveA[i];
+            waveB[i] = (2 * waveA[i] - waveB[i] + c2 * lap) * damp;
           }
-          // Swap
-          const tmp = waveA;
-          waveA = waveB;
-          waveB = tmp;
+        }
+        // Swap waveA <-> waveB
+        const tmp = waveA;
+        waveA = waveB;
+        waveB = tmp;
+
+        // Update display envelope per cell. Attack snaps up; release fades
+        // slowly. Smooths the rendered output the same way Lissajous's
+        // persistent-buffer decay smooths its curve.
+        const ENV_RISE = 0.55;
+        const ENV_FALL = 0.93;
+        for (let i = 0; i < waveEnv.length; i++) {
+          const target = Math.abs(waveA[i]);
+          if (target > waveEnv[i]) {
+            waveEnv[i] = waveEnv[i] + (target - waveEnv[i]) * ENV_RISE;
+          } else {
+            waveEnv[i] = waveEnv[i] * ENV_FALL;
+          }
         }
       }
 
@@ -496,12 +518,15 @@ export default function LedMatrix() {
         prevHighPoly = hg;
       }
 
-      // FEEDBACK — warp + decay the persistent buffer, add new audio events
+      // FEEDBACK — warp + decay persistent buffer, add big audio-driven shapes.
+      // Decay 0.94 (matches Lissajous) so trails are visible. Per-band onset
+      // events paint distinct shapes so the buffer stays varied.
       if (activeSceneFrame === "feedback" && audioMix > 0.01) {
-        const decay = 0.91;
-        // Slow rotation + slight zoom-in over time
-        const angle = 0.012 + 0.018 * (analysis?.bassGroup ?? 0);
-        const zoom = 1.012;
+        const decay = 0.94;
+        const bg = analysis?.bassGroup ?? 0;
+        const hg = analysis?.highsGroup ?? 0;
+        const angle = 0.018 + 0.030 * bg;
+        const zoom = 1.014 + 0.010 * hg;
         const ccx = cols / 2;
         const ccy = rows / 2;
         const cosA = Math.cos(angle);
@@ -520,32 +545,83 @@ export default function LedMatrix() {
                 : 0;
           }
         }
-        // Inject bass disk at center to feed the system
-        const radius = (analysis?.bassGroup ?? 0) * 6;
-        if (radius > 0.5) {
+
+        // Bass disk at center — bigger so the trail is visible
+        const radius = bg * 14;
+        if (radius > 1) {
           const r2 = radius * radius;
-          for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
+          const r0 = Math.max(0, Math.floor(ccy - radius));
+          const r1 = Math.min(rows, Math.ceil(ccy + radius));
+          const c0 = Math.max(0, Math.floor(ccx - radius));
+          const c1 = Math.min(cols, Math.ceil(ccx + radius));
+          for (let r = r0; r < r1; r++) {
+            for (let c = c0; c < c1; c++) {
               const dx = c - ccx;
               const dy = r - ccy;
               const d2 = dx * dx + dy * dy;
               if (d2 < r2) {
                 const u = d2 / r2;
                 const fall = (1 - u) * (1 - u);
-                persistB[r * cols + c] = Math.max(persistB[r * cols + c], fall);
+                const idx = r * cols + c;
+                if (fall > persistB[idx]) persistB[idx] = fall;
               }
             }
           }
         }
-        // On onset, splatter sparkles into the buffer
+
+        // Per-band onsets paint distinct, larger shapes (more variability)
         if (onsetThisFrame && analysis) {
-          const sparkCount = 8 + Math.floor(analysis.beatStrength * 24);
+          const beat = analysis.beatStrength;
+
+          // Bass onset → bright stroke at random row, full width
+          if (analysis.bands.bass > 0.45) {
+            const sr = Math.floor(Math.random() * rows);
+            for (let c = 0; c < cols; c++) {
+              const idx = sr * cols + c;
+              if (persistB[idx] < 0.85) persistB[idx] = 0.85;
+            }
+          }
+
+          // Mid onset → vertical stroke
+          if (analysis.midsGroup > 0.4) {
+            const sc = Math.floor(Math.random() * cols);
+            for (let r = 0; r < rows; r++) {
+              const idx = r * cols + sc;
+              if (persistB[idx] < 0.7) persistB[idx] = 0.7;
+            }
+          }
+
+          // Treble/air onset → ring burst at random origin
+          if (analysis.airGroup > 0.25 || hg > 0.35) {
+            const ox = Math.floor(2 + Math.random() * (cols - 4));
+            const oy = Math.floor(2 + Math.random() * (rows - 4));
+            const ringR = 6 + beat * 10;
+            const r2 = ringR * ringR;
+            const rThick = 1.5;
+            for (let r = Math.max(0, oy - ringR); r < Math.min(rows, oy + ringR); r++) {
+              for (let c = Math.max(0, ox - ringR); c < Math.min(cols, ox + ringR); c++) {
+                const dx = c - ox;
+                const dy = r - oy;
+                const d2 = dx * dx + dy * dy;
+                const d = Math.sqrt(d2);
+                if (Math.abs(d - ringR) < rThick) {
+                  const idx = r * cols + c;
+                  if (persistB[idx] < 0.95) persistB[idx] = 0.95;
+                }
+              }
+            }
+          }
+
+          // Always splatter a few sparkles too
+          const sparkCount = 4 + Math.floor(beat * 12);
           for (let s = 0; s < sparkCount; s++) {
             const sc = Math.floor(Math.random() * cols);
             const sr = Math.floor(Math.random() * rows);
-            persistB[sr * cols + sc] = 1;
+            const idx = sr * cols + sc;
+            if (persistB[idx] < 1) persistB[idx] = 1;
           }
         }
+
         // Swap
         const tmp = persistA;
         persistA = persistB;
@@ -682,10 +758,13 @@ export default function LedMatrix() {
 
             // ── DRUMHEAD scene ────────────────────────────────────────────
             if (masterEnabled && audioMix > 0.01 && activeScene === "drumhead") {
-              const v = waveA[cellIdx];
-              // Compressor to keep peaks readable: tanh-like
-              const m = Math.tanh(Math.abs(v) * 2.2);
-              if (m > 0.01) {
+              const env = waveEnv[cellIdx];
+              if (env > 0.012) {
+                const m = Math.tanh(env * 1.6);
+                // Sign of the underlying wave tints positive vs. negative
+                // displacement (compression vs. rarefaction) — bass color
+                // for crests, highs for troughs.
+                const v = waveA[cellIdx];
                 addColor(m * audioMix, v >= 0 ? bassCol : highsCol);
               }
             }
