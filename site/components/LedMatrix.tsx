@@ -50,8 +50,8 @@ const RIPPLE_GLOW_CAP = 0.45;
 // Cursor pushes dots away from itself within HOVER_REPEL_RADIUS, with a
 // smooth falloff. Closer dots get pushed harder, up to HOVER_MAX_DISP_FRAC
 // of the cell spacing. Replaces the previous flashlight effect.
-const HOVER_REPEL_RADIUS = 75;
-const HOVER_MAX_DISP_FRAC = 0.7;
+const HOVER_REPEL_RADIUS = 110;
+const HOVER_MAX_DISP_FRAC = 1.6;
 const HOVER_FADE_RATE = 0.12;
 
 // ── Idle Perlin ──────────────────────────────────────────────────────────
