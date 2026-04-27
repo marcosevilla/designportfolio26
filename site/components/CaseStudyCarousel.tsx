@@ -20,6 +20,7 @@ const VELOCITY_FACTOR = 0.3;
 // damping = 2 * sqrt(stiffness * mass) = 2 * sqrt(180) ≈ 26.83 — round up to 28
 // for a touch of overdamping, which kills overshoot at the cost of a hair of liveliness.
 const SETTLE_SPRING = { type: "spring" as const, stiffness: 180, damping: 28, mass: 1 };
+const STORAGE_KEY = "carousel-active-index";
 
 // ─── Per-card component ────────────────────────────────────────────────────────
 // Extracted so useTransform hooks are always called at the top level (not inside
@@ -101,6 +102,28 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
       setActiveIndex(idx);
     }
   });
+
+  // Restore on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      const idx = parseInt(saved, 10);
+      if (!Number.isFinite(idx) || idx < 0 || idx >= studies.length) return;
+      offsetX.set(-idx * SPREAD);
+      activeIndexRef.current = idx;
+      setActiveIndex(idx);
+    } catch {}
+    // Run once on mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist on change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, String(activeIndex));
+    } catch {}
+  }, [activeIndex]);
 
   const settleTo = (index: number) => {
     const clamped = Math.max(0, Math.min(studies.length - 1, index));
