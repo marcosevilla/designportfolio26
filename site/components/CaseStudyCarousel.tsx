@@ -16,7 +16,10 @@ const GAP = 24;
 const SPREAD = CARD_W + GAP;
 const RUBBER_BAND = 0.15;
 const VELOCITY_FACTOR = 0.3;
-const SETTLE_SPRING = { type: "spring" as const, stiffness: 180, damping: 18, mass: 1 };
+// Critically damped (zeta = 1) so rapid wheel/keyboard ticks don't oscillate.
+// damping = 2 * sqrt(stiffness * mass) = 2 * sqrt(180) ≈ 26.83 — round up to 28
+// for a touch of overdamping, which kills overshoot at the cost of a hair of liveliness.
+const SETTLE_SPRING = { type: "spring" as const, stiffness: 180, damping: 28, mass: 1 };
 
 // ─── Per-card component ────────────────────────────────────────────────────────
 // Extracted so useTransform hooks are always called at the top level (not inside
@@ -101,7 +104,9 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const settleTo = (index: number) => {
     const clamped = Math.max(0, Math.min(studies.length - 1, index));
     animRef.current?.stop();
-    animRef.current = animate(offsetX, -clamped * SPREAD, SETTLE_SPRING);
+    // Reset velocity so a rapidly-cancelled prior animation doesn't carry its
+    // momentum into the new one and cause a runaway overshoot.
+    animRef.current = animate(offsetX, -clamped * SPREAD, { ...SETTLE_SPRING, velocity: 0 });
   };
 
   const onPanStart = () => {
