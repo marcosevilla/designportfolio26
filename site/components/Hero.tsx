@@ -17,7 +17,15 @@ const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffec
 
 type IntroPhase = "star" | "bio" | "done";
 
-export default function Hero({ children }: { children?: React.ReactNode }) {
+export default function Hero({
+  matrix,
+  children,
+}: {
+  /** Optional render slot for the LED matrix area, placed between the
+   *  sticky header and the bio so it sits *under* the pinned header. */
+  matrix?: React.ReactNode;
+  children?: React.ReactNode;
+}) {
   const reducedMotion = usePrefersReducedMotion();
   const [introPhase, setIntroPhase] = useState<IntroPhase>("star");
   const introTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -57,6 +65,9 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
           </div>
         </div>
       </div>
+
+      {/* LED matrix slot — sits below the sticky header, above the bio */}
+      {matrix && <div className="mt-6">{matrix}</div>}
 
       {/* Intro loading star — blinks before bio scrambles in */}
       {introPhase === "star" && (
