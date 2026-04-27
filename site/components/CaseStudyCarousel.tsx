@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion, useMotionValue, useTransform, useMotionValueEvent } from "framer-motion";
+import { useRef, useState } from "react";
+import { motion, useMotionValue, useTransform, useMotionValueEvent, animate, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -13,19 +13,57 @@ interface CaseStudyCarouselProps {
 const CARD_W = 320;
 const CARD_H = 420;
 const GAP = 24;
-const SPREAD = CARD_W + GAP; // 344
+const SPREAD = CARD_W + GAP;
+const RUBBER_BAND = 0.15;
+const VELOCITY_FACTOR = 0.3;
+const SETTLE_SPRING = { type: "spring" as const, stiffness: 180, damping: 18, mass: 1 };
 
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const offsetX = useMotionValue(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const animRef = useRef<AnimationPlaybackControls | null>(null);
+  const panStartOffsetRef = useRef(0);
+
+  const minOffset = -(studies.length - 1) * SPREAD;
+  const maxOffset = 0;
 
   useMotionValueEvent(offsetX, "change", (v) => {
     const idx = Math.max(0, Math.min(studies.length - 1, Math.round(-v / SPREAD)));
     if (idx !== activeIndex) setActiveIndex(idx);
   });
 
+  const settleTo = (index: number) => {
+    const clamped = Math.max(0, Math.min(studies.length - 1, index));
+    animRef.current?.stop();
+    animRef.current = animate(offsetX, -clamped * SPREAD, SETTLE_SPRING);
+  };
+
+  const onPanStart = () => {
+    animRef.current?.stop();
+    panStartOffsetRef.current = offsetX.get();
+  };
+
+  const onPan = (_e: PointerEvent, info: PanInfo) => {
+    let raw = panStartOffsetRef.current + info.offset.x;
+    if (raw > maxOffset) {
+      const overshoot = raw - maxOffset;
+      raw = maxOffset + overshoot * RUBBER_BAND;
+    } else if (raw < minOffset) {
+      const overshoot = raw - minOffset;
+      raw = minOffset + overshoot * RUBBER_BAND;
+    }
+    offsetX.set(raw);
+  };
+
+  const onPanEnd = (_e: PointerEvent, info: PanInfo) => {
+    const projected = offsetX.get() + info.velocity.x * VELOCITY_FACTOR;
+    const clamped = Math.max(minOffset, Math.min(maxOffset, projected));
+    const snapIndex = Math.round(-clamped / SPREAD);
+    settleTo(snapIndex);
+  };
+
   const handleCardClick = (slug: string) => {
-    console.log("clicked", slug); // wired in Task 17
+    console.log("clicked", slug);
   };
 
   return (
@@ -39,7 +77,13 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
         ["--carousel-card-h" as string]: `${CARD_H}px`,
       }}
     >
-      <div className="absolute inset-0">
+      <motion.div
+        className="absolute inset-0"
+        style={{ touchAction: "pan-y" }}
+        onPanStart={onPanStart}
+        onPan={onPan}
+        onPanEnd={onPanEnd}
+      >
         {studies.map((study, i) => {
           // eslint-disable-next-line react-hooks/rules-of-hooks
           const x = useTransform(offsetX, (v) => v + i * SPREAD);
@@ -67,7 +111,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
             </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }
