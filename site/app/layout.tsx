@@ -12,6 +12,7 @@ import SectionReorder from "@/components/dev/SectionReorder";
 import DialKitMount from "@/components/dev/DialKitMount";
 import { Agentation } from "agentation";
 import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
+import { VisualizerSceneProvider } from "@/lib/VisualizerSceneContext";
 import PlayerChip from "@/components/music/PlayerChip";
 import "./globals.css";
 
@@ -54,6 +55,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AudioPlayerProvider>
+          <VisualizerSceneProvider>
           <MarqueeProvider>
             <SidebarProvider>
               <a href="#main" className="skip-to-content">
@@ -81,6 +83,7 @@ export default function RootLayout({
               {process.env.NODE_ENV === "development" && <DialKitMount />}
             </SidebarProvider>
           </MarqueeProvider>
+          </VisualizerSceneProvider>
           </AudioPlayerProvider>
         </ThemeProvider>
       </body>

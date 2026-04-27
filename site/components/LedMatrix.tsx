@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useDialKit } from "dialkit";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { AudioAnalyzer, type AnalysisSnapshot } from "@/lib/audio-analysis";
 import { MOODS, type Track } from "@/lib/playlist";
 
@@ -139,17 +140,20 @@ export default function LedMatrix() {
 
   // Bridge React audio state into the imperative animation loop via a ref.
   const audio = useAudioPlayer();
+  const { scene } = useVisualizerScene();
   const audioStateRef = useRef({
     isPlaying: audio.isPlaying,
     track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
     getSampleRate: audio.getSampleRate,
+    scene,
   });
   audioStateRef.current = {
     isPlaying: audio.isPlaying,
     track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
     getSampleRate: audio.getSampleRate,
+    scene,
   };
 
   // DialKit panel — live tuning of effect types, colors, and per-band intensity.
@@ -468,9 +472,41 @@ export default function LedMatrix() {
               addColor(idleLit * idleWeight, onColor);
             }
 
-            // Audio visualizer layers (each colored by its band, per-band
-            // effect type and overrides from the DialKit panel)
-            if (masterEnabled && audioMix > 0.01) {
+            // Audio visualizer layers — scene-driven. Spectrum scene uses the
+            // DialKit per-band config; other scenes implement their own
+            // self-contained behavior (Chladni nodal pattern, drumhead, etc.)
+            const activeScene = aState.scene;
+
+            // ── CHLADNI scene ─────────────────────────────────────────────
+            if (masterEnabled && audioMix > 0.01 && activeScene === "chladni") {
+              // Chladni plate: brightness peaks where two cosine modes cancel.
+              // The (m, n) modes drift slowly with the spectral content so
+              // patterns evolve as instruments shift. Onsets nudge them.
+              // Modes are kept low (2..6) so the lattice stays legible at this dot density.
+              const m = 2 + bassGroup * 2 + (analysis ? analysis.bands.lowMid * 2 : 0);
+              const n = 3 + highsGroup * 3 + (analysis ? analysis.bands.air * 2 : 0);
+              const nx = (px / cssW) * Math.PI;
+              const ny = (py / cssH) * Math.PI;
+              const ch =
+                Math.cos(m * nx) * Math.cos(n * ny) -
+                Math.cos(n * nx) * Math.cos(m * ny);
+              // Brightness peaks at nodal lines (|ch| ≈ 0). Width of the lit
+              // band scales with audio energy: louder = thicker nodal lines.
+              const energy = (bassGroup + midsGroup + highsGroup) / 3;
+              const bandWidth = 0.04 + 0.18 * energy;
+              const lineCloseness = Math.max(0, 1 - Math.abs(ch) / bandWidth);
+              const chladniLit = lineCloseness * (0.4 + 0.6 * energy) * moodIntensity * audioMix;
+              // Bass picks the bass-color tint, mids/highs gradually shift.
+              // Use bassCol for the strong nodal lines; mids/highs add subtle tint.
+              addColor(chladniLit, bassCol);
+              // Subtle mids tint between nodal lines (where ch is moderate)
+              const offNode = Math.max(0, 1 - Math.abs(ch) / 0.6) - lineCloseness;
+              if (offNode > 0) {
+                addColor(offNode * 0.25 * midsGroup * audioMix, midsCol);
+              }
+            }
+
+            if (masterEnabled && audioMix > 0.01 && activeScene === "spectrum") {
               // Effective per-band colors: track palette unless dial override on
               const effBass = d.bass.override ? parseColor(d.bass.color) : bassCol;
               const effMids = d.mids.override ? parseColor(d.mids.color) : midsCol;

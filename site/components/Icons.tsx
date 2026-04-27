@@ -166,6 +166,69 @@ export function SkipForwardIcon({ size = 18, className, style }: IconProps) {
   );
 }
 
+// ── Visualizer scenes ──
+
+export function SpectrumSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M5 17v3M9 12v8M13 8v12M17 14v6M21 10v10" />
+    </svg>
+  );
+}
+
+export function ChladniSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M3 9c2 3 4 3 6 0s4-3 6 0 4 3 6 0" />
+      <path d="M3 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0" />
+    </svg>
+  );
+}
+
+export function DrumheadSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <circle cx="12" cy="12" r="3" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="9" />
+    </svg>
+  );
+}
+
+export function FeedbackSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M12 12.5c1.4 0 2.5-1 2.5-2.5S13.4 7.5 12 7.5s-3 1.5-3 3.5 1.5 4 4 4 4-2.5 4-5-2-5-5-5-6 2.5-6 6 2 7 7 7" />
+    </svg>
+  );
+}
+
+export function SpectrogramSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M4 7h16M4 12h12M4 17h8" />
+    </svg>
+  );
+}
+
+export function PolyrhythmSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <circle cx="9" cy="11" r="4" />
+      <circle cx="15" cy="11" r="4" />
+      <circle cx="12" cy="15" r="4" />
+    </svg>
+  );
+}
+
+export function LissajousSceneIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M5 12c0-3 2-5 4-3s2 6 4 6 2-6 4-6 2 2 2 3-2 5-4 3-2-6-4-6-2 6-4 6-2-2-2-3z" />
+    </svg>
+  );
+}
+
 export function MusicNoteIcon({ size = 18, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
