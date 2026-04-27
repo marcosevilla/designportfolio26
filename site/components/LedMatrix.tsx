@@ -253,6 +253,30 @@ export default function LedMatrix() {
     refreshColors();
     resize();
 
+    // ── Scene-specific persistent buffers (re-allocated on resize) ────────
+    // drumhead: ping-pong wave state on a cols×rows grid
+    let waveA: Float32Array = new Float32Array(0);
+    let waveB: Float32Array = new Float32Array(0);
+    // spectrogram: cols×rows ring buffer (column = time, row = freq)
+    let specBuf: Float32Array = new Float32Array(0);
+    let specCursor = 0;
+    // feedback / lissajous: shared persistent brightness buffer
+    let persistA: Float32Array = new Float32Array(0);
+    let persistB: Float32Array = new Float32Array(0);
+    // polyrhythm: separate per-band onset history
+    let prevBassPoly = 0, prevMidPoly = 0, prevHighPoly = 0;
+
+    const reallocSceneBuffers = () => {
+      const total = cols * rows;
+      waveA = new Float32Array(total);
+      waveB = new Float32Array(total);
+      specBuf = new Float32Array(total);
+      specCursor = 0;
+      persistA = new Float32Array(total);
+      persistB = new Float32Array(total);
+    };
+    reallocSceneBuffers();
+
     const ripples: Ripple[] = [];
     const idleWaves: IdleWave[] = [];
     let nextIdleAt = 0;
@@ -382,6 +406,180 @@ export default function LedMatrix() {
       }
       onsetFlashStrength = Math.max(0, onsetFlashStrength - 0.08); // decay
 
+      // ── Per-frame scene state updates (before the per-dot loop) ──────────
+      const activeSceneFrame = aState.scene;
+
+      // DRUMHEAD — 2D wave equation, ping-pong buffers, onsets inject impulses
+      if (activeSceneFrame === "drumhead" && audioMix > 0.01) {
+        // Inject impulse on global onset, scaled by beat strength
+        if (onsetThisFrame && analysis) {
+          const cx = Math.floor(Math.random() * (cols - 4)) + 2;
+          const cy = Math.floor(Math.random() * (rows - 4)) + 2;
+          const amp = 1.0 + analysis.beatStrength * 1.5;
+          // Slightly diffuse the impulse for smoother propagation
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              const i = (cy + dy) * cols + (cx + dx);
+              if (i >= 0 && i < waveA.length) waveA[i] += amp * (dx === 0 && dy === 0 ? 1 : 0.4);
+            }
+          }
+        }
+        // Two physics sub-steps per frame for faster propagation
+        const c2 = 0.16;
+        const damp = 0.992;
+        for (let step = 0; step < 2; step++) {
+          for (let r = 1; r < rows - 1; r++) {
+            for (let c = 1; c < cols - 1; c++) {
+              const i = r * cols + c;
+              const lap =
+                waveA[i - 1] + waveA[i + 1] + waveA[i - cols] + waveA[i + cols] - 4 * waveA[i];
+              waveB[i] = (2 * waveA[i] - waveB[i] + c2 * lap) * damp;
+            }
+          }
+          // Swap
+          const tmp = waveA;
+          waveA = waveB;
+          waveB = tmp;
+        }
+      }
+
+      // SPECTROGRAM — write current FFT column to ring buffer at cursor
+      if (activeSceneFrame === "spectrogram" && analysis && audioMix > 0.01) {
+        const data = aState.getFrequencyData?.();
+        if (data) {
+          const n = data.length;
+          for (let r = 0; r < rows; r++) {
+            // Map row → FFT bin (low freqs at bottom, high at top).
+            // Use log mapping so bass takes more visual real estate.
+            const t = (rows - 1 - r) / Math.max(1, rows - 1); // 0 at bottom, 1 at top
+            const bin = Math.floor(Math.pow(t, 2.2) * (n - 1));
+            specBuf[r * cols + specCursor] = data[bin] / 255;
+          }
+        }
+        specCursor = (specCursor + 1) % cols;
+      }
+
+      // POLYRHYTHM — separate per-band onset detection → distinct rings
+      if (activeSceneFrame === "polyrhythm" && analysis && audioMix > 0.5) {
+        const bg = analysis.bassGroup;
+        const mg = analysis.midsGroup;
+        const hg = (analysis.bands.highMid + analysis.bands.presence) / 2;
+        // Bass kick → ring from left
+        if (bg - prevBassPoly > 0.15 && bg > 0.35) {
+          bassRings.push({
+            x: cssW * 0.2,
+            y: cssH * 0.5,
+            t0: now,
+            intensity: 0.9,
+          });
+        }
+        // Mid (snare) → ring from center
+        if (mg - prevMidPoly > 0.13 && mg > 0.3) {
+          bassRings.push({
+            x: cssW * 0.5,
+            y: cssH * 0.5,
+            t0: now,
+            intensity: 0.7,
+          });
+        }
+        // High-mid (hat) → ring from right
+        if (hg - prevHighPoly > 0.12 && hg > 0.25) {
+          bassRings.push({
+            x: cssW * 0.8,
+            y: cssH * 0.5,
+            t0: now,
+            intensity: 0.5,
+          });
+        }
+        prevBassPoly = bg;
+        prevMidPoly = mg;
+        prevHighPoly = hg;
+      }
+
+      // FEEDBACK — warp + decay the persistent buffer, add new audio events
+      if (activeSceneFrame === "feedback" && audioMix > 0.01) {
+        const decay = 0.91;
+        // Slow rotation + slight zoom-in over time
+        const angle = 0.012 + 0.018 * (analysis?.bassGroup ?? 0);
+        const zoom = 1.012;
+        const ccx = cols / 2;
+        const ccy = rows / 2;
+        const cosA = Math.cos(angle);
+        const sinA = Math.sin(angle);
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const dx = (c - ccx) / zoom;
+            const dy = (r - ccy) / zoom;
+            const sx = ccx + dx * cosA - dy * sinA;
+            const sy = ccy + dx * sinA + dy * cosA;
+            const sxi = Math.floor(sx);
+            const syi = Math.floor(sy);
+            persistB[r * cols + c] =
+              sxi >= 0 && sxi < cols && syi >= 0 && syi < rows
+                ? persistA[syi * cols + sxi] * decay
+                : 0;
+          }
+        }
+        // Inject bass disk at center to feed the system
+        const radius = (analysis?.bassGroup ?? 0) * 6;
+        if (radius > 0.5) {
+          const r2 = radius * radius;
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const dx = c - ccx;
+              const dy = r - ccy;
+              const d2 = dx * dx + dy * dy;
+              if (d2 < r2) {
+                const u = d2 / r2;
+                const fall = (1 - u) * (1 - u);
+                persistB[r * cols + c] = Math.max(persistB[r * cols + c], fall);
+              }
+            }
+          }
+        }
+        // On onset, splatter sparkles into the buffer
+        if (onsetThisFrame && analysis) {
+          const sparkCount = 8 + Math.floor(analysis.beatStrength * 24);
+          for (let s = 0; s < sparkCount; s++) {
+            const sc = Math.floor(Math.random() * cols);
+            const sr = Math.floor(Math.random() * rows);
+            persistB[sr * cols + sc] = 1;
+          }
+        }
+        // Swap
+        const tmp = persistA;
+        persistA = persistB;
+        persistB = tmp;
+      }
+
+      // LISSAJOUS — decay buffer, paint curve points
+      if (activeSceneFrame === "lissajous" && audioMix > 0.01) {
+        const decay = 0.94;
+        // Decay in place
+        for (let i = 0; i < persistA.length; i++) persistA[i] *= decay;
+
+        // Curve params from audio. a, b are coprime-ish low integers shifted
+        // by spectrum to morph the shape. Phase moves with time.
+        const a = 2 + Math.floor((analysis?.bassGroup ?? 0) * 3);
+        const b = 3 + Math.floor((analysis?.highsGroup ?? 0) * 3);
+        const phase = (now * 0.0008) % (Math.PI * 2);
+        const ax = (cssW / 2) * 0.85;
+        const ay = (cssH / 2) * 0.85;
+        const ccx = cssW / 2;
+        const ccy = cssH / 2;
+        const SAMPLES = 220;
+        for (let s = 0; s < SAMPLES; s++) {
+          const t = (s / SAMPLES) * Math.PI * 2;
+          const x = ccx + ax * Math.sin(a * t + phase);
+          const y = ccy + ay * Math.sin(b * t);
+          const c = Math.floor(x / SPACING);
+          const r = Math.floor(y / SPACING);
+          if (c >= 0 && c < cols && r >= 0 && r < rows) {
+            persistA[r * cols + c] = 1;
+          }
+        }
+      }
+
       // Spawn idle waves
       if (!reducedMotion && now >= nextIdleAt) {
         idleWaves.push({
@@ -476,6 +674,101 @@ export default function LedMatrix() {
             // DialKit per-band config; other scenes implement their own
             // self-contained behavior (Chladni nodal pattern, drumhead, etc.)
             const activeScene = aState.scene;
+
+            // Compute grid cell for buffer-backed scenes
+            const cellC = Math.min(cols - 1, Math.max(0, Math.floor(px / SPACING)));
+            const cellR = Math.min(rows - 1, Math.max(0, Math.floor(py / SPACING)));
+            const cellIdx = cellR * cols + cellC;
+
+            // ── DRUMHEAD scene ────────────────────────────────────────────
+            if (masterEnabled && audioMix > 0.01 && activeScene === "drumhead") {
+              const v = waveA[cellIdx];
+              // Compressor to keep peaks readable: tanh-like
+              const m = Math.tanh(Math.abs(v) * 2.2);
+              if (m > 0.01) {
+                addColor(m * audioMix, v >= 0 ? bassCol : highsCol);
+              }
+            }
+
+            // ── SPECTROGRAM scene ─────────────────────────────────────────
+            if (masterEnabled && audioMix > 0.01 && activeScene === "spectrogram") {
+              // Read the column at horizontal position cellC, time-shifted
+              // so the cursor sits at the right edge (recent audio at right).
+              const col = (specCursor + cellC) % cols;
+              const v = specBuf[cellR * cols + col];
+              if (v > 0.02) {
+                // Color by frequency band — bass at bottom, air at top
+                const tFreq = (rows - 1 - cellR) / Math.max(1, rows - 1); // 0 bottom, 1 top
+                let col1: [number, number, number];
+                let col2: [number, number, number];
+                let mix: number;
+                if (tFreq < 0.33) {
+                  col1 = bassCol; col2 = midsCol; mix = tFreq / 0.33;
+                } else if (tFreq < 0.66) {
+                  col1 = midsCol; col2 = highsCol; mix = (tFreq - 0.33) / 0.33;
+                } else {
+                  col1 = highsCol; col2 = airCol; mix = (tFreq - 0.66) / 0.34;
+                }
+                const tinted: [number, number, number] = [
+                  col1[0] + (col2[0] - col1[0]) * mix,
+                  col1[1] + (col2[1] - col1[1]) * mix,
+                  col1[2] + (col2[2] - col1[2]) * mix,
+                ];
+                addColor(Math.pow(v, 1.4) * audioMix, tinted);
+              }
+            }
+
+            // ── POLYRHYTHM scene ──────────────────────────────────────────
+            // Renders rings collected in `bassRings` (filled by the per-frame
+            // band-onset detector earlier this frame).
+            if (masterEnabled && audioMix > 0.01 && activeScene === "polyrhythm") {
+              for (let i = 0; i < bassRings.length; i++) {
+                const ring = bassRings[i];
+                const age = now - ring.t0;
+                if (age < 0) continue;
+                const radius = (age / BASS_RING_CROSS_MS) * Math.max(cssW, cssH);
+                const dx = px - ring.x;
+                const dy = py - ring.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const off = Math.abs(dist - radius);
+                if (off < BASS_RING_THICKNESS) {
+                  const u = off / BASS_RING_THICKNESS;
+                  const ringInt = 0.5 * (1 + Math.cos(Math.PI * u));
+                  const tLife = age / BASS_RING_LIFE_MS;
+                  const ageEnv = Math.sin(tLife * Math.PI);
+                  // Color ring by its origin x: left=bass, center=mids, right=highs
+                  let col: [number, number, number];
+                  if (ring.x < cssW * 0.35) col = bassCol;
+                  else if (ring.x < cssW * 0.65) col = midsCol;
+                  else col = highsCol;
+                  addColor(ringInt * ageEnv * ring.intensity * audioMix, col);
+                }
+              }
+            }
+
+            // ── FEEDBACK scene ────────────────────────────────────────────
+            if (masterEnabled && audioMix > 0.01 && activeScene === "feedback") {
+              const v = persistA[cellIdx];
+              if (v > 0.01) {
+                // Tint by audio energy: bass-heavy → bass color, treble → highs
+                const e = bassGroup;
+                const tintMix = Math.min(1, e * 1.2);
+                const tinted: [number, number, number] = [
+                  highsCol[0] + (bassCol[0] - highsCol[0]) * tintMix,
+                  highsCol[1] + (bassCol[1] - highsCol[1]) * tintMix,
+                  highsCol[2] + (bassCol[2] - highsCol[2]) * tintMix,
+                ];
+                addColor(v * audioMix, tinted);
+              }
+            }
+
+            // ── LISSAJOUS scene ───────────────────────────────────────────
+            if (masterEnabled && audioMix > 0.01 && activeScene === "lissajous") {
+              const v = persistA[cellIdx];
+              if (v > 0.01) {
+                addColor(v * audioMix, midsCol);
+              }
+            }
 
             // ── CHLADNI scene ─────────────────────────────────────────────
             if (masterEnabled && audioMix > 0.01 && activeScene === "chladni") {
@@ -765,7 +1058,10 @@ export default function LedMatrix() {
     canvas.addEventListener("mouseenter", handleMove);
     canvas.addEventListener("mouseleave", handleLeave);
 
-    const handleResize = () => resize();
+    const handleResize = () => {
+      resize();
+      reallocSceneBuffers();
+    };
     window.addEventListener("resize", handleResize);
 
     // Track theme/palette changes so colors stay in sync
