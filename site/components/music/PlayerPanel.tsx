@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { formatTime } from "@/lib/format-time";
@@ -44,6 +45,13 @@ export default function PlayerPanel() {
     prev,
     seek,
   } = useAudioPlayer();
+
+  // While the user is actively dragging the scrubber, hold the displayed
+  // value locally so it doesn't fight with timeupdate events from the audio
+  // element. Commit to audio on every change (so visualizer follows live).
+  const [scrubbing, setScrubbing] = useState(false);
+  const [scrubValue, setScrubValue] = useState(0);
+  const displayTime = scrubbing ? scrubValue : currentTime;
 
   return (
     <AnimatePresence>
@@ -104,14 +112,23 @@ export default function PlayerPanel() {
               className="tabular-nums shrink-0"
               style={{ fontSize: "10px", color: "var(--color-fg-tertiary)" }}
             >
-              {formatTime(currentTime)}
+              {formatTime(displayTime)}
             </span>
             <Slider
-              value={[Math.min(currentTime, duration || currentTime)]}
+              value={[Math.min(displayTime, duration || displayTime)]}
               max={duration || 1}
               step={0.1}
               onValueChange={(v) => {
-                if (Array.isArray(v) && typeof v[0] === "number") seek(v[0]);
+                if (Array.isArray(v) && typeof v[0] === "number") {
+                  setScrubbing(true);
+                  setScrubValue(v[0]);
+                  seek(v[0]);
+                }
+              }}
+              onValueCommitted={() => {
+                // Drop scrubbing state on next frame so the displayed time
+                // smoothly hands back over to the live audio currentTime.
+                requestAnimationFrame(() => setScrubbing(false));
               }}
               className="flex-1"
               aria-label="Seek"

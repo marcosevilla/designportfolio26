@@ -27,10 +27,13 @@ function Slider({
       thumbAlignment="edge"
       {...props}
     >
-      <SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
+      {/* Outer pad — extends the click/touch target vertically without
+          changing the visual track height. Click anywhere in this band to
+          jump; drag to scrub. */}
+      <SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col py-2 -my-2">
         <SliderPrimitive.Track
           data-slot="slider-track"
-          className="relative grow overflow-hidden rounded-full select-none data-horizontal:h-px data-horizontal:w-full data-vertical:h-full data-vertical:w-px"
+          className="relative grow overflow-hidden rounded-full select-none data-horizontal:h-0.5 data-horizontal:w-full data-vertical:h-full data-vertical:w-0.5 transition-[height] group-hover/slider:data-horizontal:h-1"
           style={{ backgroundColor: "var(--color-border)" }}
         >
           <SliderPrimitive.Indicator
@@ -43,7 +46,7 @@ function Slider({
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}
-            className="relative block size-2 shrink-0 rounded-full opacity-0 transition-opacity select-none after:absolute after:-inset-3 group-hover/slider:opacity-100 group-data-[active]/slider:opacity-100 focus-visible:opacity-100 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+            className="relative block size-2 shrink-0 rounded-full opacity-60 transition-[opacity,transform] select-none after:absolute after:-inset-3 group-hover/slider:opacity-100 group-hover/slider:scale-125 group-data-[active]/slider:opacity-100 group-data-[active]/slider:scale-150 focus-visible:opacity-100 focus-visible:scale-125 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 cursor-grab active:cursor-grabbing"
             style={{ backgroundColor: "var(--color-accent)" }}
           />
         ))}

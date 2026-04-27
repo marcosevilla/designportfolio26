@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
@@ -10,6 +11,7 @@ import {
   SkipForwardIcon,
   CloseIcon,
 } from "@/components/Icons";
+import { Slider } from "@/components/ui/slider";
 
 function ChipButton({
   label,
@@ -34,8 +36,22 @@ function ChipButton({
 
 export default function PlayerChip() {
   const pathname = usePathname();
-  const { currentTrack, isPlaying, togglePlay, next, prev, closeSession, session } =
-    useAudioPlayer();
+  const {
+    currentTrack,
+    isPlaying,
+    currentTime,
+    duration,
+    togglePlay,
+    next,
+    prev,
+    seek,
+    closeSession,
+    session,
+  } = useAudioPlayer();
+
+  const [scrubbing, setScrubbing] = useState(false);
+  const [scrubValue, setScrubValue] = useState(0);
+  const displayTime = scrubbing ? scrubValue : currentTime;
 
   const onHome = pathname === "/";
   const visible = !onHome && session === "active";
@@ -54,52 +70,73 @@ export default function PlayerChip() {
         >
           {/* Subtle frosted backdrop for legibility against arbitrary page content */}
           <div
-            className="flex items-center gap-3 px-3 py-2 backdrop-blur-md"
+            className="backdrop-blur-md"
             style={{
               backgroundColor: "color-mix(in srgb, var(--color-bg) 85%, transparent)",
               border: "1px solid var(--color-border)",
             }}
           >
-            <div className="flex items-center gap-2.5">
-              <ChipButton label="Previous track" onClick={prev}>
-                <SkipBackIcon size={12} />
-              </ChipButton>
-              <ChipButton
-                label={isPlaying ? "Pause" : "Play"}
-                onClick={togglePlay}
-              >
-                {isPlaying ? <PauseIcon size={14} /> : <PlayIcon size={14} />}
-              </ChipButton>
-              <ChipButton label="Next track" onClick={next}>
-                <SkipForwardIcon size={12} />
+            <div className="flex items-center gap-3 px-3 py-2">
+              <div className="flex items-center gap-2.5">
+                <ChipButton label="Previous track" onClick={prev}>
+                  <SkipBackIcon size={12} />
+                </ChipButton>
+                <ChipButton
+                  label={isPlaying ? "Pause" : "Play"}
+                  onClick={togglePlay}
+                >
+                  {isPlaying ? <PauseIcon size={14} /> : <PlayIcon size={14} />}
+                </ChipButton>
+                <ChipButton label="Next track" onClick={next}>
+                  <SkipForwardIcon size={12} />
+                </ChipButton>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="truncate"
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    color: "var(--color-fg)",
+                    letterSpacing: "-0.005em",
+                  }}
+                >
+                  {currentTrack.title}
+                </p>
+                <p
+                  className="truncate"
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 400,
+                    color: "var(--color-fg-tertiary)",
+                  }}
+                >
+                  {currentTrack.artist}
+                </p>
+              </div>
+              <ChipButton label="Close player" onClick={closeSession}>
+                <CloseIcon size={10} />
               </ChipButton>
             </div>
-            <div className="min-w-0 flex-1">
-              <p
-                className="truncate"
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 500,
-                  color: "var(--color-fg)",
-                  letterSpacing: "-0.005em",
+            {/* Thin scrubbable progress strip */}
+            <div className="px-3 pb-1.5">
+              <Slider
+                value={[Math.min(displayTime, duration || displayTime)]}
+                max={duration || 1}
+                step={0.1}
+                onValueChange={(v) => {
+                  if (Array.isArray(v) && typeof v[0] === "number") {
+                    setScrubbing(true);
+                    setScrubValue(v[0]);
+                    seek(v[0]);
+                  }
                 }}
-              >
-                {currentTrack.title}
-              </p>
-              <p
-                className="truncate"
-                style={{
-                  fontSize: "10px",
-                  fontWeight: 400,
-                  color: "var(--color-fg-tertiary)",
+                onValueCommitted={() => {
+                  requestAnimationFrame(() => setScrubbing(false));
                 }}
-              >
-                {currentTrack.artist}
-              </p>
+                aria-label="Seek"
+              />
             </div>
-            <ChipButton label="Close player" onClick={closeSession}>
-              <CloseIcon size={10} />
-            </ChipButton>
           </div>
         </motion.div>
       )}
