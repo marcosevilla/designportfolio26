@@ -87,6 +87,10 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
         {studies.map((study, i) => {
           // eslint-disable-next-line react-hooks/rules-of-hooks
           const x = useTransform(offsetX, (v) => v + i * SPREAD);
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const scale = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.85, 0.92, 1.0, 0.92, 0.85]);
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const opacity = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.4, 0.7, 1.0, 0.7, 0.4]);
           const Custom = CAROUSEL_CARDS[study.slug];
           const cardProps: CarouselCardProps = {
             study,
@@ -103,8 +107,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
                 left: "50%",
                 top: "50%",
                 x,
+                scale,
+                opacity,
                 translateX: `-${CARD_W / 2}px`,
                 translateY: `-${CARD_H / 2}px`,
+                zIndex: i === activeIndex ? 10 : 5 - Math.abs(i - activeIndex),
               }}
             >
               <Card {...cardProps} />
