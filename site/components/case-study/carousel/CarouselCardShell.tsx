@@ -10,6 +10,7 @@ interface CarouselCardShellProps {
   onClick: () => void;
   /** Optional override for the auto-rendered gradient layer */
   hideGradient?: boolean;
+  isExpanding?: boolean;
 }
 
 const FALLBACK_GRADIENT = "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)";
@@ -20,6 +21,7 @@ export default function CarouselCardShell({
   isActive,
   onClick,
   hideGradient = false,
+  isExpanding = false,
 }: CarouselCardShellProps) {
   const gradient = study.gradient ?? FALLBACK_GRADIENT;
   const company = study.company ?? "";
@@ -64,13 +66,19 @@ export default function CarouselCardShell({
           height: "55%",
           background:
             "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 50%, transparent 100%)",
+          opacity: isExpanding ? 0 : 1,
+          transition: "opacity 150ms ease-out",
         }}
       />
 
       {/* 4. Typography block (always on top) */}
       <div
         className="absolute bottom-0 left-0 right-0"
-        style={{ padding: "20px" }}
+        style={{
+          padding: "20px",
+          opacity: isExpanding ? 0 : 1,
+          transition: "opacity 150ms ease-out",
+        }}
       >
         <div
           style={{
