@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { AudioAnalyzer, type AnalysisSnapshot } from "@/lib/audio-analysis";
+import { MOODS, type Track } from "@/lib/playlist";
 
 // Geometry
 const SPACING = 5;          // px between dot centers
@@ -130,13 +132,15 @@ export default function LedMatrix() {
   const audio = useAudioPlayer();
   const audioStateRef = useRef({
     isPlaying: audio.isPlaying,
-    accentColor: audio.currentTrack.accentColor,
+    track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
+    getSampleRate: audio.getSampleRate,
   });
   audioStateRef.current = {
     isPlaying: audio.isPlaying,
-    accentColor: audio.currentTrack.accentColor,
+    track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
+    getSampleRate: audio.getSampleRate,
   };
 
   useEffect(() => {
@@ -192,7 +196,16 @@ export default function LedMatrix() {
     let prevBass = 0;            // for spike detection
     const bassBlobs: BassBlob[] = [];
     const sparkles: Sparkle[] = [];
-    let trackAccent: [number, number, number] = onColor;
+    const analyzer = new AudioAnalyzer();
+    let analysis: AnalysisSnapshot | null = null;
+    // Per-track palette colors (parsed lazily, refreshed when track changes)
+    let bassCol: [number, number, number] = [180, 100, 30];
+    let midsCol: [number, number, number] = [232, 155, 90];
+    let highsCol: [number, number, number] = [242, 210, 155];
+    let airCol: [number, number, number] = [255, 241, 214];
+    let lastPaletteSrc = "";
+    // Beat-flash for onset events
+    let onsetFlashStrength = 0;
 
     const t0 = performance.now();
     let raf = 0;
@@ -208,48 +221,65 @@ export default function LedMatrix() {
       // Smooth cursor fade in/out
       cursorAlpha += (cursorTargetAlpha - cursorAlpha) * HOVER_FADE_RATE;
 
-      // Audio mix transition + sample frequency data
+      // Audio mix transition + sample frequency data + 8-band analysis
       const aState = audioStateRef.current;
       const targetMix = aState.isPlaying ? 1 : 0;
       audioMix += (targetMix - audioMix) * AUDIO_FADE_RATE;
-      // Snap to bounds when close (avoid endless tiny updates)
       if (Math.abs(targetMix - audioMix) < 0.001) audioMix = targetMix;
 
-      let bass = 0, mids = 0, treble = 0;
+      const track = aState.track;
+      const mood = MOODS[track.mood ?? "warm"];
+
+      // Refresh palette colors when the track changes
+      if (track.src !== lastPaletteSrc) {
+        bassCol = parseColor(track.palette.bass);
+        midsCol = parseColor(track.palette.mids);
+        highsCol = parseColor(track.palette.highs);
+        airCol = parseColor(track.palette.air);
+        lastPaletteSrc = track.src;
+        analyzer.reset();
+      }
+
+      analysis = null;
       if (audioMix > 0.01 && aState.getFrequencyData) {
         const data = aState.getFrequencyData();
-        if (data) {
-          const n = data.length;
-          const bEnd = Math.max(1, Math.floor(n * 0.06));
-          const mEnd = Math.max(bEnd + 1, Math.floor(n * 0.25));
-          let bs = 0, ms = 0, ts = 0;
-          for (let i = 0; i < bEnd; i++) bs += data[i];
-          for (let i = bEnd; i < mEnd; i++) ms += data[i];
-          for (let i = mEnd; i < n; i++) ts += data[i];
-          bass = (bs / bEnd) / 255;
-          mids = (ms / (mEnd - bEnd)) / 255;
-          treble = (ts / (n - mEnd)) / 255;
+        const sr = aState.getSampleRate();
+        if (data && sr) {
+          analysis = analyzer.process(data, sr, now);
         }
       }
 
-      // Bass spike → spawn a blob at a random in-bounds point.
+      const bassGroup = analysis?.bassGroup ?? 0;
+      const midsGroup = analysis?.midsGroup ?? 0;
+      const highsGroup = analysis?.highsGroup ?? 0;
+      const airGroup = analysis?.airGroup ?? 0;
+      const onsetThisFrame = analysis?.onsetThisFrame ?? false;
+
+      // BPM-driven speed multiplier — 120 BPM = 1.0×, 60 BPM = 0.5×, 180 BPM = 1.5×
+      const bpm = analysis?.bpm ?? 120;
+      const bpmSpeed = bpm / 120;
+      const speed = mood.speed * bpmSpeed;
+
+      // Bass spike → spawn a blob (uses bassGroup, scaled by mood density)
       if (
         audioMix > 0.5 &&
-        bass > BASS_SPAWN_THRESHOLD &&
-        bass - prevBass > BASS_SPAWN_DELTA
+        bassGroup > BASS_SPAWN_THRESHOLD &&
+        bassGroup - prevBass > BASS_SPAWN_DELTA
       ) {
         bassBlobs.push({
           x: BASS_BLOB_RADIUS_PX * 0.3 + Math.random() * (cssW - BASS_BLOB_RADIUS_PX * 0.6),
           y: BASS_BLOB_RADIUS_PX * 0.3 + Math.random() * (cssH - BASS_BLOB_RADIUS_PX * 0.6),
           t0: now,
-          intensity: BASS_BLOB_INTENSITY * Math.min(1, bass + 0.2),
+          intensity: BASS_BLOB_INTENSITY * Math.min(1, bassGroup + 0.2) * mood.intensity,
         });
       }
-      prevBass = bass;
+      prevBass = bassGroup;
 
-      // Treble → sparkle spawn rate (per-frame Poisson-ish)
-      if (audioMix > 0.5 && treble > 0.05) {
-        const spawnCount = Math.floor(TREBLE_SPARKLE_RATE * treble * audioMix);
+      // Air → sparkle spawn rate, scaled by mood
+      if (audioMix > 0.5 && airGroup > 0.05) {
+        const spawnCount = Math.floor(
+          TREBLE_SPARKLE_RATE * airGroup * mood.density * mood.sparkleRate * audioMix
+        );
         for (let i = 0; i < spawnCount; i++) {
           sparkles.push({
             x: Math.random() * cssW,
@@ -259,10 +289,11 @@ export default function LedMatrix() {
         }
       }
 
-      // Per-track accent — lerp toward currentTrack.accentColor while playing
-      if (audioMix > 0.001) {
-        trackAccent = parseColor(aState.accentColor);
+      // Onset → brief beat flash (full-grid pulse)
+      if (onsetThisFrame && audioMix > 0.5) {
+        onsetFlashStrength = Math.min(1, onsetFlashStrength + 0.6);
       }
+      onsetFlashStrength = Math.max(0, onsetFlashStrength - 0.08); // decay
 
       // Spawn idle waves
       if (!reducedMotion && now >= nextIdleAt) {
@@ -310,58 +341,86 @@ export default function LedMatrix() {
           const cy = dyT > 0 ? dyT : dyB > 0 ? dyB : 0;
           if (cx > 0 && cy > 0 && cx * cx + cy * cy > CORNER_RADIUS * CORNER_RADIUS) continue;
 
-          let lit = 0; // 0..1
+          // Multi-color additive blending. Each effect contributes a
+          // (color × intensity) delta from the off baseline. Final color is
+          // offColor + sum of deltas, clamped. `lit` tracks total intensity
+          // for dot-size bloom only.
+          let lit = 0;
+          let dr = 0, dg = 0, db = 0;
+
+          // Helper: add a contribution from a colored layer (intensity 0..1)
+          const addColor = (intensity: number, col: [number, number, number]) => {
+            if (intensity <= 0) return;
+            lit += intensity;
+            dr += (col[0] - offColor[0]) * intensity;
+            dg += (col[1] - offColor[1]) * intensity;
+            db += (col[2] - offColor[2]) * intensity;
+          };
 
           if (!reducedMotion) {
             const idleWeight = 1 - audioMix;
+            const moodIntensity = mood.intensity;
 
-            // Idle Perlin waves — fades out while music plays
+            // Idle Perlin waves — fades out while music plays (theme accent)
             if (idleWeight > 0.01) {
+              let idleLit = 0;
               for (let i = 0; i < idleWaves.length; i++) {
                 const w = idleWaves[i];
                 const age = now - w.t0;
-                const t = age / w.duration; // 0..1
-                const env = Math.sin(t * Math.PI); // 0..1..0
+                const t = age / w.duration;
+                const env = Math.sin(t * Math.PI);
                 if (env <= 0) continue;
                 const n = valueNoise2D(
                   px * IDLE_NOISE_SCALE + w.ox,
                   py * IDLE_NOISE_SCALE + w.oy + age * IDLE_NOISE_TIME_RATE * w.drift
                 );
                 const v = Math.max(0, n - 0.5) * 2;
-                lit += env * w.intensity * v * idleWeight;
+                idleLit += env * w.intensity * v;
               }
+              addColor(idleLit * idleWeight, onColor);
             }
 
-            // Audio visualizer — combination layer scaled by audioMix
+            // Audio visualizer layers (each colored by its band)
             if (audioMix > 0.01) {
-              // Mids → continuous Perlin field, intensity tracks mids energy
-              const midsLevel = MIDS_BASE_INTENSITY + MIDS_PEAK_INTENSITY * mids;
+              // Mids — slow Perlin underlayer, color = palette.mids
+              const midsLevel = (MIDS_BASE_INTENSITY + MIDS_PEAK_INTENSITY * midsGroup) * moodIntensity;
               const mn = valueNoise2D(
                 px * MIDS_NOISE_SCALE,
-                py * MIDS_NOISE_SCALE + now * MIDS_NOISE_TIME_RATE
+                py * MIDS_NOISE_SCALE + now * MIDS_NOISE_TIME_RATE * speed
               );
               const mv = Math.max(0, mn - 0.5) * 2;
-              lit += mv * midsLevel * audioMix;
+              addColor(mv * midsLevel * audioMix, midsCol);
 
-              // Bass blobs — soft radial bloom from each blob's origin
+              // Highs — fast Perlin overlay, finer grain, color = palette.highs
+              const highsLevel = highsGroup * 0.5 * moodIntensity;
+              if (highsLevel > 0.005) {
+                const hn = valueNoise2D(
+                  px * MIDS_NOISE_SCALE * 2.4 + 137,
+                  py * MIDS_NOISE_SCALE * 2.4 + now * MIDS_NOISE_TIME_RATE * 3.0 * speed
+                );
+                const hv = Math.max(0, hn - 0.55) * 2.2;
+                addColor(hv * highsLevel * audioMix, highsCol);
+              }
+
+              // Bass blobs — radial bloom, color = palette.bass
               for (let i = 0; i < bassBlobs.length; i++) {
                 const b = bassBlobs[i];
                 const age = now - b.t0;
                 const tBlob = age / BASS_BLOB_LIFE_MS;
-                const env = Math.sin(tBlob * Math.PI); // bloom-and-fade bell
+                const env = Math.sin(tBlob * Math.PI);
                 if (env <= 0) continue;
                 const dx = px - b.x;
                 const dy = py - b.y;
                 const dist2 = dx * dx + dy * dy;
                 const r2 = BASS_BLOB_RADIUS_PX * BASS_BLOB_RADIUS_PX;
                 if (dist2 < r2) {
-                  const u = dist2 / r2; // 0..1
-                  const fall = (1 - u) * (1 - u); // soft quadratic falloff
-                  lit += fall * env * b.intensity * audioMix;
+                  const u = dist2 / r2;
+                  const fall = (1 - u) * (1 - u);
+                  addColor(fall * env * b.intensity * audioMix, bassCol);
                 }
               }
 
-              // Treble sparkles — bright dot for each, very short life
+              // Air sparkles — bright dot per spawn, color = palette.air
               for (let i = 0; i < sparkles.length; i++) {
                 const sp = sparkles[i];
                 const age = now - sp.t0;
@@ -369,63 +428,57 @@ export default function LedMatrix() {
                 if (tSp >= 1) continue;
                 const dx = px - sp.x;
                 const dy = py - sp.y;
-                // Sparkle hits the single nearest dot only — narrow radius
                 if (dx * dx + dy * dy < SPACING * SPACING * 0.6) {
                   const env = Math.sin(tSp * Math.PI);
-                  lit += env * SPARKLE_INTENSITY * audioMix;
+                  addColor(env * SPARKLE_INTENSITY * audioMix, airCol);
                 }
+              }
+
+              // Onset flash — subtle full-grid pulse on each beat
+              if (onsetFlashStrength > 0.01) {
+                addColor(onsetFlashStrength * 0.18 * audioMix, bassCol);
               }
             }
 
-            // Ripple contributions (each ring is its own entry).
-            // Wavefront uses a smooth cosine bell so dots ease in and out
-            // of brightness instead of having a hard triangular edge.
-            // Lifetime envelope is a sine arc — bloom in, bloom out.
+            // Click ripples — concentric rings, theme accent
             let rippleLit = 0;
             for (let i = 0; i < ripples.length; i++) {
               const rp = ripples[i];
               const age = now - rp.t0;
-              if (age < 0) continue; // not yet born (staggered ring)
+              if (age < 0) continue;
               const radius = (age / RIPPLE_CROSS_MS) * maxAxis;
               const dx = px - rp.x;
               const dy = py - rp.y;
               const dist = Math.sqrt(dx * dx + dy * dy);
               const offFront = Math.abs(dist - radius);
               if (offFront < RIPPLE_RING_PX) {
-                const u = offFront / RIPPLE_RING_PX; // 0 at front, 1 at edge
+                const u = offFront / RIPPLE_RING_PX;
                 const ringIntensity = 0.5 * (1 + Math.cos(Math.PI * u));
-                const tLife = age / RIPPLE_TOTAL_MS; // 0..1
-                const ageEnv = Math.sin(tLife * Math.PI); // 0→1→0 bell
+                const tLife = age / RIPPLE_TOTAL_MS;
+                const ageEnv = Math.sin(tLife * Math.PI);
                 rippleLit += ringIntensity * ageEnv * rp.strength;
               }
             }
-            lit += Math.min(rippleLit, 1) * RIPPLE_GLOW_CAP;
+            addColor(Math.min(rippleLit, 1) * RIPPLE_GLOW_CAP, onColor);
 
-            // Cursor flashlight — soft radial bloom under the mouse.
+            // Cursor flashlight — theme accent
             if (cursorAlpha > 0.001) {
               const dxC = px - cursorX;
               const dyC = py - cursorY;
               const distC = Math.sqrt(dxC * dxC + dyC * dyC);
               if (distC < HOVER_RADIUS) {
                 const u = distC / HOVER_RADIUS;
-                const fall = 0.5 * (1 + Math.cos(Math.PI * u)); // cosine bell, 1 at center → 0 at edge
-                lit += fall * HOVER_INTENSITY * cursorAlpha;
+                const fall = 0.5 * (1 + Math.cos(Math.PI * u));
+                addColor(fall * HOVER_INTENSITY * cursorAlpha, onColor);
               }
             }
           }
 
           if (lit > 1) lit = 1;
 
-          // Active "on" color — lerp from theme accent toward the current
-          // track's per-track accent while music plays.
-          const onR = onColor[0] + (trackAccent[0] - onColor[0]) * audioMix;
-          const onG = onColor[1] + (trackAccent[1] - onColor[1]) * audioMix;
-          const onB = onColor[2] + (trackAccent[2] - onColor[2]) * audioMix;
-
-          // Color: lerp off → on
-          const rC = offColor[0] + (onR - offColor[0]) * lit;
-          const gC = offColor[1] + (onG - offColor[1]) * lit;
-          const bC = offColor[2] + (onB - offColor[2]) * lit;
+          const rC = Math.max(0, Math.min(255, offColor[0] + dr));
+          const gC = Math.max(0, Math.min(255, offColor[1] + dg));
+          const bC = Math.max(0, Math.min(255, offColor[2] + db));
           // Boot fade applies to alpha
           const alpha = bootP;
 

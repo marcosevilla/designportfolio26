@@ -34,8 +34,10 @@ interface AudioPlayerState {
   togglePanel: () => void;
   closePanel: () => void;
   closeSession: () => void;
-  // Visualizer (filled by Phase 2 — kept here so consumers can reference it)
+  // Visualizer
   getFrequencyData: (() => Uint8Array | null) | null;
+  /** AudioContext sample rate (e.g., 44100, 48000). Null until first play. */
+  getSampleRate: () => number | null;
 }
 
 const Ctx = createContext<AudioPlayerState | null>(null);
@@ -229,6 +231,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     return buf;
   }, []);
 
+  const getSampleRate = useCallback(() => {
+    return audioCtxRef.current?.sampleRate ?? null;
+  }, []);
+
   const value = useMemo<AudioPlayerState>(
     () => ({
       currentIndex,
@@ -249,6 +255,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       closePanel,
       closeSession,
       getFrequencyData,
+      getSampleRate,
     }),
     [
       currentIndex,
@@ -269,6 +276,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       closePanel,
       closeSession,
       getFrequencyData,
+      getSampleRate,
     ]
   );
 
