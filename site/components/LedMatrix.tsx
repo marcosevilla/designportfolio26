@@ -58,7 +58,16 @@ const SPARKLE_LIFE_MS = 220;
 const SPARKLE_INTENSITY = 0.85;
 
 type BassBlob = { x: number; y: number; t0: number; intensity: number };
-type BassRing = { x: number; y: number; t0: number; intensity: number };
+type BassRing = {
+  x: number;
+  y: number;
+  t0: number;
+  intensity: number;
+  /** Polyrhythm only — colors the ring by source band. */
+  band?: "bass" | "mids" | "highs";
+  /** Polyrhythm only — multiplier on cross speed (varies expansion rate). */
+  speedFactor?: number;
+};
 type Sparkle = { x: number; y: number; t0: number };
 
 // Bass-ring effect (alternative to blob)
@@ -266,6 +275,13 @@ export default function LedMatrix() {
     let persistB: Float32Array = new Float32Array(0);
     // polyrhythm: separate per-band onset history
     let prevBassPoly = 0, prevMidPoly = 0, prevHighPoly = 0;
+    // chladni: smoothly drifting modes + rotation + phase shifts so the
+    // pattern is always moving even when audio is steady; onsets snap to a
+    // new random (m, n) for shape variety
+    let chladniM = 3, chladniN = 4;
+    let chladniMTarget = 3, chladniNTarget = 4;
+    let chladniRotation = 0;
+    let chladniPhaseX = 0, chladniPhaseY = 0;
 
     const reallocSceneBuffers = () => {
       const total = cols * rows;
@@ -411,6 +427,46 @@ export default function LedMatrix() {
       // ── Per-frame scene state updates (before the per-dot loop) ──────────
       const activeSceneFrame = aState.scene;
 
+      // CHLADNI — modes drift smoothly + rotation + phase. Strong onsets
+      // snap to a new random (m, n) for occasional dramatic shape changes.
+      if (activeSceneFrame === "chladni" && audioMix > 0.01) {
+        // Continuous slow drift via sine waves on time, plus audio offsets
+        const tDrift = now * 0.00038;
+        const mSinusoid = Math.sin(tDrift * 0.7) * 1.6;
+        const nSinusoid = Math.cos(tDrift * 0.5) * 1.6;
+        const mAudio = (analysis?.bands.bass ?? 0) * 2.2 + (analysis?.bands.lowMid ?? 0) * 1.6;
+        const nAudio = (analysis?.bands.highMid ?? 0) * 2.2 + (analysis?.bands.air ?? 0) * 1.8;
+
+        // Discrete jump on strong beats — picks a new random (m, n) pair.
+        // Coprime-ish low integers give the most distinct visual patterns.
+        if (
+          onsetThisFrame &&
+          analysis &&
+          analysis.beatStrength > 0.45 &&
+          Math.random() < 0.55
+        ) {
+          const choices: [number, number][] = [
+            [1, 2], [1, 3], [2, 3], [2, 5], [3, 4], [3, 5],
+            [3, 7], [4, 5], [4, 7], [5, 6], [5, 7], [5, 8],
+          ];
+          const pick = choices[Math.floor(Math.random() * choices.length)];
+          // Randomly swap order so we sample both orientations
+          chladniMTarget = Math.random() < 0.5 ? pick[0] : pick[1];
+          chladniNTarget = chladniMTarget === pick[0] ? pick[1] : pick[0];
+        } else {
+          chladniMTarget = 2.5 + mSinusoid + mAudio;
+          chladniNTarget = 3.5 + nSinusoid + nAudio;
+        }
+        // Smooth tracking — same envelope idea Lissajous uses on its decay
+        chladniM += (chladniMTarget - chladniM) * 0.045;
+        chladniN += (chladniNTarget - chladniN) * 0.045;
+        // Slow rotation, accelerated by bass for "energy"
+        chladniRotation += 0.0025 + 0.005 * (analysis?.bassGroup ?? 0);
+        // Phases drift so the lattice flows
+        chladniPhaseX += 0.0035 + 0.006 * (analysis?.midsGroup ?? 0);
+        chladniPhaseY += 0.0028 + 0.005 * (analysis?.highsGroup ?? 0);
+      }
+
       // DRUMHEAD — 2D wave equation, ping-pong buffers + per-cell display
       // envelope so the rendered brightness is smooth (Lissajous-like
       // attack/release) instead of the raw, twitchy |u|. Impulses are
@@ -481,37 +537,55 @@ export default function LedMatrix() {
         specCursor = (specCursor + 1) % cols;
       }
 
-      // POLYRHYTHM — separate per-band onset detection → distinct rings
+      // POLYRHYTHM — per-band onsets each spawn rings with randomized
+      // origins, varied speeds, and possible multi-ring bursts on strong
+      // hits. Distinct band lineages stay readable via color, not position.
       if (activeSceneFrame === "polyrhythm" && analysis && audioMix > 0.5) {
         const bg = analysis.bassGroup;
         const mg = analysis.midsGroup;
         const hg = (analysis.bands.highMid + analysis.bands.presence) / 2;
-        // Bass kick → ring from left
-        if (bg - prevBassPoly > 0.15 && bg > 0.35) {
-          bassRings.push({
-            x: cssW * 0.2,
-            y: cssH * 0.5,
-            t0: now,
-            intensity: 0.9,
-          });
+
+        // Bass kick → 1–2 rings, lower band of the matrix, varied
+        if (bg - prevBassPoly > 0.13 && bg > 0.32) {
+          const count = bg > 0.6 ? 2 : 1;
+          for (let i = 0; i < count; i++) {
+            bassRings.push({
+              x: Math.random() * cssW,
+              y: cssH * 0.55 + Math.random() * cssH * 0.4,
+              t0: now + i * 80,
+              intensity: 0.85 + Math.random() * 0.25,
+              band: "bass",
+              speedFactor: 0.8 + Math.random() * 0.4,
+            });
+          }
         }
-        // Mid (snare) → ring from center
-        if (mg - prevMidPoly > 0.13 && mg > 0.3) {
-          bassRings.push({
-            x: cssW * 0.5,
-            y: cssH * 0.5,
-            t0: now,
-            intensity: 0.7,
-          });
+        // Mid hit → ring middle band, occasional pair on strong hits
+        if (mg - prevMidPoly > 0.11 && mg > 0.28) {
+          const count = mg > 0.5 ? 2 : 1;
+          for (let i = 0; i < count; i++) {
+            bassRings.push({
+              x: Math.random() * cssW,
+              y: cssH * 0.25 + Math.random() * cssH * 0.5,
+              t0: now + i * 60,
+              intensity: 0.65 + Math.random() * 0.3,
+              band: "mids",
+              speedFactor: 1.0 + Math.random() * 0.4,
+            });
+          }
         }
-        // High-mid (hat) → ring from right
-        if (hg - prevHighPoly > 0.12 && hg > 0.25) {
-          bassRings.push({
-            x: cssW * 0.8,
-            y: cssH * 0.5,
-            t0: now,
-            intensity: 0.5,
-          });
+        // Hi-mid (hat) → smaller, faster, often clustered; upper band biased
+        if (hg - prevHighPoly > 0.10 && hg > 0.22) {
+          const count = hg > 0.4 ? 3 : 1;
+          for (let i = 0; i < count; i++) {
+            bassRings.push({
+              x: Math.random() * cssW,
+              y: Math.random() * cssH * 0.55,
+              t0: now + i * 45,
+              intensity: 0.45 + Math.random() * 0.3,
+              band: "highs",
+              speedFactor: 1.25 + Math.random() * 0.5,
+            });
+          }
         }
         prevBassPoly = bg;
         prevMidPoly = mg;
@@ -799,13 +873,15 @@ export default function LedMatrix() {
 
             // ── POLYRHYTHM scene ──────────────────────────────────────────
             // Renders rings collected in `bassRings` (filled by the per-frame
-            // band-onset detector earlier this frame).
+            // band-onset detector earlier this frame). Color follows the
+            // ring's source band; speed and lifetime vary per ring.
             if (masterEnabled && audioMix > 0.01 && activeScene === "polyrhythm") {
               for (let i = 0; i < bassRings.length; i++) {
                 const ring = bassRings[i];
                 const age = now - ring.t0;
                 if (age < 0) continue;
-                const radius = (age / BASS_RING_CROSS_MS) * Math.max(cssW, cssH);
+                const speedFactor = ring.speedFactor ?? 1;
+                const radius = (age * speedFactor / BASS_RING_CROSS_MS) * Math.max(cssW, cssH);
                 const dx = px - ring.x;
                 const dy = py - ring.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
@@ -815,11 +891,10 @@ export default function LedMatrix() {
                   const ringInt = 0.5 * (1 + Math.cos(Math.PI * u));
                   const tLife = age / BASS_RING_LIFE_MS;
                   const ageEnv = Math.sin(tLife * Math.PI);
-                  // Color ring by its origin x: left=bass, center=mids, right=highs
                   let col: [number, number, number];
-                  if (ring.x < cssW * 0.35) col = bassCol;
-                  else if (ring.x < cssW * 0.65) col = midsCol;
-                  else col = highsCol;
+                  if (ring.band === "mids") col = midsCol;
+                  else if (ring.band === "highs") col = highsCol;
+                  else col = bassCol;
                   addColor(ringInt * ageEnv * ring.intensity * audioMix, col);
                 }
               }
@@ -851,14 +926,20 @@ export default function LedMatrix() {
 
             // ── CHLADNI scene ─────────────────────────────────────────────
             if (masterEnabled && audioMix > 0.01 && activeScene === "chladni") {
-              // Chladni plate: brightness peaks where two cosine modes cancel.
-              // The (m, n) modes drift slowly with the spectral content so
-              // patterns evolve as instruments shift. Onsets nudge them.
-              // Modes are kept low (2..6) so the lattice stays legible at this dot density.
-              const m = 2 + bassGroup * 2 + (analysis ? analysis.bands.lowMid * 2 : 0);
-              const n = 3 + highsGroup * 3 + (analysis ? analysis.bands.air * 2 : 0);
-              const nx = (px / cssW) * Math.PI;
-              const ny = (py / cssH) * Math.PI;
+              // Rotate the sample point around the matrix center, then sample
+              // the dual-cosine field with drifting phases. The (m, n) modes
+              // are smoothly tracked from per-frame state, with onset jumps
+              // already applied above.
+              const m = chladniM;
+              const n = chladniN;
+              const cx0 = px - cssW / 2;
+              const cy0 = py - cssH / 2;
+              const cosR = Math.cos(chladniRotation);
+              const sinR = Math.sin(chladniRotation);
+              const rx = (cx0 * cosR - cy0 * sinR) + cssW / 2;
+              const ry = (cx0 * sinR + cy0 * cosR) + cssH / 2;
+              const nx = (rx / cssW) * Math.PI + chladniPhaseX;
+              const ny = (ry / cssH) * Math.PI + chladniPhaseY;
               const ch =
                 Math.cos(m * nx) * Math.cos(n * ny) -
                 Math.cos(n * nx) * Math.cos(m * ny);
@@ -868,8 +949,6 @@ export default function LedMatrix() {
               const bandWidth = 0.04 + 0.18 * energy;
               const lineCloseness = Math.max(0, 1 - Math.abs(ch) / bandWidth);
               const chladniLit = lineCloseness * (0.4 + 0.6 * energy) * moodIntensity * audioMix;
-              // Bass picks the bass-color tint, mids/highs gradually shift.
-              // Use bassCol for the strong nodal lines; mids/highs add subtle tint.
               addColor(chladniLit, bassCol);
               // Subtle mids tint between nodal lines (where ch is moderate)
               const offNode = Math.max(0, 1 - Math.abs(ch) / 0.6) - lineCloseness;
