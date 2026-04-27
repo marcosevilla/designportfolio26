@@ -102,14 +102,14 @@ export default function SeekBar({
           the homepage (intro, loading state) for a consistent motif. */}
       <span
         aria-hidden="true"
-        className="absolute pointer-events-none select-none transition-[opacity,font-size]"
+        className="absolute pointer-events-none select-none transition-[font-size]"
         style={{
           left: `${pct}%`,
           top: "50%",
-          fontSize: expanded ? 16 : 12,
+          fontSize: expanded ? 20 : 16,
           lineHeight: 1,
           transform: "translate(-50%, -50%)",
-          opacity: expanded ? 1 : 0.7,
+          opacity: 1,
           color: "var(--color-accent)",
         }}
       >
