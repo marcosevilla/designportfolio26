@@ -213,6 +213,9 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
 
   return (
     <div
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Case studies carousel"
       className="relative"
       style={{
         marginLeft: "calc(-50vw + 50%)",
@@ -222,6 +225,9 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
         ["--carousel-card-h" as string]: `${CARD_H}px`,
       }}
     >
+      <div role="status" aria-live="polite" className="sr-only">
+        {studies[activeIndex]?.title}, card {activeIndex + 1} of {studies.length}
+      </div>
       <motion.div
         ref={trackRef}
         className="relative flex items-center justify-center"
