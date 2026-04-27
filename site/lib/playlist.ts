@@ -65,6 +65,19 @@ export const PLAYLIST: Track[] = [
     },
     mood: "dreamy",
   },
+  {
+    src: "/audio/track-4.mp3",
+    title: "Untitled Four",
+    artist: "Marco's Picks",
+    // Dreampop — violet kicks, fuchsia mids, pink highs, blush air
+    palette: {
+      bass: "#8B5CF6",   // violet-500
+      mids: "#D946EF",   // fuchsia-500
+      highs: "#F472B6",  // pink-400
+      air: "#FCE7F3",    // pink-100
+    },
+    mood: "chill",
+  },
 ];
 
 // Mood modulators — global scalars applied to the visualizer per track.
