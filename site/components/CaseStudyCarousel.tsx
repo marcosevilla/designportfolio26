@@ -10,10 +10,11 @@ interface CaseStudyCarouselProps {
   studies: CaseStudyMeta[];
 }
 
-const CARD_W = 320;
-const CARD_H = 420;
+const CARD_W_DESKTOP = 320;
+const CARD_H_DESKTOP = 420;
+const CARD_W_MOBILE = 260;
+const CARD_H_MOBILE = 340;
 const GAP = 24;
-const SPREAD = CARD_W + GAP;
 const RUBBER_BAND = 0.15;
 const VELOCITY_FACTOR = 0.3;
 // Critically damped (zeta = 1) so rapid wheel/keyboard ticks don't oscillate.
@@ -35,15 +36,18 @@ interface CarouselItemProps {
   rotate: MotionValue<number>;
   isActive: boolean;
   onCardClick: (slug: string) => void;
+  spread: number;
+  cardW: number;
+  cardH: number;
 }
 
-function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick }: CarouselItemProps) {
+function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick, spread, cardW, cardH }: CarouselItemProps) {
   // Stable transform function — wrap in useMemo so framer-motion doesn't see a new
   // function identity on every render and potentially reset its internal MotionValue state.
-  const xTransformFn = useMemo(() => (v: number) => v + index * SPREAD, [index]);
+  const xTransformFn = useMemo(() => (v: number) => v + index * spread, [index, spread]);
   const x = useTransform(offsetX, xTransformFn);
-  const scale = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.85, 0.92, 1.0, 0.92, 0.85]);
-  const opacity = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.4, 0.7, 1.0, 0.7, 0.4]);
+  const scale = useTransform(x, [-spread * 2, -spread, 0, spread, spread * 2], [0.85, 0.92, 1.0, 0.92, 0.85]);
+  const opacity = useTransform(x, [-spread * 2, -spread, 0, spread, spread * 2], [0.4, 0.7, 1.0, 0.7, 0.4]);
 
   const Custom = CAROUSEL_CARDS[study.slug];
   const Card = Custom ?? CarouselCardShell;
@@ -67,8 +71,8 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
         rotate,
         zIndex: isActive ? 10 : 5 - Math.abs(index - activeIndex),
         // Keep the card centered on the flex anchor point
-        marginLeft: `-${CARD_W / 2}px`,
-        marginTop: `-${CARD_H / 2}px`,
+        marginLeft: `-${cardW / 2}px`,
+        marginTop: `-${cardH / 2}px`,
       }}
     >
       <Card {...cardProps} />
@@ -80,6 +84,21 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
 
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const reducedMotion = useReducedMotion();
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const CARD_W = isMobile ? CARD_W_MOBILE : CARD_W_DESKTOP;
+  const CARD_H = isMobile ? CARD_H_MOBILE : CARD_H_DESKTOP;
+  const SPREAD = CARD_W + GAP;
+
   const offsetX = useMotionValue(0);
   const velocity = useVelocity(offsetX);
   const rotate = useTransform(velocity, [-1500, 0, 1500], [3, 0, -3], { clamp: true });
@@ -294,6 +313,9 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
             rotate={rotate}
             isActive={i === activeIndex}
             onCardClick={handleCardClick}
+            spread={SPREAD}
+            cardW={CARD_W}
+            cardH={CARD_H}
           />
         ))}
       </motion.div>
