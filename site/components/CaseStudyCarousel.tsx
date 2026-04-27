@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useMotionValue, useTransform, useMotionValueEvent, animate, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
+import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity, animate, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -20,6 +20,8 @@ const SETTLE_SPRING = { type: "spring" as const, stiffness: 180, damping: 18, ma
 
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const offsetX = useMotionValue(0);
+  const velocity = useVelocity(offsetX);
+  const rotate = useTransform(velocity, [-1500, 0, 1500], [3, 0, -3], { clamp: true });
   const [activeIndex, setActiveIndex] = useState(0);
   const animRef = useRef<AnimationPlaybackControls | null>(null);
   const panStartOffsetRef = useRef(0);
@@ -109,6 +111,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
                 x,
                 scale,
                 opacity,
+                rotate,
                 translateX: `-${CARD_W / 2}px`,
                 translateY: `-${CARD_H / 2}px`,
                 zIndex: i === activeIndex ? 10 : 5 - Math.abs(i - activeIndex),
