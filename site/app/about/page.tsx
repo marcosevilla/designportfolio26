@@ -19,7 +19,7 @@ export default function AboutPage() {
         </h1>
       </FadeIn>
 
-      <div className="mt-10 text-[var(--color-fg-secondary)] leading-[28px]" style={{ fontSize: "calc(14px + var(--font-size-offset))" }}>
+      <div className="mt-10 text-(--color-fg-secondary) leading-[28px]" style={{ fontSize: "calc(14px + var(--font-size-offset))" }}>
         {PARAGRAPHS.map((para, i) => {
           // PROMPTS aligns with paragraphs 2..6 (PROMPTS[i-1] for i >= 1)
           const label = i > 0 ? PROMPTS[i - 1] : null;

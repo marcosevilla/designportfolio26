@@ -199,7 +199,7 @@ export default function TypeTuner() {
           {layers.length === 0 && (
             <button
               onClick={addPreset}
-              className="px-3 py-1 text-[11px] rounded bg-white/5 text-gray-400 hover:bg-white/10 transition-colors"
+              className="px-3 py-1 text-[11px] rounded-sm bg-white/5 text-gray-400 hover:bg-white/10 transition-colors"
             >
               Load example
             </button>
@@ -218,7 +218,7 @@ export default function TypeTuner() {
           <button
             onClick={copyCode}
             disabled={layers.length === 0}
-            className="px-4 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-4 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             {copied ? "Copied!" : "Copy Code"}
           </button>

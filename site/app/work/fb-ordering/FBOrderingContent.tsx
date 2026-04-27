@@ -80,20 +80,20 @@ function DesignPrinciples() {
           >
             <div className="flex items-baseline gap-2 mb-2">
               <span
-                className="text-[var(--color-accent)]"
+                className="text-(--color-accent)"
                 style={{ ...typescale.label }}
               >
                 {p.number}
               </span>
               <span
-                className="text-[var(--color-fg)]"
+                className="text-(--color-fg)"
                 style={{ ...typescale.label, textTransform: "uppercase" }}
               >
                 {p.title}
               </span>
             </div>
             <p
-              className="text-[var(--color-fg-secondary)]"
+              className="text-(--color-fg-secondary)"
               style={{ fontSize: "13px", lineHeight: 1.5 }}
             >
               {p.summary}
@@ -106,7 +106,7 @@ function DesignPrinciples() {
                 {p.detail.split("\n\n").map((paragraph, j) => (
                   <p
                     key={j}
-                    className={`${j === 0 ? "mt-3" : "mt-2"} text-[var(--color-fg-secondary)]`}
+                    className={`${j === 0 ? "mt-3" : "mt-2"} text-(--color-fg-secondary)`}
                     style={{ fontSize: "13px", lineHeight: 1.5 }}
                   >
                     {paragraph}
@@ -127,8 +127,8 @@ export default function FBOrderingContent() {
         {/* Title + Subtitle + Project Details */}
         <div className="lg:grid lg:gap-x-20 lg:items-start" style={{ gridTemplateColumns: "2fr 1fr" }}>
           <div>
-            <h1 className="tracking-tight text-[var(--color-fg)] whitespace-nowrap" style={typescale.display}>F&B Mobile Ordering</h1>
-            <p className="mt-3 text-[var(--color-fg-secondary)]">I led the design of a mobile ordering system for hotels, expanding Canary&apos;s product suite into new revenue channels — spanning guest ordering, a menu CMS, and a staff fulfillment dashboard. The product went from concept to production in four months, shipping 93 of 100 scoped issues across three connected surfaces.</p>
+            <h1 className="tracking-tight text-(--color-fg) whitespace-nowrap" style={typescale.display}>F&B Mobile Ordering</h1>
+            <p className="mt-3 text-(--color-fg-secondary)">I led the design of a mobile ordering system for hotels, expanding Canary&apos;s product suite into new revenue channels — spanning guest ordering, a menu CMS, and a staff fulfillment dashboard. The product went from concept to production in four months, shipping 93 of 100 scoped issues across three connected surfaces.</p>
           </div>
           <div className="mt-6 lg:mt-[52px] overflow-hidden">
             <ProjectDetails rows={[
@@ -344,45 +344,45 @@ export default function FBOrderingContent() {
                 <div className="space-y-6">
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">1. Phone-based ordering is the biggest pain during peak hours.</strong> Chateau Avalon described guests calling an understaffed front desk, staff taking orders manually, preparing food, delivering it, then manually charging the folio. They estimated savings of over $2,000/year just from eliminating physical menus and reducing errors.
+                      <strong className="text-(--color-fg)">1. Phone-based ordering is the biggest pain during peak hours.</strong> Chateau Avalon described guests calling an understaffed front desk, staff taking orders manually, preparing food, delivering it, then manually charging the folio. They estimated savings of over $2,000/year just from eliminating physical menus and reducing errors.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → Designed the staff dashboard to sort by time elapsed with visual urgency indicators so nothing gets missed.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">2. Requiring POS would block 80%+ of potential customers.</strong> When a sales rep asked &ldquo;F&amp;B ordering works for any hotel right? No integrations needed?&rdquo; — that validated the no-POS-required approach.
+                      <strong className="text-(--color-fg)">2. Requiring POS would block 80%+ of potential customers.</strong> When a sales rep asked &ldquo;F&amp;B ordering works for any hotel right? No integrations needed?&rdquo; — that validated the no-POS-required approach.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → Designed the full ordering flow to work without any POS, using manual menu management and email/SMS notifications to staff.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">3. Guests expect consumer-app speed.</strong> A job candidate told our VP of Product that he experienced Canary&#39;s F&amp;B ordering poolside at a COMO hotel in Thailand: &ldquo;I didn&#39;t have to walk 100 meters to place an order — I could do everything from my phone.&rdquo;
+                      <strong className="text-(--color-fg)">3. Guests expect consumer-app speed.</strong> A job candidate told our VP of Product that he experienced Canary&#39;s F&amp;B ordering poolside at a COMO hotel in Thailand: &ldquo;I didn&#39;t have to walk 100 meters to place an order — I could do everything from my phone.&rdquo;
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → Designed as mobile-optimized web flow (no app download) with familiar patterns: tap to add, cart summary, one-tap submit.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">4. Hotels need test mode before going live.</strong>
+                      <strong className="text-(--color-fg)">4. Hotels need test mode before going live.</strong>
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → Designed dedicated test mode so staff can walk through the full guest flow without it being visible to actual guests.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">5. Menu availability timing matters.</strong> Competitors just dump all menus regardless of time.
+                      <strong className="text-(--color-fg)">5. Menu availability timing matters.</strong> Competitors just dump all menus regardless of time.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → Designed time-aware menu availability, inspired by Uber Eats, with a menu selector that clearly indicates which menus are currently available.
                     </p>
                   </div>
@@ -410,7 +410,7 @@ export default function FBOrderingContent() {
             <TwoCol>
               <TwoCol.Left>
                 <p className="mb-8">
-                  <strong className="text-[var(--color-fg)]">Approach:</strong> Ship the simplest version that solves the core problem, then expand based on real customer feedback.
+                  <strong className="text-(--color-fg)">Approach:</strong> Ship the simplest version that solves the core problem, then expand based on real customer feedback.
                 </p>
               </TwoCol.Left>
             </TwoCol>
@@ -462,10 +462,10 @@ export default function FBOrderingContent() {
               <TwoCol.Left>
                 <SectionHeading level={3}>Constraints I designed around</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li><strong className="text-[var(--color-fg)]">No POS integration at launch</strong> — Most target hotels don&#39;t have cloud POS</li>
-                  <li><strong className="text-[var(--color-fg)]">Built on existing Upsells rails</strong> — Engineering needed to ship fast</li>
-                  <li><strong className="text-[var(--color-fg)]">Bundled with Compendium</strong> — Guest entry point had to live naturally within the Compendium ecosystem</li>
-                  <li><strong className="text-[var(--color-fg)]">No app download</strong> — Everything as mobile web via QR code or link</li>
+                  <li><strong className="text-(--color-fg)">No POS integration at launch</strong> — Most target hotels don&#39;t have cloud POS</li>
+                  <li><strong className="text-(--color-fg)">Built on existing Upsells rails</strong> — Engineering needed to ship fast</li>
+                  <li><strong className="text-(--color-fg)">Bundled with Compendium</strong> — Guest entry point had to live naturally within the Compendium ecosystem</li>
+                  <li><strong className="text-(--color-fg)">No app download</strong> — Everything as mobile web via QR code or link</li>
                 </ul>
               </TwoCol.Left>
             </TwoCol>

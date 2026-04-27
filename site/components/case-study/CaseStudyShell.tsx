@@ -19,7 +19,7 @@ export default function CaseStudyShell({
       <SidebarTOCBridge items={tocItems} />
       <TOCObserver sectionIds={tocItems.map((i) => i.id)} />
       <article
-        className="text-[var(--color-fg-secondary)]"
+        className="text-(--color-fg-secondary)"
         style={typescale.body}
       >
         <InlineTOC />

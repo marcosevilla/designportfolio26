@@ -49,7 +49,7 @@ function PhoneFrame({ screen }: { screen: MobileScreen }) {
   return (
     <div className="flex flex-col items-start">
       <span
-        className="mb-2 text-[var(--color-fg-tertiary)]"
+        className="mb-2 text-(--color-fg-tertiary)"
         style={{ ...typescale.label, marginLeft: "3.5%" }}
       >
         {screen.label}

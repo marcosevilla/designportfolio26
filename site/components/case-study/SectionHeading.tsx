@@ -27,14 +27,14 @@ export default function SectionHeading({ id, level = 2, children }: SectionHeadi
 
   if (level === 3) {
     return (
-      <h3 className="font-medium text-[var(--color-fg)] mt-16 mb-6 tracking-tight" style={typescale.h3}>
+      <h3 className="font-medium text-(--color-fg) mt-16 mb-6 tracking-tight" style={typescale.h3}>
         {children}
       </h3>
     );
   }
 
   return (
-    <h4 className="font-medium text-[var(--color-fg)] mb-3 tracking-tight" style={typescale.h4}>
+    <h4 className="font-medium text-(--color-fg) mb-3 tracking-tight" style={typescale.h4}>
       {children}
     </h4>
   );

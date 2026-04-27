@@ -60,7 +60,7 @@ function ViewToggleButton({
     <button
       onClick={onClick}
       aria-label={label}
-      className="flex items-center justify-center transition-colors hover:text-[var(--color-accent)]"
+      className="flex items-center justify-center transition-colors hover:text-(--color-accent)"
       style={{
         color: active
           ? "var(--color-accent)"

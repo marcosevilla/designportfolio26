@@ -16,7 +16,7 @@ const BG_STYLES: Record<TunerCanvasProps["bg"], string> = {
   dark: "bg-[#1a1a2e]",
   light: "bg-white",
   checker:
-    "bg-[length:20px_20px] bg-[image:linear-gradient(45deg,#ccc_25%,transparent_25%),linear-gradient(-45deg,#ccc_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#ccc_75%),linear-gradient(-45deg,transparent_75%,#ccc_75%)] bg-[position:0_0,0_10px,10px_-10px,-10px_0]",
+    "bg-size-[20px_20px] bg-[linear-gradient(45deg,#ccc_25%,transparent_25%),linear-gradient(-45deg,#ccc_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#ccc_75%),linear-gradient(-45deg,transparent_75%,#ccc_75%)] bg-position-[0_0,0_10px,10px_-10px,-10px_0]",
 };
 
 export default function TunerCanvas({
@@ -108,7 +108,7 @@ export default function TunerCanvas({
               isEditing ? "cursor-text" : "cursor-grab active:cursor-grabbing"
             } ${
               isSelected
-                ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent rounded"
+                ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent rounded-sm"
                 : ""
             }`}
             style={{
@@ -133,7 +133,7 @@ export default function TunerCanvas({
                 contentEditable
                 suppressContentEditableWarning
                 spellCheck={false}
-                className="outline-none cursor-text"
+                className="outline-hidden cursor-text"
                 ref={(el) => {
                   if (el) {
                     el.focus();

@@ -46,12 +46,12 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
   return (
     <>
       {/* Heading — static, body-sized, scrambles in on first visit */}
-      <div className="sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-[var(--color-bg)]/90 backdrop-blur-sm lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
+      <div className="sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-(--color-bg)/90 backdrop-blur-xs lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
         <div className="flex items-center justify-between gap-6">
           <h1 style={{ ...typescale.body, fontWeight: 500 }}>
             <ScrambleText text={HERO_NAME} skip={introDone} />
           </h1>
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <HeroActions />
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
       {/* Intro loading star — blinks before bio scrambles in */}
       {introPhase === "star" && (
         <div className="mt-4">
-          <span className="text-[var(--color-accent)] text-[16px] animate-[blink-cursor_1s_step-end_infinite]">
+          <span className="text-(--color-accent) text-[16px] animate-[blink-cursor_1s_step-end_infinite]">
             ✸
           </span>
         </div>
@@ -69,7 +69,7 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
       {/* Bio — short paragraph + link to /about */}
       {(introPhase === "bio" || introDone) && (
         <motion.div
-          className="mt-8 text-[var(--color-fg-secondary)] leading-[28px]"
+          className="mt-8 text-(--color-fg-secondary) leading-[28px]"
           style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
           initial={false}
           animate={{ opacity: 1 }}

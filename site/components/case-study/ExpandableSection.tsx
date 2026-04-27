@@ -49,7 +49,7 @@ export default function ExpandableSection({
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-[var(--color-fg-tertiary)] transition-transform duration-300 shrink-0 ml-4"
+            className="text-(--color-fg-tertiary) transition-transform duration-300 shrink-0 ml-4"
             style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
           >
             <polyline points="6 9 12 15 18 9" />

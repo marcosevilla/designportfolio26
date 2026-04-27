@@ -34,8 +34,8 @@ export default function CompendiumContent() {
     <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Digital Compendium</h1>
-          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.</p>
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Digital Compendium</h1>
+          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.</p>
         </div>
 
         {/* Hero Image */}
@@ -167,36 +167,36 @@ export default function CompendiumContent() {
                 <div className="space-y-6">
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">1. Hotels think in categories, not pages.</strong> They organize their property as restaurants, amenities, policies, local attractions — not as a generic page hierarchy.
+                      <strong className="text-(--color-fg)">1. Hotels think in categories, not pages.</strong> They organize their property as restaurants, amenities, policies, local attractions — not as a generic page hierarchy.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → I designed the builder around typed sections rather than a generic page editor.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">2. Content quality varies wildly.</strong> Some hotels have professional photography, others have phone photos.
+                      <strong className="text-(--color-fg)">2. Content quality varies wildly.</strong> Some hotels have professional photography, others have phone photos.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → I designed flexible image handling: bulk upload, image galleries, and layouts that look good with both high- and low-quality imagery. The bulk upload design alone went through 19 iterations.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">3. Enterprise chains have different needs than boutique hotels.</strong> Brand consistency vs. creative freedom.
+                      <strong className="text-(--color-fg)">3. Enterprise chains have different needs than boutique hotels.</strong> Brand consistency vs. creative freedom.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → I designed the system to support both: brand-level defaults that individual properties can customize, plus branded QR code templates that maintain corporate identity.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">4. The visual design was selling the product.</strong> Demo prospects consistently commented on the polish.
+                      <strong className="text-(--color-fg)">4. The visual design was selling the product.</strong> Demo prospects consistently commented on the polish.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → This validated the builder-first approach: even without advanced features, the polished guest experience was closing deals.
                     </p>
                   </div>
@@ -219,7 +219,7 @@ export default function CompendiumContent() {
             <TwoCol>
               <TwoCol.Left>
                 <p className="mb-8">
-                  <strong className="text-[var(--color-fg)]">Approach:</strong> Build the foundation right — a structured, extensible CMS that could evolve from informational hub to interactive guest platform — then layer on capabilities phase by phase.
+                  <strong className="text-(--color-fg)">Approach:</strong> Build the foundation right — a structured, extensible CMS that could evolve from informational hub to interactive guest platform — then layer on capabilities phase by phase.
                 </p>
               </TwoCol.Left>
             </TwoCol>
@@ -271,10 +271,10 @@ export default function CompendiumContent() {
               <TwoCol.Left>
                 <SectionHeading level={3}>Constraints I designed around</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li><strong className="text-[var(--color-fg)]">No native app</strong> — Everything as mobile web via QR code, SMS link, or Wi-Fi portal redirect</li>
-                  <li><strong className="text-[var(--color-fg)]">Multi-language from day one</strong> — Translation management built into every content field</li>
-                  <li><strong className="text-[var(--color-fg)]">Varied technical sophistication</strong> — Hotel staff range from tech-savvy to barely comfortable with email</li>
-                  <li><strong className="text-[var(--color-fg)]">Platform foundation</strong> — Every pattern needed to be reusable across Canary&apos;s product suite</li>
+                  <li><strong className="text-(--color-fg)">No native app</strong> — Everything as mobile web via QR code, SMS link, or Wi-Fi portal redirect</li>
+                  <li><strong className="text-(--color-fg)">Multi-language from day one</strong> — Translation management built into every content field</li>
+                  <li><strong className="text-(--color-fg)">Varied technical sophistication</strong> — Hotel staff range from tech-savvy to barely comfortable with email</li>
+                  <li><strong className="text-(--color-fg)">Platform foundation</strong> — Every pattern needed to be reusable across Canary&apos;s product suite</li>
                 </ul>
               </TwoCol.Left>
             </TwoCol>
@@ -331,10 +331,10 @@ export default function CompendiumContent() {
               <TwoCol.Left>
                 <SectionHeading level={3}>Enterprise traction</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-6">
-                  <li><strong className="text-[var(--color-fg)]">Best Western:</strong> Largest rollout, drove 70% of Q4 ARR activations; one property displayed Compendium QR codes on all guest room TVs</li>
-                  <li><strong className="text-[var(--color-fg)]">Wyndham:</strong> Compendium Lite via wifi captive portal, scaling to 400+ sites; $18M contract that includes Compendium</li>
-                  <li><strong className="text-[var(--color-fg)]">COMO Hotels:</strong> Multi-property deployment across Asia-Pacific</li>
-                  <li><strong className="text-[var(--color-fg)]">Omni Hotels:</strong> $200K Compendium deal closed, now exploring geofenced QR codes and loyalty integration</li>
+                  <li><strong className="text-(--color-fg)">Best Western:</strong> Largest rollout, drove 70% of Q4 ARR activations; one property displayed Compendium QR codes on all guest room TVs</li>
+                  <li><strong className="text-(--color-fg)">Wyndham:</strong> Compendium Lite via wifi captive portal, scaling to 400+ sites; $18M contract that includes Compendium</li>
+                  <li><strong className="text-(--color-fg)">COMO Hotels:</strong> Multi-property deployment across Asia-Pacific</li>
+                  <li><strong className="text-(--color-fg)">Omni Hotels:</strong> $200K Compendium deal closed, now exploring geofenced QR codes and loyalty integration</li>
                 </ul>
               </TwoCol.Left>
             </TwoCol>

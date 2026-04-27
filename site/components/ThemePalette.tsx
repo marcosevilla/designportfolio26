@@ -204,7 +204,7 @@ export default function ThemePalette({
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 z-[60]"
+            className="fixed inset-0 z-60"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -219,7 +219,7 @@ export default function ThemePalette({
             /* Mobile: bottom sheet */
             <motion.div
               ref={panelRef}
-              className="fixed bottom-0 left-0 right-0 z-[61] rounded-t-[14px]"
+              className="fixed bottom-0 left-0 right-0 z-61 rounded-t-[14px]"
               style={{
                 backgroundColor: "var(--color-surface-raised)",
                 border: "1px solid var(--color-border)",
@@ -232,7 +232,7 @@ export default function ThemePalette({
           ) : (
             /* Desktop: positioned wrapper + animated panel */
             <div
-              className="fixed z-[61]"
+              className="fixed z-61"
               style={{
                 top: anchorPos?.top ?? "50%",
                 left: anchorPos?.left ?? "108px",

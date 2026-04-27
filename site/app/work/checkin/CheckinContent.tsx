@@ -31,8 +31,8 @@ export default function CheckinContent() {
     <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Modernizing Hotel Software</h1>
-          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Modernizing Hotel Software</h1>
+          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
         </div>
 
         {/* Hero Image */}
@@ -182,7 +182,7 @@ export default function CheckinContent() {
         </FadeIn>
 
         {/* Next Project */}
-        <div className="mt-32 pt-16 border-t border-[var(--color-border)]">
+        <div className="mt-32 pt-16 border-t border-border">
           <NextProject
             title="General Task"
             subtitle="Building an all-in-one productivity tool for software engineers"

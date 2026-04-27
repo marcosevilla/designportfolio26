@@ -9,7 +9,7 @@ interface CaseStudyHeroImageProps {
 export default function CaseStudyHeroImage({ src, alt, description }: CaseStudyHeroImageProps) {
   return (
     <div
-      className="w-full mt-10 rounded-[10px] overflow-hidden bg-[var(--color-surface-raised)] border border-[var(--color-border)]"
+      className="w-full mt-10 rounded-[10px] overflow-hidden bg-surface-raised border border-border"
       style={{ aspectRatio: "16 / 9" }}
     >
       {src ? (
@@ -23,7 +23,7 @@ export default function CaseStudyHeroImage({ src, alt, description }: CaseStudyH
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center px-6">
-          <p className="text-[13px] text-[var(--color-fg-tertiary)] text-center leading-relaxed">
+          <p className="text-[13px] text-(--color-fg-tertiary) text-center leading-relaxed">
             {description || "Hero image"}
           </p>
         </div>

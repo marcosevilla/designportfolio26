@@ -58,7 +58,7 @@ export default function InlineTOC() {
     >
       <Link
         href={backHref ?? "/#work"}
-        className="flex items-center gap-1 text-[13px] transition-colors hover:text-[var(--color-accent)] mb-6"
+        className="flex items-center gap-1 text-[13px] transition-colors hover:text-(--color-accent) mb-6"
         style={{ color: "var(--color-fg-secondary)" }}
       >
         <BackChevronIcon size={12} />

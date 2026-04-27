@@ -211,7 +211,7 @@ export default function SectionReorder() {
   if (!editMode || sections.length === 0) return null;
 
   return (
-    <div className="fixed bottom-[72px] right-6 z-[200]">
+    <div className="fixed bottom-[72px] right-6 z-200">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -219,11 +219,11 @@ export default function SectionReorder() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={SPRING_HEAVY}
-            className="mb-2 w-64 backdrop-blur-xl border border-[var(--color-border)] overflow-hidden"
+            className="mb-2 w-64 backdrop-blur-xl border border-border overflow-hidden"
             style={{ background: "var(--color-surface-raised)" }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--color-border)]">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border">
               <span
                 className="text-[11px] font-mono uppercase tracking-wider"
                 style={{ color: "var(--color-fg-tertiary)" }}
@@ -232,7 +232,7 @@ export default function SectionReorder() {
               </span>
               <button
                 onClick={() => setOpen(false)}
-                className="w-5 h-5 flex items-center justify-center hover:text-[var(--color-accent)]"
+                className="w-5 h-5 flex items-center justify-center hover:text-(--color-accent)"
                 style={{ color: "var(--color-fg-tertiary)" }}
               >
                 <CloseIcon />
@@ -256,7 +256,7 @@ export default function SectionReorder() {
                     <button
                       onClick={() => moveSection(i, -1)}
                       disabled={i === 0 || saving}
-                      className="w-5 h-5 flex items-center justify-center transition-colors hover:text-[var(--color-accent)] disabled:opacity-20"
+                      className="w-5 h-5 flex items-center justify-center transition-colors hover:text-(--color-accent) disabled:opacity-20"
                       style={{ color: "var(--color-fg-tertiary)" }}
                       title="Move up"
                     >
@@ -265,7 +265,7 @@ export default function SectionReorder() {
                     <button
                       onClick={() => moveSection(i, 1)}
                       disabled={i === sections.length - 1 || saving}
-                      className="w-5 h-5 flex items-center justify-center transition-colors hover:text-[var(--color-accent)] disabled:opacity-20"
+                      className="w-5 h-5 flex items-center justify-center transition-colors hover:text-(--color-accent) disabled:opacity-20"
                       style={{ color: "var(--color-fg-tertiary)" }}
                       title="Move down"
                     >
@@ -277,7 +277,7 @@ export default function SectionReorder() {
             </div>
 
             {saving && (
-              <div className="px-3 py-1.5 text-[10px] font-mono text-[var(--color-accent)] border-t border-[var(--color-border)]">
+              <div className="px-3 py-1.5 text-[10px] font-mono text-(--color-accent) border-t border-border">
                 Saving...
               </div>
             )}
@@ -288,7 +288,7 @@ export default function SectionReorder() {
       {/* Toggle button */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-mono backdrop-blur-xl border border-[var(--color-border)] transition-colors hover:border-[var(--color-accent)]"
+        className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-mono backdrop-blur-xl border border-border transition-colors hover:border-(--color-accent)"
         style={{
           background: "var(--color-surface-raised)",
           color: open ? "var(--color-accent)" : "var(--color-fg-secondary)",

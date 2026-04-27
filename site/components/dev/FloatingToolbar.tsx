@@ -57,7 +57,7 @@ export default function FloatingToolbar() {
   if (!isCaseStudy) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[200]">
+    <div className="fixed bottom-6 right-6 z-200">
       <AnimatePresence mode="wait">
         {editMode ? (
           <motion.div
@@ -66,7 +66,7 @@ export default function FloatingToolbar() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 8 }}
             transition={SPRING_HEAVY}
-            className="flex items-center gap-2 px-4 py-2.5 backdrop-blur-xl border border-[var(--color-border)]"
+            className="flex items-center gap-2 px-4 py-2.5 backdrop-blur-xl border border-border"
             style={{ background: "var(--color-surface-raised)" }}
           >
             {/* Placeholder audit count */}
@@ -78,12 +78,12 @@ export default function FloatingToolbar() {
 
             {/* Divider when both counts show */}
             {placeholderCount > 0 && isDirty && (
-              <span className="w-px h-3 bg-[var(--color-border)]" />
+              <span className="w-px h-3 bg-border" />
             )}
 
             {/* Edit count */}
             {isDirty && (
-              <span className="text-[11px] font-mono text-[var(--color-accent)] mr-1">
+              <span className="text-[11px] font-mono text-(--color-accent) mr-1">
                 {pendingEdits.size} edit{pendingEdits.size !== 1 ? "s" : ""}
               </span>
             )}
@@ -114,7 +114,7 @@ export default function FloatingToolbar() {
             {/* Close edit mode */}
             <button
               onClick={toggleEditMode}
-              className="ml-1 w-7 h-7 flex items-center justify-center transition-colors hover:text-[var(--color-accent)]"
+              className="ml-1 w-7 h-7 flex items-center justify-center transition-colors hover:text-(--color-accent)"
               style={{ color: "var(--color-fg-secondary)" }}
               aria-label="Exit edit mode"
             >
@@ -136,7 +136,7 @@ export default function FloatingToolbar() {
             exit={{ opacity: 0, scale: 0.8 }}
             transition={SPRING_HEAVY}
             onClick={toggleEditMode}
-            className="w-11 h-11 flex items-center justify-center backdrop-blur-xl border border-[var(--color-border)] transition-colors hover:border-[var(--color-accent)]"
+            className="w-11 h-11 flex items-center justify-center backdrop-blur-xl border border-border transition-colors hover:border-(--color-accent)"
             style={{ background: "var(--color-surface-raised)" }}
             aria-label="Toggle edit mode (Cmd+E)"
             title="Toggle edit mode (Cmd+E)"

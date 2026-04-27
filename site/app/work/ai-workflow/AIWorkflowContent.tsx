@@ -30,13 +30,13 @@ export default function AIWorkflowContent() {
           {/* Title + Subtitle */}
           <div>
             <h1
-              className="tracking-tight text-[var(--color-fg)]"
+              className="tracking-tight text-(--color-fg)"
               style={typescale.display}
             >
               How I Work with AI
             </h1>
             <p
-              className="mt-3 text-[var(--color-fg-secondary)]"
+              className="mt-3 text-(--color-fg-secondary)"
               style={{ ...typescale.subtitle, maxWidth: "66%" }}
             >
               AI isn&apos;t a novelty in my workflow — it&apos;s the
@@ -116,7 +116,7 @@ export default function AIWorkflowContent() {
                 </p>
                 <ul className="space-y-4 mb-5">
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0 font-medium">
+                    <span className="text-(--color-accent) shrink-0 font-medium">
                       Todoist
                     </span>
                     <span>
@@ -125,7 +125,7 @@ export default function AIWorkflowContent() {
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0 font-medium">
+                    <span className="text-(--color-accent) shrink-0 font-medium">
                       Linear
                     </span>
                     <span>
@@ -134,7 +134,7 @@ export default function AIWorkflowContent() {
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0 font-medium">
+                    <span className="text-(--color-accent) shrink-0 font-medium">
                       Slack
                     </span>
                     <span>
@@ -143,7 +143,7 @@ export default function AIWorkflowContent() {
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0 font-medium">
+                    <span className="text-(--color-accent) shrink-0 font-medium">
                       Notion
                     </span>
                     <span>
@@ -152,7 +152,7 @@ export default function AIWorkflowContent() {
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0 font-medium">
+                    <span className="text-(--color-accent) shrink-0 font-medium">
                       Figma
                     </span>
                     <span>
@@ -161,7 +161,7 @@ export default function AIWorkflowContent() {
                     </span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0 font-medium">
+                    <span className="text-(--color-accent) shrink-0 font-medium">
                       Gmail
                     </span>
                     <span>
@@ -258,7 +258,7 @@ export default function AIWorkflowContent() {
                 </SectionHeading>
                 <div className="space-y-8">
                   <div>
-                    <p className="font-medium text-[var(--color-fg)] mb-2">
+                    <p className="font-medium text-(--color-fg) mb-2">
                       Where AI helps most
                     </p>
                     <p>
@@ -269,7 +269,7 @@ export default function AIWorkflowContent() {
                     </p>
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-fg)] mb-2">
+                    <p className="font-medium text-(--color-fg) mb-2">
                       Where human judgment is irreplaceable
                     </p>
                     <p>
@@ -280,7 +280,7 @@ export default function AIWorkflowContent() {
                     </p>
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-fg)] mb-2">
+                    <p className="font-medium text-(--color-fg) mb-2">
                       The compound effect
                     </p>
                     <p>
@@ -298,7 +298,7 @@ export default function AIWorkflowContent() {
           </FadeIn>
 
           {/* Next Project */}
-          <div className="mt-32 pt-16 border-t border-[var(--color-border)]">
+          <div className="mt-32 pt-16 border-t border-border">
             <NextProject
               title="Mobile Ordering for Hotels"
               subtitle="Designing a 0→1 mobile ordering system for hotel F&B"

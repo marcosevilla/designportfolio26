@@ -37,7 +37,7 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
               <span className="shrink-0 w-[7px] text-center">{isOpen ? "−" : "+"}</span>
               <span className="uppercase shrink-0">{row.label}</span>
               <span
-                className="flex-1 overflow-hidden whitespace-nowrap leading-none translate-y-[-1px]"
+                className="flex-1 overflow-hidden whitespace-nowrap leading-none -translate-y-px"
                 style={{ color: "var(--color-fg-tertiary)" }}
               >
                 {"·".repeat(200)}
@@ -55,14 +55,14 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
                 <div className="pb-3" style={{ ...typescale.label, marginLeft: indent, lineHeight: 2 }}>
                   {row.groups.map((group, g) => (
                     <p key={g} className={`text-[var(--color-fg-secondary)]${g > 0 ? " mt-1" : ""}`}>
-                      <span className="text-[var(--color-fg)]" style={{ fontWeight: 700 }}>{group.heading}:</span>
+                      <span className="text-(--color-fg)" style={{ fontWeight: 700 }}>{group.heading}:</span>
                       {" "}{group.items.join(", ")}
                     </p>
                   ))}
                 </div>
               ) : row.content.includes(" · ") ? (
                 <ul
-                  className="pb-3 text-[var(--color-fg-secondary)] list-none"
+                  className="pb-3 text-(--color-fg-secondary) list-none"
                   style={{ ...typescale.label, marginLeft: indent, lineHeight: 2 }}
                 >
                   {row.content.split(" · ").map((item, j) => {
@@ -78,7 +78,7 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
                 </ul>
               ) : (
                 <p
-                  className="pb-3 text-[var(--color-fg-secondary)]"
+                  className="pb-3 text-(--color-fg-secondary)"
                   style={{ ...typescale.label, marginLeft: indent, lineHeight: 1.8 }}
                 >
                   {row.content}

@@ -40,7 +40,7 @@ function Slider({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <label className="text-[11px] text-gray-400 w-[70px] flex-shrink-0 uppercase tracking-wider">
+      <label className="text-[11px] text-gray-400 w-[70px] shrink-0 uppercase tracking-wider">
         {label}
       </label>
       <input
@@ -62,7 +62,7 @@ function Slider({
           const v = parseFloat(e.target.value);
           if (!isNaN(v)) onChange(Math.min(max, Math.max(min, v)));
         }}
-        className="w-[60px] bg-[#2a2a3e] text-white text-xs text-right px-2 py-1 rounded border border-white/10 tabular-nums"
+        className="w-[60px] bg-[#2a2a3e] text-white text-xs text-right px-2 py-1 rounded-sm border border-white/10 tabular-nums"
       />
       {unit && <span className="text-[10px] text-gray-500 w-[20px]">{unit}</span>}
     </div>
@@ -154,7 +154,7 @@ export default function TunerPanel({
                     : "normal",
                 });
               }}
-              className="w-full bg-[#2a2a3e] text-white text-sm px-3 py-2 rounded border border-white/10"
+              className="w-full bg-[#2a2a3e] text-white text-sm px-3 py-2 rounded-sm border border-white/10"
             >
               {FONT_OPTIONS.map((f) => (
                 <option key={f.value} value={f.value}>
@@ -264,7 +264,7 @@ export default function TunerPanel({
               type="text"
               value={selected.color}
               onChange={(e) => patch({ color: e.target.value })}
-              className="w-full bg-[#2a2a3e] text-white text-xs px-3 py-1.5 rounded border border-white/10 font-mono"
+              className="w-full bg-[#2a2a3e] text-white text-xs px-3 py-1.5 rounded-sm border border-white/10 font-mono"
             />
           </div>
 
@@ -327,20 +327,20 @@ export default function TunerPanel({
             <button
               onClick={() => onMoveUp(selected.id)}
               disabled={selectedIdx <= 0}
-              className="px-3 py-1.5 text-xs bg-white/5 text-gray-400 rounded hover:bg-white/10 disabled:opacity-30"
+              className="px-3 py-1.5 text-xs bg-white/5 text-gray-400 rounded-sm hover:bg-white/10 disabled:opacity-30"
             >
               Move Up
             </button>
             <button
               onClick={() => onMoveDown(selected.id)}
               disabled={selectedIdx >= layers.length - 1}
-              className="px-3 py-1.5 text-xs bg-white/5 text-gray-400 rounded hover:bg-white/10 disabled:opacity-30"
+              className="px-3 py-1.5 text-xs bg-white/5 text-gray-400 rounded-sm hover:bg-white/10 disabled:opacity-30"
             >
               Move Down
             </button>
             <button
               onClick={() => onDelete(selected.id)}
-              className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 ml-auto"
+              className="px-3 py-1.5 text-xs bg-red-500/10 text-red-400 rounded-sm hover:bg-red-500/20 ml-auto"
             >
               Delete
             </button>

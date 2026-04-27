@@ -61,13 +61,13 @@ function ExpandableArea({
         className="w-full flex items-center justify-between py-2 cursor-pointer text-left"
       >
         <span
-          className="uppercase text-[var(--color-fg)]"
+          className="uppercase text-(--color-fg)"
           style={typescale.label}
         >
           {title}
         </span>
         <span
-          className="text-[var(--color-fg-secondary)] transition-transform duration-200"
+          className="text-(--color-fg-secondary) transition-transform duration-200"
           style={{
             ...typescale.label,
             transform: open ? "rotate(45deg)" : "rotate(0deg)",
@@ -128,7 +128,7 @@ function EntityNode({
         {entity.name}
       </div>
       <div
-        className="mt-1 text-[var(--color-fg-secondary)]"
+        className="mt-1 text-(--color-fg-secondary)"
         style={{ fontSize: "11px", lineHeight: 1.4 }}
       >
         {entity.brief}
@@ -153,7 +153,7 @@ function HConnector({
     >
       <div className="flex items-center gap-0">
         <div
-          className="h-[1px] w-6"
+          className="h-px w-6"
           style={{ backgroundColor: "var(--color-fg-tertiary)" }}
         />
         <div
@@ -168,7 +168,7 @@ function HConnector({
       </div>
       {label && (
         <span
-          className="text-[var(--color-fg-secondary)] whitespace-nowrap mt-1"
+          className="text-(--color-fg-secondary) whitespace-nowrap mt-1"
           style={{ fontSize: "8px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.02em" }}
         >
           {label}
@@ -187,7 +187,7 @@ function VConnector({ dimmed }: { dimmed: boolean }) {
       style={{ opacity: dimmed ? 0.2 : 0.6 }}
     >
       <div
-        className="w-[1px] h-4"
+        className="w-px h-4"
         style={{ backgroundColor: "var(--color-fg-tertiary)" }}
       />
       <div
@@ -247,7 +247,7 @@ export default function SystemArchitecture() {
       {/* ── System Overview ── */}
       <div className="p-6 pb-0">
         <div
-          className="uppercase tracking-widest mb-5 text-[var(--color-fg-secondary)]"
+          className="uppercase tracking-widest mb-5 text-(--color-fg-secondary)"
           style={{ fontSize: "9px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.1em" }}
         >
           Information architecture
@@ -263,7 +263,7 @@ export default function SystemArchitecture() {
             }}
           >
             <div
-              className="uppercase tracking-widest mb-3 text-[var(--color-fg)]"
+              className="uppercase tracking-widest mb-3 text-(--color-fg)"
               style={{ fontSize: "10px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.08em", fontWeight: 500 }}
             >
               Staff dashboard
@@ -278,7 +278,7 @@ export default function SystemArchitecture() {
                 {["New orders", "Scheduled orders", "Past orders"].map((label) => (
                   <span
                     key={label}
-                    className="rounded-md px-3 py-1.5 text-[var(--color-fg-secondary)]"
+                    className="rounded-md px-3 py-1.5 text-(--color-fg-secondary)"
                     style={{
                       ...typescale.label,
                       backgroundColor: "var(--color-muted)",
@@ -289,7 +289,7 @@ export default function SystemArchitecture() {
                 ))}
               </div>
               <p
-                className="mt-3 text-[var(--color-fg-secondary)]"
+                className="mt-3 text-(--color-fg-secondary)"
                 style={{ fontSize: "12px", lineHeight: 1.5 }}
               >
                 Real-time order queue with accept/deny workflow, time-elapsed sorting, and dedicated notification settings.
@@ -297,7 +297,7 @@ export default function SystemArchitecture() {
             </ExpandableArea>
 
             <div
-              className="h-[1px] my-1"
+              className="h-px my-1"
               style={{ backgroundColor: "var(--color-border)" }}
             />
 
@@ -307,7 +307,7 @@ export default function SystemArchitecture() {
               onToggle={() => toggleArea("settings")}
             >
               <p
-                className="text-[var(--color-fg-secondary)] mb-3"
+                className="text-(--color-fg-secondary) mb-3"
                 style={{ fontSize: "12px", lineHeight: 1.5 }}
               >
                 Hotels manage five interconnected objects. Items are authored once and composed into menus flexibly — pricing can be overridden per menu without duplicating items.
@@ -342,7 +342,7 @@ export default function SystemArchitecture() {
             }}
           >
             <div
-              className="uppercase tracking-widest mb-3 text-[var(--color-fg)]"
+              className="uppercase tracking-widest mb-3 text-(--color-fg)"
               style={{ fontSize: "10px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.08em", fontWeight: 500 }}
             >
               Guest experience
@@ -357,7 +357,7 @@ export default function SystemArchitecture() {
                 {["Compendium carousel", "SMS link", "QR code"].map((label) => (
                   <span
                     key={label}
-                    className="rounded-md px-3 py-1.5 text-[var(--color-fg-secondary)]"
+                    className="rounded-md px-3 py-1.5 text-(--color-fg-secondary)"
                     style={{
                       ...typescale.label,
                       backgroundColor: "var(--color-muted)",
@@ -368,7 +368,7 @@ export default function SystemArchitecture() {
                 ))}
               </div>
               <p
-                className="mt-3 text-[var(--color-fg-secondary)]"
+                className="mt-3 text-(--color-fg-secondary)"
                 style={{ fontSize: "12px", lineHeight: 1.5 }}
               >
                 Guests access ordering through their hotel&apos;s digital compendium, a direct SMS link, or by scanning a QR code at their table or room. No app download required.
@@ -376,7 +376,7 @@ export default function SystemArchitecture() {
             </ExpandableArea>
 
             <div
-              className="h-[1px] my-1"
+              className="h-px my-1"
               style={{ backgroundColor: "var(--color-border)" }}
             />
 
@@ -389,7 +389,7 @@ export default function SystemArchitecture() {
                 {["Menu browse", "Item detail", "Cart", "Checkout", "Confirmation"].map((step, i) => (
                   <span key={step} className="flex items-center gap-1.5">
                     <span
-                      className="rounded-md px-2.5 py-1 text-[var(--color-fg-secondary)]"
+                      className="rounded-md px-2.5 py-1 text-(--color-fg-secondary)"
                       style={{
                         ...typescale.label,
                         backgroundColor: "var(--color-muted)",
@@ -398,7 +398,7 @@ export default function SystemArchitecture() {
                       {step}
                     </span>
                     {i < 4 && (
-                      <span className="text-[var(--color-fg-secondary)]" style={{ fontSize: "10px" }}>→</span>
+                      <span className="text-(--color-fg-secondary)" style={{ fontSize: "10px" }}>→</span>
                     )}
                   </span>
                 ))}
@@ -411,7 +411,7 @@ export default function SystemArchitecture() {
       {/* ── Entity Relationship Diagram ── */}
       <div className="p-6">
         <div
-          className="uppercase tracking-widest mb-4 text-[var(--color-fg-secondary)]"
+          className="uppercase tracking-widest mb-4 text-(--color-fg-secondary)"
           style={{ fontSize: "9px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.1em" }}
         >
           System objects
@@ -487,13 +487,13 @@ export default function SystemArchitecture() {
         }}
       >
         <span
-          className="text-[var(--color-fg-tertiary)]"
+          className="text-(--color-fg-tertiary)"
           style={{ fontSize: "9px", fontFamily: "var(--font-mono-system)", letterSpacing: "0.05em" }}
         >
           BUILT ON
         </span>
         <span
-          className="rounded px-2 py-0.5 text-[var(--color-fg-secondary)]"
+          className="rounded-sm px-2 py-0.5 text-(--color-fg-secondary)"
           style={{
             ...typescale.label,
             backgroundColor: "var(--color-muted)",
@@ -501,12 +501,12 @@ export default function SystemArchitecture() {
         >
           Upsells
         </span>
-        <span className="text-[var(--color-fg-secondary)]" style={{ fontSize: "10px" }}>
+        <span className="text-(--color-fg-secondary)" style={{ fontSize: "10px" }}>
           purchase orders
         </span>
-        <span className="text-[var(--color-fg-secondary)]" style={{ fontSize: "10px" }}>+</span>
+        <span className="text-(--color-fg-secondary)" style={{ fontSize: "10px" }}>+</span>
         <span
-          className="rounded px-2 py-0.5 text-[var(--color-fg-secondary)]"
+          className="rounded-sm px-2 py-0.5 text-(--color-fg-secondary)"
           style={{
             ...typescale.label,
             backgroundColor: "var(--color-muted)",
@@ -514,7 +514,7 @@ export default function SystemArchitecture() {
         >
           Compendium
         </span>
-        <span className="text-[var(--color-fg-secondary)]" style={{ fontSize: "10px" }}>
+        <span className="text-(--color-fg-secondary)" style={{ fontSize: "10px" }}>
           guest hub
         </span>
       </div>

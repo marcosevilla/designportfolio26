@@ -23,11 +23,11 @@ export default function NextProject({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <span className="text-[13px] uppercase tracking-[0.1em] text-[var(--color-fg-tertiary)] mb-3 block">
+        <span className="text-[13px] uppercase tracking-widest text-(--color-fg-tertiary) mb-3 block">
           Next project
         </span>
         <span
-          className="tracking-tight text-[var(--color-accent)] transition-colors duration-200 group-hover:text-[var(--color-fg)] block"
+          className="tracking-tight text-(--color-accent) transition-colors duration-200 group-hover:text-(--color-fg) block"
           style={typescale.nextProjectTitle}
         >
           {title} &rarr;
@@ -37,7 +37,7 @@ export default function NextProject({
           style={{ gridTemplateRows: hovered ? "1fr" : "0fr" }}
         >
           <div className="overflow-hidden">
-            <span className="block mt-2 text-[var(--color-fg-secondary)]" style={typescale.subtitle}>
+            <span className="block mt-2 text-(--color-fg-secondary)" style={typescale.subtitle}>
               {subtitle}
             </span>
           </div>

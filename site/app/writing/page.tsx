@@ -16,7 +16,7 @@ export default function WritingPage() {
         </h1>
       </FadeIn>
       <FadeIn delay={0.1}>
-        <p className="mt-4 text-[var(--color-fg-secondary)]">Coming soon.</p>
+        <p className="mt-4 text-(--color-fg-secondary)">Coming soon.</p>
       </FadeIn>
     </div>
   );

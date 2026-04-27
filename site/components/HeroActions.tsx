@@ -27,7 +27,7 @@ function ActionIcon({
   return (
     <Tag
       {...(linkProps as any)}
-      className="flex items-center justify-center transition-colors text-[var(--color-fg-secondary)] hover:text-[var(--color-accent)]"
+      className="flex items-center justify-center transition-colors text-(--color-fg-secondary) hover:text-(--color-accent)"
       aria-label={label}
     >
       {children}

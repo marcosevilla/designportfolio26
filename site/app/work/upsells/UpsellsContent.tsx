@@ -35,8 +35,8 @@ export default function UpsellsContent() {
 
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Upsells Forms</h1>
-          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Upsells Forms</h1>
+          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
         </div>
 
         {/* Hero Image */}
@@ -183,45 +183,45 @@ export default function UpsellsContent() {
                 <div className="space-y-6">
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">1. Hotels think in &ldquo;questions,&rdquo; not &ldquo;form fields.&rdquo;</strong> When Hotel Jackson saw the prototype, they immediately understood the concept but stumbled on terminology.
+                      <strong className="text-(--color-fg)">1. Hotels think in &ldquo;questions,&rdquo; not &ldquo;form fields.&rdquo;</strong> When Hotel Jackson saw the prototype, they immediately understood the concept but stumbled on terminology.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → I redesigned the form builder section with question-oriented language throughout.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">2. Upsell variants and variable pricing are tightly coupled with forms.</strong> Hotel Jackson manages half-day group, full-day group, half-day private, and full-day private versions of each tour.
+                      <strong className="text-(--color-fg)">2. Upsell variants and variable pricing are tightly coupled with forms.</strong> Hotel Jackson manages half-day group, full-day group, half-day private, and full-day private versions of each tour.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → This validated the Upsell Variants project (27 iterations) as a natural companion to Forms.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">3. Template creation was the top productivity request.</strong> Hotel Jackson has &ldquo;a set of standard questions across multiple Upsell variants&rdquo; and wanted to avoid redundant setup.
+                      <strong className="text-(--color-fg)">3. Template creation was the top productivity request.</strong> Hotel Jackson has &ldquo;a set of standard questions across multiple Upsell variants&rdquo; and wanted to avoid redundant setup.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → While templates weren&apos;t in MVP scope, this shaped how I designed question reordering and duplication patterns.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">4. The existing upsell modal was a dead end.</strong> As we scoped the forms roadmap, we realized that forms, variants, categories, and modifiers couldn&apos;t all fit in a modal.
+                      <strong className="text-(--color-fg)">4. The existing upsell modal was a dead end.</strong> As we scoped the forms roadmap, we realized that forms, variants, categories, and modifiers couldn&apos;t all fit in a modal.
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → I proposed the full-page redesign early, which engineering validated as feasible.
                     </p>
                   </div>
 
                   <div>
                     <p className="mb-2">
-                      <strong className="text-[var(--color-fg)]">5. Nearly 95% of guests access the upsells page from mobile, yet only 42% scroll past the first screen.</strong>
+                      <strong className="text-(--color-fg)">5. Nearly 95% of guests access the upsells page from mobile, yet only 42% scroll past the first screen.</strong>
                     </p>
-                    <p className="text-[15px] text-[var(--color-fg-tertiary)]">
+                    <p className="text-[15px] text-(--color-fg-tertiary)">
                       → Questions had to be discoverable without requiring scroll, leading to the integrated detail-page approach.
                     </p>
                   </div>
@@ -249,7 +249,7 @@ export default function UpsellsContent() {
             <TwoCol>
               <TwoCol.Left>
                 <p className="mb-8">
-                  <strong className="text-[var(--color-fg)]">Approach:</strong> Start with the user&apos;s workflow — what questions do they need answered? — then design backwards from there into the builder experience and guest UI.
+                  <strong className="text-(--color-fg)">Approach:</strong> Start with the user&apos;s workflow — what questions do they need answered? — then design backwards from there into the builder experience and guest UI.
                 </p>
               </TwoCol.Left>
             </TwoCol>
@@ -294,10 +294,10 @@ export default function UpsellsContent() {
               <TwoCol.Left>
                 <SectionHeading level={3}>Constraints I designed around</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li><strong className="text-[var(--color-fg)]">Existing infrastructure</strong> — Forms had to integrate with the existing add-on model and Purchase Order system</li>
-                  <li><strong className="text-[var(--color-fg)]">Add-ons only</strong> — MVP excluded Room Upgrades, Early Check-in, and Late Checkout</li>
-                  <li><strong className="text-[var(--color-fg)]">5 questions max</strong> — Aligned limit to prevent form fatigue and keep the guest experience fast</li>
-                  <li><strong className="text-[var(--color-fg)]">Multi-language from launch</strong> — EMEA hotels needed translations for custom questions immediately</li>
+                  <li><strong className="text-(--color-fg)">Existing infrastructure</strong> — Forms had to integrate with the existing add-on model and Purchase Order system</li>
+                  <li><strong className="text-(--color-fg)">Add-ons only</strong> — MVP excluded Room Upgrades, Early Check-in, and Late Checkout</li>
+                  <li><strong className="text-(--color-fg)">5 questions max</strong> — Aligned limit to prevent form fatigue and keep the guest experience fast</li>
+                  <li><strong className="text-(--color-fg)">Multi-language from launch</strong> — EMEA hotels needed translations for custom questions immediately</li>
                 </ul>
               </TwoCol.Left>
             </TwoCol>

@@ -20,7 +20,7 @@ export default function CaseStudyPage({ study }: Props) {
         >
           <Link
             href="/#work"
-            className="text-sm text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)] transition-colors mb-8 inline-block"
+            className="text-sm text-(--color-fg-secondary) hover:text-(--color-fg) transition-colors mb-8 inline-block"
           >
             &larr; Back
           </Link>
@@ -28,7 +28,7 @@ export default function CaseStudyPage({ study }: Props) {
           <h1 className="tracking-tight mt-4" style={typescale.pageTitle}>
             {study.title}
           </h1>
-          <p className="mt-3 text-lg text-[var(--color-fg-secondary)]">
+          <p className="mt-3 text-lg text-(--color-fg-secondary)">
             {study.subtitle}
           </p>
 
@@ -37,13 +37,13 @@ export default function CaseStudyPage({ study }: Props) {
               <img
                 src={study.thumbnail}
                 alt={`${study.title} hero image`}
-                className="w-full rounded-[10px] bg-[var(--color-surface-raised)] border border-[var(--color-border)]"
+                className="w-full rounded-[10px] bg-surface-raised border border-border"
               />
             </div>
           )}
 
           {study.content && (
-            <div className="mt-12 prose prose-neutral dark:prose-invert max-w-none text-[var(--color-fg-secondary)] leading-[28px] space-y-6">
+            <div className="mt-12 prose prose-neutral dark:prose-invert max-w-none text-(--color-fg-secondary) leading-[28px] space-y-6">
               {study.content.split("\n\n").map((paragraph, i) => {
                 if (!paragraph.trim()) return null;
                 if (paragraph.startsWith("## ")) {
@@ -55,7 +55,7 @@ export default function CaseStudyPage({ study }: Props) {
                 }
                 if (paragraph.startsWith("### ")) {
                   return (
-                    <h3 key={i} className="text-[var(--color-fg)] mt-8 mb-3 tracking-tight" style={typescale.h3}>
+                    <h3 key={i} className="text-(--color-fg) mt-8 mb-3 tracking-tight" style={typescale.h3}>
                       {paragraph.replace("### ", "")}
                     </h3>
                   );

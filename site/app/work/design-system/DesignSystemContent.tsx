@@ -34,8 +34,8 @@ export default function DesignSystemContent() {
     <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Creating a Design System for a Productivity Startup</h1>
-          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Championing and executing a design system and visual language overhaul by securing leadership approval, facilitating design sprints, and collaborating with developers for implementation.</p>
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Creating a Design System for a Productivity Startup</h1>
+          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Championing and executing a design system and visual language overhaul by securing leadership approval, facilitating design sprints, and collaborating with developers for implementation.</p>
         </div>
 
         {/* Hero Image */}
@@ -61,13 +61,13 @@ export default function DesignSystemContent() {
           </TwoCol>
 
           {/* Callout boxes — full width */}
-          <div className="mt-8 p-6 bg-[var(--color-surface-raised)] rounded-lg">
-            <p className="mb-2 font-medium text-[var(--color-fg)]">Business Goal</p>
-            <p className="text-[var(--color-fg-secondary)] mb-4">
+          <div className="mt-8 p-6 bg-surface-raised rounded-lg">
+            <p className="mb-2 font-medium text-(--color-fg)">Business Goal</p>
+            <p className="text-(--color-fg-secondary) mb-4">
               To streamline and improve the product development cycle in order to ship features at a higher quality bar and with minimal friction.
             </p>
-            <p className="mb-2 font-medium text-[var(--color-fg)]">User Goal</p>
-            <p className="text-[var(--color-fg-secondary)]">
+            <p className="mb-2 font-medium text-(--color-fg)">User Goal</p>
+            <p className="text-(--color-fg-secondary)">
               Product designers and developers need an intuitive, consistent, and comprehensive system which accelerates the development of feature work.
             </p>
           </div>
@@ -80,23 +80,23 @@ export default function DesignSystemContent() {
               <SectionHeading id="contributions">My Contributions</SectionHeading>
               <ul className="space-y-4">
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)] flex-shrink-0">📣</span>
+                  <span className="text-(--color-accent) shrink-0">📣</span>
                   <span>Gathered feedback from colleagues and leadership</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)] flex-shrink-0">🔬</span>
+                  <span className="text-(--color-accent) shrink-0">🔬</span>
                   <span>Conducted a full product audit</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)] flex-shrink-0">🗓️</span>
+                  <span className="text-(--color-accent) shrink-0">🗓️</span>
                   <span>Facilitated and scheduled design sprints</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)] flex-shrink-0">💻</span>
+                  <span className="text-(--color-accent) shrink-0">💻</span>
                   <span>Designed new visual language and component library alongside my intern</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)] flex-shrink-0">🤝</span>
+                  <span className="text-(--color-accent) shrink-0">🤝</span>
                   <span>Improved documentation and handoff processes</span>
                 </li>
               </ul>
@@ -130,15 +130,15 @@ export default function DesignSystemContent() {
             <TwoCol.Left>
               <ul className="space-y-2 mt-6">
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>Visual consistency and harmony</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>Product usability and accessibility</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>A strong connection to our brand and mission</span>
                 </li>
               </ul>
@@ -218,20 +218,20 @@ export default function DesignSystemContent() {
             <TwoCol.Left>
               <ul className="space-y-4 mt-6">
                 <li>
-                  <p className="font-medium text-[var(--color-fg)] mb-1">Templates</p>
-                  <p className="text-[var(--color-fg-secondary)]">We created templates out of commonly used components, outlining use cases and sizing specifications.</p>
+                  <p className="font-medium text-(--color-fg) mb-1">Templates</p>
+                  <p className="text-(--color-fg-secondary)">We created templates out of commonly used components, outlining use cases and sizing specifications.</p>
                 </li>
                 <li>
-                  <p className="font-medium text-[var(--color-fg)] mb-1">New components and interaction states</p>
-                  <p className="text-[var(--color-fg-secondary)]">We accounted for error states, destructive actions, and several focus states, creating a more comprehensive library of components to account for a wider variety of use cases.</p>
+                  <p className="font-medium text-(--color-fg) mb-1">New components and interaction states</p>
+                  <p className="text-(--color-fg-secondary)">We accounted for error states, destructive actions, and several focus states, creating a more comprehensive library of components to account for a wider variety of use cases.</p>
                 </li>
                 <li>
-                  <p className="font-medium text-[var(--color-fg)] mb-1">Brand alignment</p>
-                  <p className="text-[var(--color-fg-secondary)]">Our color palette and design aesthetic fit our product vision and updated brand identity.</p>
+                  <p className="font-medium text-(--color-fg) mb-1">Brand alignment</p>
+                  <p className="text-(--color-fg-secondary)">Our color palette and design aesthetic fit our product vision and updated brand identity.</p>
                 </li>
                 <li>
-                  <p className="font-medium text-[var(--color-fg)] mb-1">Flexibility</p>
-                  <p className="text-[var(--color-fg-secondary)]">Leveraging Figma&apos;s capabilities, we were able to create flexible components that would allow us to efficiently create design iterations.</p>
+                  <p className="font-medium text-(--color-fg) mb-1">Flexibility</p>
+                  <p className="text-(--color-fg-secondary)">Leveraging Figma&apos;s capabilities, we were able to create flexible components that would allow us to efficiently create design iterations.</p>
                 </li>
               </ul>
             </TwoCol.Left>
@@ -310,15 +310,15 @@ export default function DesignSystemContent() {
               </p>
               <ul className="space-y-2 mb-8">
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>How might we improve our design foundations so that we can grow at scale?</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>How might we create a system more accessible to our developers?</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>How might we create a system that encourages more alignment between designers?</span>
                 </li>
               </ul>
@@ -347,15 +347,15 @@ export default function DesignSystemContent() {
               <p className="mb-5">Notable observations from our audit:</p>
               <ul className="space-y-2 mb-8">
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>We were missing standardized grid system and spacing units.</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>We lacked some essential interaction states for a majority of our components.</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-[var(--color-accent)]">•</span>
+                  <span className="text-(--color-accent)">•</span>
                   <span>We were using an outdated color system which wasn&apos;t aligned with our recently updated branding.</span>
                 </li>
               </ul>
@@ -447,7 +447,7 @@ export default function DesignSystemContent() {
 
         {/* Next Project */}
         <FadeIn>
-          <div className="mt-32 pt-16 border-t border-[var(--color-border)]">
+          <div className="mt-32 pt-16 border-t border-border">
             <NextProject
               title="F&B Mobile Ordering"
               subtitle="A mobile, app-less food ordering system for hotel guests"

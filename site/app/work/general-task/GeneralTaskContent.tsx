@@ -33,8 +33,8 @@ export default function GeneralTaskContent() {
     <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-[var(--color-fg)]" style={typescale.display}>Building Productivity Software for Engineers</h1>
-          <p className="mt-3 text-[var(--color-fg-secondary)]" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Building Productivity Software for Engineers</h1>
+          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
         </div>
 
         {/* Hero Image */}
@@ -98,15 +98,15 @@ export default function GeneralTaskContent() {
               <TwoCol.Left>
                 <ul className="space-y-4 mb-5">
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0">🔍</span>
+                    <span className="text-(--color-accent) shrink-0">🔍</span>
                     <span>Identify and address the productivity pain points of Software Engineers.</span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0">💻</span>
+                    <span className="text-(--color-accent) shrink-0">💻</span>
                     <span>Tailor our product to meet the needs of Software Engineers.</span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="text-[var(--color-accent)] flex-shrink-0">📐</span>
+                    <span className="text-(--color-accent) shrink-0">📐</span>
                     <span>Design a scalable productivity system that grows with our product.</span>
                   </li>
                 </ul>
@@ -145,20 +145,20 @@ export default function GeneralTaskContent() {
                 <SectionHeading level={3}>Research Highlights</SectionHeading>
                 <ul className="space-y-6">
                   <li>
-                    <p className="font-medium text-[var(--color-fg)] mb-1">Engineers are burdened by the quantity of their work tools.</p>
-                    <p className="text-[var(--color-fg-secondary)]">Engineers need a way to effectively condense and streamline their workflows.</p>
+                    <p className="font-medium text-(--color-fg) mb-1">Engineers are burdened by the quantity of their work tools.</p>
+                    <p className="text-(--color-fg-secondary)">Engineers need a way to effectively condense and streamline their workflows.</p>
                   </li>
                   <li>
-                    <p className="font-medium text-[var(--color-fg)] mb-1">Engineers lack a singular source of truth for project status updates.</p>
-                    <p className="text-[var(--color-fg-secondary)]">Engineers need a single source of truth for their work.</p>
+                    <p className="font-medium text-(--color-fg) mb-1">Engineers lack a singular source of truth for project status updates.</p>
+                    <p className="text-(--color-fg-secondary)">Engineers need a single source of truth for their work.</p>
                   </li>
                   <li>
-                    <p className="font-medium text-[var(--color-fg)] mb-1">Engineers are struggling with prioritization.</p>
-                    <p className="text-[var(--color-fg-secondary)]">Engineers need an effective way to prioritize their many tasks spanning several projects in order to quickly decide what to work on next.</p>
+                    <p className="font-medium text-(--color-fg) mb-1">Engineers are struggling with prioritization.</p>
+                    <p className="text-(--color-fg-secondary)">Engineers need an effective way to prioritize their many tasks spanning several projects in order to quickly decide what to work on next.</p>
                   </li>
                   <li>
-                    <p className="font-medium text-[var(--color-fg)] mb-1">Engineers had varying work styles.</p>
-                    <p className="text-[var(--color-fg-secondary)]">Engineers need a task management system that is attuned to their unique preferences.</p>
+                    <p className="font-medium text-(--color-fg) mb-1">Engineers had varying work styles.</p>
+                    <p className="text-(--color-fg-secondary)">Engineers need a task management system that is attuned to their unique preferences.</p>
                   </li>
                 </ul>
               </TwoCol.Left>
@@ -322,7 +322,7 @@ export default function GeneralTaskContent() {
         </FadeIn>
 
         {/* Next Project */}
-        <div className="mt-32 pt-16 border-t border-[var(--color-border)]">
+        <div className="mt-32 pt-16 border-t border-border">
           <NextProject
             title="General Task Design System"
             subtitle="Building a scalable design system for a productivity startup"

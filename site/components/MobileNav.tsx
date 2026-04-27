@@ -10,7 +10,7 @@ export default function MobileNav() {
   if (tocItems === null) return null;
 
   return (
-    <nav className="lg:hidden sticky top-0 z-50 backdrop-blur-md bg-[var(--color-bg)]/80 border-b border-[var(--color-border)]">
+    <nav className="lg:hidden sticky top-0 z-50 backdrop-blur-md bg-(--color-bg)/80 border-b border-border">
       <div className="px-5 h-14 flex items-center justify-between">
         <Link
           href={backHref ?? "/#work"}
