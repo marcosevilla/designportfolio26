@@ -6,125 +6,89 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { AudioAnalyzer, type AnalysisSnapshot } from "@/lib/audio-analysis";
-import { MOODS, type Track } from "@/lib/playlist";
+import { type Track } from "@/lib/playlist";
 
-// Geometry
-const SPACING = 5;          // px between dot centers
-const DOT_BASE = 2;         // px diameter at rest
-const DOT_BLOOM = 3;        // px diameter when fully lit
-const HEIGHT = 200;         // px
-const CORNER_RADIUS = 12;   // px — rounded-rect mask, dots outside are skipped
-
-// Boot
+// ── Geometry constants (must match LedMatrix.tsx for visual identity) ────
+const SPACING = 5;
+const DOT_BASE = 2;
+const DOT_BLOOM = 3;
+const HEIGHT = 200;
+const CORNER_RADIUS = 12;
 const BOOT_FADE_MS = 400;
 
-// Ripples — pebble-in-water: each click emits a stagger of concentric rings
-const RIPPLE_TOTAL_MS = 2800;       // per-ring lifetime
-const RIPPLE_CROSS_MS = 2000;       // time for one ring to traverse the longer axis
-const RIPPLE_RING_PX = 9;           // wavefront thickness (soft bell falloff)
-const RIPPLE_RING_COUNT = 4;        // rings emitted per click
-const RIPPLE_RING_STAGGER_MS = 360; // delay between successive rings being born
-const RIPPLE_RING_DECAY = 0.66;     // each subsequent ring's intensity multiplier
-const RIPPLE_GLOW_CAP = 0.45;       // overall max-glow ceiling — keeps it subtle
+// ── Caps for uniform arrays — beyond these, oldest events are evicted ────
+const MAX_SPARKLES = 96;
+const MAX_RIPPLES = 16;
+const MAX_IDLE_WAVES = 4;
+const MAX_WAVEFORM = 256;
+// Lissajous packs curve sample positions into a uniform vec2 array
+const MAX_LISSAJOUS_SAMPLES = 220;
 
-// Hover — soft cursor flashlight
-const HOVER_RADIUS = 56;            // px — flashlight reach
-const HOVER_INTENSITY = 0.4;        // max contribution at the cursor center
-const HOVER_FADE_RATE = 0.12;       // exponential approach per frame (60fps ≈ ~86ms half-life)
+// ── Audio mix transition ─────────────────────────────────────────────────
+const AUDIO_FADE_RATE = 0.025;
 
-// Idle Perlin waves — randomly triggered, varying strength
+// ── Sparkles ─────────────────────────────────────────────────────────────
+const SPARKLES_BASE_RATE = 1.2;
+const SPARKLES_BASS_RATE = 14;
+const SPARKLES_BURST_BASE = 18;
+const SPARKLES_BURST_PER_BEAT = 28;
+const SPARKLES_LIFE_MIN_MS = 140;
+const SPARKLES_LIFE_MAX_MS = 520;
+const SPARKLES_BIG_LIFE_MIN = 320;
+const SPARKLES_BIG_LIFE_MAX = 700;
+
+// ── Click ripples ────────────────────────────────────────────────────────
+const RIPPLE_TOTAL_MS = 2800;
+const RIPPLE_CROSS_MS = 2000;
+const RIPPLE_RING_PX = 9;
+const RIPPLE_RING_COUNT = 4;
+const RIPPLE_RING_STAGGER_MS = 360;
+const RIPPLE_RING_DECAY = 0.66;
+const RIPPLE_GLOW_CAP = 0.45;
+
+// ── Hover flashlight ─────────────────────────────────────────────────────
+const HOVER_RADIUS = 56;
+const HOVER_INTENSITY = 0.4;
+const HOVER_FADE_RATE = 0.12;
+
+// ── Idle Perlin ──────────────────────────────────────────────────────────
 const IDLE_INTERVAL_MIN_MS = 3500;
 const IDLE_INTERVAL_MAX_MS = 9000;
 const IDLE_DURATION_MIN_MS = 6000;
 const IDLE_DURATION_MAX_MS = 12000;
 const IDLE_INTENSITY_MIN = 0.18;
 const IDLE_INTENSITY_MAX = 0.55;
-const IDLE_NOISE_SCALE = 0.018;     // spatial frequency
-const IDLE_NOISE_TIME_RATE = 0.00018; // temporal drift
 
-// Audio visualizer — global mix transition rate
-const AUDIO_FADE_RATE = 0.025;       // exponential approach for visualizer mix transition (~600ms half-life)
-
-// Sparkles scene — bass-reactive variable-size dots scattered across the matrix
-const SPARKLES_BASE_RATE = 1.2;       // sparkles per frame at zero bass (some baseline twinkle)
-const SPARKLES_BASS_RATE = 14;        // sparkles per frame scaled by bass^2 (lots of spawns on heavy bass)
-const SPARKLES_BURST_BASE = 18;       // burst count on a strong bass onset
-const SPARKLES_BURST_PER_BEAT = 28;   // additional burst per beatStrength
-const SPARKLES_LIFE_MIN_MS = 140;
-const SPARKLES_LIFE_MAX_MS = 520;
-const SPARKLES_BIG_CHANCE = 0.18;     // fraction of spawns that are "big"
-const SPARKLES_BIG_LIFE_MIN = 320;
-const SPARKLES_BIG_LIFE_MAX = 700;
-const SPARKLES_INTENSITY_MIN = 0.6;
-const SPARKLES_INTENSITY_MAX = 1.3;
-
+// ── Helper types ─────────────────────────────────────────────────────────
 type Sparkle = {
   x: number;
   y: number;
   t0: number;
   life: number;
-  /** radius in px — small for pinpoints, larger for bursts */
   size: number;
   intensity: number;
-  /** pre-tinted color so it doesn't shift mid-life */
-  col: [number, number, number];
+  /** 0=bass, 1=mids, 2=highs, 3=air */
+  colorIdx: number;
 };
 
 type Ripple = { x: number; y: number; t0: number; strength: number };
+
 type IdleWave = {
   t0: number;
   duration: number;
   intensity: number;
-  ox: number; // noise offset
+  ox: number;
   oy: number;
   drift: number;
 };
 
-// ── Tiny 2D value-noise (smooth, deterministic) ─────────────────────────
-// Not true Perlin, but gives the same visual character — smooth, organic,
-// no axis-aligned artefacts at our scale — and is small + fast.
-const PERM_SIZE = 256;
-const PERM = (() => {
-  const p = new Uint8Array(PERM_SIZE * 2);
-  const base = new Uint8Array(PERM_SIZE);
-  for (let i = 0; i < PERM_SIZE; i++) base[i] = i;
-  // Deterministic shuffle (xorshift)
-  let s = 0x9e3779b9;
-  for (let i = PERM_SIZE - 1; i > 0; i--) {
-    s ^= s << 13; s ^= s >>> 17; s ^= s << 5;
-    const j = (s >>> 0) % (i + 1);
-    const tmp = base[i]; base[i] = base[j]; base[j] = tmp;
-  }
-  for (let i = 0; i < PERM_SIZE * 2; i++) p[i] = base[i & (PERM_SIZE - 1)];
-  return p;
-})();
-
-function smooth(t: number) {
-  return t * t * (3 - 2 * t);
-}
-
-function valueNoise2D(x: number, y: number): number {
-  const xi = Math.floor(x) & (PERM_SIZE - 1);
-  const yi = Math.floor(y) & (PERM_SIZE - 1);
-  const xf = x - Math.floor(x);
-  const yf = y - Math.floor(y);
-  const v00 = PERM[PERM[xi] + yi] / 255;
-  const v10 = PERM[PERM[xi + 1] + yi] / 255;
-  const v01 = PERM[PERM[xi] + yi + 1] / 255;
-  const v11 = PERM[PERM[xi + 1] + yi + 1] / 255;
-  const u = smooth(xf);
-  const v = smooth(yf);
-  const a = v00 + (v10 - v00) * u;
-  const b = v01 + (v11 - v01) * u;
-  return a + (b - a) * v; // 0..1
-}
-
-// ── Color helpers ────────────────────────────────────────────────────────
+// ── Color parsing (RGB triples 0..255 with HSL-based saturation boost) ───
 function parseColor(c: string): [number, number, number] {
   const s = c.trim();
   if (s.startsWith("#")) {
     const hex = s.slice(1);
-    const full = hex.length === 3 ? hex.split("").map((x) => x + x).join("") : hex;
+    const full =
+      hex.length === 3 ? hex.split("").map((x) => x + x).join("") : hex;
     return [
       parseInt(full.slice(0, 2), 16),
       parseInt(full.slice(2, 4), 16),
@@ -172,18 +136,493 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   ];
 }
 
-/** Boost saturation of an RGB triple by `factor` (1 = unchanged, >1 = more saturated). */
 function saturate(rgb: [number, number, number], factor: number): [number, number, number] {
   if (factor === 1) return rgb;
   const [h, s, l] = rgbToHsl(rgb[0], rgb[1], rgb[2]);
   return hslToRgb(h, Math.min(1, s * factor), l);
 }
 
+// ── WebGL helpers ────────────────────────────────────────────────────────
+function compileShader(gl: WebGL2RenderingContext, type: number, src: string): WebGLShader | null {
+  const sh = gl.createShader(type);
+  if (!sh) return null;
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+    console.error("Shader compile error:", gl.getShaderInfoLog(sh));
+    gl.deleteShader(sh);
+    return null;
+  }
+  return sh;
+}
+
+function linkProgram(gl: WebGL2RenderingContext, vsSrc: string, fsSrc: string): WebGLProgram | null {
+  const vs = compileShader(gl, gl.VERTEX_SHADER, vsSrc);
+  const fs = compileShader(gl, gl.FRAGMENT_SHADER, fsSrc);
+  if (!vs || !fs) return null;
+  const prog = gl.createProgram();
+  if (!prog) return null;
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    console.error("Program link error:", gl.getProgramInfoLog(prog));
+    gl.deleteProgram(prog);
+    return null;
+  }
+  gl.deleteShader(vs);
+  gl.deleteShader(fs);
+  return prog;
+}
+
+// Fullscreen-triangle vertex shader
+const VERTEX_SRC = `#version 300 es
+in vec2 a_pos;
+void main() {
+  gl_Position = vec4(a_pos, 0.0, 1.0);
+}`;
+
+// ── Drumhead simulation shader ────────────────────────────────────────────
+// 2D wave equation step with damping. R = current displacement, G = previous
+// (becomes "previous" by virtue of being the old current after swap),
+// B = display envelope (smooth attack/release on |displacement|).
+const DRUMHEAD_FRAG_SRC = `#version 300 es
+precision highp float;
+uniform sampler2D u_input;
+uniform vec2 u_gridSize;
+uniform vec4 u_impulse;     // x, y, amp, _ (amp=0 means no injection)
+uniform float u_c2;
+uniform float u_damp;
+uniform float u_envRise;
+uniform float u_envFall;
+out vec4 outColor;
+void main() {
+  vec2 pix = gl_FragCoord.xy;
+  vec2 cell = floor(pix);
+  vec2 puv = (cell + 0.5) / u_gridSize;
+  vec4 here = texture(u_input, puv);
+  float c = here.r;
+  float p = here.g;
+
+  if (cell.x <= 0.0 || cell.x >= u_gridSize.x - 1.0 || cell.y <= 0.0 || cell.y >= u_gridSize.y - 1.0) {
+    outColor = vec4(0.0, c, here.b * u_envFall, 1.0);
+    return;
+  }
+
+  vec2 ts = 1.0 / u_gridSize;
+  float lap = texture(u_input, puv + vec2(-ts.x, 0.0)).r
+            + texture(u_input, puv + vec2( ts.x, 0.0)).r
+            + texture(u_input, puv + vec2(0.0, -ts.y)).r
+            + texture(u_input, puv + vec2(0.0,  ts.y)).r
+            - 4.0 * c;
+  float next = (2.0 * c - p + u_c2 * lap) * u_damp;
+
+  if (u_impulse.z > 0.0) {
+    float dx = cell.x - u_impulse.x;
+    float dy = cell.y - u_impulse.y;
+    float d2 = dx * dx + dy * dy;
+    if (d2 < 2.25) next += u_impulse.z;
+    else if (d2 < 4.0) next += u_impulse.z * 0.35;
+  }
+
+  // Display envelope on |next|: rises fast, decays slow
+  float target = abs(next);
+  float env = (target > here.b) ? here.b + (target - here.b) * u_envRise : here.b * u_envFall;
+
+  outColor = vec4(next, c, env, 1.0);
+}`;
+
+// ── Feedback simulation shader ────────────────────────────────────────────
+// Persistent brightness in R channel. Warps the previous frame (rotation +
+// zoom + decay) and adds bass-disk + sparkle injection. Per-band onset
+// strokes are encoded in the JS-packed uniform arrays.
+const FEEDBACK_FRAG_SRC = `#version 300 es
+precision highp float;
+uniform sampler2D u_input;
+uniform vec2 u_gridSize;
+uniform float u_decay;
+uniform float u_angle;
+uniform float u_zoom;
+uniform float u_bassRadius;   // in cells
+uniform vec4 u_strokeBass;    // amp, _, _, _ (full row at random y? encoded in u_strokeBassY)
+uniform float u_strokeBassY;  // -1 if no stroke this frame
+uniform float u_strokeMidsX;  // -1 if no stroke
+uniform float u_strokeRingX;  // -1 if no ring
+uniform float u_strokeRingY;
+uniform float u_strokeRingR;
+out vec4 outColor;
+void main() {
+  vec2 pix = gl_FragCoord.xy;
+  vec2 cell = floor(pix);
+  vec2 cc = u_gridSize * 0.5;
+  vec2 d = (cell - cc) / u_zoom;
+  float cosA = cos(u_angle);
+  float sinA = sin(u_angle);
+  vec2 src = cc + vec2(d.x * cosA - d.y * sinA, d.x * sinA + d.y * cosA);
+  vec2 srcUV = (src + 0.5) / u_gridSize;
+
+  float v = 0.0;
+  if (srcUV.x >= 0.0 && srcUV.x <= 1.0 && srcUV.y >= 0.0 && srcUV.y <= 1.0) {
+    v = texture(u_input, srcUV).r * u_decay;
+  }
+
+  // Bass-driven center disk
+  if (u_bassRadius > 0.5) {
+    float dist = distance(cell, cc);
+    if (dist < u_bassRadius) {
+      float u = dist / u_bassRadius;
+      float fall = (1.0 - u) * (1.0 - u);
+      v = max(v, fall);
+    }
+  }
+
+  // Per-band onset strokes (full-row / full-column / ring at origin)
+  if (u_strokeBassY >= 0.0 && abs(cell.y - u_strokeBassY) < 0.6) {
+    if (v < 0.85) v = 0.85;
+  }
+  if (u_strokeMidsX >= 0.0 && abs(cell.x - u_strokeMidsX) < 0.6) {
+    if (v < 0.7) v = 0.7;
+  }
+  if (u_strokeRingX >= 0.0 && u_strokeRingR > 0.0) {
+    float dx = cell.x - u_strokeRingX;
+    float dy = cell.y - u_strokeRingY;
+    float d2 = dx * dx + dy * dy;
+    float dist = sqrt(d2);
+    if (abs(dist - u_strokeRingR) < 1.5) {
+      if (v < 0.95) v = 0.95;
+    }
+  }
+
+  outColor = vec4(v, 0.0, 0.0, 1.0);
+}`;
+
+// ── Lissajous simulation shader ───────────────────────────────────────────
+// Single texture decays each frame; curve sample points (passed as a uniform
+// vec2 array of grid-cell positions) inject brightness 1.
+const LISSAJOUS_FRAG_SRC = `#version 300 es
+precision highp float;
+uniform sampler2D u_input;
+uniform vec2 u_gridSize;
+uniform float u_decay;
+uniform int u_sampleCount;
+uniform vec2 u_samples[${MAX_LISSAJOUS_SAMPLES}];
+out vec4 outColor;
+void main() {
+  vec2 pix = gl_FragCoord.xy;
+  vec2 cell = floor(pix);
+  vec2 puv = (cell + 0.5) / u_gridSize;
+  float v = texture(u_input, puv).r * u_decay;
+
+  for (int i = 0; i < ${MAX_LISSAJOUS_SAMPLES}; i++) {
+    if (i >= u_sampleCount) break;
+    vec2 s = u_samples[i];
+    if (abs(cell.x - s.x) < 0.5 && abs(cell.y - s.y) < 0.5) {
+      v = 1.0;
+      break;
+    }
+  }
+  outColor = vec4(v, 0.0, 0.0, 1.0);
+}`;
+
+// Main fragment shader. For each pixel:
+//   1. Determine which dot it belongs to (grid cell + center).
+//   2. Skip pixels in masked corners or outside any dot.
+//   3. Accumulate lit contributions from each active scene + interactivity.
+//   4. Compose final color via intensity-weighted average + lerp from off.
+const FRAGMENT_SRC = `#version 300 es
+precision highp float;
+
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform float u_bootP;
+uniform float u_audioMix;
+
+uniform vec3 u_offColor;
+uniform vec3 u_onColor;
+
+// Per-track palette (saturated)
+uniform vec3 u_palette[4]; // [bass, mids, highs, air]
+
+uniform float u_spacing;
+uniform float u_dotBase;
+uniform float u_dotBloom;
+uniform float u_cornerRadius;
+
+// Color params
+uniform float u_vibrancy;
+uniform float u_audioMixCap;
+
+// Scene flags
+uniform bool u_sceneSparkles;
+uniform bool u_sceneWaveform;
+uniform bool u_sceneChladni;
+uniform bool u_sceneDrumhead;
+uniform bool u_sceneFeedback;
+uniform bool u_sceneLissajous;
+
+// Buffer-backed scene samplers (cols x rows simulation textures)
+uniform sampler2D u_drumheadTex;
+uniform sampler2D u_feedbackTex;
+uniform sampler2D u_lissajousTex;
+uniform vec2 u_gridSize; // (cols, rows)
+
+// Hover
+uniform vec2 u_hoverPos;
+uniform float u_hoverAlpha;
+
+// Click ripples — vec4(x, y, age, strength) per ring
+#define MAX_RIPPLES 16
+uniform int u_rippleCount;
+uniform vec4 u_ripples[MAX_RIPPLES];
+
+// Sparkles — packed into two vec4s per sparkle
+#define MAX_SPARKLES 96
+uniform int u_sparkleCount;
+uniform vec4 u_sparklePos[MAX_SPARKLES];   // x, y, age, life
+uniform vec4 u_sparkleAttr[MAX_SPARKLES];  // size, intensity, colorIdx, _
+
+// Idle waves
+#define MAX_IDLE 4
+uniform int u_idleCount;
+uniform vec4 u_idleA[MAX_IDLE]; // ox, oy, drift, intensity
+uniform vec4 u_idleB[MAX_IDLE]; // age, duration, _, _
+
+// Waveform
+uniform int u_waveformLen;
+uniform float u_waveformY[256];
+
+// Chladni (smooth-tracked from JS)
+uniform float u_chladniM;
+uniform float u_chladniN;
+uniform float u_chladniRotation;
+uniform vec2 u_chladniPhase;
+uniform float u_bassGroup;
+uniform float u_midsGroup;
+uniform float u_highsGroup;
+uniform float u_moodIntensity;
+
+out vec4 outColor;
+
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float valueNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+const float PI = 3.14159265359;
+
+void addColor(inout float lit, inout vec3 wColor, inout float wTotal, float intensity, vec3 col) {
+  if (intensity <= 0.0) return;
+  lit += intensity;
+  wColor += col * intensity;
+  wTotal += intensity;
+}
+
+void main() {
+  vec2 uv = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y);
+
+  // Grid cell + center + dot mask
+  vec2 cellIdx = floor(uv / u_spacing);
+  vec2 cellCenter = (cellIdx + 0.5) * u_spacing;
+  float distToDot = distance(uv, cellCenter);
+
+  // Rounded-rect corner mask in cell space
+  float cssW = u_resolution.x;
+  float cssH = u_resolution.y;
+  float dxL = u_cornerRadius - cellCenter.x;
+  float dxR = cellCenter.x - (cssW - u_cornerRadius);
+  float dyT = u_cornerRadius - cellCenter.y;
+  float dyB = cellCenter.y - (cssH - u_cornerRadius);
+  float cx = max(0.0, max(dxL, dxR));
+  float cy = max(0.0, max(dyT, dyB));
+  if (cx > 0.0 && cy > 0.0 && cx * cx + cy * cy > u_cornerRadius * u_cornerRadius) discard;
+
+  float audioMix = min(u_audioMix, u_audioMixCap);
+
+  float lit = 0.0;
+  vec3 wColor = vec3(0.0);
+  float wTotal = 0.0;
+
+  // ── Idle Perlin waves ────────────────────────────────────────────────
+  float idleWeight = 1.0 - audioMix;
+  if (idleWeight > 0.01) {
+    float idleLit = 0.0;
+    for (int i = 0; i < MAX_IDLE; i++) {
+      if (i >= u_idleCount) break;
+      vec4 a = u_idleA[i];
+      vec4 b = u_idleB[i];
+      float age = b.x;
+      float duration = b.y;
+      float t = age / duration;
+      float env = sin(t * PI);
+      if (env <= 0.0) continue;
+      float n = valueNoise(vec2(
+        cellCenter.x * 0.018 + a.x,
+        cellCenter.y * 0.018 + a.y + age * 0.00018 * a.z
+      ));
+      float v = max(0.0, n - 0.5) * 2.0;
+      idleLit += env * a.w * v;
+    }
+    addColor(lit, wColor, wTotal, idleLit * idleWeight, u_onColor);
+  }
+
+  // ── SPARKLES scene ───────────────────────────────────────────────────
+  if (u_sceneSparkles && audioMix > 0.01) {
+    for (int i = 0; i < MAX_SPARKLES; i++) {
+      if (i >= u_sparkleCount) break;
+      vec4 pos = u_sparklePos[i];
+      vec4 attr = u_sparkleAttr[i];
+      float age = pos.z;
+      float life = pos.w;
+      float t = age / life;
+      if (t >= 1.0) continue;
+      float dx = uv.x - pos.x;
+      float dy = uv.y - pos.y;
+      float r2 = attr.x * attr.x;
+      float d2 = dx * dx + dy * dy;
+      if (d2 < r2) {
+        float u = d2 / r2;
+        float fall = (1.0 - u) * (1.0 - u);
+        float env = sin(t * PI);
+        int idx = int(attr.z + 0.5);
+        vec3 col = u_palette[idx];
+        addColor(lit, wColor, wTotal, fall * env * attr.y * audioMix, col);
+      }
+    }
+  }
+
+  // ── WAVEFORM scene ───────────────────────────────────────────────────
+  if (u_sceneWaveform && audioMix > 0.01 && u_waveformLen > 0) {
+    int col = int(cellIdx.x);
+    if (col >= 0 && col < u_waveformLen) {
+      float lineY = u_waveformY[col];
+      float dy = uv.y - lineY;
+      float thickness = 6.0;
+      if (abs(dy) < thickness) {
+        float u = abs(dy) / thickness;
+        float fall = 0.5 * (1.0 + cos(PI * u));
+        addColor(lit, wColor, wTotal, fall * audioMix, u_palette[1]);
+      }
+    }
+  }
+
+  // ── CHLADNI scene ────────────────────────────────────────────────────
+  if (u_sceneChladni && audioMix > 0.01) {
+    float m = u_chladniM;
+    float n = u_chladniN;
+    vec2 c0 = uv - 0.5 * u_resolution;
+    float cosR = cos(u_chladniRotation);
+    float sinR = sin(u_chladniRotation);
+    vec2 r2 = vec2(c0.x * cosR - c0.y * sinR, c0.x * sinR + c0.y * cosR) + 0.5 * u_resolution;
+    float nx = (r2.x / cssW) * PI + u_chladniPhase.x;
+    float ny = (r2.y / cssH) * PI + u_chladniPhase.y;
+    float ch = cos(m * nx) * cos(n * ny) - cos(n * nx) * cos(m * ny);
+    float energy = (u_bassGroup + u_midsGroup + u_highsGroup) / 3.0;
+    float bandWidth = 0.04 + 0.18 * energy;
+    float lineCloseness = max(0.0, 1.0 - abs(ch) / bandWidth);
+    float chladniLit = lineCloseness * (0.4 + 0.6 * energy) * u_moodIntensity * audioMix;
+    addColor(lit, wColor, wTotal, chladniLit, u_palette[0]);
+    float offNode = max(0.0, 1.0 - abs(ch) / 0.6) - lineCloseness;
+    if (offNode > 0.0) {
+      addColor(lit, wColor, wTotal, offNode * 0.25 * u_midsGroup * audioMix, u_palette[1]);
+    }
+  }
+
+  // ── DRUMHEAD scene ───────────────────────────────────────────────────
+  if (u_sceneDrumhead && audioMix > 0.01) {
+    vec2 cuv = (cellIdx + 0.5) / u_gridSize;
+    vec4 dh = texture(u_drumheadTex, cuv);
+    float env = dh.b;
+    if (env > 0.012) {
+      float m = tanh(env * 1.6);
+      // sign of current displacement tints crests vs. troughs
+      vec3 col = dh.r >= 0.0 ? u_palette[0] : u_palette[2];
+      addColor(lit, wColor, wTotal, m * audioMix, col);
+    }
+  }
+
+  // ── FEEDBACK scene ───────────────────────────────────────────────────
+  if (u_sceneFeedback && audioMix > 0.01) {
+    vec2 cuv = (cellIdx + 0.5) / u_gridSize;
+    float v = texture(u_feedbackTex, cuv).r;
+    if (v > 0.01) {
+      // Tint highs→bass with bass energy
+      float tint = clamp(u_bassGroup * 1.2, 0.0, 1.0);
+      vec3 col = mix(u_palette[2], u_palette[0], tint);
+      addColor(lit, wColor, wTotal, v * audioMix, col);
+    }
+  }
+
+  // ── LISSAJOUS scene ──────────────────────────────────────────────────
+  if (u_sceneLissajous && audioMix > 0.01) {
+    vec2 cuv = (cellIdx + 0.5) / u_gridSize;
+    float v = texture(u_lissajousTex, cuv).r;
+    if (v > 0.01) {
+      addColor(lit, wColor, wTotal, v * audioMix, u_palette[1]);
+    }
+  }
+
+  // ── Click ripples ────────────────────────────────────────────────────
+  float maxAxis = max(cssW, cssH);
+  float rippleLit = 0.0;
+  for (int i = 0; i < MAX_RIPPLES; i++) {
+    if (i >= u_rippleCount) break;
+    vec4 r = u_ripples[i];
+    if (r.z < 0.0) continue;
+    float radius = (r.z / 2000.0) * maxAxis;
+    float dx = uv.x - r.x;
+    float dy = uv.y - r.y;
+    float dist = sqrt(dx * dx + dy * dy);
+    float offFront = abs(dist - radius);
+    if (offFront < 9.0) {
+      float u = offFront / 9.0;
+      float ringInt = 0.5 * (1.0 + cos(PI * u));
+      float tLife = r.z / 2800.0;
+      float ageEnv = sin(tLife * PI);
+      rippleLit += ringInt * ageEnv * r.w;
+    }
+  }
+  addColor(lit, wColor, wTotal, min(rippleLit, 1.0) * 0.45, u_onColor);
+
+  // ── Hover flashlight ─────────────────────────────────────────────────
+  if (u_hoverAlpha > 0.001) {
+    float distC = distance(uv, u_hoverPos);
+    if (distC < 56.0) {
+      float u = distC / 56.0;
+      float fall = 0.5 * (1.0 + cos(PI * u));
+      addColor(lit, wColor, wTotal, fall * 0.4 * u_hoverAlpha, u_onColor);
+    }
+  }
+
+  // ── Compose ─────────────────────────────────────────────────────────
+  if (lit > 1.0) lit = 1.0;
+  vec3 litCol = u_offColor;
+  if (wTotal > 0.0) litCol = wColor / wTotal;
+  float litCurve = pow(lit, u_vibrancy);
+  vec3 finalRGB = mix(u_offColor, litCol, litCurve) / 255.0;
+
+  // Dot rendering — emit only pixels inside the dot (radius scales with lit)
+  float dotDiameter = u_dotBase + (u_dotBloom - u_dotBase) * lit;
+  float dotRadius = dotDiameter * 0.5;
+  if (distToDot > dotRadius) discard;
+
+  outColor = vec4(finalRGB, u_bootP);
+}`;
+
+// ── Component ────────────────────────────────────────────────────────────
 export default function LedMatrix() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
-  // Bridge React audio state into the imperative animation loop via a ref.
   const audio = useAudioPlayer();
   const { activeScenes } = useVisualizerScene();
   const audioStateRef = useRef({
@@ -203,28 +642,17 @@ export default function LedMatrix() {
     scenes: activeScenes,
   };
 
-  // DialKit panel — live tuning of master + sparkles parameters.
-  // Panel UI only renders in dev (DialRoot is dev-mounted); in prod these
-  // values stay at defaults and behave like static config.
   const dial = useDialKit("Visualizer", {
     master: {
       enabled: true,
       audioMixCap: [1.0, 0, 1],
-      // Saturation multiplier applied to per-track palette colors. >1 boosts.
       saturation: [1.5, 1, 3],
-      // Gamma curve on the final lit value before color blending. Lower
-      // values push moderate intensities closer to full palette color
-      // (more vibrant); 1.0 = linear.
       vibrancy: [0.65, 0.3, 1.0],
     },
     sparkles: {
-      // Continuous spawn rate baseline + bass-driven multiplier
       density: [1.0, 0, 3],
-      // Per-spawn brightness multiplier
       intensity: [1.0, 0, 2],
-      // Onset burst multiplier — bigger = bigger explosion on each kick
       onsetBurst: [1.0, 0, 3],
-      // Fraction of sparkles that spawn as "big" (longer life, larger size)
       bigChance: [0.18, 0, 0.6],
     },
   });
@@ -234,26 +662,173 @@ export default function LedMatrix() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const gl = canvas.getContext("webgl2", { alpha: true, antialias: false });
+    if (!gl) {
+      console.warn("[LedMatrixGL] WebGL2 not available");
+      return;
+    }
 
+    // Float-texture support (universal in WebGL2 but the extension call is
+    // still required for color-attachable float textures in some browsers).
+    gl.getExtension("EXT_color_buffer_float");
+
+    const program = linkProgram(gl, VERTEX_SRC, FRAGMENT_SRC);
+    if (!program) return;
+    const drumheadProgram = linkProgram(gl, VERTEX_SRC, DRUMHEAD_FRAG_SRC);
+    const feedbackProgram = linkProgram(gl, VERTEX_SRC, FEEDBACK_FRAG_SRC);
+    const lissajousProgram = linkProgram(gl, VERTEX_SRC, LISSAJOUS_FRAG_SRC);
+
+    // Fullscreen triangle (covers the viewport)
+    const vbo = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(program, "a_pos");
+    const aPosDH = drumheadProgram ? gl.getAttribLocation(drumheadProgram, "a_pos") : -1;
+    const aPosFB = feedbackProgram ? gl.getAttribLocation(feedbackProgram, "a_pos") : -1;
+    const aPosLJ = lissajousProgram ? gl.getAttribLocation(lissajousProgram, "a_pos") : -1;
+
+    // ── Ping-pong sim textures ───────────────────────────────────────────
+    type SimPair = { texA: WebGLTexture; texB: WebGLTexture; fboA: WebGLFramebuffer; fboB: WebGLFramebuffer };
+    const makeSimPair = (w: number, h: number): SimPair | null => {
+      const make = (): { tex: WebGLTexture; fbo: WebGLFramebuffer } | null => {
+        const tex = gl.createTexture();
+        if (!tex) return null;
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        const fbo = gl.createFramebuffer();
+        if (!fbo) return null;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        if (status !== gl.FRAMEBUFFER_COMPLETE) return null;
+        return { tex, fbo };
+      };
+      const a = make();
+      const b = make();
+      if (!a || !b) return null;
+      return { texA: a.tex, texB: b.tex, fboA: a.fbo, fboB: b.fbo };
+    };
+
+    let drumheadPair: SimPair | null = null;
+    let feedbackPair: SimPair | null = null;
+    let lissajousPair: SimPair | null = null;
+    let drumheadCurrent: "A" | "B" = "A"; // which texture holds the latest state
+    let feedbackCurrent: "A" | "B" = "A";
+    let lissajousCurrent: "A" | "B" = "A";
+
+    const cleanupSimPair = (p: SimPair | null) => {
+      if (!p) return;
+      gl.deleteTexture(p.texA);
+      gl.deleteTexture(p.texB);
+      gl.deleteFramebuffer(p.fboA);
+      gl.deleteFramebuffer(p.fboB);
+    };
+    const reallocSimPairs = (cols: number, rows: number) => {
+      cleanupSimPair(drumheadPair);
+      cleanupSimPair(feedbackPair);
+      cleanupSimPair(lissajousPair);
+      drumheadPair = makeSimPair(cols, rows);
+      feedbackPair = makeSimPair(cols, rows);
+      lissajousPair = makeSimPair(cols, rows);
+      drumheadCurrent = "A";
+      feedbackCurrent = "A";
+      lissajousCurrent = "A";
+    };
+
+    // Uniform locations
+    const u = (name: string) => gl.getUniformLocation(program, name);
+    const uResolution = u("u_resolution");
+    const uTime = u("u_time");
+    const uBootP = u("u_bootP");
+    const uAudioMix = u("u_audioMix");
+    const uOffColor = u("u_offColor");
+    const uOnColor = u("u_onColor");
+    const uPalette = u("u_palette");
+    const uSpacing = u("u_spacing");
+    const uDotBase = u("u_dotBase");
+    const uDotBloom = u("u_dotBloom");
+    const uCornerRadius = u("u_cornerRadius");
+    const uVibrancy = u("u_vibrancy");
+    const uAudioMixCap = u("u_audioMixCap");
+    const uSceneSparkles = u("u_sceneSparkles");
+    const uSceneWaveform = u("u_sceneWaveform");
+    const uSceneChladni = u("u_sceneChladni");
+    const uHoverPos = u("u_hoverPos");
+    const uHoverAlpha = u("u_hoverAlpha");
+    const uRippleCount = u("u_rippleCount");
+    const uRipples = u("u_ripples");
+    const uSparkleCount = u("u_sparkleCount");
+    const uSparklePos = u("u_sparklePos");
+    const uSparkleAttr = u("u_sparkleAttr");
+    const uIdleCount = u("u_idleCount");
+    const uIdleA = u("u_idleA");
+    const uIdleB = u("u_idleB");
+    const uWaveformLen = u("u_waveformLen");
+    const uWaveformY = u("u_waveformY");
+    const uChladniM = u("u_chladniM");
+    const uChladniN = u("u_chladniN");
+    const uChladniRotation = u("u_chladniRotation");
+    const uChladniPhase = u("u_chladniPhase");
+    const uBassGroup = u("u_bassGroup");
+    const uMidsGroup = u("u_midsGroup");
+    const uHighsGroup = u("u_highsGroup");
+    const uMoodIntensity = u("u_moodIntensity");
+    const uSceneDrumhead = u("u_sceneDrumhead");
+    const uSceneFeedback = u("u_sceneFeedback");
+    const uSceneLissajous = u("u_sceneLissajous");
+    const uDrumheadTex = u("u_drumheadTex");
+    const uFeedbackTex = u("u_feedbackTex");
+    const uLissajousTex = u("u_lissajousTex");
+    const uGridSizeMain = u("u_gridSize");
+
+    // Simulation program uniforms
+    const dhU = drumheadProgram
+      ? {
+          input: gl.getUniformLocation(drumheadProgram, "u_input"),
+          gridSize: gl.getUniformLocation(drumheadProgram, "u_gridSize"),
+          impulse: gl.getUniformLocation(drumheadProgram, "u_impulse"),
+          c2: gl.getUniformLocation(drumheadProgram, "u_c2"),
+          damp: gl.getUniformLocation(drumheadProgram, "u_damp"),
+          envRise: gl.getUniformLocation(drumheadProgram, "u_envRise"),
+          envFall: gl.getUniformLocation(drumheadProgram, "u_envFall"),
+        }
+      : null;
+    const fbU = feedbackProgram
+      ? {
+          input: gl.getUniformLocation(feedbackProgram, "u_input"),
+          gridSize: gl.getUniformLocation(feedbackProgram, "u_gridSize"),
+          decay: gl.getUniformLocation(feedbackProgram, "u_decay"),
+          angle: gl.getUniformLocation(feedbackProgram, "u_angle"),
+          zoom: gl.getUniformLocation(feedbackProgram, "u_zoom"),
+          bassRadius: gl.getUniformLocation(feedbackProgram, "u_bassRadius"),
+          strokeBassY: gl.getUniformLocation(feedbackProgram, "u_strokeBassY"),
+          strokeMidsX: gl.getUniformLocation(feedbackProgram, "u_strokeMidsX"),
+          strokeRingX: gl.getUniformLocation(feedbackProgram, "u_strokeRingX"),
+          strokeRingY: gl.getUniformLocation(feedbackProgram, "u_strokeRingY"),
+          strokeRingR: gl.getUniformLocation(feedbackProgram, "u_strokeRingR"),
+        }
+      : null;
+    const ljU = lissajousProgram
+      ? {
+          input: gl.getUniformLocation(lissajousProgram, "u_input"),
+          gridSize: gl.getUniformLocation(lissajousProgram, "u_gridSize"),
+          decay: gl.getUniformLocation(lissajousProgram, "u_decay"),
+          sampleCount: gl.getUniformLocation(lissajousProgram, "u_sampleCount"),
+          samples: gl.getUniformLocation(lissajousProgram, "u_samples"),
+        }
+      : null;
+
+    // Sizing
     let dpr = window.devicePixelRatio || 1;
     let cssW = 0;
     let cssH = HEIGHT;
     let cols = 0;
     let rows = 0;
-
-    let offColor: [number, number, number] = [230, 230, 230];
-    let onColor: [number, number, number] = [181, 101, 29];
-
-    const refreshColors = () => {
-      const styles = getComputedStyle(document.documentElement);
-      const offRaw = styles.getPropertyValue("--color-border").trim();
-      const onRaw = styles.getPropertyValue("--color-accent").trim();
-      if (offRaw) offColor = parseColor(offRaw);
-      if (onRaw) onColor = parseColor(onRaw);
-    };
-
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       cssW = rect.width;
@@ -261,60 +836,15 @@ export default function LedMatrix() {
       dpr = window.devicePixelRatio || 1;
       canvas.width = Math.round(cssW * dpr);
       canvas.height = Math.round(cssH * dpr);
-      cols = Math.floor(cssW / SPACING);
-      rows = Math.floor(cssH / SPACING);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.max(1, Math.floor(cssW / SPACING));
+      rows = Math.max(1, Math.floor(cssH / SPACING));
+      reallocSimPairs(cols, rows);
     };
-
-    refreshColors();
     resize();
 
-    // ── Scene-specific persistent buffers (re-allocated on resize) ────────
-    // drumhead: ping-pong wave state + per-cell display envelope (smooth attack/release)
-    let waveA: Float32Array = new Float32Array(0);
-    let waveB: Float32Array = new Float32Array(0);
-    let waveEnv: Float32Array = new Float32Array(0);
-    // feedback / lissajous: shared persistent brightness buffer
-    let persistA: Float32Array = new Float32Array(0);
-    let persistB: Float32Array = new Float32Array(0);
-    // chladni: smoothly drifting modes + rotation + phase shifts so the
-    // pattern is always moving even when audio is steady; onsets snap to a
-    // new random (m, n) for shape variety
-    let chladniM = 3, chladniN = 4;
-    let chladniMTarget = 3, chladniNTarget = 4;
-    let chladniRotation = 0;
-    let chladniPhaseX = 0, chladniPhaseY = 0;
-    // sparkles: previous bass amplitude for onset detection
-    let prevSparklesBass = 0;
-
-    const reallocSceneBuffers = () => {
-      const total = cols * rows;
-      waveA = new Float32Array(total);
-      waveB = new Float32Array(total);
-      waveEnv = new Float32Array(total);
-      persistA = new Float32Array(total);
-      persistB = new Float32Array(total);
-    };
-    reallocSceneBuffers();
-
-    const ripples: Ripple[] = [];
-    const idleWaves: IdleWave[] = [];
-    let nextIdleAt = 0;
-
-    // Cursor flashlight state
-    let cursorX = 0;
-    let cursorY = 0;
-    let cursorTargetAlpha = 0; // 1 when over canvas, 0 when not
-    let cursorAlpha = 0;       // smoothed value, drives the actual glow
-
-    // Audio visualizer state
-    let audioMix = 0;            // 0 = idle, 1 = audio-reactive (smoothly interpolated)
-    const sparkles: Sparkle[] = [];
-    const analyzer = new AudioAnalyzer();
-    let analysis: AnalysisSnapshot | null = null;
-    // Per-track palette colors (parsed lazily, refreshed when track or
-    // saturation dial changes — saturation is applied at parse time so the
-    // per-pixel render path stays cheap).
+    // Per-frame state
+    let offColor: [number, number, number] = [230, 230, 230];
+    let onColor: [number, number, number] = [181, 101, 29];
     let bassCol: [number, number, number] = [180, 100, 30];
     let midsCol: [number, number, number] = [232, 155, 90];
     let highsCol: [number, number, number] = [242, 210, 155];
@@ -322,92 +852,140 @@ export default function LedMatrix() {
     let lastPaletteSrc = "";
     let lastSaturation = -1;
 
-    const t0 = performance.now();
-    let raf = 0;
+    const refreshThemeColors = () => {
+      const styles = getComputedStyle(document.documentElement);
+      const offRaw = styles.getPropertyValue("--color-border").trim();
+      const onRaw = styles.getPropertyValue("--color-accent").trim();
+      if (offRaw) offColor = parseColor(offRaw);
+      if (onRaw) onColor = parseColor(onRaw);
+    };
+    refreshThemeColors();
 
+    // Audio + interaction state
+    let audioMix = 0;
+    let prevSparklesBass = 0;
+    const sparkles: Sparkle[] = [];
+    const ripples: Ripple[] = [];
+    const idleWaves: IdleWave[] = [];
+    let nextIdleAt = 0;
+    let cursorX = 0;
+    let cursorY = 0;
+    let cursorTargetAlpha = 0;
+    let cursorAlpha = 0;
+    const analyzer = new AudioAnalyzer();
+    let analysis: AnalysisSnapshot | null = null;
+
+    // Chladni state
+    let chladniM = 3, chladniN = 4;
+    let chladniMTarget = 3, chladniNTarget = 4;
+    let chladniRotation = 0;
+    let chladniPhaseX = 0, chladniPhaseY = 0;
+
+    // Lissajous sample positions (grid-cell coords) — packed each frame
+    const lissajousSamplesArr = new Float32Array(MAX_LISSAJOUS_SAMPLES * 2);
+
+    const t0 = performance.now();
     const scheduleNextIdle = (now: number) => {
       nextIdleAt = now + IDLE_INTERVAL_MIN_MS + Math.random() * (IDLE_INTERVAL_MAX_MS - IDLE_INTERVAL_MIN_MS);
     };
     scheduleNextIdle(t0);
 
+    // Pre-allocated typed arrays for uniforms (avoid per-frame allocation)
+    const sparklePosArr = new Float32Array(MAX_SPARKLES * 4);
+    const sparkleAttrArr = new Float32Array(MAX_SPARKLES * 4);
+    const rippleArr = new Float32Array(MAX_RIPPLES * 4);
+    const idleAArr = new Float32Array(MAX_IDLE_WAVES * 4);
+    const idleBArr = new Float32Array(MAX_IDLE_WAVES * 4);
+    const waveformArr = new Float32Array(MAX_WAVEFORM);
+    const paletteArr = new Float32Array(4 * 3);
+
+    let raf = 0;
+
     const draw = (now: number) => {
-      const bootP = Math.min(1, (now - t0) / BOOT_FADE_MS);
-
-      // Smooth cursor fade in/out
-      cursorAlpha += (cursorTargetAlpha - cursorAlpha) * HOVER_FADE_RATE;
-
-      // Audio mix transition + sample frequency data + 8-band analysis
       const aState = audioStateRef.current;
+      const d = dialRef.current;
+
+      // Theme colors might shift live (palette changes)
+      refreshThemeColors();
+
+      // Track palette refresh + saturation
+      const track = aState.track;
+      const sat = d.master.saturation;
+      const trackChanged = track.src !== lastPaletteSrc;
+      if (trackChanged || sat !== lastSaturation) {
+        bassCol = saturate(parseColor(track.palette.bass), sat);
+        midsCol = saturate(parseColor(track.palette.mids), sat);
+        highsCol = saturate(parseColor(track.palette.highs), sat);
+        airCol = saturate(parseColor(track.palette.air), sat);
+        lastPaletteSrc = track.src;
+        lastSaturation = sat;
+        if (trackChanged) analyzer.reset();
+      }
+
+      // Audio mix
       const targetMix = aState.isPlaying ? 1 : 0;
       audioMix += (targetMix - audioMix) * AUDIO_FADE_RATE;
       if (Math.abs(targetMix - audioMix) < 0.001) audioMix = targetMix;
 
-      const track = aState.track;
-      const mood = MOODS[track.mood ?? "warm"];
-
-      // Refresh palette colors when the track or saturation dial changes
-      const satFactor = dialRef.current.master.saturation;
-      const trackChanged = track.src !== lastPaletteSrc;
-      if (trackChanged || satFactor !== lastSaturation) {
-        bassCol = saturate(parseColor(track.palette.bass), satFactor);
-        midsCol = saturate(parseColor(track.palette.mids), satFactor);
-        highsCol = saturate(parseColor(track.palette.highs), satFactor);
-        airCol = saturate(parseColor(track.palette.air), satFactor);
-        lastPaletteSrc = track.src;
-        lastSaturation = satFactor;
-        if (trackChanged) analyzer.reset();
-      }
-
+      // Audio analysis snapshot
       analysis = null;
       if (audioMix > 0.01 && aState.getFrequencyData) {
         const data = aState.getFrequencyData();
         const sr = aState.getSampleRate();
-        if (data && sr) {
-          analysis = analyzer.process(data, sr, now);
-        }
+        if (data && sr) analysis = analyzer.process(data, sr, now);
       }
 
       const bassGroup = analysis?.bassGroup ?? 0;
       const midsGroup = analysis?.midsGroup ?? 0;
       const highsGroup = analysis?.highsGroup ?? 0;
-      const airGroup = analysis?.airGroup ?? 0;
       const onsetThisFrame = analysis?.onsetThisFrame ?? false;
 
-      // BPM-driven speed multiplier — 120 BPM = 1.0×, 60 BPM = 0.5×, 180 BPM = 1.5×
-      const bpm = analysis?.bpm ?? 120;
-      const bpmSpeed = bpm / 120;
-      const speed = mood.speed * bpmSpeed;
+      // Cursor smoothing
+      cursorAlpha += (cursorTargetAlpha - cursorAlpha) * HOVER_FADE_RATE;
 
-      // Pull live dial values
-      const d = dialRef.current;
-      const masterEnabled = d.master.enabled;
-      audioMix = Math.min(audioMix, d.master.audioMixCap);
+      // Boot fade
+      const bootP = Math.min(1, (now - t0) / BOOT_FADE_MS);
 
-      // ── Per-frame scene state updates (before the per-dot loop) ──────────
       const scenes = aState.scenes;
 
-      // SPARKLES — bass-reactive variable sparkle field. Continuous spawn
-      // rate scales quadratically with bass; on a strong bass onset, fire
-      // a burst. A fraction of spawns are "big" (longer life, larger
-      // radius) so the field reads as varied jewel-dust rather than
-      // uniform pinpoints. Each sparkle is pre-tinted at spawn time so
-      // it doesn't shift mid-life.
+      // ── Idle waves spawn + cull ────────────────────────────────────
+      if (!reducedMotion && now >= nextIdleAt) {
+        idleWaves.push({
+          t0: now,
+          duration: IDLE_DURATION_MIN_MS + Math.random() * (IDLE_DURATION_MAX_MS - IDLE_DURATION_MIN_MS),
+          intensity: IDLE_INTENSITY_MIN + Math.random() * (IDLE_INTENSITY_MAX - IDLE_INTENSITY_MIN),
+          ox: Math.random() * 1000,
+          oy: Math.random() * 1000,
+          drift: 0.6 + Math.random() * 0.8,
+        });
+        scheduleNextIdle(now);
+      }
+      for (let i = idleWaves.length - 1; i >= 0; i--) {
+        if (now - idleWaves[i].t0 > idleWaves[i].duration) idleWaves.splice(i, 1);
+      }
+      // Cap at MAX_IDLE_WAVES (keep newest)
+      while (idleWaves.length > MAX_IDLE_WAVES) idleWaves.shift();
+
+      // ── Ripples cull ───────────────────────────────────────────────
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        if (now - ripples[i].t0 > RIPPLE_TOTAL_MS) ripples.splice(i, 1);
+      }
+
+      // ── SPARKLES — bass-reactive spawn + cull ──────────────────────
       if (
         scenes.has("sparkles") &&
-        masterEnabled &&
+        d.master.enabled &&
         audioMix > 0.01 &&
         !reducedMotion
       ) {
         const sCfg = d.sparkles;
         const beat = analysis?.beatStrength ?? 0;
         const bandsArr = analysis?.bandArray;
-        // Continuous spawns: baseline + bass^2 contribution
         const continuous = Math.floor(
           (SPARKLES_BASE_RATE + SPARKLES_BASS_RATE * bassGroup * bassGroup) *
             sCfg.density *
             audioMix
         );
-        // Onset burst when bass spikes
         let burstCount = 0;
         if (
           onsetThisFrame &&
@@ -425,29 +1003,21 @@ export default function LedMatrix() {
         for (let i = 0; i < spawn; i++) {
           const isBig = Math.random() < sCfg.bigChance;
           const life = isBig
-            ? SPARKLES_BIG_LIFE_MIN +
-              Math.random() * (SPARKLES_BIG_LIFE_MAX - SPARKLES_BIG_LIFE_MIN)
-            : SPARKLES_LIFE_MIN_MS +
-              Math.random() * (SPARKLES_LIFE_MAX_MS - SPARKLES_LIFE_MIN_MS);
+            ? SPARKLES_BIG_LIFE_MIN + Math.random() * (SPARKLES_BIG_LIFE_MAX - SPARKLES_BIG_LIFE_MIN)
+            : SPARKLES_LIFE_MIN_MS + Math.random() * (SPARKLES_LIFE_MAX_MS - SPARKLES_LIFE_MIN_MS);
           const size = isBig ? 2.0 + Math.random() * 2.5 : 0.5 + Math.random() * 1.0;
-          const intensity =
-            (SPARKLES_INTENSITY_MIN +
-              Math.random() * (SPARKLES_INTENSITY_MAX - SPARKLES_INTENSITY_MIN)) *
-            sCfg.intensity *
-            (isBig ? 1.2 : 1);
-          // Pick a palette color — weighted by current band content with
-          // a strong bass bias so the field is mostly bass-colored.
+          const intensity = (0.6 + Math.random() * 0.7) * sCfg.intensity * (isBig ? 1.2 : 1);
           const wB = (bandsArr ? (bandsArr[0] + bandsArr[1]) : 0.5) * 2.2 + 0.4;
           const wM = bandsArr ? (bandsArr[2] + bandsArr[3]) : 0.3;
           const wH = bandsArr ? (bandsArr[4] + bandsArr[5] + bandsArr[6]) : 0.2;
           const wA = bandsArr ? bandsArr[7] : 0.1;
           const total = wB + wM + wH + wA;
           let r = Math.random() * total;
-          let col: [number, number, number];
-          if ((r -= wB) < 0) col = bassCol;
-          else if ((r -= wM) < 0) col = midsCol;
-          else if ((r -= wH) < 0) col = highsCol;
-          else col = airCol;
+          let colorIdx = 0;
+          if ((r -= wB) < 0) colorIdx = 0;
+          else if ((r -= wM) < 0) colorIdx = 1;
+          else if ((r -= wH) < 0) colorIdx = 2;
+          else colorIdx = 3;
           sparkles.push({
             x: Math.random() * cssW,
             y: Math.random() * cssH,
@@ -455,41 +1025,23 @@ export default function LedMatrix() {
             life,
             size,
             intensity,
-            col,
+            colorIdx,
           });
         }
       }
-
-      // WAVEFORM — sample audio's time-domain data once per frame and cache
-      // the y-position for each column. The per-dot loop just reads from it.
-      let waveformY: Float32Array | null = null;
-      if (scenes.has("waveform") && audioMix > 0.01) {
-        const td = aState.getTimeDomainData?.();
-        if (td) {
-          waveformY = new Float32Array(cols);
-          const half = cssH / 2;
-          const amp = half * 0.85; // a bit of margin so peaks don't clip
-          for (let c = 0; c < cols; c++) {
-            const sampleIdx = Math.floor((c / cols) * td.length);
-            const sample = td[Math.min(sampleIdx, td.length - 1)];
-            const a = (sample - 128) / 128; // -1..1
-            waveformY[c] = half + a * amp;
-          }
-        }
+      // Cull and cap
+      for (let i = sparkles.length - 1; i >= 0; i--) {
+        if (now - sparkles[i].t0 > sparkles[i].life) sparkles.splice(i, 1);
       }
+      while (sparkles.length > MAX_SPARKLES) sparkles.shift();
 
-      // CHLADNI — modes drift smoothly + rotation + phase. Strong onsets
-      // snap to a new random (m, n) for occasional dramatic shape changes.
+      // ── Chladni state update ───────────────────────────────────────
       if (scenes.has("chladni") && audioMix > 0.01) {
-        // Continuous slow drift via sine waves on time, plus audio offsets
         const tDrift = now * 0.00038;
         const mSinusoid = Math.sin(tDrift * 0.7) * 1.6;
         const nSinusoid = Math.cos(tDrift * 0.5) * 1.6;
         const mAudio = (analysis?.bands.bass ?? 0) * 2.2 + (analysis?.bands.lowMid ?? 0) * 1.6;
         const nAudio = (analysis?.bands.highMid ?? 0) * 2.2 + (analysis?.bands.air ?? 0) * 1.8;
-
-        // Discrete jump on strong beats — picks a new random (m, n) pair.
-        // Coprime-ish low integers give the most distinct visual patterns.
         if (
           onsetThisFrame &&
           analysis &&
@@ -501,497 +1053,303 @@ export default function LedMatrix() {
             [3, 7], [4, 5], [4, 7], [5, 6], [5, 7], [5, 8],
           ];
           const pick = choices[Math.floor(Math.random() * choices.length)];
-          // Randomly swap order so we sample both orientations
           chladniMTarget = Math.random() < 0.5 ? pick[0] : pick[1];
           chladniNTarget = chladniMTarget === pick[0] ? pick[1] : pick[0];
         } else {
           chladniMTarget = 2.5 + mSinusoid + mAudio;
           chladniNTarget = 3.5 + nSinusoid + nAudio;
         }
-        // Smooth tracking — same envelope idea Lissajous uses on its decay
         chladniM += (chladniMTarget - chladniM) * 0.045;
         chladniN += (chladniNTarget - chladniN) * 0.045;
-        // Slow rotation, accelerated by bass for "energy"
-        chladniRotation += 0.0025 + 0.005 * (analysis?.bassGroup ?? 0);
-        // Phases drift so the lattice flows
-        chladniPhaseX += 0.0035 + 0.006 * (analysis?.midsGroup ?? 0);
-        chladniPhaseY += 0.0028 + 0.005 * (analysis?.highsGroup ?? 0);
+        chladniRotation += 0.0025 + 0.005 * bassGroup;
+        chladniPhaseX += 0.0035 + 0.006 * midsGroup;
+        chladniPhaseY += 0.0028 + 0.005 * highsGroup;
       }
 
-      // DRUMHEAD — 2D wave equation, ping-pong buffers + per-cell display
-      // envelope so the rendered brightness is smooth (Lissajous-like
-      // attack/release) instead of the raw, twitchy |u|. Impulses are
-      // gated on beat strength so quiet passages stay calm.
-      if (scenes.has("drumhead") && audioMix > 0.01) {
-        // Inject impulse only on stronger onsets — gives the field room to breathe
+      // ── Waveform — pre-compute y per column ────────────────────────
+      const waveformLen = Math.min(MAX_WAVEFORM, Math.floor(cssW / SPACING));
+      if (scenes.has("waveform") && audioMix > 0.01) {
+        const td = aState.getTimeDomainData?.();
+        if (td) {
+          const half = cssH / 2;
+          const amp = half * 0.85;
+          for (let c = 0; c < waveformLen; c++) {
+            const sampleIdx = Math.floor((c / waveformLen) * td.length);
+            const sample = td[Math.min(sampleIdx, td.length - 1)];
+            const a = (sample - 128) / 128;
+            waveformArr[c] = half + a * amp;
+          }
+        }
+      }
+
+      // ── Pack uniform arrays (positions baked with dpr in pixel space) ──
+      // Sparkles
+      for (let i = 0; i < sparkles.length; i++) {
+        const sp = sparkles[i];
+        const age = now - sp.t0;
+        sparklePosArr[i * 4 + 0] = sp.x * dpr;
+        sparklePosArr[i * 4 + 1] = sp.y * dpr;
+        sparklePosArr[i * 4 + 2] = age;
+        sparklePosArr[i * 4 + 3] = sp.life;
+        sparkleAttrArr[i * 4 + 0] = sp.size * dpr;
+        sparkleAttrArr[i * 4 + 1] = sp.intensity;
+        sparkleAttrArr[i * 4 + 2] = sp.colorIdx;
+        sparkleAttrArr[i * 4 + 3] = 0;
+      }
+
+      // Ripples
+      for (let i = 0; i < ripples.length && i < MAX_RIPPLES; i++) {
+        const rp = ripples[i];
+        const age = now - rp.t0;
+        rippleArr[i * 4 + 0] = rp.x * dpr;
+        rippleArr[i * 4 + 1] = rp.y * dpr;
+        rippleArr[i * 4 + 2] = age;
+        rippleArr[i * 4 + 3] = rp.strength;
+      }
+      const visibleRipples = Math.min(ripples.length, MAX_RIPPLES);
+
+      // Idle waves
+      for (let i = 0; i < idleWaves.length && i < MAX_IDLE_WAVES; i++) {
+        const w = idleWaves[i];
+        idleAArr[i * 4 + 0] = w.ox;
+        idleAArr[i * 4 + 1] = w.oy;
+        idleAArr[i * 4 + 2] = w.drift;
+        idleAArr[i * 4 + 3] = w.intensity;
+        idleBArr[i * 4 + 0] = now - w.t0;
+        idleBArr[i * 4 + 1] = w.duration;
+        idleBArr[i * 4 + 2] = 0;
+        idleBArr[i * 4 + 3] = 0;
+      }
+
+      // Palette (saturated track colors)
+      paletteArr[0] = bassCol[0]; paletteArr[1] = bassCol[1]; paletteArr[2] = bassCol[2];
+      paletteArr[3] = midsCol[0]; paletteArr[4] = midsCol[1]; paletteArr[5] = midsCol[2];
+      paletteArr[6] = highsCol[0]; paletteArr[7] = highsCol[1]; paletteArr[8] = highsCol[2];
+      paletteArr[9] = airCol[0]; paletteArr[10] = airCol[1]; paletteArr[11] = airCol[2];
+
+      // ── Run buffer-backed scene sim steps ─────────────────────────
+      const runSim = (
+        prog: WebGLProgram | null,
+        aPosLoc: number,
+        pair: SimPair | null,
+        current: "A" | "B",
+        bind: () => void
+      ): "A" | "B" => {
+        if (!prog || !pair) return current;
+        const srcTex = current === "A" ? pair.texA : pair.texB;
+        const dstFbo = current === "A" ? pair.fboB : pair.fboA;
+        gl.useProgram(prog);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, dstFbo);
+        gl.viewport(0, 0, cols, rows);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, srcTex);
+        bind();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.enableVertexAttribArray(aPosLoc);
+        gl.vertexAttribPointer(aPosLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.disable(gl.BLEND);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        return current === "A" ? "B" : "A";
+      };
+
+      // DRUMHEAD
+      if (scenes.has("drumhead") && drumheadProgram && dhU && audioMix > 0.01) {
+        let impX = -1, impY = -1, impAmp = 0;
         if (
           onsetThisFrame &&
           analysis &&
           analysis.beatStrength > 0.2 &&
-          analysis.bassGroup > 0.15
+          bassGroup > 0.15
         ) {
-          const cx = Math.floor(Math.random() * (cols - 4)) + 2;
-          const cy = Math.floor(Math.random() * (rows - 4)) + 2;
-          const amp = 0.55 + analysis.beatStrength * 0.85;
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              const i = (cy + dy) * cols + (cx + dx);
-              if (i >= 0 && i < waveA.length)
-                waveA[i] += amp * (dx === 0 && dy === 0 ? 1 : 0.35);
-            }
-          }
+          impX = Math.floor(Math.random() * (cols - 4)) + 2;
+          impY = Math.floor(Math.random() * (rows - 4)) + 2;
+          impAmp = 0.55 + analysis.beatStrength * 0.85;
         }
-        // One sub-step per frame, faster damping → cleaner decay
-        const c2 = 0.16;
-        const damp = 0.985;
-        for (let r = 1; r < rows - 1; r++) {
-          for (let c = 1; c < cols - 1; c++) {
-            const i = r * cols + c;
-            const lap =
-              waveA[i - 1] + waveA[i + 1] + waveA[i - cols] + waveA[i + cols] - 4 * waveA[i];
-            waveB[i] = (2 * waveA[i] - waveB[i] + c2 * lap) * damp;
-          }
-        }
-        // Swap waveA <-> waveB
-        const tmp = waveA;
-        waveA = waveB;
-        waveB = tmp;
-
-        // Update display envelope per cell. Attack snaps up; release fades
-        // slowly. Smooths the rendered output the same way Lissajous's
-        // persistent-buffer decay smooths its curve.
-        const ENV_RISE = 0.55;
-        const ENV_FALL = 0.93;
-        for (let i = 0; i < waveEnv.length; i++) {
-          const target = Math.abs(waveA[i]);
-          if (target > waveEnv[i]) {
-            waveEnv[i] = waveEnv[i] + (target - waveEnv[i]) * ENV_RISE;
-          } else {
-            waveEnv[i] = waveEnv[i] * ENV_FALL;
-          }
-        }
+        drumheadCurrent = runSim(drumheadProgram, aPosDH, drumheadPair, drumheadCurrent, () => {
+          gl.uniform1i(dhU.input, 0);
+          gl.uniform2f(dhU.gridSize, cols, rows);
+          gl.uniform4f(dhU.impulse, impX, impY, impAmp, 0);
+          gl.uniform1f(dhU.c2, 0.16);
+          gl.uniform1f(dhU.damp, 0.985);
+          gl.uniform1f(dhU.envRise, 0.55);
+          gl.uniform1f(dhU.envFall, 0.93);
+        });
       }
 
-      // FEEDBACK — warp + decay persistent buffer, add big audio-driven shapes.
-      // Decay 0.94 (matches Lissajous) so trails are visible. Per-band onset
-      // events paint distinct shapes so the buffer stays varied.
-      if (scenes.has("feedback") && audioMix > 0.01) {
-        const decay = 0.94;
-        const bg = analysis?.bassGroup ?? 0;
-        const hg = analysis?.highsGroup ?? 0;
+      // FEEDBACK
+      if (scenes.has("feedback") && feedbackProgram && fbU && audioMix > 0.01) {
+        const bg = bassGroup;
+        const hg = highsGroup;
         const angle = 0.018 + 0.030 * bg;
         const zoom = 1.014 + 0.010 * hg;
-        const ccx = cols / 2;
-        const ccy = rows / 2;
-        const cosA = Math.cos(angle);
-        const sinA = Math.sin(angle);
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const dx = (c - ccx) / zoom;
-            const dy = (r - ccy) / zoom;
-            const sx = ccx + dx * cosA - dy * sinA;
-            const sy = ccy + dx * sinA + dy * cosA;
-            const sxi = Math.floor(sx);
-            const syi = Math.floor(sy);
-            persistB[r * cols + c] =
-              sxi >= 0 && sxi < cols && syi >= 0 && syi < rows
-                ? persistA[syi * cols + sxi] * decay
-                : 0;
-          }
-        }
-
-        // Bass disk at center — bigger so the trail is visible
-        const radius = bg * 14;
-        if (radius > 1) {
-          const r2 = radius * radius;
-          const r0 = Math.max(0, Math.floor(ccy - radius));
-          const r1 = Math.min(rows, Math.ceil(ccy + radius));
-          const c0 = Math.max(0, Math.floor(ccx - radius));
-          const c1 = Math.min(cols, Math.ceil(ccx + radius));
-          for (let r = r0; r < r1; r++) {
-            for (let c = c0; c < c1; c++) {
-              const dx = c - ccx;
-              const dy = r - ccy;
-              const d2 = dx * dx + dy * dy;
-              if (d2 < r2) {
-                const u = d2 / r2;
-                const fall = (1 - u) * (1 - u);
-                const idx = r * cols + c;
-                if (fall > persistB[idx]) persistB[idx] = fall;
-              }
-            }
-          }
-        }
-
-        // Per-band onsets paint distinct, larger shapes (more variability)
+        const bassRadius = bg * 14;
+        let strokeBassY = -1, strokeMidsX = -1;
+        let strokeRingX = -1, strokeRingY = -1, strokeRingR = -1;
         if (onsetThisFrame && analysis) {
           const beat = analysis.beatStrength;
-
-          // Bass onset → bright stroke at random row, full width
-          if (analysis.bands.bass > 0.45) {
-            const sr = Math.floor(Math.random() * rows);
-            for (let c = 0; c < cols; c++) {
-              const idx = sr * cols + c;
-              if (persistB[idx] < 0.85) persistB[idx] = 0.85;
-            }
-          }
-
-          // Mid onset → vertical stroke
-          if (analysis.midsGroup > 0.4) {
-            const sc = Math.floor(Math.random() * cols);
-            for (let r = 0; r < rows; r++) {
-              const idx = r * cols + sc;
-              if (persistB[idx] < 0.7) persistB[idx] = 0.7;
-            }
-          }
-
-          // Treble/air onset → ring burst at random origin
+          if (analysis.bands.bass > 0.45) strokeBassY = Math.floor(Math.random() * rows);
+          if (analysis.midsGroup > 0.4) strokeMidsX = Math.floor(Math.random() * cols);
           if (analysis.airGroup > 0.25 || hg > 0.35) {
-            const ox = Math.floor(2 + Math.random() * (cols - 4));
-            const oy = Math.floor(2 + Math.random() * (rows - 4));
-            const ringR = 6 + beat * 10;
-            const r2 = ringR * ringR;
-            const rThick = 1.5;
-            for (let r = Math.max(0, oy - ringR); r < Math.min(rows, oy + ringR); r++) {
-              for (let c = Math.max(0, ox - ringR); c < Math.min(cols, ox + ringR); c++) {
-                const dx = c - ox;
-                const dy = r - oy;
-                const d2 = dx * dx + dy * dy;
-                const d = Math.sqrt(d2);
-                if (Math.abs(d - ringR) < rThick) {
-                  const idx = r * cols + c;
-                  if (persistB[idx] < 0.95) persistB[idx] = 0.95;
-                }
-              }
-            }
-          }
-
-          // Always splatter a few sparkles too
-          const sparkCount = 4 + Math.floor(beat * 12);
-          for (let s = 0; s < sparkCount; s++) {
-            const sc = Math.floor(Math.random() * cols);
-            const sr = Math.floor(Math.random() * rows);
-            const idx = sr * cols + sc;
-            if (persistB[idx] < 1) persistB[idx] = 1;
+            strokeRingX = Math.floor(2 + Math.random() * (cols - 4));
+            strokeRingY = Math.floor(2 + Math.random() * (rows - 4));
+            strokeRingR = 6 + beat * 10;
           }
         }
-
-        // Swap
-        const tmp = persistA;
-        persistA = persistB;
-        persistB = tmp;
+        feedbackCurrent = runSim(feedbackProgram, aPosFB, feedbackPair, feedbackCurrent, () => {
+          gl.uniform1i(fbU.input, 0);
+          gl.uniform2f(fbU.gridSize, cols, rows);
+          gl.uniform1f(fbU.decay, 0.94);
+          gl.uniform1f(fbU.angle, angle);
+          gl.uniform1f(fbU.zoom, zoom);
+          gl.uniform1f(fbU.bassRadius, bassRadius);
+          gl.uniform1f(fbU.strokeBassY, strokeBassY);
+          gl.uniform1f(fbU.strokeMidsX, strokeMidsX);
+          gl.uniform1f(fbU.strokeRingX, strokeRingX);
+          gl.uniform1f(fbU.strokeRingY, strokeRingY);
+          gl.uniform1f(fbU.strokeRingR, strokeRingR);
+        });
       }
 
-      // LISSAJOUS — decay buffer, paint curve points
-      if (scenes.has("lissajous") && audioMix > 0.01) {
-        const decay = 0.94;
-        // Decay in place
-        for (let i = 0; i < persistA.length; i++) persistA[i] *= decay;
-
-        // Curve params from audio. a, b are coprime-ish low integers shifted
-        // by spectrum to morph the shape. Phase moves with time.
-        const a = 2 + Math.floor((analysis?.bassGroup ?? 0) * 3);
-        const b = 3 + Math.floor((analysis?.highsGroup ?? 0) * 3);
+      // LISSAJOUS — pre-compute curve sample positions in grid cells
+      if (scenes.has("lissajous") && lissajousProgram && ljU && audioMix > 0.01) {
+        const a = 2 + Math.floor(bassGroup * 3);
+        const b = 3 + Math.floor(highsGroup * 3);
         const phase = (now * 0.0008) % (Math.PI * 2);
         const ax = (cssW / 2) * 0.85;
         const ay = (cssH / 2) * 0.85;
         const ccx = cssW / 2;
         const ccy = cssH / 2;
-        const SAMPLES = 220;
-        for (let s = 0; s < SAMPLES; s++) {
-          const t = (s / SAMPLES) * Math.PI * 2;
+        let validSamples = 0;
+        for (let s = 0; s < MAX_LISSAJOUS_SAMPLES; s++) {
+          const t = (s / MAX_LISSAJOUS_SAMPLES) * Math.PI * 2;
           const x = ccx + ax * Math.sin(a * t + phase);
           const y = ccy + ay * Math.sin(b * t);
-          const c = Math.floor(x / SPACING);
-          const r = Math.floor(y / SPACING);
-          if (c >= 0 && c < cols && r >= 0 && r < rows) {
-            persistA[r * cols + c] = 1;
+          const cellC = Math.floor(x / SPACING);
+          const cellR = Math.floor(y / SPACING);
+          if (cellC >= 0 && cellC < cols && cellR >= 0 && cellR < rows) {
+            lissajousSamplesArr[validSamples * 2] = cellC;
+            lissajousSamplesArr[validSamples * 2 + 1] = cellR;
+            validSamples++;
           }
         }
-      }
-
-      // Spawn idle waves
-      if (!reducedMotion && now >= nextIdleAt) {
-        idleWaves.push({
-          t0: now,
-          duration: IDLE_DURATION_MIN_MS + Math.random() * (IDLE_DURATION_MAX_MS - IDLE_DURATION_MIN_MS),
-          intensity: IDLE_INTENSITY_MIN + Math.random() * (IDLE_INTENSITY_MAX - IDLE_INTENSITY_MIN),
-          ox: Math.random() * 1000,
-          oy: Math.random() * 1000,
-          drift: 0.6 + Math.random() * 0.8,
+        const captured = validSamples;
+        lissajousCurrent = runSim(lissajousProgram, aPosLJ, lissajousPair, lissajousCurrent, () => {
+          gl.uniform1i(ljU.input, 0);
+          gl.uniform2f(ljU.gridSize, cols, rows);
+          gl.uniform1f(ljU.decay, 0.94);
+          gl.uniform1i(ljU.sampleCount, captured);
+          gl.uniform2fv(ljU.samples, lissajousSamplesArr);
         });
-        scheduleNextIdle(now);
       }
 
-      // Cull expired
-      for (let i = idleWaves.length - 1; i >= 0; i--) {
-        if (now - idleWaves[i].t0 > idleWaves[i].duration) idleWaves.splice(i, 1);
+      // ── Main render ────────────────────────────────────────────────
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(program);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+      // Bind simulation textures to dedicated texture units
+      const drumheadTex = drumheadPair
+        ? drumheadCurrent === "A" ? drumheadPair.texA : drumheadPair.texB
+        : null;
+      const feedbackTex = feedbackPair
+        ? feedbackCurrent === "A" ? feedbackPair.texA : feedbackPair.texB
+        : null;
+      const lissajousTex = lissajousPair
+        ? lissajousCurrent === "A" ? lissajousPair.texA : lissajousPair.texB
+        : null;
+      if (drumheadTex) {
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, drumheadTex);
+        gl.uniform1i(uDrumheadTex, 1);
       }
-      for (let i = ripples.length - 1; i >= 0; i--) {
-        if (now - ripples[i].t0 > RIPPLE_TOTAL_MS) ripples.splice(i, 1);
+      if (feedbackTex) {
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, feedbackTex);
+        gl.uniform1i(uFeedbackTex, 2);
       }
-      for (let i = sparkles.length - 1; i >= 0; i--) {
-        if (now - sparkles[i].t0 > sparkles[i].life) sparkles.splice(i, 1);
+      if (lissajousTex) {
+        gl.activeTexture(gl.TEXTURE3);
+        gl.bindTexture(gl.TEXTURE_2D, lissajousTex);
+        gl.uniform1i(uLissajousTex, 3);
       }
+      gl.uniform2f(uGridSizeMain, cols, rows);
+      gl.uniform1i(uSceneDrumhead, scenes.has("drumhead") && d.master.enabled ? 1 : 0);
+      gl.uniform1i(uSceneFeedback, scenes.has("feedback") && d.master.enabled ? 1 : 0);
+      gl.uniform1i(uSceneLissajous, scenes.has("lissajous") && d.master.enabled ? 1 : 0);
 
-      ctx.clearRect(0, 0, cssW, cssH);
+      // Set uniforms
+      gl.uniform2f(uResolution, canvas.width, canvas.height);
+      gl.uniform1f(uTime, now);
+      gl.uniform1f(uBootP, bootP);
+      gl.uniform1f(uAudioMix, audioMix);
+      gl.uniform3f(uOffColor, offColor[0], offColor[1], offColor[2]);
+      gl.uniform3f(uOnColor, onColor[0], onColor[1], onColor[2]);
+      gl.uniform3fv(uPalette, paletteArr);
+      gl.uniform1f(uSpacing, SPACING * dpr);
+      gl.uniform1f(uDotBase, DOT_BASE * dpr);
+      gl.uniform1f(uDotBloom, DOT_BLOOM * dpr);
+      gl.uniform1f(uCornerRadius, CORNER_RADIUS * dpr);
+      gl.uniform1f(uVibrancy, d.master.vibrancy);
+      gl.uniform1f(uAudioMixCap, d.master.audioMixCap);
 
-      const maxAxis = Math.max(cssW, cssH);
+      gl.uniform1i(uSceneSparkles, scenes.has("sparkles") && d.master.enabled ? 1 : 0);
+      gl.uniform1i(uSceneWaveform, scenes.has("waveform") && d.master.enabled ? 1 : 0);
+      gl.uniform1i(uSceneChladni, scenes.has("chladni") && d.master.enabled ? 1 : 0);
 
-      for (let r = 0; r < rows; r++) {
-        const py = (r + 0.5) * SPACING;
-        for (let c = 0; c < cols; c++) {
-          const px = (c + 0.5) * SPACING;
+      gl.uniform2f(uHoverPos, cursorX * dpr, cursorY * dpr);
+      gl.uniform1f(uHoverAlpha, cursorAlpha);
 
-          // Rounded-rect mask: skip dots in the corner regions whose centers
-          // fall outside a circle of CORNER_RADIUS around the corner center.
-          const dxL = CORNER_RADIUS - px;
-          const dxR = px - (cssW - CORNER_RADIUS);
-          const dyT = CORNER_RADIUS - py;
-          const dyB = py - (cssH - CORNER_RADIUS);
-          const cx = dxL > 0 ? dxL : dxR > 0 ? dxR : 0;
-          const cy = dyT > 0 ? dyT : dyB > 0 ? dyB : 0;
-          if (cx > 0 && cy > 0 && cx * cx + cy * cy > CORNER_RADIUS * CORNER_RADIUS) continue;
+      gl.uniform1i(uRippleCount, visibleRipples);
+      gl.uniform4fv(uRipples, rippleArr);
 
-          // Multi-layer compositing via intensity-weighted color average.
-          // Each layer contributes (color, intensity); final color is the
-          // weighted average of all contributing colors, lerped from the off
-          // baseline by total intensity. This avoids the "everything washes
-          // toward white" failure mode of additive RGB blending.
-          let lit = 0;            // for dot-size bloom + final lerp
-          let wR = 0, wG = 0, wB = 0;
-          let wTotal = 0;
+      gl.uniform1i(uSparkleCount, sparkles.length);
+      gl.uniform4fv(uSparklePos, sparklePosArr);
+      gl.uniform4fv(uSparkleAttr, sparkleAttrArr);
 
-          const addColor = (intensity: number, col: [number, number, number]) => {
-            if (intensity <= 0) return;
-            lit += intensity;
-            wR += col[0] * intensity;
-            wG += col[1] * intensity;
-            wB += col[2] * intensity;
-            wTotal += intensity;
-          };
+      gl.uniform1i(uIdleCount, idleWaves.length);
+      gl.uniform4fv(uIdleA, idleAArr);
+      gl.uniform4fv(uIdleB, idleBArr);
 
-          if (!reducedMotion) {
-            const idleWeight = 1 - audioMix;
-            const moodIntensity = mood.intensity;
+      gl.uniform1i(uWaveformLen, scenes.has("waveform") && audioMix > 0.01 ? waveformLen : 0);
+      gl.uniform1fv(uWaveformY, waveformArr);
 
-            // Idle Perlin waves — fades out while music plays (theme accent)
-            if (idleWeight > 0.01) {
-              let idleLit = 0;
-              for (let i = 0; i < idleWaves.length; i++) {
-                const w = idleWaves[i];
-                const age = now - w.t0;
-                const t = age / w.duration;
-                const env = Math.sin(t * Math.PI);
-                if (env <= 0) continue;
-                const n = valueNoise2D(
-                  px * IDLE_NOISE_SCALE + w.ox,
-                  py * IDLE_NOISE_SCALE + w.oy + age * IDLE_NOISE_TIME_RATE * w.drift
-                );
-                const v = Math.max(0, n - 0.5) * 2;
-                idleLit += env * w.intensity * v;
-              }
-              addColor(idleLit * idleWeight, onColor);
-            }
+      gl.uniform1f(uChladniM, chladniM);
+      gl.uniform1f(uChladniN, chladniN);
+      gl.uniform1f(uChladniRotation, chladniRotation);
+      gl.uniform2f(uChladniPhase, chladniPhaseX, chladniPhaseY);
+      gl.uniform1f(uBassGroup, bassGroup);
+      gl.uniform1f(uMidsGroup, midsGroup);
+      gl.uniform1f(uHighsGroup, highsGroup);
+      gl.uniform1f(uMoodIntensity, 1.0); // TODO mood lookup
 
-            // Audio visualizer layers — scene-driven. Spectrum scene uses the
-            // DialKit per-band config; other scenes implement their own
-            // self-contained behavior. Multiple scenes can be active
-            // simultaneously; each contributes to the same per-dot color
-            // accumulator and they composite via the weighted-average blend.
+      // Enable alpha blending so transparent dots show page bg through
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-            // Compute grid cell for buffer-backed scenes
-            const cellC = Math.min(cols - 1, Math.max(0, Math.floor(px / SPACING)));
-            const cellR = Math.min(rows - 1, Math.max(0, Math.floor(py / SPACING)));
-            const cellIdx = cellR * cols + cellC;
-
-            // ── DRUMHEAD scene ────────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && scenes.has("drumhead")) {
-              const env = waveEnv[cellIdx];
-              if (env > 0.012) {
-                const m = Math.tanh(env * 1.6);
-                // Sign of the underlying wave tints positive vs. negative
-                // displacement (compression vs. rarefaction) — bass color
-                // for crests, highs for troughs.
-                const v = waveA[cellIdx];
-                addColor(m * audioMix, v >= 0 ? bassCol : highsCol);
-              }
-            }
-
-            // ── SPARKLES scene ────────────────────────────────────────────
-            // Renders the variable-size, pre-tinted sparkles spawned in the
-            // per-frame block above. Each has its own life, size, intensity,
-            // and color so the field reads as varied jewel-dust.
-            if (masterEnabled && audioMix > 0.01 && scenes.has("sparkles")) {
-              for (let i = 0; i < sparkles.length; i++) {
-                const sp = sparkles[i];
-                const age = now - sp.t0;
-                const t = age / sp.life;
-                if (t >= 1) continue;
-                const dx = px - sp.x;
-                const dy = py - sp.y;
-                const r2 = sp.size * sp.size;
-                const d2 = dx * dx + dy * dy;
-                if (d2 < r2) {
-                  const u = d2 / r2;
-                  const fall = (1 - u) * (1 - u); // soft quadratic falloff
-                  const env = Math.sin(t * Math.PI); // bloom + fade bell
-                  addColor(fall * env * sp.intensity * audioMix, sp.col);
-                }
-              }
-            }
-
-            // ── FEEDBACK scene ────────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && scenes.has("feedback")) {
-              const v = persistA[cellIdx];
-              if (v > 0.01) {
-                // Tint by audio energy: bass-heavy → bass color, treble → highs
-                const e = bassGroup;
-                const tintMix = Math.min(1, e * 1.2);
-                const tinted: [number, number, number] = [
-                  highsCol[0] + (bassCol[0] - highsCol[0]) * tintMix,
-                  highsCol[1] + (bassCol[1] - highsCol[1]) * tintMix,
-                  highsCol[2] + (bassCol[2] - highsCol[2]) * tintMix,
-                ];
-                addColor(v * audioMix, tinted);
-              }
-            }
-
-            // ── LISSAJOUS scene ───────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && scenes.has("lissajous")) {
-              const v = persistA[cellIdx];
-              if (v > 0.01) {
-                addColor(v * audioMix, midsCol);
-              }
-            }
-
-            // ── WAVEFORM scene ────────────────────────────────────────────
-            // Oscilloscope: each column samples the audio signal; dots near
-            // the resulting line glow. The simplest possible visualizer —
-            // it's literally the shape of the sound.
-            if (masterEnabled && audioMix > 0.01 && scenes.has("waveform") && waveformY) {
-              const lineY = waveformY[cellC];
-              const dy = py - lineY;
-              const thickness = 6;
-              if (Math.abs(dy) < thickness) {
-                const u = Math.abs(dy) / thickness;
-                const fall = 0.5 * (1 + Math.cos(Math.PI * u));
-                addColor(fall * audioMix, midsCol);
-              }
-            }
-
-            // ── CHLADNI scene ─────────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && scenes.has("chladni")) {
-              // Rotate the sample point around the matrix center, then sample
-              // the dual-cosine field with drifting phases. The (m, n) modes
-              // are smoothly tracked from per-frame state, with onset jumps
-              // already applied above.
-              const m = chladniM;
-              const n = chladniN;
-              const cx0 = px - cssW / 2;
-              const cy0 = py - cssH / 2;
-              const cosR = Math.cos(chladniRotation);
-              const sinR = Math.sin(chladniRotation);
-              const rx = (cx0 * cosR - cy0 * sinR) + cssW / 2;
-              const ry = (cx0 * sinR + cy0 * cosR) + cssH / 2;
-              const nx = (rx / cssW) * Math.PI + chladniPhaseX;
-              const ny = (ry / cssH) * Math.PI + chladniPhaseY;
-              const ch =
-                Math.cos(m * nx) * Math.cos(n * ny) -
-                Math.cos(n * nx) * Math.cos(m * ny);
-              // Brightness peaks at nodal lines (|ch| ≈ 0). Width of the lit
-              // band scales with audio energy: louder = thicker nodal lines.
-              const energy = (bassGroup + midsGroup + highsGroup) / 3;
-              const bandWidth = 0.04 + 0.18 * energy;
-              const lineCloseness = Math.max(0, 1 - Math.abs(ch) / bandWidth);
-              const chladniLit = lineCloseness * (0.4 + 0.6 * energy) * moodIntensity * audioMix;
-              addColor(chladniLit, bassCol);
-              // Subtle mids tint between nodal lines (where ch is moderate)
-              const offNode = Math.max(0, 1 - Math.abs(ch) / 0.6) - lineCloseness;
-              if (offNode > 0) {
-                addColor(offNode * 0.25 * midsGroup * audioMix, midsCol);
-              }
-            }
-
-            // Click ripples — concentric rings, theme accent
-            let rippleLit = 0;
-            for (let i = 0; i < ripples.length; i++) {
-              const rp = ripples[i];
-              const age = now - rp.t0;
-              if (age < 0) continue;
-              const radius = (age / RIPPLE_CROSS_MS) * maxAxis;
-              const dx = px - rp.x;
-              const dy = py - rp.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              const offFront = Math.abs(dist - radius);
-              if (offFront < RIPPLE_RING_PX) {
-                const u = offFront / RIPPLE_RING_PX;
-                const ringIntensity = 0.5 * (1 + Math.cos(Math.PI * u));
-                const tLife = age / RIPPLE_TOTAL_MS;
-                const ageEnv = Math.sin(tLife * Math.PI);
-                rippleLit += ringIntensity * ageEnv * rp.strength;
-              }
-            }
-            addColor(Math.min(rippleLit, 1) * RIPPLE_GLOW_CAP, onColor);
-
-            // Cursor flashlight — theme accent
-            if (cursorAlpha > 0.001) {
-              const dxC = px - cursorX;
-              const dyC = py - cursorY;
-              const distC = Math.sqrt(dxC * dxC + dyC * dyC);
-              if (distC < HOVER_RADIUS) {
-                const u = distC / HOVER_RADIUS;
-                const fall = 0.5 * (1 + Math.cos(Math.PI * u));
-                addColor(fall * HOVER_INTENSITY * cursorAlpha, onColor);
-              }
-            }
-          }
-
-          // Weighted average of contributing colors, then lerp from off
-          // by total intensity. Vibrancy gamma curve pushes moderate lit
-          // values closer to full palette color so colors don't get diluted
-          // by the grey baseline at low/medium intensity.
-          if (lit > 1) lit = 1;
-          let litR = offColor[0], litG = offColor[1], litB = offColor[2];
-          if (wTotal > 0) {
-            litR = wR / wTotal;
-            litG = wG / wTotal;
-            litB = wB / wTotal;
-          }
-          const litCurve = Math.pow(lit, dialRef.current.master.vibrancy);
-          const rC = offColor[0] + (litR - offColor[0]) * litCurve;
-          const gC = offColor[1] + (litG - offColor[1]) * litCurve;
-          const bC = offColor[2] + (litB - offColor[2]) * litCurve;
-          // Boot fade applies to alpha
-          const alpha = bootP;
-
-          const size = DOT_BASE + (DOT_BLOOM - DOT_BASE) * lit;
-
-          ctx.fillStyle = `rgba(${rC | 0},${gC | 0},${bC | 0},${alpha})`;
-          ctx.beginPath();
-          ctx.arc(px, py, size / 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
 
       raf = requestAnimationFrame(draw);
     };
 
     if (reducedMotion) {
-      // Render once, no animation
       draw(t0 + BOOT_FADE_MS);
       return () => {};
     }
 
     raf = requestAnimationFrame(draw);
 
+    // Click → spawn pebble ripple stack
     const handleClick = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       const t = performance.now();
-      // Pebble in water: emit a stagger of concentric rings, each weaker than
-      // the last, born at evenly spaced offsets from the click time.
       for (let i = 0; i < RIPPLE_RING_COUNT; i++) {
         ripples.push({
           x,
@@ -1000,6 +1358,7 @@ export default function LedMatrix() {
           strength: Math.pow(RIPPLE_RING_DECAY, i),
         });
       }
+      while (ripples.length > MAX_RIPPLES) ripples.shift();
     };
     canvas.addEventListener("click", handleClick);
 
@@ -1009,21 +1368,15 @@ export default function LedMatrix() {
       cursorY = e.clientY - rect.top;
       cursorTargetAlpha = 1;
     };
-    const handleLeave = () => {
-      cursorTargetAlpha = 0;
-    };
+    const handleLeave = () => { cursorTargetAlpha = 0; };
     canvas.addEventListener("mousemove", handleMove);
     canvas.addEventListener("mouseenter", handleMove);
     canvas.addEventListener("mouseleave", handleLeave);
 
-    const handleResize = () => {
-      resize();
-      reallocSceneBuffers();
-    };
+    const handleResize = () => resize();
     window.addEventListener("resize", handleResize);
 
-    // Track theme/palette changes so colors stay in sync
-    const themeObserver = new MutationObserver(() => refreshColors());
+    const themeObserver = new MutationObserver(() => refreshThemeColors());
     themeObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class", "data-colored-theme", "style"],
@@ -1037,6 +1390,14 @@ export default function LedMatrix() {
       canvas.removeEventListener("mouseleave", handleLeave);
       window.removeEventListener("resize", handleResize);
       themeObserver.disconnect();
+      gl.deleteProgram(program);
+      if (drumheadProgram) gl.deleteProgram(drumheadProgram);
+      if (feedbackProgram) gl.deleteProgram(feedbackProgram);
+      if (lissajousProgram) gl.deleteProgram(lissajousProgram);
+      cleanupSimPair(drumheadPair);
+      cleanupSimPair(feedbackPair);
+      cleanupSimPair(lissajousPair);
+      gl.deleteBuffer(vbo);
     };
   }, [reducedMotion]);
 
