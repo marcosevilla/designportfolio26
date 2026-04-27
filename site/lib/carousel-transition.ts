@@ -14,7 +14,13 @@ import { useReducedMotion } from "framer-motion";
  *
  * Reduced-motion users skip the morph and navigate immediately.
  */
-export function useExpandAndNavigate() {
+interface UseExpandAndNavigateOptions {
+  /** Milliseconds between trigger() and router.push(). Defaults to 300ms. */
+  delayMs?: number;
+}
+
+export function useExpandAndNavigate(options: UseExpandAndNavigateOptions = {}) {
+  const { delayMs = 300 } = options;
   const router = useRouter();
   const [expandingSlug, setExpandingSlug] = useState<string | null>(null);
   const reducedMotion = useReducedMotion();
@@ -29,9 +35,9 @@ export function useExpandAndNavigate() {
       setExpandingSlug(slug);
       setTimeout(() => {
         router.push(`/work/${slug}`);
-      }, 300);
+      }, delayMs);
     },
-    [expandingSlug, reducedMotion, router]
+    [expandingSlug, reducedMotion, router, delayMs]
   );
 
   return { expandingSlug, trigger };

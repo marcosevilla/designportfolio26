@@ -10,6 +10,7 @@
     "dev:editor": "node scripts/dev-editor-server.mjs"
   },
   "dependencies": {
+    "dialkit": "^1.2.0",
     "framer-motion": "^11.18.2",
     "geist": "^1.7.0",
     "gray-matter": "^4.0.3",

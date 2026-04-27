@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useMotionValueEvent, useVelocity, useReducedMotion, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
+import { useDialKit } from "dialkit";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -11,17 +12,6 @@ interface CaseStudyCarouselProps {
   studies: CaseStudyMeta[];
 }
 
-const CARD_W_DESKTOP = 320;
-const CARD_H_DESKTOP = 420;
-const CARD_W_MOBILE = 260;
-const CARD_H_MOBILE = 340;
-const GAP = 24;
-const RUBBER_BAND = 0.15;
-const VELOCITY_FACTOR = 0.3;
-// Critically damped (zeta = 1) so rapid wheel/keyboard ticks don't oscillate.
-// damping = 2 * sqrt(stiffness * mass) = 2 * sqrt(180) ≈ 26.83 — round up to 28
-// for a touch of overdamping, which kills overshoot at the cost of a hair of liveliness.
-const SETTLE_SPRING = { type: "spring" as const, stiffness: 180, damping: 28, mass: 1 };
 const STORAGE_KEY = "carousel-active-index";
 
 // ─── Per-card component ────────────────────────────────────────────────────────
@@ -41,15 +31,26 @@ interface CarouselItemProps {
   cardW: number;
   cardH: number;
   isExpanding: boolean;
+  // Focal hierarchy params (dial-controlled in parent)
+  activeScale: number;
+  neighborScale: number;
+  farScale: number;
+  activeOpacity: number;
+  neighborOpacity: number;
+  farOpacity: number;
 }
 
-function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick, spread, cardW, cardH, isExpanding }: CarouselItemProps) {
+function CarouselItem({
+  study, index, activeIndex, offsetX, rotate, isActive, onCardClick,
+  spread, cardW, cardH, isExpanding,
+  activeScale, neighborScale, farScale, activeOpacity, neighborOpacity, farOpacity,
+}: CarouselItemProps) {
   // Stable transform function — wrap in useMemo so framer-motion doesn't see a new
   // function identity on every render and potentially reset its internal MotionValue state.
   const xTransformFn = useMemo(() => (v: number) => v + index * spread, [index, spread]);
   const x = useTransform(offsetX, xTransformFn);
-  const scale = useTransform(x, [-spread * 2, -spread, 0, spread, spread * 2], [0.85, 0.92, 1.0, 0.92, 0.85]);
-  const opacity = useTransform(x, [-spread * 2, -spread, 0, spread, spread * 2], [0.4, 0.7, 1.0, 0.7, 0.4]);
+  const scale = useTransform(x, [-spread * 2, -spread, 0, spread, spread * 2], [farScale, neighborScale, activeScale, neighborScale, farScale]);
+  const opacity = useTransform(x, [-spread * 2, -spread, 0, spread, spread * 2], [farOpacity, neighborOpacity, activeOpacity, neighborOpacity, farOpacity]);
 
   const Custom = CAROUSEL_CARDS[study.slug];
   const Card = Custom ?? CarouselCardShell;
@@ -84,26 +85,76 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
 // ─── Main carousel ─────────────────────────────────────────────────────────────
 
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
+  // ─── DialKit panel: live-tunable carousel parameters (dev-only UI) ──────────
+  // Folder-grouped so the panel stays scannable. All values flow into the
+  // component below — change a dial and the carousel updates in real time.
+  const dial = useDialKit("Carousel", {
+    // Settle spring at root so it gets its own dedicated dial UI.
+    settleSpring: { type: "spring" as const, stiffness: 180, damping: 28, mass: 1 },
+    sizing: {
+      cardWDesktop: [320, 200, 500] as [number, number, number],
+      cardHDesktop: [420, 250, 600] as [number, number, number],
+      cardWMobile: [260, 180, 400] as [number, number, number],
+      cardHMobile: [340, 200, 500] as [number, number, number],
+      gap: [24, 0, 80] as [number, number, number],
+      mobileBreakpoint: [1024, 600, 1400] as [number, number, number],
+    },
+    position: {
+      marginTop: [32, 0, 128] as [number, number, number],
+      heightBuffer: [128, 0, 256] as [number, number, number],
+    },
+    focal: {
+      activeScale: [1.0, 0.8, 1.2] as [number, number, number],
+      neighborScale: [0.92, 0.6, 1.0] as [number, number, number],
+      farScale: [0.85, 0.5, 1.0] as [number, number, number],
+      activeOpacity: [1.0, 0.5, 1] as [number, number, number],
+      neighborOpacity: [0.7, 0, 1] as [number, number, number],
+      farOpacity: [0.4, 0, 1] as [number, number, number],
+    },
+    drag: {
+      rubberBand: [0.15, 0, 1] as [number, number, number],
+      velocityFactor: [0.3, 0, 1] as [number, number, number],
+      velocityClamp: [3000, 500, 10000] as [number, number, number],
+      tiltMaxDeg: [3, 0, 15] as [number, number, number],
+      tiltVelocityThreshold: [1500, 500, 3000] as [number, number, number],
+    },
+    wheel: {
+      wheelDeltaThreshold: [5, 1, 50] as [number, number, number],
+      wheelDebounceMs: [300, 50, 1000] as [number, number, number],
+    },
+    expand: {
+      expandDelayMs: [300, 100, 1000] as [number, number, number],
+      veilDurationSec: [0.25, 0, 2] as [number, number, number],
+      othersBlur: [6, 0, 20] as [number, number, number],
+      othersOpacity: [0.4, 0, 1] as [number, number, number],
+    },
+  });
+
   const reducedMotion = useReducedMotion();
-  const { expandingSlug, trigger } = useExpandAndNavigate();
+  const { expandingSlug, trigger } = useExpandAndNavigate({ delayMs: dial.expand.expandDelayMs });
 
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
+    const mq = window.matchMedia(`(max-width: ${dial.sizing.mobileBreakpoint - 1}px)`);
     const update = () => setIsMobile(mq.matches);
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
-  }, []);
+  }, [dial.sizing.mobileBreakpoint]);
 
-  const CARD_W = isMobile ? CARD_W_MOBILE : CARD_W_DESKTOP;
-  const CARD_H = isMobile ? CARD_H_MOBILE : CARD_H_DESKTOP;
-  const SPREAD = CARD_W + GAP;
+  const CARD_W = isMobile ? dial.sizing.cardWMobile : dial.sizing.cardWDesktop;
+  const CARD_H = isMobile ? dial.sizing.cardHMobile : dial.sizing.cardHDesktop;
+  const SPREAD = CARD_W + dial.sizing.gap;
 
   const offsetX = useMotionValue(0);
   const velocity = useVelocity(offsetX);
-  const rotate = useTransform(velocity, [-1500, 0, 1500], [3, 0, -3], { clamp: true });
+  const rotate = useTransform(
+    velocity,
+    [-dial.drag.tiltVelocityThreshold, 0, dial.drag.tiltVelocityThreshold],
+    [dial.drag.tiltMaxDeg, 0, -dial.drag.tiltMaxDeg],
+    { clamp: true },
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   // Keep a ref in sync with state so callbacks always read the latest value
   // without needing to be re-created on every render.
@@ -150,7 +201,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const settleTo = (index: number) => {
     const clamped = Math.max(0, Math.min(studies.length - 1, index));
     animRef.current?.stop();
-    animRef.current = animate(offsetX, -clamped * SPREAD, { ...SETTLE_SPRING, velocity: 0 });
+    // dialkit's spring type is loose, so help TS pick the right overload of animate().
+    const target = -clamped * SPREAD;
+    const springOpts = { ...(dial.settleSpring as Record<string, unknown>), velocity: 0 };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    animRef.current = animate(offsetX, target, springOpts as any);
   };
 
   // Capture start position on pointer-down rather than onPanStart, because
@@ -168,17 +223,17 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     let raw = panStartOffsetRef.current + info.offset.x;
     if (raw > maxOffset) {
       const overshoot = raw - maxOffset;
-      raw = maxOffset + overshoot * RUBBER_BAND;
+      raw = maxOffset + overshoot * dial.drag.rubberBand;
     } else if (raw < minOffset) {
       const overshoot = raw - minOffset;
-      raw = minOffset + overshoot * RUBBER_BAND;
+      raw = minOffset + overshoot * dial.drag.rubberBand;
     }
     offsetX.set(raw);
   };
 
   const onPanEnd = (_e: PointerEvent, info: PanInfo) => {
-    const clampedVelocity = Math.max(-3000, Math.min(3000, info.velocity.x));
-    const projected = offsetX.get() + clampedVelocity * VELOCITY_FACTOR;
+    const clampedVelocity = Math.max(-dial.drag.velocityClamp, Math.min(dial.drag.velocityClamp, info.velocity.x));
+    const projected = offsetX.get() + clampedVelocity * dial.drag.velocityFactor;
     const clamped = Math.max(minOffset, Math.min(maxOffset, projected));
     const snapIndex = Math.round(-clamped / SPREAD);
     settleTo(snapIndex);
@@ -207,11 +262,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
 
     const handler = (e: WheelEvent) => {
       // Only handle horizontal intent; let vertical pass through for page scroll.
-      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 5) return;
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < dial.wheel.wheelDeltaThreshold) return;
       e.preventDefault();
 
       const now = performance.now();
-      if (now - lastWheelTimeRef.current < 300) return;
+      if (now - lastWheelTimeRef.current < dial.wheel.wheelDebounceMs) return;
       lastWheelTimeRef.current = now;
 
       const direction = e.deltaX > 0 ? 1 : -1;
@@ -223,7 +278,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     // settleTo reads offsetX (stable MotionValue) and studies.length (stable).
     // activeIndexRef is always current — no need to list activeIndex here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studies.length, reducedMotion]);
+  }, [studies.length, reducedMotion, dial.wheel.wheelDeltaThreshold, dial.wheel.wheelDebounceMs]);
 
   // ─── Arrow key navigation ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -262,7 +317,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
         <div
           className="flex overflow-x-auto"
           style={{
-            gap: `${GAP}px`,
+            gap: `${dial.sizing.gap}px`,
             padding: "32px 16px",
             scrollSnapType: "x mandatory",
             overscrollBehaviorX: "contain",
@@ -301,11 +356,8 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
       style={{
         marginLeft: "calc(-50vw + 50%)",
         marginRight: "calc(-50vw + 50%)",
-        // Vertical buffer: marginTop pushes the carousel below the Work header
-        // and toggle row; the extra 64px on height gives the active card (scale 1.0)
-        // visual breathing room above and below.
-        marginTop: "32px",
-        height: `${CARD_H + 128}px`,
+        marginTop: `${dial.position.marginTop}px`,
+        height: `${CARD_H + dial.position.heightBuffer}px`,
         ["--carousel-card-w" as string]: `${CARD_W}px`,
         ["--carousel-card-h" as string]: `${CARD_H}px`,
       }}
@@ -315,15 +367,15 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
       </div>
       <motion.div
         animate={{
-          filter: expandingSlug ? "blur(6px)" : "blur(0px)",
-          opacity: expandingSlug ? 0.4 : 1,
+          filter: expandingSlug ? `blur(${dial.expand.othersBlur}px)` : "blur(0px)",
+          opacity: expandingSlug ? dial.expand.othersOpacity : 1,
         }}
         transition={{ duration: 0.3 }}
       >
         <motion.div
           ref={trackRef}
           className="relative flex items-center justify-center"
-          style={{ width: "100%", height: `${CARD_H + 128}px`, touchAction: "pan-y" }}
+          style={{ width: "100%", height: `${CARD_H + dial.position.heightBuffer}px`, touchAction: "pan-y" }}
           onPointerDown={onPointerDown}
           onPan={onPan}
           onPanEnd={onPanEnd}
@@ -342,6 +394,12 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
               cardW={CARD_W}
               cardH={CARD_H}
               isExpanding={expandingSlug === study.slug}
+              activeScale={dial.focal.activeScale}
+              neighborScale={dial.focal.neighborScale}
+              farScale={dial.focal.farScale}
+              activeOpacity={dial.focal.activeOpacity}
+              neighborOpacity={dial.focal.neighborOpacity}
+              farOpacity={dial.focal.farOpacity}
             />
           ))}
         </motion.div>
@@ -358,7 +416,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            transition={{ duration: dial.expand.veilDurationSec, ease: "easeOut" }}
             style={{
               position: "fixed",
               inset: 0,
