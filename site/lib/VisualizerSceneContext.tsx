@@ -1,7 +1,9 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { DEFAULT_SCENE, type VisualizerScene } from "./visualizer-scenes";
+import { DEFAULT_SCENE, SCENES, type VisualizerScene } from "./visualizer-scenes";
+
+const VALID_SCENES = new Set<string>(SCENES.map((s) => s.id));
 
 // Bumped key — old single-scene values (visualizer-scene) are ignored.
 const STORAGE_KEY = "visualizer-scenes-v2";
@@ -27,9 +29,11 @@ export function VisualizerSceneProvider({ children }: { children: React.ReactNod
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return;
-      const arr = JSON.parse(saved) as VisualizerScene[];
-      if (Array.isArray(arr) && arr.length > 0) {
-        setActiveScenesState(new Set(arr));
+      const arr = JSON.parse(saved) as string[];
+      if (!Array.isArray(arr)) return;
+      const filtered = arr.filter((s): s is VisualizerScene => VALID_SCENES.has(s));
+      if (filtered.length > 0) {
+        setActiveScenesState(new Set(filtered));
       }
     } catch {
       /* ignore */

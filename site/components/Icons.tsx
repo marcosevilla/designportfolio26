@@ -176,10 +176,15 @@ export function WaveformSceneIcon({ size = 14, className, style }: IconProps) {
   );
 }
 
-export function SpectrumSceneIcon({ size = 14, className, style }: IconProps) {
+export function SparklesSceneIcon({ size = 14, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M5 17v3M9 12v8M13 8v12M17 14v6M21 10v10" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className} style={style}>
+      <circle cx="6" cy="8" r="0.9" />
+      <circle cx="17" cy="6" r="1.3" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="9" cy="17" r="0.7" />
+      <circle cx="19" cy="16" r="0.9" />
+      <circle cx="15" cy="19" r="0.6" />
     </svg>
   );
 }
@@ -207,24 +212,6 @@ export function FeedbackSceneIcon({ size = 14, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
       <path d="M12 12.5c1.4 0 2.5-1 2.5-2.5S13.4 7.5 12 7.5s-3 1.5-3 3.5 1.5 4 4 4 4-2.5 4-5-2-5-5-5-6 2.5-6 6 2 7 7 7" />
-    </svg>
-  );
-}
-
-export function SpectrogramSceneIcon({ size = 14, className, style }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M4 7h16M4 12h12M4 17h8" />
-    </svg>
-  );
-}
-
-export function PolyrhythmSceneIcon({ size = 14, className, style }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <circle cx="9" cy="11" r="4" />
-      <circle cx="15" cy="11" r="4" />
-      <circle cx="12" cy="15" r="4" />
     </svg>
   );
 }

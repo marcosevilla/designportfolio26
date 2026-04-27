@@ -42,40 +42,33 @@ const IDLE_INTENSITY_MAX = 0.55;
 const IDLE_NOISE_SCALE = 0.018;     // spatial frequency
 const IDLE_NOISE_TIME_RATE = 0.00018; // temporal drift
 
-// Audio visualizer — combination: bass blobs + mids Perlin + treble sparkles
+// Audio visualizer — global mix transition rate
 const AUDIO_FADE_RATE = 0.025;       // exponential approach for visualizer mix transition (~600ms half-life)
-const BASS_SPAWN_THRESHOLD = 0.42;   // bass energy required to spawn a blob
-const BASS_SPAWN_DELTA = 0.12;       // also requires this much rise from previous frame
-const BASS_BLOB_LIFE_MS = 1400;
-const BASS_BLOB_RADIUS_PX = 90;      // max radius of a single blob
-const BASS_BLOB_INTENSITY = 0.7;
-const MIDS_NOISE_SCALE = 0.022;
-const MIDS_NOISE_TIME_RATE = 0.0009;
-const MIDS_BASE_INTENSITY = 0.18;    // background brightness while playing
-const MIDS_PEAK_INTENSITY = 0.55;    // additional intensity scaled by mids energy
-const TREBLE_SPARKLE_RATE = 6;       // base spawns per frame, scaled by treble energy
-const SPARKLE_LIFE_MS = 220;
-const SPARKLE_INTENSITY = 0.85;
 
-type BassBlob = { x: number; y: number; t0: number; intensity: number };
-type BassRing = {
+// Sparkles scene — bass-reactive variable-size dots scattered across the matrix
+const SPARKLES_BASE_RATE = 1.2;       // sparkles per frame at zero bass (some baseline twinkle)
+const SPARKLES_BASS_RATE = 14;        // sparkles per frame scaled by bass^2 (lots of spawns on heavy bass)
+const SPARKLES_BURST_BASE = 18;       // burst count on a strong bass onset
+const SPARKLES_BURST_PER_BEAT = 28;   // additional burst per beatStrength
+const SPARKLES_LIFE_MIN_MS = 140;
+const SPARKLES_LIFE_MAX_MS = 520;
+const SPARKLES_BIG_CHANCE = 0.18;     // fraction of spawns that are "big"
+const SPARKLES_BIG_LIFE_MIN = 320;
+const SPARKLES_BIG_LIFE_MAX = 700;
+const SPARKLES_INTENSITY_MIN = 0.6;
+const SPARKLES_INTENSITY_MAX = 1.3;
+
+type Sparkle = {
   x: number;
   y: number;
   t0: number;
+  life: number;
+  /** radius in px — small for pinpoints, larger for bursts */
+  size: number;
   intensity: number;
-  /** Polyrhythm only — colors the ring by source band. */
-  band?: "bass" | "mids" | "highs";
-  /** Polyrhythm only — multiplier on cross speed (varies expansion rate). */
-  speedFactor?: number;
+  /** pre-tinted color so it doesn't shift mid-life */
+  col: [number, number, number];
 };
-type Sparkle = { x: number; y: number; t0: number };
-
-// Bass-ring effect (alternative to blob)
-const BASS_RING_LIFE_MS = 1600;
-const BASS_RING_CROSS_MS = 1200;
-const BASS_RING_THICKNESS = 8;
-const BASS_DISK_MAX_RADIUS = 110;
-const BASS_DISK_RIM_FRAC = 0.08; // fraction of radius used for soft rim antialiasing
 
 type Ripple = { x: number; y: number; t0: number; strength: number };
 type IdleWave = {
@@ -210,66 +203,29 @@ export default function LedMatrix() {
     scenes: activeScenes,
   };
 
-  // DialKit panel — live tuning of effect types, colors, and per-band intensity.
+  // DialKit panel — live tuning of master + sparkles parameters.
   // Panel UI only renders in dev (DialRoot is dev-mounted); in prod these
   // values stay at defaults and behave like static config.
   const dial = useDialKit("Visualizer", {
     master: {
       enabled: true,
       audioMixCap: [1.0, 0, 1],
-      beatFlash: [0.18, 0, 1],
       // Saturation multiplier applied to per-track palette colors. >1 boosts.
       saturation: [1.5, 1, 3],
       // Gamma curve on the final lit value before color blending. Lower
       // values push moderate intensities closer to full palette color
-      // (more vibrant); 1.0 = linear (current behavior).
+      // (more vibrant); 1.0 = linear.
       vibrancy: [0.65, 0.3, 1.0],
     },
-    bass: {
-      type: {
-        type: "select" as const,
-        options: ["disk", "blob", "ring", "off"],
-        default: "disk",
-      },
-      override: false,
-      color: { type: "color" as const, default: "#B5651D" },
-      intensity: [1.4, 0, 2],
-      threshold: [0.30, 0, 1],
-      radius: [120, 20, 200],
-      softness: [0.3, 0, 1],
-    },
-    mids: {
-      type: {
-        type: "select" as const,
-        options: ["rings", "perlin", "off"],
-        default: "rings",
-      },
-      override: false,
-      color: { type: "color" as const, default: "#E89B5A" },
-      intensity: [0.7, 0, 2],
-      speed: [1.0, 0, 3],
-    },
-    highs: {
-      type: {
-        type: "select" as const,
-        options: ["perlin-fast", "off"],
-        default: "off",
-      },
-      override: false,
-      color: { type: "color" as const, default: "#F2D29B" },
-      intensity: [0.5, 0, 2],
-      speed: [1.0, 0, 3],
-    },
-    air: {
-      type: {
-        type: "select" as const,
-        options: ["sparkle", "off"],
-        default: "sparkle",
-      },
-      override: false,
-      color: { type: "color" as const, default: "#FFF1D6" },
+    sparkles: {
+      // Continuous spawn rate baseline + bass-driven multiplier
+      density: [1.0, 0, 3],
+      // Per-spawn brightness multiplier
       intensity: [1.0, 0, 2],
-      rate: [1.0, 0, 3],
+      // Onset burst multiplier — bigger = bigger explosion on each kick
+      onsetBurst: [1.0, 0, 3],
+      // Fraction of sparkles that spawn as "big" (longer life, larger size)
+      bigChance: [0.18, 0, 0.6],
     },
   });
   const dialRef = useRef(dial);
@@ -318,14 +274,9 @@ export default function LedMatrix() {
     let waveA: Float32Array = new Float32Array(0);
     let waveB: Float32Array = new Float32Array(0);
     let waveEnv: Float32Array = new Float32Array(0);
-    // spectrogram: cols×rows ring buffer (column = time, row = freq)
-    let specBuf: Float32Array = new Float32Array(0);
-    let specCursor = 0;
     // feedback / lissajous: shared persistent brightness buffer
     let persistA: Float32Array = new Float32Array(0);
     let persistB: Float32Array = new Float32Array(0);
-    // polyrhythm: separate per-band onset history
-    let prevBassPoly = 0, prevMidPoly = 0, prevHighPoly = 0;
     // chladni: smoothly drifting modes + rotation + phase shifts so the
     // pattern is always moving even when audio is steady; onsets snap to a
     // new random (m, n) for shape variety
@@ -333,14 +284,14 @@ export default function LedMatrix() {
     let chladniMTarget = 3, chladniNTarget = 4;
     let chladniRotation = 0;
     let chladniPhaseX = 0, chladniPhaseY = 0;
+    // sparkles: previous bass amplitude for onset detection
+    let prevSparklesBass = 0;
 
     const reallocSceneBuffers = () => {
       const total = cols * rows;
       waveA = new Float32Array(total);
       waveB = new Float32Array(total);
       waveEnv = new Float32Array(total);
-      specBuf = new Float32Array(total);
-      specCursor = 0;
       persistA = new Float32Array(total);
       persistB = new Float32Array(total);
     };
@@ -358,9 +309,6 @@ export default function LedMatrix() {
 
     // Audio visualizer state
     let audioMix = 0;            // 0 = idle, 1 = audio-reactive (smoothly interpolated)
-    let prevBass = 0;            // for spike detection
-    const bassBlobs: BassBlob[] = [];
-    const bassRings: BassRing[] = [];
     const sparkles: Sparkle[] = [];
     const analyzer = new AudioAnalyzer();
     let analysis: AnalysisSnapshot | null = null;
@@ -373,8 +321,6 @@ export default function LedMatrix() {
     let airCol: [number, number, number] = [255, 241, 214];
     let lastPaletteSrc = "";
     let lastSaturation = -1;
-    // Beat-flash for onset events
-    let onsetFlashStrength = 0;
 
     const t0 = performance.now();
     let raf = 0;
@@ -437,52 +383,82 @@ export default function LedMatrix() {
       const masterEnabled = d.master.enabled;
       audioMix = Math.min(audioMix, d.master.audioMixCap);
 
-      // Bass spike → spawn appropriate effect based on dial-selected type
-      const bassThreshold = d.bass.threshold;
-      const bassEffect: string = d.bass.type;
-      if (
-        masterEnabled &&
-        audioMix > 0.5 &&
-        bassEffect !== "off" && bassEffect !== "disk" &&
-        bassGroup > bassThreshold &&
-        bassGroup - prevBass > BASS_SPAWN_DELTA
-      ) {
-        const x =
-          BASS_BLOB_RADIUS_PX * 0.3 + Math.random() * (cssW - BASS_BLOB_RADIUS_PX * 0.6);
-        const y =
-          BASS_BLOB_RADIUS_PX * 0.3 + Math.random() * (cssH - BASS_BLOB_RADIUS_PX * 0.6);
-        const intensity =
-          BASS_BLOB_INTENSITY * Math.min(1, bassGroup + 0.2) * mood.intensity * d.bass.intensity;
-        if (bassEffect === "blob") {
-          bassBlobs.push({ x, y, t0: now, intensity });
-        } else if (bassEffect === "ring") {
-          bassRings.push({ x, y, t0: now, intensity });
-        }
-      }
-      prevBass = bassGroup;
+      // ── Per-frame scene state updates (before the per-dot loop) ──────────
+      const scenes = aState.scenes;
 
-      // Air → sparkle spawn rate, scaled by mood + dial rate
-      if (masterEnabled && audioMix > 0.5 && d.air.type === "sparkle" && airGroup > 0.05) {
-        const spawnCount = Math.floor(
-          TREBLE_SPARKLE_RATE * airGroup * mood.density * mood.sparkleRate * audioMix * d.air.rate
+      // SPARKLES — bass-reactive variable sparkle field. Continuous spawn
+      // rate scales quadratically with bass; on a strong bass onset, fire
+      // a burst. A fraction of spawns are "big" (longer life, larger
+      // radius) so the field reads as varied jewel-dust rather than
+      // uniform pinpoints. Each sparkle is pre-tinted at spawn time so
+      // it doesn't shift mid-life.
+      if (
+        scenes.has("sparkles") &&
+        masterEnabled &&
+        audioMix > 0.01 &&
+        !reducedMotion
+      ) {
+        const sCfg = d.sparkles;
+        const beat = analysis?.beatStrength ?? 0;
+        const bandsArr = analysis?.bandArray;
+        // Continuous spawns: baseline + bass^2 contribution
+        const continuous = Math.floor(
+          (SPARKLES_BASE_RATE + SPARKLES_BASS_RATE * bassGroup * bassGroup) *
+            sCfg.density *
+            audioMix
         );
-        for (let i = 0; i < spawnCount; i++) {
+        // Onset burst when bass spikes
+        let burstCount = 0;
+        if (
+          onsetThisFrame &&
+          analysis &&
+          bassGroup > 0.32 &&
+          bassGroup - prevSparklesBass > 0.1
+        ) {
+          burstCount = Math.floor(
+            (SPARKLES_BURST_BASE + SPARKLES_BURST_PER_BEAT * beat) * sCfg.onsetBurst
+          );
+        }
+        prevSparklesBass = bassGroup;
+
+        const spawn = continuous + burstCount;
+        for (let i = 0; i < spawn; i++) {
+          const isBig = Math.random() < sCfg.bigChance;
+          const life = isBig
+            ? SPARKLES_BIG_LIFE_MIN +
+              Math.random() * (SPARKLES_BIG_LIFE_MAX - SPARKLES_BIG_LIFE_MIN)
+            : SPARKLES_LIFE_MIN_MS +
+              Math.random() * (SPARKLES_LIFE_MAX_MS - SPARKLES_LIFE_MIN_MS);
+          const size = isBig ? 2.0 + Math.random() * 2.5 : 0.5 + Math.random() * 1.0;
+          const intensity =
+            (SPARKLES_INTENSITY_MIN +
+              Math.random() * (SPARKLES_INTENSITY_MAX - SPARKLES_INTENSITY_MIN)) *
+            sCfg.intensity *
+            (isBig ? 1.2 : 1);
+          // Pick a palette color — weighted by current band content with
+          // a strong bass bias so the field is mostly bass-colored.
+          const wB = (bandsArr ? (bandsArr[0] + bandsArr[1]) : 0.5) * 2.2 + 0.4;
+          const wM = bandsArr ? (bandsArr[2] + bandsArr[3]) : 0.3;
+          const wH = bandsArr ? (bandsArr[4] + bandsArr[5] + bandsArr[6]) : 0.2;
+          const wA = bandsArr ? bandsArr[7] : 0.1;
+          const total = wB + wM + wH + wA;
+          let r = Math.random() * total;
+          let col: [number, number, number];
+          if ((r -= wB) < 0) col = bassCol;
+          else if ((r -= wM) < 0) col = midsCol;
+          else if ((r -= wH) < 0) col = highsCol;
+          else col = airCol;
           sparkles.push({
             x: Math.random() * cssW,
             y: Math.random() * cssH,
             t0: now,
+            life,
+            size,
+            intensity,
+            col,
           });
         }
       }
-
-      // Onset → brief beat flash (full-grid pulse)
-      if (onsetThisFrame && audioMix > 0.5) {
-        onsetFlashStrength = Math.min(1, onsetFlashStrength + 0.6);
-      }
-      onsetFlashStrength = Math.max(0, onsetFlashStrength - 0.08); // decay
-
-      // ── Per-frame scene state updates (before the per-dot loop) ──────────
-      const scenes = aState.scenes;
 
       // WAVEFORM — sample audio's time-domain data once per frame and cache
       // the y-position for each column. The per-dot loop just reads from it.
@@ -594,77 +570,6 @@ export default function LedMatrix() {
             waveEnv[i] = waveEnv[i] * ENV_FALL;
           }
         }
-      }
-
-      // SPECTROGRAM — write current FFT column to ring buffer at cursor
-      if (scenes.has("spectrogram") && analysis && audioMix > 0.01) {
-        const data = aState.getFrequencyData?.();
-        if (data) {
-          const n = data.length;
-          for (let r = 0; r < rows; r++) {
-            // Map row → FFT bin (low freqs at bottom, high at top).
-            // Use log mapping so bass takes more visual real estate.
-            const t = (rows - 1 - r) / Math.max(1, rows - 1); // 0 at bottom, 1 at top
-            const bin = Math.floor(Math.pow(t, 2.2) * (n - 1));
-            specBuf[r * cols + specCursor] = data[bin] / 255;
-          }
-        }
-        specCursor = (specCursor + 1) % cols;
-      }
-
-      // POLYRHYTHM — per-band onsets each spawn rings with randomized
-      // origins, varied speeds, and possible multi-ring bursts on strong
-      // hits. Distinct band lineages stay readable via color, not position.
-      if (scenes.has("polyrhythm") && analysis && audioMix > 0.5) {
-        const bg = analysis.bassGroup;
-        const mg = analysis.midsGroup;
-        const hg = (analysis.bands.highMid + analysis.bands.presence) / 2;
-
-        // Bass kick → 1–2 rings, lower band of the matrix, varied
-        if (bg - prevBassPoly > 0.13 && bg > 0.32) {
-          const count = bg > 0.6 ? 2 : 1;
-          for (let i = 0; i < count; i++) {
-            bassRings.push({
-              x: Math.random() * cssW,
-              y: cssH * 0.55 + Math.random() * cssH * 0.4,
-              t0: now + i * 80,
-              intensity: 0.85 + Math.random() * 0.25,
-              band: "bass",
-              speedFactor: 0.8 + Math.random() * 0.4,
-            });
-          }
-        }
-        // Mid hit → ring middle band, occasional pair on strong hits
-        if (mg - prevMidPoly > 0.11 && mg > 0.28) {
-          const count = mg > 0.5 ? 2 : 1;
-          for (let i = 0; i < count; i++) {
-            bassRings.push({
-              x: Math.random() * cssW,
-              y: cssH * 0.25 + Math.random() * cssH * 0.5,
-              t0: now + i * 60,
-              intensity: 0.65 + Math.random() * 0.3,
-              band: "mids",
-              speedFactor: 1.0 + Math.random() * 0.4,
-            });
-          }
-        }
-        // Hi-mid (hat) → smaller, faster, often clustered; upper band biased
-        if (hg - prevHighPoly > 0.10 && hg > 0.22) {
-          const count = hg > 0.4 ? 3 : 1;
-          for (let i = 0; i < count; i++) {
-            bassRings.push({
-              x: Math.random() * cssW,
-              y: Math.random() * cssH * 0.55,
-              t0: now + i * 45,
-              intensity: 0.45 + Math.random() * 0.3,
-              band: "highs",
-              speedFactor: 1.25 + Math.random() * 0.5,
-            });
-          }
-        }
-        prevBassPoly = bg;
-        prevMidPoly = mg;
-        prevHighPoly = hg;
       }
 
       // FEEDBACK — warp + decay persistent buffer, add big audio-driven shapes.
@@ -825,14 +730,8 @@ export default function LedMatrix() {
       for (let i = ripples.length - 1; i >= 0; i--) {
         if (now - ripples[i].t0 > RIPPLE_TOTAL_MS) ripples.splice(i, 1);
       }
-      for (let i = bassBlobs.length - 1; i >= 0; i--) {
-        if (now - bassBlobs[i].t0 > BASS_BLOB_LIFE_MS) bassBlobs.splice(i, 1);
-      }
-      for (let i = bassRings.length - 1; i >= 0; i--) {
-        if (now - bassRings[i].t0 > BASS_RING_LIFE_MS) bassRings.splice(i, 1);
-      }
       for (let i = sparkles.length - 1; i >= 0; i--) {
-        if (now - sparkles[i].t0 > SPARKLE_LIFE_MS) sparkles.splice(i, 1);
+        if (now - sparkles[i].t0 > sparkles[i].life) sparkles.splice(i, 1);
       }
 
       ctx.clearRect(0, 0, cssW, cssH);
@@ -919,59 +818,25 @@ export default function LedMatrix() {
               }
             }
 
-            // ── SPECTROGRAM scene ─────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && scenes.has("spectrogram")) {
-              // Read the column at horizontal position cellC, time-shifted
-              // so the cursor sits at the right edge (recent audio at right).
-              const col = (specCursor + cellC) % cols;
-              const v = specBuf[cellR * cols + col];
-              if (v > 0.02) {
-                // Color by frequency band — bass at bottom, air at top
-                const tFreq = (rows - 1 - cellR) / Math.max(1, rows - 1); // 0 bottom, 1 top
-                let col1: [number, number, number];
-                let col2: [number, number, number];
-                let mix: number;
-                if (tFreq < 0.33) {
-                  col1 = bassCol; col2 = midsCol; mix = tFreq / 0.33;
-                } else if (tFreq < 0.66) {
-                  col1 = midsCol; col2 = highsCol; mix = (tFreq - 0.33) / 0.33;
-                } else {
-                  col1 = highsCol; col2 = airCol; mix = (tFreq - 0.66) / 0.34;
-                }
-                const tinted: [number, number, number] = [
-                  col1[0] + (col2[0] - col1[0]) * mix,
-                  col1[1] + (col2[1] - col1[1]) * mix,
-                  col1[2] + (col2[2] - col1[2]) * mix,
-                ];
-                addColor(Math.pow(v, 1.4) * audioMix, tinted);
-              }
-            }
-
-            // ── POLYRHYTHM scene ──────────────────────────────────────────
-            // Renders rings collected in `bassRings` (filled by the per-frame
-            // band-onset detector earlier this frame). Color follows the
-            // ring's source band; speed and lifetime vary per ring.
-            if (masterEnabled && audioMix > 0.01 && scenes.has("polyrhythm")) {
-              for (let i = 0; i < bassRings.length; i++) {
-                const ring = bassRings[i];
-                const age = now - ring.t0;
-                if (age < 0) continue;
-                const speedFactor = ring.speedFactor ?? 1;
-                const radius = (age * speedFactor / BASS_RING_CROSS_MS) * Math.max(cssW, cssH);
-                const dx = px - ring.x;
-                const dy = py - ring.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const off = Math.abs(dist - radius);
-                if (off < BASS_RING_THICKNESS) {
-                  const u = off / BASS_RING_THICKNESS;
-                  const ringInt = 0.5 * (1 + Math.cos(Math.PI * u));
-                  const tLife = age / BASS_RING_LIFE_MS;
-                  const ageEnv = Math.sin(tLife * Math.PI);
-                  let col: [number, number, number];
-                  if (ring.band === "mids") col = midsCol;
-                  else if (ring.band === "highs") col = highsCol;
-                  else col = bassCol;
-                  addColor(ringInt * ageEnv * ring.intensity * audioMix, col);
+            // ── SPARKLES scene ────────────────────────────────────────────
+            // Renders the variable-size, pre-tinted sparkles spawned in the
+            // per-frame block above. Each has its own life, size, intensity,
+            // and color so the field reads as varied jewel-dust.
+            if (masterEnabled && audioMix > 0.01 && scenes.has("sparkles")) {
+              for (let i = 0; i < sparkles.length; i++) {
+                const sp = sparkles[i];
+                const age = now - sp.t0;
+                const t = age / sp.life;
+                if (t >= 1) continue;
+                const dx = px - sp.x;
+                const dy = py - sp.y;
+                const r2 = sp.size * sp.size;
+                const d2 = dx * dx + dy * dy;
+                if (d2 < r2) {
+                  const u = d2 / r2;
+                  const fall = (1 - u) * (1 - u); // soft quadratic falloff
+                  const env = Math.sin(t * Math.PI); // bloom + fade bell
+                  addColor(fall * env * sp.intensity * audioMix, sp.col);
                 }
               }
             }
@@ -1045,164 +910,6 @@ export default function LedMatrix() {
               const offNode = Math.max(0, 1 - Math.abs(ch) / 0.6) - lineCloseness;
               if (offNode > 0) {
                 addColor(offNode * 0.25 * midsGroup * audioMix, midsCol);
-              }
-            }
-
-            if (masterEnabled && audioMix > 0.01 && scenes.has("spectrum")) {
-              // Effective per-band colors: track palette unless dial override on
-              const effBass = d.bass.override ? parseColor(d.bass.color) : bassCol;
-              const effMids = d.mids.override ? parseColor(d.mids.color) : midsCol;
-              const effHighs = d.highs.override ? parseColor(d.highs.color) : highsCol;
-              const effAir = d.air.override ? parseColor(d.air.color) : airCol;
-
-              // Mids — selectable: structured frequency rings (default) or Perlin
-              if (d.mids.type === "rings") {
-                // Concentric rings centered on the matrix. Each of the 8 bands
-                // owns one ring at a fixed radius; brightness = that band's
-                // enveloped energy. Reads as a sonar / "music spectrum" visual.
-                const cx = cssW / 2;
-                const cy = cssH / 2;
-                const dx = px - cx;
-                const dy = py - cy;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                // Bands: 8 rings spaced from RING_INNER..RING_OUTER
-                const bands = analysis?.bandArray;
-                if (bands) {
-                  const RING_INNER = 12;
-                  const RING_OUTER = Math.min(cssW, cssH) * 0.45;
-                  const RING_THICKNESS = 4.5;
-                  const ringStep = (RING_OUTER - RING_INNER) / Math.max(1, bands.length - 1);
-                  for (let bi = 0; bi < bands.length; bi++) {
-                    const radius = RING_INNER + bi * ringStep;
-                    const off = Math.abs(dist - radius);
-                    if (off < RING_THICKNESS) {
-                      const u = off / RING_THICKNESS;
-                      const ringFall = 0.5 * (1 + Math.cos(Math.PI * u));
-                      addColor(
-                        ringFall * bands[bi] * d.mids.intensity * moodIntensity * audioMix,
-                        effMids
-                      );
-                    }
-                  }
-                }
-              } else if (d.mids.type === "perlin") {
-                const midsLevel =
-                  (MIDS_BASE_INTENSITY + MIDS_PEAK_INTENSITY * midsGroup) *
-                  moodIntensity * d.mids.intensity;
-                const mn = valueNoise2D(
-                  px * MIDS_NOISE_SCALE,
-                  py * MIDS_NOISE_SCALE + now * MIDS_NOISE_TIME_RATE * speed * d.mids.speed
-                );
-                const mv = Math.max(0, mn - 0.5) * 2;
-                addColor(mv * midsLevel * audioMix, effMids);
-              }
-
-              // Highs — fast Perlin overlay (or off)
-              if (d.highs.type === "perlin-fast") {
-                const highsLevel = highsGroup * 0.5 * moodIntensity * d.highs.intensity;
-                if (highsLevel > 0.005) {
-                  const hn = valueNoise2D(
-                    px * MIDS_NOISE_SCALE * 2.4 + 137,
-                    py * MIDS_NOISE_SCALE * 2.4 + now * MIDS_NOISE_TIME_RATE * 3.0 * speed * d.highs.speed
-                  );
-                  const hv = Math.max(0, hn - 0.55) * 2.2;
-                  addColor(hv * highsLevel * audioMix, effHighs);
-                }
-              }
-
-              // Bass — selected effect type
-              const bassIntensityMult = d.bass.intensity;
-              const bassRadius = d.bass.radius;
-              const bassSoftness = d.bass.softness; // 0=hard, 1=soft
-
-              if (d.bass.type === "blob") {
-                // Soft (or hardened) radial bloom from each spawn
-                for (let i = 0; i < bassBlobs.length; i++) {
-                  const b = bassBlobs[i];
-                  const age = now - b.t0;
-                  const tBlob = age / BASS_BLOB_LIFE_MS;
-                  const env = Math.sin(tBlob * Math.PI);
-                  if (env <= 0) continue;
-                  const dx = px - b.x;
-                  const dy = py - b.y;
-                  const dist2 = dx * dx + dy * dy;
-                  const r2 = bassRadius * bassRadius;
-                  if (dist2 < r2) {
-                    const u = dist2 / r2;
-                    // Lerp between hard step (softness=0) and quadratic falloff (softness=1)
-                    const softFall = (1 - u) * (1 - u);
-                    const hardFall = u < 0.85 ? 1 : Math.max(0, 1 - (u - 0.85) / 0.15);
-                    const fall = hardFall + (softFall - hardFall) * bassSoftness;
-                    addColor(fall * env * b.intensity * bassIntensityMult * audioMix, effBass);
-                  }
-                }
-              } else if (d.bass.type === "disk") {
-                // Hard-edged disks — anchored at three centers, continuously
-                // sized by current bass amplitude. Maximum reactivity.
-                const liveR = bassGroup * BASS_DISK_MAX_RADIUS * bassIntensityMult * moodIntensity;
-                if (liveR > 1) {
-                  const r2 = liveR * liveR;
-                  const centers: [number, number][] = [
-                    [cssW * 0.5, cssH * 0.5],
-                    [cssW * 0.18, cssH * 0.5],
-                    [cssW * 0.82, cssH * 0.5],
-                  ];
-                  for (const [cx, cy] of centers) {
-                    const dx = px - cx;
-                    const dy = py - cy;
-                    const dist2 = dx * dx + dy * dy;
-                    if (dist2 < r2) {
-                      const u = Math.sqrt(dist2) / liveR;
-                      const rim = 1 - BASS_DISK_RIM_FRAC;
-                      const fall = u < rim ? 1 : Math.max(0, 1 - (u - rim) / BASS_DISK_RIM_FRAC);
-                      addColor(fall * audioMix, effBass);
-                    }
-                  }
-                }
-              } else if (d.bass.type === "ring") {
-                // Concentric expanding hollow rings, hard edges
-                for (let i = 0; i < bassRings.length; i++) {
-                  const r = bassRings[i];
-                  const age = now - r.t0;
-                  if (age < 0) continue;
-                  const radius = (age / BASS_RING_CROSS_MS) * Math.max(cssW, cssH);
-                  const dx = px - r.x;
-                  const dy = py - r.y;
-                  const dist = Math.sqrt(dx * dx + dy * dy);
-                  const off = Math.abs(dist - radius);
-                  if (off < BASS_RING_THICKNESS) {
-                    const u = off / BASS_RING_THICKNESS;
-                    const ringIntensity = 0.5 * (1 + Math.cos(Math.PI * u));
-                    const tLife = age / BASS_RING_LIFE_MS;
-                    const ageEnv = Math.sin(tLife * Math.PI);
-                    addColor(
-                      ringIntensity * ageEnv * r.intensity * bassIntensityMult * audioMix,
-                      effBass
-                    );
-                  }
-                }
-              }
-              // d.bass.type === "off" → skip
-
-              // Air — sparkles (or off)
-              if (d.air.type === "sparkle") {
-                for (let i = 0; i < sparkles.length; i++) {
-                  const sp = sparkles[i];
-                  const age = now - sp.t0;
-                  const tSp = age / SPARKLE_LIFE_MS;
-                  if (tSp >= 1) continue;
-                  const dx = px - sp.x;
-                  const dy = py - sp.y;
-                  if (dx * dx + dy * dy < SPACING * SPACING * 0.6) {
-                    const env = Math.sin(tSp * Math.PI);
-                    addColor(env * SPARKLE_INTENSITY * d.air.intensity * audioMix, effAir);
-                  }
-                }
-              }
-
-              // Onset flash — subtle full-grid pulse on each beat
-              if (onsetFlashStrength > 0.01) {
-                addColor(onsetFlashStrength * d.master.beatFlash * audioMix, effBass);
               }
             }
 

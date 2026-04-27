@@ -4,12 +4,10 @@ import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES, type VisualizerScene } from "@/lib/visualizer-scenes";
 import {
   WaveformSceneIcon,
-  SpectrumSceneIcon,
+  SparklesSceneIcon,
   ChladniSceneIcon,
   DrumheadSceneIcon,
   FeedbackSceneIcon,
-  SpectrogramSceneIcon,
-  PolyrhythmSceneIcon,
   LissajousSceneIcon,
 } from "@/components/Icons";
 import {
@@ -21,12 +19,10 @@ import {
 
 const ICONS: Record<VisualizerScene, React.FC<{ size?: number }>> = {
   waveform: WaveformSceneIcon,
-  spectrum: SpectrumSceneIcon,
+  sparkles: SparklesSceneIcon,
   chladni: ChladniSceneIcon,
   drumhead: DrumheadSceneIcon,
   feedback: FeedbackSceneIcon,
-  spectrogram: SpectrogramSceneIcon,
-  polyrhythm: PolyrhythmSceneIcon,
   lissajous: LissajousSceneIcon,
 };
 
