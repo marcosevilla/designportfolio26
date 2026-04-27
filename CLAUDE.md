@@ -394,20 +394,32 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** "How I Work with AI" page + teaser mode off
+- **Last worked on:** Carousel view (Phase 1) — third homepage view alongside cards/list
 - **Completed this session:**
-  - Added dedicated "How I Work with AI" page at `/work/ai-workflow` — 5 sections: Overview, The Setup, MCP Integrations, Self-Improving System, Building Real Software, What I've Learned
-  - Registered route in DEDICATED_ROUTES, added tags to study-tags.ts, created MDX frontmatter (order: 7)
-  - Flipped `NEXT_PUBLIC_TEASER_MODE=false` in `.env.local` — full portfolio now live
-  - Verified: tsc passes, page renders 200, homepage renders 200
+  - New `CaseStudyCarousel.tsx`: drag-to-scroll, velocity-projected snap, rubber-band edges, subtle scale/opacity active state, drag-velocity-derived tilt, trackpad horizontal scroll (debounced ticks), arrow-key nav, sessionStorage persistence, ARIA region + live region, reduced-motion fallback (native CSS scroll snap), mobile breakpoint (260×340), velocity clamp.
+  - `CarouselCardShell.tsx`: chrome (sized via CSS vars), 1px border, gradient bg from `study.gradient`, auto scrim, bottom-anchored typography (year + title + company·role, white text), focus-visible ring.
+  - 7 per-study card files in `components/case-study/carousel/` registered via `carousel-card-registry.ts` — gradient-only baselines ready for per-study illustration overlays.
+  - `useExpandAndNavigate` hook in `lib/carousel-transition.ts` — accepts `{ delayMs }`, scale-up-then-cut transition.
+  - **Click semantics:** click on side card → `settleTo(index)` (scroll to it); click on active centered card → `trigger(slug)` (expand+navigate).
+  - **Route hand-off (final approach):** scrapped position:fixed card morph (jaggy). Replaced with a fullscreen gradient veil that fades in (color-matched to destination case study hero), masking the route swap. Bulletproof.
+  - **DialKit panel** wired in (dev-only, top-right): folders for sizing, position, focal hierarchy, drag, wheel, expand. Live-tunable everything. Mounted via `components/dev/DialKitMount.tsx` behind `NODE_ENV === "development"` gate.
+- **Branch + worktree:** `feature/carousel-view` lives in `.worktrees/carousel-view`. 30 commits above `b96205d` (the gitignore commit before scaffold). Not yet merged to main.
 - **In progress:**
-  - 42 ImagePlaceholders remain (F&B 10, Compendium 15, Upsells 17) — all need Figma exports
-  - Teaser page dial values not finalized (but teaser is now off)
-- **Known issues:** `BackgroundTexture 2.tsx` reappears (iCloud sync). 4 commits unpushed to origin.
-- **Files modified this session:**
-  - `site/app/work/ai-workflow/page.tsx` — new: metadata wrapper
-  - `site/app/work/ai-workflow/AIWorkflowContent.tsx` — new: full content component
-  - `site/content/ai-workflow.mdx` — new: frontmatter for card/list rendering
-  - `site/app/work/[slug]/page.tsx` — added "ai-workflow" to DEDICATED_ROUTES
-  - `site/lib/study-tags.ts` — added ai-workflow tags
-  - `site/.env.local` — flipped teaser mode to false
+  - Per-study illustration/imagery overlays for each carousel card (author at your own pace by editing the per-study files in `components/case-study/carousel/`)
+  - 42 ImagePlaceholders remain in case studies (F&B 10, Compendium 15, Upsells 17)
+- **Known issues:** none from this session.
+- **Spec & plan:**
+  - `docs/superpowers/specs/2026-04-26-carousel-view-design.md`
+  - `docs/superpowers/plans/2026-04-26-carousel-view.md`
+- **Deferred to v2:** Stitched cross-route morph (overlay lives in `layout.tsx`, persists across route change). Phase 1 ships the veil approach instead — see spec.
+- **Key files added/modified this session:**
+  - `site/components/CaseStudyCarousel.tsx` — new (rewritten from placeholder)
+  - `site/components/case-study/carousel/CarouselCardShell.tsx` — new
+  - `site/components/case-study/carousel/carousel-card-registry.ts` — new
+  - `site/components/case-study/carousel/{FBOrdering,Compendium,Upsells,Checkin,GeneralTask,DesignSystem,AIWorkflow}CarouselCard.tsx` — new (7 files)
+  - `site/lib/carousel-transition.ts` — new
+  - `site/components/dev/DialKitMount.tsx` — new (DialRoot wrapper)
+  - `site/components/Icons.tsx` — added `CarouselIcon` (3-bar SVG)
+  - `site/components/CaseStudyList.tsx` — third view toggle button + AnimatePresence branch for carousel
+  - `site/app/layout.tsx` — mounts DialKitMount in dev only
+  - `site/package.json` — added `dialkit ^1.2.0`
