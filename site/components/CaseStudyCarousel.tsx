@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
+import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity, useReducedMotion, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -79,6 +79,7 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
 // ─── Main carousel ─────────────────────────────────────────────────────────────
 
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
+  const reducedMotion = useReducedMotion();
   const offsetX = useMotionValue(0);
   const velocity = useVelocity(offsetX);
   const rotate = useTransform(velocity, [-1500, 0, 1500], [3, 0, -3], { clamp: true });
@@ -174,6 +175,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
+    if (reducedMotion) return;
 
     const handler = (e: WheelEvent) => {
       // Only handle horizontal intent; let vertical pass through for page scroll.
@@ -193,10 +195,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     // settleTo reads offsetX (stable MotionValue) and studies.length (stable).
     // activeIndexRef is always current — no need to list activeIndex here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studies.length]);
+  }, [studies.length, reducedMotion]);
 
   // ─── Arrow key navigation ─────────────────────────────────────────────────────
   useEffect(() => {
+    if (reducedMotion) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
@@ -209,7 +212,52 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studies.length]);
+  }, [studies.length, reducedMotion]);
+
+  if (reducedMotion) {
+    return (
+      <div
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Case studies carousel"
+        className="relative"
+        style={{
+          marginLeft: "calc(-50vw + 50%)",
+          marginRight: "calc(-50vw + 50%)",
+          ["--carousel-card-w" as string]: `${CARD_W}px`,
+          ["--carousel-card-h" as string]: `${CARD_H}px`,
+        }}
+      >
+        <div role="status" aria-live="polite" className="sr-only">
+          {studies[activeIndex]?.title}, card {activeIndex + 1} of {studies.length}
+        </div>
+        <div
+          className="flex overflow-x-auto"
+          style={{
+            gap: `${GAP}px`,
+            padding: "32px 16px",
+            scrollSnapType: "x mandatory",
+            overscrollBehaviorX: "contain",
+          }}
+        >
+          {studies.map((study) => {
+            const Custom = CAROUSEL_CARDS[study.slug];
+            const Card = Custom ?? CarouselCardShell;
+            const cardProps: CarouselCardProps = {
+              study,
+              isActive: false,
+              onClick: () => handleCardClick(study.slug),
+            };
+            return (
+              <div key={study.slug} style={{ scrollSnapAlign: "center", flex: "0 0 auto" }}>
+                <Card {...cardProps} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
