@@ -149,20 +149,20 @@ export default function LedMatrix() {
 
   // Bridge React audio state into the imperative animation loop via a ref.
   const audio = useAudioPlayer();
-  const { scene } = useVisualizerScene();
+  const { activeScenes } = useVisualizerScene();
   const audioStateRef = useRef({
     isPlaying: audio.isPlaying,
     track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
     getSampleRate: audio.getSampleRate,
-    scene,
+    scenes: activeScenes,
   });
   audioStateRef.current = {
     isPlaying: audio.isPlaying,
     track: audio.currentTrack as Track,
     getFrequencyData: audio.getFrequencyData,
     getSampleRate: audio.getSampleRate,
-    scene,
+    scenes: activeScenes,
   };
 
   // DialKit panel — live tuning of effect types, colors, and per-band intensity.
@@ -425,11 +425,11 @@ export default function LedMatrix() {
       onsetFlashStrength = Math.max(0, onsetFlashStrength - 0.08); // decay
 
       // ── Per-frame scene state updates (before the per-dot loop) ──────────
-      const activeSceneFrame = aState.scene;
+      const scenes = aState.scenes;
 
       // CHLADNI — modes drift smoothly + rotation + phase. Strong onsets
       // snap to a new random (m, n) for occasional dramatic shape changes.
-      if (activeSceneFrame === "chladni" && audioMix > 0.01) {
+      if (scenes.has("chladni") && audioMix > 0.01) {
         // Continuous slow drift via sine waves on time, plus audio offsets
         const tDrift = now * 0.00038;
         const mSinusoid = Math.sin(tDrift * 0.7) * 1.6;
@@ -471,7 +471,7 @@ export default function LedMatrix() {
       // envelope so the rendered brightness is smooth (Lissajous-like
       // attack/release) instead of the raw, twitchy |u|. Impulses are
       // gated on beat strength so quiet passages stay calm.
-      if (activeSceneFrame === "drumhead" && audioMix > 0.01) {
+      if (scenes.has("drumhead") && audioMix > 0.01) {
         // Inject impulse only on stronger onsets — gives the field room to breathe
         if (
           onsetThisFrame &&
@@ -522,7 +522,7 @@ export default function LedMatrix() {
       }
 
       // SPECTROGRAM — write current FFT column to ring buffer at cursor
-      if (activeSceneFrame === "spectrogram" && analysis && audioMix > 0.01) {
+      if (scenes.has("spectrogram") && analysis && audioMix > 0.01) {
         const data = aState.getFrequencyData?.();
         if (data) {
           const n = data.length;
@@ -540,7 +540,7 @@ export default function LedMatrix() {
       // POLYRHYTHM — per-band onsets each spawn rings with randomized
       // origins, varied speeds, and possible multi-ring bursts on strong
       // hits. Distinct band lineages stay readable via color, not position.
-      if (activeSceneFrame === "polyrhythm" && analysis && audioMix > 0.5) {
+      if (scenes.has("polyrhythm") && analysis && audioMix > 0.5) {
         const bg = analysis.bassGroup;
         const mg = analysis.midsGroup;
         const hg = (analysis.bands.highMid + analysis.bands.presence) / 2;
@@ -595,7 +595,7 @@ export default function LedMatrix() {
       // FEEDBACK — warp + decay persistent buffer, add big audio-driven shapes.
       // Decay 0.94 (matches Lissajous) so trails are visible. Per-band onset
       // events paint distinct shapes so the buffer stays varied.
-      if (activeSceneFrame === "feedback" && audioMix > 0.01) {
+      if (scenes.has("feedback") && audioMix > 0.01) {
         const decay = 0.94;
         const bg = analysis?.bassGroup ?? 0;
         const hg = analysis?.highsGroup ?? 0;
@@ -703,7 +703,7 @@ export default function LedMatrix() {
       }
 
       // LISSAJOUS — decay buffer, paint curve points
-      if (activeSceneFrame === "lissajous" && audioMix > 0.01) {
+      if (scenes.has("lissajous") && audioMix > 0.01) {
         const decay = 0.94;
         // Decay in place
         for (let i = 0; i < persistA.length; i++) persistA[i] *= decay;
@@ -822,8 +822,9 @@ export default function LedMatrix() {
 
             // Audio visualizer layers — scene-driven. Spectrum scene uses the
             // DialKit per-band config; other scenes implement their own
-            // self-contained behavior (Chladni nodal pattern, drumhead, etc.)
-            const activeScene = aState.scene;
+            // self-contained behavior. Multiple scenes can be active
+            // simultaneously; each contributes to the same per-dot color
+            // accumulator and they composite via the weighted-average blend.
 
             // Compute grid cell for buffer-backed scenes
             const cellC = Math.min(cols - 1, Math.max(0, Math.floor(px / SPACING)));
@@ -831,7 +832,7 @@ export default function LedMatrix() {
             const cellIdx = cellR * cols + cellC;
 
             // ── DRUMHEAD scene ────────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && activeScene === "drumhead") {
+            if (masterEnabled && audioMix > 0.01 && scenes.has("drumhead")) {
               const env = waveEnv[cellIdx];
               if (env > 0.012) {
                 const m = Math.tanh(env * 1.6);
@@ -844,7 +845,7 @@ export default function LedMatrix() {
             }
 
             // ── SPECTROGRAM scene ─────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && activeScene === "spectrogram") {
+            if (masterEnabled && audioMix > 0.01 && scenes.has("spectrogram")) {
               // Read the column at horizontal position cellC, time-shifted
               // so the cursor sits at the right edge (recent audio at right).
               const col = (specCursor + cellC) % cols;
@@ -875,7 +876,7 @@ export default function LedMatrix() {
             // Renders rings collected in `bassRings` (filled by the per-frame
             // band-onset detector earlier this frame). Color follows the
             // ring's source band; speed and lifetime vary per ring.
-            if (masterEnabled && audioMix > 0.01 && activeScene === "polyrhythm") {
+            if (masterEnabled && audioMix > 0.01 && scenes.has("polyrhythm")) {
               for (let i = 0; i < bassRings.length; i++) {
                 const ring = bassRings[i];
                 const age = now - ring.t0;
@@ -901,7 +902,7 @@ export default function LedMatrix() {
             }
 
             // ── FEEDBACK scene ────────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && activeScene === "feedback") {
+            if (masterEnabled && audioMix > 0.01 && scenes.has("feedback")) {
               const v = persistA[cellIdx];
               if (v > 0.01) {
                 // Tint by audio energy: bass-heavy → bass color, treble → highs
@@ -917,7 +918,7 @@ export default function LedMatrix() {
             }
 
             // ── LISSAJOUS scene ───────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && activeScene === "lissajous") {
+            if (masterEnabled && audioMix > 0.01 && scenes.has("lissajous")) {
               const v = persistA[cellIdx];
               if (v > 0.01) {
                 addColor(v * audioMix, midsCol);
@@ -925,7 +926,7 @@ export default function LedMatrix() {
             }
 
             // ── CHLADNI scene ─────────────────────────────────────────────
-            if (masterEnabled && audioMix > 0.01 && activeScene === "chladni") {
+            if (masterEnabled && audioMix > 0.01 && scenes.has("chladni")) {
               // Rotate the sample point around the matrix center, then sample
               // the dual-cosine field with drifting phases. The (m, n) modes
               // are smoothly tracked from per-frame state, with onset jumps
@@ -957,7 +958,7 @@ export default function LedMatrix() {
               }
             }
 
-            if (masterEnabled && audioMix > 0.01 && activeScene === "spectrum") {
+            if (masterEnabled && audioMix > 0.01 && scenes.has("spectrum")) {
               // Effective per-band colors: track palette unless dial override on
               const effBass = d.bass.override ? parseColor(d.bass.color) : bassCol;
               const effMids = d.mids.override ? parseColor(d.mids.color) : midsCol;

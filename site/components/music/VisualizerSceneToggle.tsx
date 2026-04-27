@@ -29,18 +29,18 @@ const ICONS: Record<VisualizerScene, React.FC<{ size?: number }>> = {
 };
 
 export default function VisualizerSceneToggle() {
-  const { scene, setScene } = useVisualizerScene();
+  const { activeScenes, toggleScene, setOnlyScene } = useVisualizerScene();
 
   return (
     <TooltipProvider delay={150}>
       <div
         className="flex items-center justify-center gap-1"
-        role="radiogroup"
-        aria-label="Visualizer effect"
+        role="group"
+        aria-label="Visualizer effects (multi-select)"
       >
         {SCENES.map(({ id, label, hint }) => {
           const Icon = ICONS[id];
-          const active = scene === id;
+          const active = activeScenes.has(id);
           return (
             <Tooltip key={id}>
               <TooltipTrigger
@@ -48,10 +48,14 @@ export default function VisualizerSceneToggle() {
                   <button
                     {...props}
                     type="button"
-                    role="radio"
+                    role="switch"
                     aria-checked={active}
                     aria-label={`${label} — ${hint}`}
-                    onClick={() => setScene(id)}
+                    onClick={(e) => {
+                      // Shift-click solos this scene; plain click toggles it
+                      if (e.shiftKey) setOnlyScene(id);
+                      else toggleScene(id);
+                    }}
                     className="flex items-center justify-center w-7 h-7 rounded-sm transition-colors cursor-pointer"
                     style={{
                       color: active ? "var(--color-accent)" : "var(--color-fg-tertiary)",
@@ -80,6 +84,12 @@ export default function VisualizerSceneToggle() {
                     style={{ opacity: 0.7 }}
                   >
                     {hint}
+                  </span>
+                  <span
+                    className="text-[10px] leading-tight mt-1"
+                    style={{ opacity: 0.5 }}
+                  >
+                    Click to toggle · Shift-click to solo
                   </span>
                 </div>
               </TooltipContent>
