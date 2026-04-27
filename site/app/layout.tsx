@@ -12,6 +12,7 @@ import SectionReorder from "@/components/dev/SectionReorder";
 import DialKitMount from "@/components/dev/DialKitMount";
 import { Agentation } from "agentation";
 import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
+import PlayerChip from "@/components/music/PlayerChip";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -75,6 +76,7 @@ export default function RootLayout({
                 )}
               </InlineEditorProvider>
               <ViewportFade />
+              <PlayerChip />
               {process.env.NODE_ENV === "development" && <Agentation />}
               {process.env.NODE_ENV === "development" && <DialKitMount />}
             </SidebarProvider>
