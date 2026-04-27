@@ -45,8 +45,9 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
 
   return (
     <>
-      {/* Heading — static, body-sized, scrambles in on first visit */}
-      <div className="sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-(--color-bg)/90 backdrop-blur-xs lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
+      {/* Heading — sticky to top of viewport at all sizes; frosted bg so
+          content scrolling underneath is muted but visible */}
+      <div className="sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-(--color-bg)/90 backdrop-blur-xs">
         <div className="flex items-center justify-between gap-6">
           <h1 style={{ ...typescale.body, fontWeight: 500 }}>
             <ScrambleText text={HERO_NAME} skip={introDone} />
