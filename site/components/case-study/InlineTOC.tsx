@@ -8,16 +8,15 @@ import { BackChevronIcon } from "../Icons";
 
 const STAR_SPRING = { type: "spring" as const, stiffness: 300, damping: 34 };
 const LINK_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
-const INSTANT = { duration: 0 };
+
+// Smooth-scroll typically lands within ~600-800ms. Lock the IntersectionObserver
+// for 900ms so it can't clobber the click target with intermediate sections it
+// passes through during the scroll.
+const SCROLL_LOCK_MS = 900;
 
 export default function InlineTOC() {
-  const { tocItems, activeTocId, setActiveTocId, backHref } = useSidebar();
+  const { tocItems, activeTocId, setActiveTocIdAndLock, backHref } = useSidebar();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  // When the user clicks a TOC link, the star + link nudge should jump
-  // immediately rather than spring along with the page scroll. snapNow flips
-  // true for one render to override the spring with a zero-duration transition,
-  // then resets so subsequent scroll-driven moves use the spring as normal.
-  const [snapNow, setSnapNow] = useState(false);
 
   if (!tocItems) return null;
 
@@ -25,15 +24,11 @@ export default function InlineTOC() {
 
   const handleClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    // Update the active id immediately so the star doesn't wait for the
-    // IntersectionObserver (which only fires after the scroll lands).
-    setActiveTocId(id);
-    setSnapNow(true);
+    // Lock the observer for the duration of the smooth-scroll, so it can't
+    // override the click target as intermediate sections cross the active band.
+    setActiveTocIdAndLock(id, SCROLL_LOCK_MS);
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    // Reset snap on the next frame so the *next* render (scroll-driven changes)
-    // gets the regular spring back.
-    requestAnimationFrame(() => setSnapNow(false));
   };
 
   return (
@@ -66,7 +61,7 @@ export default function InlineTOC() {
               opacity: 1,
             }}
             initial={{ y: activeIndex * 28, opacity: 0 }}
-            transition={snapNow ? INSTANT : STAR_SPRING}
+            transition={STAR_SPRING}
             aria-hidden
           >
             ✸
@@ -91,7 +86,7 @@ export default function InlineTOC() {
                 <motion.span
                   className="inline-block"
                   animate={{ x: active ? 18 : isHovered ? 8 : 0 }}
-                  transition={snapNow ? INSTANT : LINK_SPRING}
+                  transition={LINK_SPRING}
                   style={{ color: textColor }}
                 >
                   {item.label}
