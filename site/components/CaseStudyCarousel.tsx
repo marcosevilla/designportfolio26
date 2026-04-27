@@ -268,13 +268,13 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
             overscrollBehaviorX: "contain",
           }}
         >
-          {studies.map((study) => {
+          {studies.map((study, i) => {
             const Custom = CAROUSEL_CARDS[study.slug];
             const Card = Custom ?? CarouselCardShell;
             const cardProps: CarouselCardProps = {
               study,
               isActive: false,
-              onClick: () => handleCardClick(study.slug),
+              onClick: () => handleCardClick(study.slug, i),
             };
             return (
               <div key={study.slug} style={{ scrollSnapAlign: "center", flex: "0 0 auto" }}>
