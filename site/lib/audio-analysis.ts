@@ -28,6 +28,8 @@ export type Bands = {
 
 export type AnalysisSnapshot = {
   bands: Bands;
+  /** Same data as `bands` ordered low→high for ring/spectrum rendering. */
+  bandArray: number[];
   /** Grouped palette-band energies (0..1). */
   bassGroup: number;   // subBass + bass
   midsGroup: number;   // lowMid + mid
@@ -49,6 +51,14 @@ const BPM_HISTORY = 24;                 // intervals tracked
 const BPM_MIN = 60;
 const BPM_MAX = 200;
 
+// Per-band attack/release envelope. Attack ≈ instant; release decays slowly.
+// Tuned so a kick drum's bass band snaps up in 1 frame and decays over ~250ms.
+const ENV_ATTACK = 0.85;       // fraction of distance to peak per frame
+const ENV_RELEASE = 0.06;      // fraction of distance to floor per frame
+// Power curve — expands dynamic range. Quiet bands get squashed, loud bands
+// stay loud. > 1 = more dynamic; 1 = linear.
+const BAND_POWER = 1.6;
+
 export class AudioAnalyzer {
   private prevSpec: Float32Array | null = null;
   private fluxHistory: Float32Array = new Float32Array(ONSET_FLUX_HISTORY);
@@ -60,6 +70,9 @@ export class AudioAnalyzer {
   private beatStrength = 0;
   private cachedBins: number[][] | null = null;
   private cachedFor: { sampleRate: number; binCount: number } | null = null;
+
+  // Per-band envelopes — one slot per BAND_EDGES_HZ entry (8)
+  private envs: Float32Array = new Float32Array(BAND_EDGES_HZ.length);
 
   /** Maps each band group's bin index range using the current sampleRate + binCount. */
   private buildBinRanges(sampleRate: number, binCount: number) {
@@ -90,13 +103,24 @@ export class AudioAnalyzer {
     const binCount = freq.length;
     const ranges = this.buildBinRanges(sampleRate, binCount);
 
-    // 1. Bands — mean amplitude per range, normalized 0..1
+    // 1. Bands — mean amplitude per range, normalized 0..1, then through
+    //    per-band attack/release envelope, then a power curve.
     const bandValues: number[] = [];
     for (let b = 0; b < ranges.length; b++) {
       const [lo, hi] = ranges[b];
       let sum = 0;
       for (let i = lo; i < hi; i++) sum += freq[i];
-      bandValues.push((sum / Math.max(1, hi - lo)) / 255);
+      const raw = (sum / Math.max(1, hi - lo)) / 255;
+
+      // Envelope: snap up on attack, decay on release
+      const env = this.envs[b];
+      const next = raw > env
+        ? env + (raw - env) * ENV_ATTACK
+        : env + (raw - env) * ENV_RELEASE;
+      this.envs[b] = next;
+
+      // Power curve expands dynamic range
+      bandValues.push(Math.pow(next, BAND_POWER));
     }
     const bands: Bands = {
       subBass: bandValues[0], bass: bandValues[1],
@@ -157,8 +181,17 @@ export class AudioAnalyzer {
     // Decay beat strength
     this.beatStrength = Math.max(0, this.beatStrength - BEAT_DECAY);
 
+    // Per-band array for frequency-ring rendering (8 values, ordered low→high).
+    const bandArray: number[] = [
+      bands.subBass, bands.bass,
+      bands.lowMid, bands.mid,
+      bands.highMid, bands.presence,
+      bands.treble, bands.air,
+    ];
+
     return {
       bands,
+      bandArray,
       bassGroup: clamp01((bands.subBass + bands.bass) / 2),
       midsGroup: clamp01((bands.lowMid + bands.mid) / 2),
       highsGroup: clamp01((bands.highMid + bands.presence + bands.treble) / 3),
@@ -219,6 +252,7 @@ export class AudioAnalyzer {
     this.onsetTsCursor = 0;
     this.bpm = 120;
     this.beatStrength = 0;
+    this.envs.fill(0);
   }
 }
 

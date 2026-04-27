@@ -164,36 +164,36 @@ export default function LedMatrix() {
     bass: {
       type: {
         type: "select" as const,
-        options: ["blob", "disk", "ring", "off"],
-        default: "blob",
+        options: ["disk", "blob", "ring", "off"],
+        default: "disk",
       },
       override: false,
       color: { type: "color" as const, default: "#B5651D" },
-      intensity: [1.0, 0, 2],
-      threshold: [0.42, 0, 1],
-      radius: [90, 20, 200],
-      softness: [1.0, 0, 1],
+      intensity: [1.4, 0, 2],
+      threshold: [0.30, 0, 1],
+      radius: [120, 20, 200],
+      softness: [0.3, 0, 1],
     },
     mids: {
       type: {
         type: "select" as const,
-        options: ["perlin", "off"],
-        default: "perlin",
+        options: ["rings", "perlin", "off"],
+        default: "rings",
       },
       override: false,
       color: { type: "color" as const, default: "#E89B5A" },
-      intensity: [1.0, 0, 2],
+      intensity: [0.7, 0, 2],
       speed: [1.0, 0, 3],
     },
     highs: {
       type: {
         type: "select" as const,
         options: ["perlin-fast", "off"],
-        default: "perlin-fast",
+        default: "off",
       },
       override: false,
       color: { type: "color" as const, default: "#F2D29B" },
-      intensity: [1.0, 0, 2],
+      intensity: [0.5, 0, 2],
       speed: [1.0, 0, 3],
     },
     air: {
@@ -427,20 +427,22 @@ export default function LedMatrix() {
           const cy = dyT > 0 ? dyT : dyB > 0 ? dyB : 0;
           if (cx > 0 && cy > 0 && cx * cx + cy * cy > CORNER_RADIUS * CORNER_RADIUS) continue;
 
-          // Multi-color additive blending. Each effect contributes a
-          // (color × intensity) delta from the off baseline. Final color is
-          // offColor + sum of deltas, clamped. `lit` tracks total intensity
-          // for dot-size bloom only.
-          let lit = 0;
-          let dr = 0, dg = 0, db = 0;
+          // Multi-layer compositing via intensity-weighted color average.
+          // Each layer contributes (color, intensity); final color is the
+          // weighted average of all contributing colors, lerped from the off
+          // baseline by total intensity. This avoids the "everything washes
+          // toward white" failure mode of additive RGB blending.
+          let lit = 0;            // for dot-size bloom + final lerp
+          let wR = 0, wG = 0, wB = 0;
+          let wTotal = 0;
 
-          // Helper: add a contribution from a colored layer (intensity 0..1)
           const addColor = (intensity: number, col: [number, number, number]) => {
             if (intensity <= 0) return;
             lit += intensity;
-            dr += (col[0] - offColor[0]) * intensity;
-            dg += (col[1] - offColor[1]) * intensity;
-            db += (col[2] - offColor[2]) * intensity;
+            wR += col[0] * intensity;
+            wG += col[1] * intensity;
+            wB += col[2] * intensity;
+            wTotal += intensity;
           };
 
           if (!reducedMotion) {
@@ -475,8 +477,37 @@ export default function LedMatrix() {
               const effHighs = d.highs.override ? parseColor(d.highs.color) : highsCol;
               const effAir = d.air.override ? parseColor(d.air.color) : airCol;
 
-              // Mids — Perlin underlayer (or off)
-              if (d.mids.type === "perlin") {
+              // Mids — selectable: structured frequency rings (default) or Perlin
+              if (d.mids.type === "rings") {
+                // Concentric rings centered on the matrix. Each of the 8 bands
+                // owns one ring at a fixed radius; brightness = that band's
+                // enveloped energy. Reads as a sonar / "music spectrum" visual.
+                const cx = cssW / 2;
+                const cy = cssH / 2;
+                const dx = px - cx;
+                const dy = py - cy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                // Bands: 8 rings spaced from RING_INNER..RING_OUTER
+                const bands = analysis?.bandArray;
+                if (bands) {
+                  const RING_INNER = 12;
+                  const RING_OUTER = Math.min(cssW, cssH) * 0.45;
+                  const RING_THICKNESS = 4.5;
+                  const ringStep = (RING_OUTER - RING_INNER) / Math.max(1, bands.length - 1);
+                  for (let bi = 0; bi < bands.length; bi++) {
+                    const radius = RING_INNER + bi * ringStep;
+                    const off = Math.abs(dist - radius);
+                    if (off < RING_THICKNESS) {
+                      const u = off / RING_THICKNESS;
+                      const ringFall = 0.5 * (1 + Math.cos(Math.PI * u));
+                      addColor(
+                        ringFall * bands[bi] * d.mids.intensity * moodIntensity * audioMix,
+                        effMids
+                      );
+                    }
+                  }
+                }
+              } else if (d.mids.type === "perlin") {
                 const midsLevel =
                   (MIDS_BASE_INTENSITY + MIDS_PEAK_INTENSITY * midsGroup) *
                   moodIntensity * d.mids.intensity;
@@ -631,11 +662,19 @@ export default function LedMatrix() {
             }
           }
 
+          // Weighted average of contributing colors, then lerp from off
+          // by total intensity. Cleaner than additive: same-color layers
+          // reinforce, different-color layers blend proportionally.
           if (lit > 1) lit = 1;
-
-          const rC = Math.max(0, Math.min(255, offColor[0] + dr));
-          const gC = Math.max(0, Math.min(255, offColor[1] + dg));
-          const bC = Math.max(0, Math.min(255, offColor[2] + db));
+          let litR = offColor[0], litG = offColor[1], litB = offColor[2];
+          if (wTotal > 0) {
+            litR = wR / wTotal;
+            litG = wG / wTotal;
+            litB = wB / wTotal;
+          }
+          const rC = offColor[0] + (litR - offColor[0]) * lit;
+          const gC = offColor[1] + (litG - offColor[1]) * lit;
+          const bC = offColor[2] + (litB - offColor[2]) * lit;
           // Boot fade applies to alpha
           const alpha = bootP;
 

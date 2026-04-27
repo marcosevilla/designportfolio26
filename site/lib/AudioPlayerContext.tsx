@@ -139,7 +139,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       const src = ctx.createMediaElementSource(el);
       const an = ctx.createAnalyser();
       an.fftSize = 1024;
-      an.smoothingTimeConstant = 0.78;
+      // Lower smoothing = more responsive frame-to-frame (peaks survive
+      // instead of being averaged away). Custom per-band envelopes in the
+      // analyzer further shape attack/release.
+      an.smoothingTimeConstant = 0.35;
       src.connect(an);
       an.connect(ctx.destination);
       audioCtxRef.current = ctx;
