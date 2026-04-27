@@ -87,6 +87,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const activeIndexRef = useRef(0);
   const animRef = useRef<AnimationPlaybackControls | null>(null);
   const panStartOffsetRef = useRef(0);
+  const panOccurredRef = useRef(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const lastWheelTimeRef = useRef(0);
 
@@ -114,9 +115,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const onPointerDown = () => {
     animRef.current?.stop();
     panStartOffsetRef.current = offsetX.get();
+    panOccurredRef.current = false;
   };
 
   const onPan = (_e: PointerEvent, info: PanInfo) => {
+    panOccurredRef.current = true;
     let raw = panStartOffsetRef.current + info.offset.x;
     if (raw > maxOffset) {
       const overshoot = raw - maxOffset;
@@ -133,9 +136,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     const clamped = Math.max(minOffset, Math.min(maxOffset, projected));
     const snapIndex = Math.round(-clamped / SPREAD);
     settleTo(snapIndex);
+    setTimeout(() => { panOccurredRef.current = false; }, 50);
   };
 
   const handleCardClick = (slug: string) => {
+    if (panOccurredRef.current) return;
     console.log("clicked", slug);
   };
 
