@@ -1311,13 +1311,16 @@ export default function LedMatrix() {
         });
       }
 
-      // LISSAJOUS — pre-compute curve sample positions in grid cells
+      // LISSAJOUS — pre-compute curve sample positions in grid cells.
+      // Amplitude is set so the curve's max reach lands exactly on the
+      // first/last dot centers (SPACING/2 inset from each canvas edge),
+      // giving a snug fit to the visible dot grid.
       if (scenes.has("lissajous") && lissajousProgram && ljU && audioMix > 0.01) {
         const a = 2 + Math.floor(bassGroup * 3);
         const b = 3 + Math.floor(highsGroup * 3);
         const phase = (now * 0.0008) % (Math.PI * 2);
-        const ax = (cssW / 2) * 0.85;
-        const ay = (cssH / 2) * 0.85;
+        const ax = (cssW - SPACING) / 2;
+        const ay = (cssH - SPACING) / 2;
         const ccx = cssW / 2;
         const ccy = cssH / 2;
         let validSamples = 0;
