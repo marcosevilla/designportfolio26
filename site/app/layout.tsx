@@ -5,7 +5,6 @@ import MobileNav from "@/components/MobileNav";
 import { MarqueeProvider } from "@/components/MarqueeContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import ViewportFade from "@/components/ViewportFade";
-import StickyFooter from "@/components/StickyFooter";
 import { InlineEditorProvider } from "@/lib/InlineEditorContext";
 import FloatingToolbar from "@/components/dev/FloatingToolbar";
 import EditableOverlay from "@/components/dev/EditableOverlay";
@@ -60,7 +59,7 @@ export default function RootLayout({
               <InlineEditorProvider>
                 <main
                   id="main"
-                  className="max-w-[960px] mx-auto pb-20 px-4 sm:px-8 lg:px-6"
+                  className="max-w-[960px] mx-auto px-4 sm:px-8 lg:px-6"
                 >
                   {children}
                 </main>
@@ -72,7 +71,6 @@ export default function RootLayout({
                   </>
                 )}
               </InlineEditorProvider>
-              <StickyFooter />
               <ViewportFade />
               {process.env.NODE_ENV === "development" && <Agentation />}
             </SidebarProvider>

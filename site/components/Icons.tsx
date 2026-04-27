@@ -39,6 +39,16 @@ export function ListIcon({ size = 16, className }: IconProps) {
   );
 }
 
+export function CarouselIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2" y="5" width="3" height="6" />
+      <rect x="6.5" y="3" width="3" height="10" />
+      <rect x="11" y="5" width="3" height="6" />
+    </svg>
+  );
+}
+
 export function FilterIcon({ size = 16, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>

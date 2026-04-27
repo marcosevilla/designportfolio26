@@ -9,6 +9,7 @@ import { RenderParagraph } from "./StreamingText";
 import InlineExpandButton from "./InlineExpandButton";
 import ScrambleText from "./ScrambleText";
 import ScrambleParagraph from "./ScrambleParagraph";
+import HeroActions from "./HeroActions";
 
 const LOADING_DELAY = 1200;
 const INTRO_LOADING_DELAY = 1800;
@@ -83,10 +84,15 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
   return (
     <>
       {/* Heading — static, body-sized, scrambles in on first visit */}
-      <div className="sticky top-14 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-[var(--color-bg)]/90 backdrop-blur-sm lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
-        <h1 style={{ ...typescale.body, fontWeight: 400 }}>
-          <ScrambleText text={HERO_NAME} skip={introDone} />
-        </h1>
+      <div className="sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-[var(--color-bg)]/90 backdrop-blur-sm lg:relative lg:top-auto lg:z-auto lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:backdrop-blur-none">
+        <div className="flex items-center justify-between gap-6">
+          <h1 style={{ ...typescale.body, fontWeight: 500 }}>
+            <ScrambleText text={HERO_NAME} skip={introDone} />
+          </h1>
+          <div className="flex-shrink-0">
+            <HeroActions />
+          </div>
+        </div>
       </div>
 
       {/* Intro loading star — blinks before bio scrambles in */}
@@ -127,9 +133,9 @@ export default function Hero({ children }: { children?: React.ReactNode }) {
                 >
                   <p style={{ marginTop: pIdx === 0 ? 0 : "1.25rem" }}>
                     {isIntroStreaming ? (
-                      <ScrambleParagraph para={PARAGRAPHS[0]} onComplete={onBioIntroComplete} skip={reducedMotion} />
+                      <ScrambleParagraph para={PARAGRAPHS[0]} onComplete={onBioIntroComplete} skip={reducedMotion} staggerMs={35} />
                     ) : isStreaming ? (
-                      <ScrambleParagraph para={PARAGRAPHS[pIdx]} onComplete={onStreamComplete} skip={reducedMotion} />
+                      <ScrambleParagraph para={PARAGRAPHS[pIdx]} onComplete={onStreamComplete} skip={reducedMotion} staggerMs={35} />
                     ) : (
                       <RenderParagraph para={PARAGRAPHS[pIdx]} />
                     )}

@@ -236,7 +236,6 @@ export default function ThemePalette({
               style={{
                 top: anchorPos?.top ?? "50%",
                 left: anchorPos?.left ?? "108px",
-                transform: "translateY(-100%)",
               }}
             >
               <motion.div
@@ -247,7 +246,7 @@ export default function ThemePalette({
                   border: "1px solid var(--color-border)",
                   width: "200px",
                   padding: "14px",
-                  transformOrigin: "bottom left",
+                  transformOrigin: "top left",
                 }}
                 {...desktopMotion}
               >

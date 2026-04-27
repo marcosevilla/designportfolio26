@@ -5,7 +5,7 @@
 :root {
   --color-bg: #ffffff;
   --color-fg: #1a1a1a;
-  --color-fg-secondary: rgba(17, 17, 17, 0.82);
+  --color-fg-secondary: rgba(17, 17, 17, 0.6);
   --color-fg-tertiary: rgba(17, 17, 17, 0.35);
   --color-surface: #fbfbfb;
   --color-surface-raised: #f5f4f9;

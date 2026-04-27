@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import Hero from "./Hero";
-import DesktopSidebar from "./DesktopSidebar";
 import { setActivePanel } from "./SectionSnapContext";
 
 export default function HomeLayout({
@@ -32,7 +31,6 @@ export default function HomeLayout({
 
   return (
     <div className="pt-24 lg:pt-[18vh]">
-      <DesktopSidebar />
       <div className="max-w-[550px] mx-auto px-4 sm:px-8">
         <Hero>
           <section ref={workRef} className="mt-28" id="work">
