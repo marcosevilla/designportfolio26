@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity, useReducedMotion, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useMotionValueEvent, useVelocity, useReducedMotion, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -61,43 +61,20 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
   };
 
   return (
-    // No left/top/translateX/translateY — the parent is flex-centered, so x=0 means
-    // "horizontally centered in the track". Only motion-controlled values here, which
-    // avoids the conflict where static translateX and the motion x both compile to
-    // transform:translateX(...) and cause a visual jump on drag start.
+    // The card stays in its natural carousel position during expand. The route
+    // hand-off is handled by a fullscreen gradient veil rendered by the parent;
+    // animating the card's position would fight the layout system and jank.
     <motion.div
       className="absolute"
-      animate={
-        isExpanding
-          ? {
-              x: 0,
-              scale: 1,
-              opacity: 1,
-              rotate: 0,
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              marginLeft: 0,
-              marginTop: 0,
-              zIndex: 100,
-            }
-          : undefined
-      }
-      transition={isExpanding ? { duration: 0.28, ease: [0.32, 0.72, 0, 1] } : undefined}
-      style={
-        isExpanding
-          ? { position: "fixed" as const }
-          : {
-              x,
-              scale,
-              opacity,
-              rotate,
-              zIndex: isActive ? 10 : 5 - Math.abs(index - activeIndex),
-              marginLeft: `-${cardW / 2}px`,
-              marginTop: `-${cardH / 2}px`,
-            }
-      }
+      style={{
+        x,
+        scale,
+        opacity,
+        rotate,
+        zIndex: isActive ? 10 : 5 - Math.abs(index - activeIndex),
+        marginLeft: `-${cardW / 2}px`,
+        marginTop: `-${cardH / 2}px`,
+      }}
     >
       <Card {...cardProps} />
     </motion.div>
@@ -304,6 +281,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     );
   }
 
+  // Find the gradient of the card that's expanding so the veil matches the
+  // destination case study hero exactly — that's what makes the route swap invisible.
+  const expandingStudy = expandingSlug ? studies.find((s) => s.slug === expandingSlug) : null;
+  const expandingGradient = expandingStudy?.gradient ?? "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)";
+
   return (
     <div
       role="region"
@@ -354,6 +336,30 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
           ))}
         </motion.div>
       </motion.div>
+
+      {/* Fullscreen gradient veil — fades in to mask the route swap.
+          Uses position:fixed so it escapes the carousel's layout context entirely.
+          Color matches the destination case study hero, so when router.push fires
+          and the veil is at full opacity, the underlying page swap is invisible. */}
+      <AnimatePresence>
+        {expandingSlug && (
+          <motion.div
+            key="carousel-expand-veil"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: expandingGradient,
+              zIndex: 9999,
+              pointerEvents: "none",
+            }}
+            aria-hidden
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
