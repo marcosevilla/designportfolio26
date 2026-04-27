@@ -5,6 +5,7 @@ import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity,
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
+import { useExpandAndNavigate } from "@/lib/carousel-transition";
 
 interface CaseStudyCarouselProps {
   studies: CaseStudyMeta[];
@@ -39,9 +40,10 @@ interface CarouselItemProps {
   spread: number;
   cardW: number;
   cardH: number;
+  isExpanding: boolean;     // NEW
 }
 
-function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick, spread, cardW, cardH }: CarouselItemProps) {
+function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick, spread, cardW, cardH, isExpanding }: CarouselItemProps) {
   // Stable transform function — wrap in useMemo so framer-motion doesn't see a new
   // function identity on every render and potentially reset its internal MotionValue state.
   const xTransformFn = useMemo(() => (v: number) => v + index * spread, [index, spread]);
@@ -55,6 +57,7 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
     study,
     isActive,
     onClick: () => onCardClick(study.slug),
+    isExpanding,
   };
 
   return (
@@ -64,16 +67,37 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
     // transform:translateX(...) and cause a visual jump on drag start.
     <motion.div
       className="absolute"
-      style={{
-        x,
-        scale,
-        opacity,
-        rotate,
-        zIndex: isActive ? 10 : 5 - Math.abs(index - activeIndex),
-        // Keep the card centered on the flex anchor point
-        marginLeft: `-${cardW / 2}px`,
-        marginTop: `-${cardH / 2}px`,
-      }}
+      animate={
+        isExpanding
+          ? {
+              x: 0,
+              scale: 1,
+              opacity: 1,
+              rotate: 0,
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              marginLeft: 0,
+              marginTop: 0,
+              zIndex: 100,
+            }
+          : undefined
+      }
+      transition={isExpanding ? { duration: 0.28, ease: [0.32, 0.72, 0, 1] } : undefined}
+      style={
+        isExpanding
+          ? { position: "fixed" as const }
+          : {
+              x,
+              scale,
+              opacity,
+              rotate,
+              zIndex: isActive ? 10 : 5 - Math.abs(index - activeIndex),
+              marginLeft: `-${cardW / 2}px`,
+              marginTop: `-${cardH / 2}px`,
+            }
+      }
     >
       <Card {...cardProps} />
     </motion.div>
@@ -84,6 +108,7 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
 
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const reducedMotion = useReducedMotion();
+  const { expandingSlug, trigger } = useExpandAndNavigate();
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -184,7 +209,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
 
   const handleCardClick = (slug: string) => {
     if (panOccurredRef.current) return;
-    console.log("clicked", slug);
+    trigger(slug);
   };
 
   // ─── Trackpad horizontal scroll ──────────────────────────────────────────────
@@ -316,6 +341,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
             spread={SPREAD}
             cardW={CARD_W}
             cardH={CARD_H}
+            isExpanding={expandingSlug === study.slug}
           />
         ))}
       </motion.div>

@@ -12,6 +12,7 @@ export interface CarouselCardProps {
   study: CaseStudyMeta;
   isActive: boolean;
   onClick: () => void;
+  isExpanding?: boolean;
 }
 
 export const CAROUSEL_CARDS: Record<string, ComponentType<CarouselCardProps>> = {
