@@ -104,7 +104,6 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
   const settleTo = (index: number) => {
     const clamped = Math.max(0, Math.min(studies.length - 1, index));
     animRef.current?.stop();
-    console.log("[settleTo]", { index, clamped, target: -clamped * SPREAD, offsetXBefore: offsetX.get() });
     animRef.current = animate(offsetX, -clamped * SPREAD, { ...SETTLE_SPRING, velocity: 0 });
   };
 
@@ -133,7 +132,6 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     const projected = offsetX.get() + info.velocity.x * VELOCITY_FACTOR;
     const clamped = Math.max(minOffset, Math.min(maxOffset, projected));
     const snapIndex = Math.round(-clamped / SPREAD);
-    console.log("[onPanEnd]", { offsetXNow: offsetX.get(), velocity: info.velocity.x, projected, snapIndex });
     settleTo(snapIndex);
   };
 
