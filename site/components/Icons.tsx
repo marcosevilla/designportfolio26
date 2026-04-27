@@ -130,6 +130,42 @@ export function PaletteIcon({ size = 18, className }: IconProps) {
   );
 }
 
+// ── Transport (music player) ──
+
+export function PlayIcon({ size = 18, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M8 5.5L19 12 8 18.5z" />
+    </svg>
+  );
+}
+
+export function PauseIcon({ size = 18, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M9 6v12M15 6v12" />
+    </svg>
+  );
+}
+
+export function SkipBackIcon({ size = 18, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M6 6v12" />
+      <path d="M19 6L9 12l10 6z" />
+    </svg>
+  );
+}
+
+export function SkipForwardIcon({ size = 18, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M18 6v12" />
+      <path d="M5 6l10 6L5 18z" />
+    </svg>
+  );
+}
+
 export function MusicNoteIcon({ size = 18, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>

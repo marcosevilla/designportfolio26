@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react";
 import { useThemeState } from "./ThemeToggle";
 import { useMarquee } from "./MarqueeContext";
 import ThemePalette from "./ThemePalette";
+import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { EmailIcon, LinkedInIcon, MusicNoteIcon, PaletteIcon, SmileyIcon } from "./Icons";
 
 function ActionIcon({
@@ -37,6 +38,7 @@ function ActionIcon({
 
 export default function HeroActions() {
   const { visible: marqueeVisible, toggle: toggleMarquee } = useMarquee();
+  const { panelOpen: musicPanelOpen, togglePanel: toggleMusicPanel } = useAudioPlayer();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const paletteButtonRef = useRef<HTMLDivElement>(null);
   const [anchorPos, setAnchorPos] = useState<{ top: number; left: number } | null>(null);
@@ -76,9 +78,14 @@ export default function HeroActions() {
         >
           <SmileyIcon size={14} style={{ opacity: marqueeVisible ? 1 : 0.4 }} />
         </ActionIcon>
-        {/* Placeholder — music player coming soon */}
-        <ActionIcon label="Music player (coming soon)">
-          <MusicNoteIcon size={14} style={{ opacity: 0.4 }} />
+        <ActionIcon
+          label={musicPanelOpen ? "Close music player" : "Open music player"}
+          onClick={toggleMusicPanel}
+        >
+          <MusicNoteIcon
+            size={14}
+            style={{ opacity: musicPanelOpen ? 1 : 0.7 }}
+          />
         </ActionIcon>
       </div>
 

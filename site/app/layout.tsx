@@ -11,6 +11,7 @@ import EditableOverlay from "@/components/dev/EditableOverlay";
 import SectionReorder from "@/components/dev/SectionReorder";
 import DialKitMount from "@/components/dev/DialKitMount";
 import { Agentation } from "agentation";
+import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={GeistSans.variable}>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AudioPlayerProvider>
           <MarqueeProvider>
             <SidebarProvider>
               <a href="#main" className="skip-to-content">
@@ -77,6 +79,7 @@ export default function RootLayout({
               {process.env.NODE_ENV === "development" && <DialKitMount />}
             </SidebarProvider>
           </MarqueeProvider>
+          </AudioPlayerProvider>
         </ThemeProvider>
       </body>
     </html>
