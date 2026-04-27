@@ -21,4 +21,4 @@ export const SCENES: SceneMeta[] = [
   { id: "lissajous",  label: "Lissajous", hint: "Parametric curve trace" },
 ];
 
-export const DEFAULT_SCENE: VisualizerScene = "sparkles";
+export const DEFAULT_SCENE: VisualizerScene = "waveform";

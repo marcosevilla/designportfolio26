@@ -98,19 +98,23 @@ export default function SeekBar({
           }}
         />
       </div>
-      {/* Thumb */}
-      <div
-        className="absolute pointer-events-none rounded-full transition-[opacity,width,height]"
+      {/* Thumb — uses the same ✸ blink-cursor character used elsewhere on
+          the homepage (intro, loading state) for a consistent motif. */}
+      <span
+        aria-hidden="true"
+        className="absolute pointer-events-none select-none transition-[opacity,font-size]"
         style={{
           left: `${pct}%`,
           top: "50%",
-          width: expanded ? 12 : 8,
-          height: expanded ? 12 : 8,
+          fontSize: expanded ? 16 : 12,
+          lineHeight: 1,
           transform: "translate(-50%, -50%)",
-          opacity: expanded ? 1 : 0.65,
-          backgroundColor: "var(--color-accent)",
+          opacity: expanded ? 1 : 0.7,
+          color: "var(--color-accent)",
         }}
-      />
+      >
+        ✸
+      </span>
     </div>
   );
 }
