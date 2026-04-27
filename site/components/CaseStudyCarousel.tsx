@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useMotionValue, useTransform, useMotionValueEvent, useVelocity, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
@@ -34,7 +34,10 @@ interface CarouselItemProps {
 }
 
 function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick }: CarouselItemProps) {
-  const x = useTransform(offsetX, (v) => v + index * SPREAD);
+  // Stable transform function — wrap in useMemo so framer-motion doesn't see a new
+  // function identity on every render and potentially reset its internal MotionValue state.
+  const xTransformFn = useMemo(() => (v: number) => v + index * SPREAD, [index]);
+  const x = useTransform(offsetX, xTransformFn);
   const scale = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.85, 0.92, 1.0, 0.92, 0.85]);
   const opacity = useTransform(x, [-SPREAD * 2, -SPREAD, 0, SPREAD, SPREAD * 2], [0.4, 0.7, 1.0, 0.7, 0.4]);
 
@@ -47,18 +50,21 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
   };
 
   return (
+    // No left/top/translateX/translateY — the parent is flex-centered, so x=0 means
+    // "horizontally centered in the track". Only motion-controlled values here, which
+    // avoids the conflict where static translateX and the motion x both compile to
+    // transform:translateX(...) and cause a visual jump on drag start.
     <motion.div
       className="absolute"
       style={{
-        left: "50%",
-        top: "50%",
         x,
         scale,
         opacity,
         rotate,
-        translateX: `-${CARD_W / 2}px`,
-        translateY: `-${CARD_H / 2}px`,
         zIndex: isActive ? 10 : 5 - Math.abs(index - activeIndex),
+        // Keep the card centered on the flex anchor point
+        marginLeft: `-${CARD_W / 2}px`,
+        marginTop: `-${CARD_H / 2}px`,
       }}
     >
       <Card {...cardProps} />
@@ -183,8 +189,8 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     >
       <motion.div
         ref={trackRef}
-        className="absolute inset-0"
-        style={{ touchAction: "pan-y" }}
+        className="relative flex items-center justify-center"
+        style={{ width: "100%", height: `${CARD_H + 64}px`, touchAction: "pan-y" }}
         onPanStart={onPanStart}
         onPan={onPan}
         onPanEnd={onPanEnd}
