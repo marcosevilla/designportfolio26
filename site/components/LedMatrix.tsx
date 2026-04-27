@@ -359,6 +359,7 @@ uniform bool u_sceneChladni;
 uniform bool u_sceneDrumhead;
 uniform bool u_sceneFeedback;
 uniform bool u_sceneLissajous;
+uniform int u_lissajousColorIdx;  // 0..3, indexes u_palette — cycles per bar
 
 // Buffer-backed scene samplers (cols x rows simulation textures)
 uniform sampler2D u_drumheadTex;
@@ -567,7 +568,15 @@ void main() {
     vec2 cuv = (cellIdx + 0.5) / u_gridSize;
     float v = texture(u_lissajousTex, cuv).r;
     if (v > 0.01) {
-      addColor(lit, wColor, wTotal, v * audioMix, u_palette[1]);
+      // Curve color cycles through the four palette slots, one per bar
+      int idx = u_lissajousColorIdx;
+      if (idx < 0) idx = 0;
+      if (idx > 3) idx = 3;
+      vec3 col = idx == 0 ? u_palette[0]
+              : idx == 1 ? u_palette[1]
+              : idx == 2 ? u_palette[2]
+              :            u_palette[3];
+      addColor(lit, wColor, wTotal, v * audioMix, col);
     }
   }
 
@@ -781,6 +790,7 @@ export default function LedMatrix() {
     const uSceneDrumhead = u("u_sceneDrumhead");
     const uSceneFeedback = u("u_sceneFeedback");
     const uSceneLissajous = u("u_sceneLissajous");
+    const uLissajousColorIdx = u("u_lissajousColorIdx");
     const uDrumheadTex = u("u_drumheadTex");
     const uFeedbackTex = u("u_feedbackTex");
     const uLissajousTex = u("u_lissajousTex");
@@ -884,6 +894,10 @@ export default function LedMatrix() {
     // Lissajous sample positions (grid-cell coords) — packed each frame
     const lissajousSamplesArr = new Float32Array(MAX_LISSAJOUS_SAMPLES * 2);
 
+    // Beat-grid tracking (incremented in JS by detecting barPhase wrap)
+    let prevBarPhase = 0;
+    let barIndex = 0;
+
     const t0 = performance.now();
     const scheduleNextIdle = (now: number) => {
       nextIdleAt = now + IDLE_INTERVAL_MIN_MS + Math.random() * (IDLE_INTERVAL_MAX_MS - IDLE_INTERVAL_MIN_MS);
@@ -940,6 +954,12 @@ export default function LedMatrix() {
       const highsGroup = analysis?.highsGroup ?? 0;
       const onsetThisFrame = analysis?.onsetThisFrame ?? false;
 
+      // Bar-index tracker — increments once each time barPhase wraps back
+      // toward zero. Drives lissajous color-cycling per bar.
+      const curBarPhase = analysis?.barPhase ?? 0;
+      if (curBarPhase < 0.1 && prevBarPhase > 0.9) barIndex++;
+      prevBarPhase = curBarPhase;
+
       // Cursor smoothing
       cursorAlpha += (cursorTargetAlpha - cursorAlpha) * HOVER_FADE_RATE;
 
@@ -987,8 +1007,8 @@ export default function LedMatrix() {
             audioMix
         );
         // Per-drum bursts: kick = main bass-color burst, snare = mid burst,
-        // hat = many tiny high-color sparkles. This gives the field clear
-        // drum lineages instead of one global onset signature.
+        // hat = many tiny high-color sparkles. Plus a downbeat boost — when
+        // a kick lands on beat 1 of a bar, the burst is meaningfully bigger.
         let burstCount = 0;
         let snareBurst = 0;
         let hatBurst = 0;
@@ -996,9 +1016,15 @@ export default function LedMatrix() {
           const k = analysis.drums.kick;
           const s = analysis.drums.snare;
           const h = analysis.drums.hat;
+          const bp = analysis.barPhase;
+          // Downbeat = beat 1 of a 4/4 bar (barPhase near 0)
+          const onDownbeat = bp < 0.12 || bp > 0.88;
+          const downbeatBoost = onDownbeat ? 1.7 : 1.0;
           if (k.onset) {
             burstCount = Math.floor(
-              (SPARKLES_BURST_BASE + SPARKLES_BURST_PER_BEAT * k.strength) * sCfg.onsetBurst
+              (SPARKLES_BURST_BASE + SPARKLES_BURST_PER_BEAT * k.strength) *
+                sCfg.onsetBurst *
+                downbeatBoost
             );
           }
           if (s.onset) snareBurst = Math.floor(8 + s.strength * 16 * sCfg.onsetBurst);
@@ -1210,11 +1236,15 @@ export default function LedMatrix() {
         });
       }
 
-      // FEEDBACK
+      // FEEDBACK — rotation pulses at BPM. A spike at the start of each
+      // detected beat (decays over the first quarter-beat) makes the warp
+      // "tick" with the music instead of cruising at constant rate.
       if (scenes.has("feedback") && feedbackProgram && fbU && audioMix > 0.01) {
         const bg = bassGroup;
         const hg = highsGroup;
-        const angle = 0.018 + 0.030 * bg;
+        const beatPhase = analysis?.beatPhase ?? 0;
+        const beatPulse = beatPhase < 0.25 ? 1 - beatPhase / 0.25 : 0;
+        const angle = 0.018 + 0.030 * bg + 0.05 * beatPulse;
         const zoom = 1.014 + 0.010 * hg;
         const bassRadius = bg * 14;
         let strokeBassY = -1, strokeMidsX = -1;
@@ -1316,6 +1346,7 @@ export default function LedMatrix() {
       gl.uniform1i(uSceneDrumhead, scenes.has("drumhead") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneFeedback, scenes.has("feedback") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneLissajous, scenes.has("lissajous") && d.master.enabled ? 1 : 0);
+      gl.uniform1i(uLissajousColorIdx, ((barIndex % 4) + 4) % 4);
 
       // Set uniforms
       gl.uniform2f(uResolution, canvas.width, canvas.height);
