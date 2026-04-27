@@ -32,10 +32,10 @@ const SPARKLES_BASE_RATE = 1.2;
 const SPARKLES_BASS_RATE = 14;
 const SPARKLES_BURST_BASE = 18;
 const SPARKLES_BURST_PER_BEAT = 28;
-const SPARKLES_LIFE_MIN_MS = 140;
-const SPARKLES_LIFE_MAX_MS = 520;
-const SPARKLES_BIG_LIFE_MIN = 320;
-const SPARKLES_BIG_LIFE_MAX = 700;
+const SPARKLES_LIFE_MIN_MS = 180;
+const SPARKLES_LIFE_MAX_MS = 600;
+const SPARKLES_BIG_LIFE_MIN = 380;
+const SPARKLES_BIG_LIFE_MAX = 820;
 
 // ── Click ripples ────────────────────────────────────────────────────────
 const RIPPLE_TOTAL_MS = 2800;
@@ -352,6 +352,10 @@ uniform float u_cornerRadius;
 uniform float u_vibrancy;
 uniform float u_audioMixCap;
 
+// Beat grid (passed every frame for scenes that want bar-aware effects)
+uniform float u_beatPhase;
+uniform float u_barPhase;
+
 // Scene flags
 uniform bool u_sceneSparkles;
 uniform bool u_sceneWaveform;
@@ -477,6 +481,8 @@ void main() {
   }
 
   // ── SPARKLES scene ───────────────────────────────────────────────────
+  // Starburst: a small radial core + thin cross-rays along ±x and ±y so
+  // each sparkle reads as a ✦ rather than a fuzzy dot.
   if (u_sceneSparkles && audioMix > 0.01) {
     for (int i = 0; i < MAX_SPARKLES; i++) {
       if (i >= u_sparkleCount) break;
@@ -488,16 +494,33 @@ void main() {
       if (t >= 1.0) continue;
       float dx = uv.x - pos.x;
       float dy = uv.y - pos.y;
-      float r2 = attr.x * attr.x;
-      float d2 = dx * dx + dy * dy;
-      if (d2 < r2) {
-        float u = d2 / r2;
-        float fall = (1.0 - u) * (1.0 - u);
-        float env = sin(t * PI);
-        int idx = int(attr.z + 0.5);
-        vec3 col = u_palette[idx];
-        addColor(lit, wColor, wTotal, fall * env * attr.y * audioMix, col);
-      }
+      float core = attr.x;             // core radius (px)
+      float rayLen = core * 4.5;       // streak length along the axis
+      float rayWid = core * 0.55;      // streak width across the axis
+      float ax = abs(dx);
+      float ay = abs(dy);
+      // Quick reject: outside both core and ray bounds → skip
+      if (ax > rayLen && ay > rayLen) continue;
+
+      // Core radial falloff
+      float d = sqrt(dx * dx + dy * dy);
+      float coreFall = max(0.0, 1.0 - d / core);
+      coreFall *= coreFall;
+
+      // Two perpendicular rays (× → cross). Each is a stripe: bright along
+      // its axis, narrow across it.
+      float hRay = max(0.0, 1.0 - ax / rayLen) * max(0.0, 1.0 - ay / rayWid);
+      float vRay = max(0.0, 1.0 - ay / rayLen) * max(0.0, 1.0 - ax / rayWid);
+      // Sharpen the rays so they read as streaks, not blobs
+      hRay *= hRay;
+      vRay *= vRay;
+
+      float starShape = max(coreFall, max(hRay, vRay));
+      if (starShape <= 0.0) continue;
+      float env = sin(t * PI);
+      int idx = int(attr.z + 0.5);
+      vec3 col = u_palette[idx];
+      addColor(lit, wColor, wTotal, starShape * env * attr.y * audioMix, col);
     }
   }
 
@@ -764,6 +787,8 @@ export default function LedMatrix() {
     const uCornerRadius = u("u_cornerRadius");
     const uVibrancy = u("u_vibrancy");
     const uAudioMixCap = u("u_audioMixCap");
+    const uBeatPhase = u("u_beatPhase");
+    const uBarPhase = u("u_barPhase");
     const uSceneSparkles = u("u_sceneSparkles");
     const uSceneWaveform = u("u_sceneWaveform");
     const uSceneChladni = u("u_sceneChladni");
@@ -1039,8 +1064,11 @@ export default function LedMatrix() {
           const life = isBig
             ? SPARKLES_BIG_LIFE_MIN + Math.random() * (SPARKLES_BIG_LIFE_MAX - SPARKLES_BIG_LIFE_MIN)
             : SPARKLES_LIFE_MIN_MS + Math.random() * (SPARKLES_LIFE_MAX_MS - SPARKLES_LIFE_MIN_MS);
-          const size = isBig ? 2.0 + Math.random() * 2.5 : 0.5 + Math.random() * 1.0;
-          const intensity = (0.6 + Math.random() * 0.7) * sCfg.intensity * (isBig ? 1.2 : 1);
+          // Bigger sizes overall — starbursts need real estate to read as
+          // streaks, not just dots. Big sparkles get up to ~5px core radius
+          // (=> ~22px ray reach) so they punch.
+          const size = isBig ? 3.0 + Math.random() * 2.5 : 1.0 + Math.random() * 1.2;
+          const intensity = (0.95 + Math.random() * 0.7) * sCfg.intensity * (isBig ? 1.35 : 1);
           let colorIdx = forcedColor ?? 0;
           if (forcedColor === null) {
             const wB = (bandsArr ? (bandsArr[0] + bandsArr[1]) : 0.5) * 2.2 + 0.4;
@@ -1113,7 +1141,11 @@ export default function LedMatrix() {
         }
         chladniM += (chladniMTarget - chladniM) * 0.045;
         chladniN += (chladniNTarget - chladniN) * 0.045;
-        chladniRotation += 0.0025 + 0.005 * bassGroup;
+        // Rotation gets a brief acceleration burst at the start of each bar
+        // (barPhase wrap zone) — the lattice spins faster every 4 beats.
+        const bp = analysis?.barPhase ?? 0;
+        const barBoost = bp < 0.08 || bp > 0.92 ? 0.025 : 0;
+        chladniRotation += 0.0025 + 0.005 * bassGroup + barBoost;
         chladniPhaseX += 0.0035 + 0.006 * midsGroup;
         chladniPhaseY += 0.0028 + 0.005 * highsGroup;
       }
@@ -1225,11 +1257,16 @@ export default function LedMatrix() {
           impY = Math.floor(rows * 0.15 + Math.random() * rows * 0.25);
           impAmp = 0.25 + drums.hat.strength * 0.4;
         }
+        // Wave speed pulses with the beat: c² jumps briefly at the start of
+        // each beat so wavefronts accelerate on the downbeat tick.
+        const beatPhaseDH = analysis?.beatPhase ?? 0;
+        const beatPulseDH = beatPhaseDH < 0.2 ? 1 - beatPhaseDH / 0.2 : 0;
+        const c2 = 0.16 + 0.05 * beatPulseDH;
         drumheadCurrent = runSim(drumheadProgram, aPosDH, drumheadPair, drumheadCurrent, () => {
           gl.uniform1i(dhU.input, 0);
           gl.uniform2f(dhU.gridSize, cols, rows);
           gl.uniform4f(dhU.impulse, impX, impY, impAmp, 0);
-          gl.uniform1f(dhU.c2, 0.16);
+          gl.uniform1f(dhU.c2, c2);
           gl.uniform1f(dhU.damp, 0.985);
           gl.uniform1f(dhU.envRise, 0.55);
           gl.uniform1f(dhU.envFall, 0.93);
@@ -1360,8 +1397,17 @@ export default function LedMatrix() {
       gl.uniform1f(uDotBase, DOT_BASE * dpr);
       gl.uniform1f(uDotBloom, DOT_BLOOM * dpr);
       gl.uniform1f(uCornerRadius, CORNER_RADIUS * dpr);
-      gl.uniform1f(uVibrancy, d.master.vibrancy);
+      // Vibrancy lift on downbeats — temporarily lower vibrancy gamma so
+      // moderate intensities push closer to full palette color, making the
+      // grid pop on beat 1 of each bar. Falls off over the first 18% of
+      // the bar.
+      const dbpRaw = analysis?.barPhase ?? 0;
+      const dbProx = dbpRaw < 0.18 ? 1 - dbpRaw / 0.18 : (dbpRaw > 0.82 ? (dbpRaw - 0.82) / 0.18 : 0);
+      const effectiveVibrancy = Math.max(0.3, d.master.vibrancy - 0.18 * dbProx);
+      gl.uniform1f(uVibrancy, effectiveVibrancy);
       gl.uniform1f(uAudioMixCap, d.master.audioMixCap);
+      gl.uniform1f(uBeatPhase, analysis?.beatPhase ?? 0);
+      gl.uniform1f(uBarPhase, analysis?.barPhase ?? 0);
 
       gl.uniform1i(uSceneSparkles, scenes.has("sparkles") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneWaveform, scenes.has("waveform") && d.master.enabled ? 1 : 0);
