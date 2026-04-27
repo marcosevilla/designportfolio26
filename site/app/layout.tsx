@@ -9,6 +9,7 @@ import { InlineEditorProvider } from "@/lib/InlineEditorContext";
 import FloatingToolbar from "@/components/dev/FloatingToolbar";
 import EditableOverlay from "@/components/dev/EditableOverlay";
 import SectionReorder from "@/components/dev/SectionReorder";
+import DialKitMount from "@/components/dev/DialKitMount";
 import { Agentation } from "agentation";
 import "./globals.css";
 
@@ -73,6 +74,7 @@ export default function RootLayout({
               </InlineEditorProvider>
               <ViewportFade />
               {process.env.NODE_ENV === "development" && <Agentation />}
+              {process.env.NODE_ENV === "development" && <DialKitMount />}
             </SidebarProvider>
           </MarqueeProvider>
         </ThemeProvider>
