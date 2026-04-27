@@ -36,11 +36,11 @@ interface CarouselItemProps {
   offsetX: MotionValue<number>;
   rotate: MotionValue<number>;
   isActive: boolean;
-  onCardClick: (slug: string) => void;
+  onCardClick: (slug: string, index: number) => void;
   spread: number;
   cardW: number;
   cardH: number;
-  isExpanding: boolean;     // NEW
+  isExpanding: boolean;
 }
 
 function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, onCardClick, spread, cardW, cardH, isExpanding }: CarouselItemProps) {
@@ -56,7 +56,7 @@ function CarouselItem({ study, index, activeIndex, offsetX, rotate, isActive, on
   const cardProps: CarouselCardProps = {
     study,
     isActive,
-    onClick: () => onCardClick(study.slug),
+    onClick: () => onCardClick(study.slug, index),
     isExpanding,
   };
 
@@ -185,9 +185,15 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
     setTimeout(() => { panOccurredRef.current = false; }, 50);
   };
 
-  const handleCardClick = (slug: string) => {
+  const handleCardClick = (slug: string, index: number) => {
     if (panOccurredRef.current) return;
-    trigger(slug);
+    // Click on a side card → scroll to it (don't navigate).
+    // Click on the active centered card → navigate to the case study.
+    if (index === activeIndexRef.current) {
+      trigger(slug);
+    } else {
+      settleTo(index);
+    }
   };
 
   // ─── Trackpad horizontal scroll ──────────────────────────────────────────────
@@ -295,7 +301,11 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
       style={{
         marginLeft: "calc(-50vw + 50%)",
         marginRight: "calc(-50vw + 50%)",
-        height: `${CARD_H + 64}px`,
+        // Vertical buffer: marginTop pushes the carousel below the Work header
+        // and toggle row; the extra 64px on height gives the active card (scale 1.0)
+        // visual breathing room above and below.
+        marginTop: "32px",
+        height: `${CARD_H + 128}px`,
         ["--carousel-card-w" as string]: `${CARD_W}px`,
         ["--carousel-card-h" as string]: `${CARD_H}px`,
       }}
@@ -313,7 +323,7 @@ export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
         <motion.div
           ref={trackRef}
           className="relative flex items-center justify-center"
-          style={{ width: "100%", height: `${CARD_H + 64}px`, touchAction: "pan-y" }}
+          style={{ width: "100%", height: `${CARD_H + 128}px`, touchAction: "pan-y" }}
           onPointerDown={onPointerDown}
           onPan={onPan}
           onPanEnd={onPanEnd}
