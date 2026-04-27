@@ -11,7 +11,7 @@ import {
   SkipForwardIcon,
   CloseIcon,
 } from "@/components/Icons";
-import { Slider } from "@/components/ui/slider";
+import SeekBar from "./SeekBar";
 
 function ChipButton({
   label,
@@ -120,21 +120,17 @@ export default function PlayerChip() {
             </div>
             {/* Thin scrubbable progress strip */}
             <div className="px-3 pb-1.5">
-              <Slider
-                value={[Math.min(displayTime, duration || displayTime)]}
-                max={duration || 1}
-                step={0.1}
-                onValueChange={(v) => {
-                  if (Array.isArray(v) && typeof v[0] === "number") {
-                    setScrubbing(true);
-                    setScrubValue(v[0]);
-                    seek(v[0]);
-                  }
+              <SeekBar
+                value={Math.min(displayTime, duration || displayTime)}
+                max={duration}
+                onChange={(t) => {
+                  setScrubbing(true);
+                  setScrubValue(t);
+                  seek(t);
                 }}
-                onValueCommitted={() => {
+                onCommit={() => {
                   requestAnimationFrame(() => setScrubbing(false));
                 }}
-                aria-label="Seek"
               />
             </div>
           </div>

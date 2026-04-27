@@ -10,7 +10,7 @@ import {
   SkipBackIcon,
   SkipForwardIcon,
 } from "@/components/Icons";
-import { Slider } from "@/components/ui/slider";
+import SeekBar from "./SeekBar";
 
 function TransportButton({
   label,
@@ -114,25 +114,20 @@ export default function PlayerPanel() {
             >
               {formatTime(displayTime)}
             </span>
-            <Slider
-              value={[Math.min(displayTime, duration || displayTime)]}
-              max={duration || 1}
-              step={0.1}
-              onValueChange={(v) => {
-                if (Array.isArray(v) && typeof v[0] === "number") {
+            <div className="flex-1">
+              <SeekBar
+                value={Math.min(displayTime, duration || displayTime)}
+                max={duration}
+                onChange={(t) => {
                   setScrubbing(true);
-                  setScrubValue(v[0]);
-                  seek(v[0]);
-                }
-              }}
-              onValueCommitted={() => {
-                // Drop scrubbing state on next frame so the displayed time
-                // smoothly hands back over to the live audio currentTime.
-                requestAnimationFrame(() => setScrubbing(false));
-              }}
-              className="flex-1"
-              aria-label="Seek"
-            />
+                  setScrubValue(t);
+                  seek(t);
+                }}
+                onCommit={() => {
+                  requestAnimationFrame(() => setScrubbing(false));
+                }}
+              />
+            </div>
             <span
               className="tabular-nums shrink-0"
               style={{ fontSize: "10px", color: "var(--color-fg-tertiary)" }}
