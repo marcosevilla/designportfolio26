@@ -143,6 +143,49 @@ function parseColor(c: string): [number, number, number] {
   return [180, 180, 180];
 }
 
+function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6;
+  }
+  return [h, s, l];
+}
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  if (s === 0) return [l * 255, l * 255, l * 255];
+  const hue2rgb = (p: number, q: number, t: number): number => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  return [
+    hue2rgb(p, q, h + 1 / 3) * 255,
+    hue2rgb(p, q, h) * 255,
+    hue2rgb(p, q, h - 1 / 3) * 255,
+  ];
+}
+
+/** Boost saturation of an RGB triple by `factor` (1 = unchanged, >1 = more saturated). */
+function saturate(rgb: [number, number, number], factor: number): [number, number, number] {
+  if (factor === 1) return rgb;
+  const [h, s, l] = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+  return hslToRgb(h, Math.min(1, s * factor), l);
+}
+
 export default function LedMatrix() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reducedMotion = usePrefersReducedMotion();
@@ -173,6 +216,12 @@ export default function LedMatrix() {
       enabled: true,
       audioMixCap: [1.0, 0, 1],
       beatFlash: [0.18, 0, 1],
+      // Saturation multiplier applied to per-track palette colors. >1 boosts.
+      saturation: [1.5, 1, 3],
+      // Gamma curve on the final lit value before color blending. Lower
+      // values push moderate intensities closer to full palette color
+      // (more vibrant); 1.0 = linear (current behavior).
+      vibrancy: [0.65, 0.3, 1.0],
     },
     bass: {
       type: {
@@ -313,12 +362,15 @@ export default function LedMatrix() {
     const sparkles: Sparkle[] = [];
     const analyzer = new AudioAnalyzer();
     let analysis: AnalysisSnapshot | null = null;
-    // Per-track palette colors (parsed lazily, refreshed when track changes)
+    // Per-track palette colors (parsed lazily, refreshed when track or
+    // saturation dial changes — saturation is applied at parse time so the
+    // per-pixel render path stays cheap).
     let bassCol: [number, number, number] = [180, 100, 30];
     let midsCol: [number, number, number] = [232, 155, 90];
     let highsCol: [number, number, number] = [242, 210, 155];
     let airCol: [number, number, number] = [255, 241, 214];
     let lastPaletteSrc = "";
+    let lastSaturation = -1;
     // Beat-flash for onset events
     let onsetFlashStrength = 0;
 
@@ -345,14 +397,17 @@ export default function LedMatrix() {
       const track = aState.track;
       const mood = MOODS[track.mood ?? "warm"];
 
-      // Refresh palette colors when the track changes
-      if (track.src !== lastPaletteSrc) {
-        bassCol = parseColor(track.palette.bass);
-        midsCol = parseColor(track.palette.mids);
-        highsCol = parseColor(track.palette.highs);
-        airCol = parseColor(track.palette.air);
+      // Refresh palette colors when the track or saturation dial changes
+      const satFactor = dialRef.current.master.saturation;
+      const trackChanged = track.src !== lastPaletteSrc;
+      if (trackChanged || satFactor !== lastSaturation) {
+        bassCol = saturate(parseColor(track.palette.bass), satFactor);
+        midsCol = saturate(parseColor(track.palette.mids), satFactor);
+        highsCol = saturate(parseColor(track.palette.highs), satFactor);
+        airCol = saturate(parseColor(track.palette.air), satFactor);
         lastPaletteSrc = track.src;
-        analyzer.reset();
+        lastSaturation = satFactor;
+        if (trackChanged) analyzer.reset();
       }
 
       analysis = null;
@@ -1151,8 +1206,9 @@ export default function LedMatrix() {
           }
 
           // Weighted average of contributing colors, then lerp from off
-          // by total intensity. Cleaner than additive: same-color layers
-          // reinforce, different-color layers blend proportionally.
+          // by total intensity. Vibrancy gamma curve pushes moderate lit
+          // values closer to full palette color so colors don't get diluted
+          // by the grey baseline at low/medium intensity.
           if (lit > 1) lit = 1;
           let litR = offColor[0], litG = offColor[1], litB = offColor[2];
           if (wTotal > 0) {
@@ -1160,9 +1216,10 @@ export default function LedMatrix() {
             litG = wG / wTotal;
             litB = wB / wTotal;
           }
-          const rC = offColor[0] + (litR - offColor[0]) * lit;
-          const gC = offColor[1] + (litG - offColor[1]) * lit;
-          const bC = offColor[2] + (litB - offColor[2]) * lit;
+          const litCurve = Math.pow(lit, dialRef.current.master.vibrancy);
+          const rC = offColor[0] + (litR - offColor[0]) * litCurve;
+          const gC = offColor[1] + (litG - offColor[1]) * litCurve;
+          const bC = offColor[2] + (litB - offColor[2]) * litCurve;
           // Boot fade applies to alpha
           const alpha = bootP;
 

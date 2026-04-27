@@ -22,16 +22,20 @@ export type Track = {
 };
 
 // Drop MP3/M4A files into public/audio/ and reference them via /audio/<file>.
+// Palettes use saturated, contrasting hues per band so each frequency lights
+// up in a distinct color (rather than monochrome ramps where everything ends
+// up the same shade).
 export const PLAYLIST: Track[] = [
   {
     src: "/audio/track-1.mp3",
     title: "Untitled One",
     artist: "Marco's Picks",
+    // Heat ramp — red kicks, amber mids, gold highs, cream air
     palette: {
-      bass: "#B5651D",   // copper
-      mids: "#E89B5A",   // amber
-      highs: "#F2D29B",  // warm sand
-      air: "#FFF1D6",    // cream
+      bass: "#DC2626",   // red-600
+      mids: "#F59E0B",   // amber-500
+      highs: "#FACC15",  // yellow-400
+      air: "#FEF08A",    // yellow-200
     },
     mood: "warm",
   },
@@ -39,11 +43,12 @@ export const PLAYLIST: Track[] = [
     src: "/audio/track-2.mp3",
     title: "Untitled Two",
     artist: "Marco's Picks",
+    // Cool jewel — violet kicks, blue mids, cyan highs, sky air
     palette: {
-      bass: "#3B3F8F",   // deep indigo
-      mids: "#6366F1",   // electric indigo
-      highs: "#A5B4FC",  // periwinkle
-      air: "#E0E7FF",    // ice
+      bass: "#7C3AED",   // violet-600
+      mids: "#3B82F6",   // blue-500
+      highs: "#06B6D4",  // cyan-500
+      air: "#A5F3FC",    // cyan-200
     },
     mood: "energetic",
   },
@@ -51,11 +56,12 @@ export const PLAYLIST: Track[] = [
     src: "/audio/track-3.mp3",
     title: "Untitled Three",
     artist: "Marco's Picks",
+    // High-contrast — emerald kicks, magenta snares, gold highs, blush air
     palette: {
-      bass: "#0F4C42",   // deep teal
-      mids: "#0D9488",   // teal
-      highs: "#5EEAD4",  // mint
-      air: "#CCFBF1",    // pale aqua
+      bass: "#059669",   // emerald-600
+      mids: "#EC4899",   // pink-500
+      highs: "#FACC15",  // yellow-400
+      air: "#FBCFE8",    // pink-200
     },
     mood: "dreamy",
   },
