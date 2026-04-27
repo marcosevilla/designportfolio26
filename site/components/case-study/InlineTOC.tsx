@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useMotionValueEvent, animate } from "framer-motion";
 import { useSidebar } from "@/lib/SidebarContext";
 import { BackChevronIcon } from "../Icons";
 
 const STAR_SPRING = { type: "spring" as const, stiffness: 300, damping: 34 };
 const LINK_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
+const ROW_HEIGHT = 28;
 
 // Smooth-scroll typically lands within ~600-800ms. Lock the IntersectionObserver
 // for 900ms so it can't clobber the click target with intermediate sections it
@@ -18,9 +19,28 @@ export default function InlineTOC() {
   const { tocItems, activeTocId, setActiveTocIdAndLock, backHref } = useSidebar();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  if (!tocItems) return null;
+  // Star y is driven via a motion value (not the animate prop) so we can read
+  // its instantaneous position each frame and indent whatever link the star is
+  // currently passing over.
+  const starY = useMotionValue(0);
+  const [passingIndex, setPassingIndex] = useState<number | null>(null);
 
-  const activeIndex = tocItems.findIndex((item) => item.id === activeTocId);
+  useMotionValueEvent(starY, "change", (y) => {
+    const idx = Math.round(y / ROW_HEIGHT);
+    setPassingIndex(idx);
+  });
+
+  const activeIndex = tocItems ? tocItems.findIndex((item) => item.id === activeTocId) : -1;
+
+  // Drive the star to the active position via spring whenever activeIndex changes.
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    const controls = animate(starY, activeIndex * ROW_HEIGHT, STAR_SPRING);
+    return () => controls.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex]);
+
+  if (!tocItems) return null;
 
   const handleClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -55,13 +75,11 @@ export default function InlineTOC() {
               color: "var(--color-accent)",
               fontSize: "12px",
               lineHeight: "20px",
+              y: starY,
             }}
-            animate={{
-              y: activeIndex * 28,
-              opacity: 1,
-            }}
-            initial={{ y: activeIndex * 28, opacity: 0 }}
-            transition={STAR_SPRING}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15 }}
             aria-hidden
           >
             ✸
@@ -70,6 +88,10 @@ export default function InlineTOC() {
         {tocItems.map((item, index) => {
           const active = item.id === activeTocId;
           const isHovered = hoveredIndex === index;
+          // Indent any link the star is currently passing over, in addition to
+          // the active one. Creates a brief "wave" of indents trailing the
+          // star's spring travel.
+          const isPassing = passingIndex === index && !active;
           const textColor = isHovered || active
             ? "var(--color-accent)"
             : "var(--color-fg-secondary)";
@@ -85,7 +107,7 @@ export default function InlineTOC() {
               >
                 <motion.span
                   className="inline-block"
-                  animate={{ x: active ? 18 : isHovered ? 8 : 0 }}
+                  animate={{ x: active || isPassing ? 18 : isHovered ? 8 : 0 }}
                   transition={LINK_SPRING}
                   style={{ color: textColor }}
                 >
