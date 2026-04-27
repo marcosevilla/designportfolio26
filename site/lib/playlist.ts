@@ -28,8 +28,8 @@ export type Track = {
 export const PLAYLIST: Track[] = [
   {
     src: "/audio/track-1.mp3",
-    title: "Untitled One",
-    artist: "Marco's Picks",
+    title: "DANCE..",
+    artist: "Slayyyter",
     // Heat ramp — red kicks, amber mids, gold highs, cream air
     palette: {
       bass: "#DC2626",   // red-600
@@ -37,12 +37,12 @@ export const PLAYLIST: Track[] = [
       highs: "#FACC15",  // yellow-400
       air: "#FEF08A",    // yellow-200
     },
-    mood: "warm",
+    mood: "energetic",
   },
   {
     src: "/audio/track-2.mp3",
-    title: "Untitled Two",
-    artist: "Marco's Picks",
+    title: "iPod Touch",
+    artist: "Ninajirachi",
     // Cool jewel — violet kicks, blue mids, cyan highs, sky air
     palette: {
       bass: "#7C3AED",   // violet-600
@@ -54,8 +54,8 @@ export const PLAYLIST: Track[] = [
   },
   {
     src: "/audio/track-3.mp3",
-    title: "Untitled Three",
-    artist: "Marco's Picks",
+    title: "Jump",
+    artist: "BLACKPINK",
     // High-contrast — emerald kicks, magenta snares, gold highs, blush air
     palette: {
       bass: "#059669",   // emerald-600
@@ -63,12 +63,12 @@ export const PLAYLIST: Track[] = [
       highs: "#FACC15",  // yellow-400
       air: "#FBCFE8",    // pink-200
     },
-    mood: "dreamy",
+    mood: "energetic",
   },
   {
     src: "/audio/track-4.mp3",
-    title: "Untitled Four",
-    artist: "Marco's Picks",
+    title: "Gameboy",
+    artist: "BLACKPINK",
     // Dreampop — violet kicks, fuchsia mids, pink highs, blush air
     palette: {
       bass: "#8B5CF6",   // violet-500
@@ -76,12 +76,12 @@ export const PLAYLIST: Track[] = [
       highs: "#F472B6",  // pink-400
       air: "#FCE7F3",    // pink-100
     },
-    mood: "chill",
+    mood: "warm",
   },
   {
     src: "/audio/track-5.mp3",
-    title: "Untitled Five",
-    artist: "Marco's Picks",
+    title: "Lite Spots",
+    artist: "KAYTRANADA",
     // Midnight neon — navy kicks, royal purple mids, neon-pink highs, gold air
     palette: {
       bass: "#1E40AF",   // blue-800
@@ -89,7 +89,7 @@ export const PLAYLIST: Track[] = [
       highs: "#F472B6",  // pink-400
       air: "#FBBF24",    // amber-400
     },
-    mood: "dark",
+    mood: "chill",
   },
 ];
 
