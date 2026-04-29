@@ -99,7 +99,7 @@ export default function LedMatrixUI() {
     };
   }, []);
 
-  // Click handler for play glyph.
+  // Click handler — full region router: scrubber → scene → transport.
   useEffect(() => {
     const parent = wrapperRef.current;
     if (!parent) return;
@@ -111,16 +111,47 @@ export default function LedMatrixUI() {
       const { cols, rows } = sizeRef.current;
       const col = Math.floor(x / CELL);
       const row = Math.floor(y / CELL);
-      // Center band: rows within ±5 of grid mid, cols within ±15 of grid mid.
-      const midC = Math.floor(cols / 2);
+
+      // 1. Scrubber band (bottom 6 rows): seek
+      if (row >= rows - 6) {
+        const BAR_PAD_LEFT = 18;
+        const BAR_PAD_RIGHT = 13;
+        const barStart = BAR_PAD_LEFT;
+        const barEnd = cols - BAR_PAD_RIGHT;
+        if (col >= barStart && col <= barEnd && duration > 0) {
+          const ratio = (col - barStart) / (barEnd - barStart);
+          seek(ratio * duration);
+          return;
+        }
+      }
+
+      // 2. Scene picker (top-right strip)
+      const SCENE_W = 5;
+      const SCENE_GAP = 1;
+      const ICONS_W = SCENES.length * SCENE_W + (SCENES.length - 1) * SCENE_GAP;
+      const sceneOriginCol = cols - ICONS_W - 2;
+      if (row >= 1 && row <= 9 && col >= sceneOriginCol && col < sceneOriginCol + ICONS_W) {
+        const i = Math.floor((col - sceneOriginCol) / (SCENE_W + SCENE_GAP));
+        const id = SCENES[i]?.id;
+        if (id) setOnlyScene(id);
+        return;
+      }
+
+      // 3. Transport (centered band)
       const midR = Math.floor(rows / 2);
-      if (Math.abs(row - midR) <= 5 && Math.abs(col - midC) <= 15) {
-        togglePlay();
+      if (Math.abs(row - midR) <= 5) {
+        const transportW = 7 + 4 + 7 + 4 + 7;
+        const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
+        const local = col - transportOriginCol;
+        if (local >= 0 && local < 7) prev();
+        else if (local >= 11 && local < 18) togglePlay();
+        else if (local >= 22 && local < 29) next();
+        return;
       }
     };
     parent.addEventListener("click", onClick);
     return () => parent.removeEventListener("click", onClick);
-  }, [revealed, togglePlay]);
+  }, [revealed, togglePlay, prev, next, seek, setOnlyScene, duration]);
 
   // Single draw entry point.
   const drawNow = () => {
