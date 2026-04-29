@@ -60,6 +60,17 @@ export function FilterIcon({ size = 16, className }: IconProps) {
   );
 }
 
+// ── Status ──
+
+export function LockIcon({ size = 12, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <rect x="5" y="11" width="14" height="10" rx="1.5" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+
 // ── Actions ──
 
 export function CloseIcon({ size = 10, className }: IconProps) {

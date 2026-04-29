@@ -23,6 +23,8 @@ import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
 import { VisualizerSceneProvider } from "@/lib/VisualizerSceneContext";
 import { ThemeStateProvider } from "@/components/ThemeToggle";
 import PlayerChip from "@/components/music/PlayerChip";
+import { PasswordGateProvider } from "@/lib/PasswordGateContext";
+import PasswordModal from "@/components/PasswordModal";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -68,28 +70,31 @@ export default function RootLayout({
           <VisualizerSceneProvider>
           <MarqueeProvider>
             <SidebarProvider>
-              <a href="#main" className="skip-to-content">
-                Skip to content
-              </a>
-              <MobileNav />
-              <InlineEditorProvider>
-                <main
-                  id="main"
-                  className="max-w-[960px] mx-auto px-4 sm:px-8 lg:px-6"
-                >
-                  {children}
-                </main>
-                {process.env.NODE_ENV === "development" && (
-                  <>
-                    <EditableOverlay />
-                    <SectionReorder />
-                    <FloatingToolbar />
-                  </>
-                )}
-              </InlineEditorProvider>
-              <ViewportFade />
-              <PlayerChip />
-              {process.env.NODE_ENV === "development" && <Agentation />}
+              <PasswordGateProvider>
+                <a href="#main" className="skip-to-content">
+                  Skip to content
+                </a>
+                <MobileNav />
+                <InlineEditorProvider>
+                  <main
+                    id="main"
+                    className="max-w-[960px] mx-auto px-4 sm:px-8 lg:px-6"
+                  >
+                    {children}
+                  </main>
+                  {process.env.NODE_ENV === "development" && (
+                    <>
+                      <EditableOverlay />
+                      <SectionReorder />
+                      <FloatingToolbar />
+                    </>
+                  )}
+                </InlineEditorProvider>
+                <ViewportFade />
+                <PlayerChip />
+                <PasswordModal />
+                {process.env.NODE_ENV === "development" && <Agentation />}
+              </PasswordGateProvider>
             </SidebarProvider>
           </MarqueeProvider>
           </VisualizerSceneProvider>

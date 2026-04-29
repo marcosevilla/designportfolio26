@@ -2,42 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import FadeIn from "./FadeIn";
-import CaseStudyCard from "./CaseStudyCard";
 import CaseStudyListRow from "./CaseStudyListRow";
-import CaseStudyCarousel from "./CaseStudyCarousel";
 import type { CaseStudyMeta } from "@/lib/types";
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
-import { GridIcon, ListIcon, CarouselIcon, FilterIcon, CloseIcon } from "./Icons";
-
-// ── View mode persistence ──
-
-type ViewMode = "cards" | "list" | "carousel";
-const STORAGE_KEY = "work-view-mode";
-
-function useViewMode(): [ViewMode, (mode: ViewMode) => void, boolean] {
-  const [mode, setMode] = useState<ViewMode>("cards");
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === "list" || saved === "carousel") setMode(saved);
-    } catch {}
-    setHydrated(true);
-  }, []);
-
-  const setAndPersist = (newMode: ViewMode) => {
-    setMode(newMode);
-    try {
-      localStorage.setItem(STORAGE_KEY, newMode);
-    } catch {}
-  };
-
-  return [mode, setAndPersist, hydrated];
-}
+import { FilterIcon, CloseIcon } from "./Icons";
 
 
 // ── View toggle button ──
@@ -72,18 +42,6 @@ function ViewToggleButton({
   );
 }
 
-// ── Year grouping helper ──
-
-function getShowYear(studies: CaseStudyMeta[]): boolean[] {
-  const result: boolean[] = [];
-  let lastYear = "";
-  for (const study of studies) {
-    result.push(study.year !== lastYear);
-    lastYear = study.year;
-  }
-  return result;
-}
-
 // ── Component ──
 
 interface CaseStudyListProps {
@@ -91,10 +49,6 @@ interface CaseStudyListProps {
 }
 
 export default function CaseStudyList({ studies }: CaseStudyListProps) {
-  const [viewMode, setViewMode, hydrated] = useViewMode();
-  const hasToggled = useRef(false);
-  const showYears = getShowYear(studies);
-
   // ── Filter state ──
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -105,7 +59,6 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
   const filteredStudies = activeFilters.length === 0
     ? studies
     : studies.filter((s) => matchingSlugs.has(s.slug));
-  const filteredShowYears = getShowYear(filteredStudies);
 
   // Compute disabled tags (would yield 0 results if added)
   const disabledTags = new Set(
@@ -118,7 +71,6 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
   );
 
   const toggleFilter = useCallback((tag: string) => {
-    hasToggled.current = true;
     setActiveFilters((prev) => {
       if (prev.includes(tag)) {
         return prev.filter((t) => t !== tag);
@@ -132,7 +84,6 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
   }, [studies]);
 
   const clearFilters = useCallback(() => {
-    hasToggled.current = true;
     setActiveFilters([]);
   }, []);
 
@@ -158,11 +109,6 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [filterOpen]);
 
-  const handleSetView = (mode: ViewMode) => {
-    hasToggled.current = true;
-    setViewMode(mode);
-  };
-
   const filterKey = activeFilters.slice().sort().join(",");
 
   return (
@@ -182,39 +128,15 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           >
             Selected projects
           </h2>
-          {hydrated && (
-            <div className="flex items-center gap-3">
-              <ViewToggleButton
-                active={activeFilters.length > 0 || filterOpen}
-                onClick={() => setFilterOpen((o) => !o)}
-                label="Filter projects"
-              >
-                <FilterIcon size={14} />
-              </ViewToggleButton>
-              <div className="w-px h-4" style={{ backgroundColor: "var(--color-border)" }} />
-              <ViewToggleButton
-                active={viewMode === "cards"}
-                onClick={() => handleSetView("cards")}
-                label="Card view"
-              >
-                <GridIcon size={14} />
-              </ViewToggleButton>
-              <ViewToggleButton
-                active={viewMode === "list"}
-                onClick={() => handleSetView("list")}
-                label="List view"
-              >
-                <ListIcon size={14} />
-              </ViewToggleButton>
-              <ViewToggleButton
-                active={viewMode === "carousel"}
-                onClick={() => handleSetView("carousel")}
-                label="Carousel view"
-              >
-                <CarouselIcon size={14} />
-              </ViewToggleButton>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <ViewToggleButton
+              active={activeFilters.length > 0 || filterOpen}
+              onClick={() => setFilterOpen((o) => !o)}
+              label="Filter projects"
+            >
+              <FilterIcon size={14} />
+            </ViewToggleButton>
+          </div>
         </div>
 
         {/* Filter dropdown */}
@@ -336,57 +258,19 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
         </span>
       )}
 
-      {/* Content area with blur transition */}
+      {/* List view (only view available while site is gated) */}
       <AnimatePresence mode="wait" initial={false}>
-        {viewMode === "cards" && (
-          <motion.div
-            key={`cards-view-${filterKey}`}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            initial={{ opacity: 0, filter: "blur(4px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(4px)" }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          >
-            {filteredStudies.map((study, i) => {
-              const isFirst = i === 0;
-              const colClass = isFirst ? "sm:col-span-2" : "";
-              const size = isFirst ? "hero" : "large";
-              return hasToggled.current ? (
-                <div key={study.slug} className={colClass}>
-                  <CaseStudyCard study={study} cardSize={size} showYear />
-                </div>
-              ) : (
-                <FadeIn key={study.slug} delay={i * 0.08} className={colClass}>
-                  <CaseStudyCard study={study} cardSize={size} showYear />
-                </FadeIn>
-              );
-            })}
-          </motion.div>
-        )}
-        {viewMode === "list" && (
-          <motion.div
-            key={`list-view-${filterKey}`}
-            initial={{ opacity: 0, filter: "blur(4px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(4px)" }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          >
-            {filteredStudies.map((study) => (
-              <CaseStudyListRow key={study.slug} study={study} />
-            ))}
-          </motion.div>
-        )}
-        {viewMode === "carousel" && (
-          <motion.div
-            key={`carousel-view-${filterKey}`}
-            initial={{ opacity: 0, filter: "blur(4px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(4px)" }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          >
-            <CaseStudyCarousel studies={filteredStudies} />
-          </motion.div>
-        )}
+        <motion.div
+          key={`list-view-${filterKey}`}
+          initial={{ opacity: 0, filter: "blur(4px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, filter: "blur(4px)" }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+        >
+          {filteredStudies.map((study) => (
+            <CaseStudyListRow key={study.slug} study={study} />
+          ))}
+        </motion.div>
       </AnimatePresence>
     </section>
   );
