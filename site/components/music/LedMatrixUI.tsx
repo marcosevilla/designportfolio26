@@ -75,19 +75,13 @@ export default function LedMatrixUI() {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const sizeRef = useRef({ cssW: 0, cssH: 0, cols: 0, rows: 0, dpr: 1 });
   const [revealed, setRevealed] = useState(false);
+  const [gridDims, setGridDims] = useState<{ cols: number; rows: number }>({ cols: 0, rows: 0 });
 
   const { isPlaying, togglePlay, currentTrack, currentTime, duration, next, prev, seek } = useAudioPlayer();
   const { activeScenes, setOnlyScene } = useVisualizerScene();
 
-  const [tick, setTick] = useState(0);
   const [textOpacity, setTextOpacity] = useState(1);
   const lastTrackKeyRef = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const id = window.setInterval(() => setTick((t) => t + 1), 250);
-    return () => window.clearInterval(id);
-  }, [isPlaying]);
 
   useEffect(() => {
     const prevKey = lastTrackKeyRef.current;
@@ -121,6 +115,7 @@ export default function LedMatrixUI() {
       const cols = Math.max(1, Math.floor(cssW / CELL));
       const rows = Math.max(1, Math.floor(cssH / CELL));
       sizeRef.current = { cssW, cssH, cols, rows, dpr };
+      setGridDims({ cols, rows });
       canvas.style.width = `${cssW}px`;
       canvas.style.height = `${cssH}px`;
       canvas.width = Math.round(cssW * dpr);
@@ -168,6 +163,36 @@ export default function LedMatrixUI() {
     if (!parent) return;
     const onParentUp = (e: PointerEvent) => {
       if (e.pointerType === "mouse") return;
+      // Don't toggle reveal when the tap lands on an actionable region —
+      // the click handler will deal with the action.
+      if (revealed) {
+        const rect = parent.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const { cols, rows } = sizeRef.current;
+        const col = Math.floor(x / CELL);
+        const row = Math.floor(y / CELL);
+        // Scrubber band
+        if (row >= rows - 6) {
+          const barStart = 18;
+          const barEnd = cols - 13;
+          if (col >= barStart && col <= barEnd) return;
+        }
+        // Scene picker
+        const SCENE_W = 5;
+        const SCENE_GAP = 1;
+        const ICONS_W = SCENES.length * SCENE_W + (SCENES.length - 1) * SCENE_GAP;
+        const sceneOriginCol = cols - ICONS_W - 2;
+        if (row >= 1 && row <= 9 && col >= sceneOriginCol && col < sceneOriginCol + ICONS_W) return;
+        // Transport
+        const midR = Math.floor(rows / 2);
+        if (Math.abs(row - midR) <= 5) {
+          const transportW = 7 + 4 + 7 + 4 + 7;
+          const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
+          const local = col - transportOriginCol;
+          if ((local >= 0 && local < 7) || (local >= 11 && local < 18) || (local >= 22 && local < 29)) return;
+        }
+      }
       setRevealed((r) => !r);
     };
     const onDocDown = (e: PointerEvent) => {
@@ -181,7 +206,7 @@ export default function LedMatrixUI() {
       parent.removeEventListener("pointerup", onParentUp);
       document.removeEventListener("pointerdown", onDocDown);
     };
-  }, []);
+  }, [revealed]);
 
   // Click handler — full region router: scrubber → scene → transport.
   useEffect(() => {
@@ -338,7 +363,7 @@ export default function LedMatrixUI() {
   useEffect(() => {
     drawNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revealed, isPlaying, currentTrack.src, activeScenes, tick, textOpacity]);
+  }, [revealed, isPlaying, currentTrack.src, activeScenes, currentTime, duration, textOpacity]);
 
   return (
     <div
@@ -346,7 +371,7 @@ export default function LedMatrixUI() {
       role="application"
       aria-label="Music player"
       tabIndex={0}
-      className="absolute inset-0 outline-offset-2 focus-visible:outline-2 focus-visible:outline-(--color-accent)"
+      className="absolute inset-0 outline-offset-2 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-(--color-accent)"
       onKeyDown={(e) => {
         switch (e.key) {
           case " ":
@@ -397,21 +422,21 @@ export default function LedMatrixUI() {
             aria-label="Previous track"
             onClick={(e) => { e.stopPropagation(); prev(); }}
             className="absolute pointer-events-auto opacity-0"
-            style={a11yButtonStyle("prev", sizeRef.current)}
+            style={a11yButtonStyle("prev", gridDims)}
           />
           <button
             type="button"
             aria-label={isPlaying ? "Pause" : "Play"}
             onClick={(e) => { e.stopPropagation(); togglePlay(); }}
             className="absolute pointer-events-auto opacity-0"
-            style={a11yButtonStyle("play", sizeRef.current)}
+            style={a11yButtonStyle("play", gridDims)}
           />
           <button
             type="button"
             aria-label="Next track"
             onClick={(e) => { e.stopPropagation(); next(); }}
             className="absolute pointer-events-auto opacity-0"
-            style={a11yButtonStyle("next", sizeRef.current)}
+            style={a11yButtonStyle("next", gridDims)}
           />
           {SCENES.map((s, i) => (
             <button
@@ -420,7 +445,7 @@ export default function LedMatrixUI() {
               aria-label={`Activate ${s.label} scene`}
               onClick={(e) => { e.stopPropagation(); setOnlyScene(s.id); }}
               className="absolute pointer-events-auto opacity-0"
-              style={a11yButtonStyle("scene", sizeRef.current, i)}
+              style={a11yButtonStyle("scene", gridDims, i)}
             />
           ))}
         </div>
