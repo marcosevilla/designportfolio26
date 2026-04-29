@@ -5,7 +5,7 @@ import { useSidebar, type TOCItem } from "@/lib/SidebarContext";
 
 export default function SidebarTOCBridge({
   items,
-  backHref = "/#work",
+  backHref = "/#projects",
 }: {
   items: TOCItem[];
   backHref?: string;

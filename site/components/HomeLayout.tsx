@@ -29,7 +29,7 @@ export default function HomeLayout({
         <Hero matrix={<MatrixArea />} />
       </div>
       <section
-        id="work"
+        id="projects"
         className="max-w-[600px] mx-auto px-4 sm:px-8 min-h-screen pt-16 lg:pt-24"
       >
         {work}

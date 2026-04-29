@@ -19,7 +19,7 @@ export default function CaseStudyPage({ study }: Props) {
           transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
         >
           <Link
-            href="/#work"
+            href="/#projects"
             className="text-sm text-(--color-fg-secondary) hover:text-(--color-fg) transition-colors mb-8 inline-block"
           >
             &larr; Back

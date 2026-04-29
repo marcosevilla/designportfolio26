@@ -57,7 +57,7 @@ export default function InlineTOC() {
       style={{ width: "130px", left: "48px" }}
     >
       <Link
-        href={backHref ?? "/#work"}
+        href={backHref ?? "/#projects"}
         className="flex items-center gap-1 transition-colors hover:text-(--color-accent) mb-6"
         style={{
           color: "var(--color-fg-secondary)",

@@ -14,7 +14,7 @@ const ROW_HEIGHT = 28;
 // In-page anchors only — every nav target lives on the homepage.
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
-  { id: "work", label: "Work" },
+  { id: "projects", label: "Projects" },
   { id: "playground", label: "Playground" },
 ];
 

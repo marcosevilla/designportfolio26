@@ -22,6 +22,7 @@ export default function CaseStudyListRow({ study }: CaseStudyListRowProps) {
   const titleNode = (
     <motion.span
       style={{
+        fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
         fontWeight: 500,
         fontSize: "calc(14px + var(--font-size-offset))",
         color: hovered ? "var(--color-accent)" : "var(--color-fg)",

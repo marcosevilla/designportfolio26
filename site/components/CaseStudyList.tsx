@@ -7,7 +7,8 @@ import type { CaseStudyMeta } from "@/lib/types";
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
-import { FilterIcon, CloseIcon } from "./Icons";
+import { FilterIcon, CloseIcon, GalleryIcon } from "./Icons";
+import GalleryMode from "./GalleryMode";
 
 
 // ── View toggle button ──
@@ -53,6 +54,9 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const filterAreaRef = useRef<HTMLDivElement>(null);
+
+  // ── Gallery mode ──
+  const [galleryOpen, setGalleryOpen] = useState(false);
 
   // Compute filtered studies
   const matchingSlugs = getMatchingSlugs(activeFilters);
@@ -135,6 +139,13 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
               label="Filter projects"
             >
               <FilterIcon size={14} />
+            </ViewToggleButton>
+            <ViewToggleButton
+              active={galleryOpen}
+              onClick={() => setGalleryOpen(true)}
+              label="Open gallery mode"
+            >
+              <GalleryIcon size={14} />
             </ViewToggleButton>
           </div>
         </div>
@@ -272,6 +283,12 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           ))}
         </motion.div>
       </AnimatePresence>
+
+      <GalleryMode
+        open={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+        studies={filteredStudies}
+      />
     </section>
   );
 }

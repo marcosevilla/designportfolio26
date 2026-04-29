@@ -52,6 +52,15 @@ export function CarouselIcon({ size = 16, className }: IconProps) {
   );
 }
 
+export function GalleryIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="3" y="6" width="6" height="12" />
+      <rect x="11" y="6" width="10" height="12" />
+    </svg>
+  );
+}
+
 export function FilterIcon({ size = 16, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>

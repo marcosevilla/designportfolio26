@@ -13,7 +13,7 @@ export default function MobileNav() {
     <nav className="lg:hidden sticky top-0 z-50 backdrop-blur-md bg-(--color-bg)/80 border-b border-border">
       <div className="px-5 h-14 flex items-center justify-between">
         <Link
-          href={backHref ?? "/#work"}
+          href={backHref ?? "/#projects"}
           className="flex items-center gap-1 text-[14px] transition-colors"
           style={{ color: "var(--color-fg-secondary)" }}
         >
