@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES } from "@/lib/visualizer-scenes";
@@ -268,10 +269,19 @@ export default function LedMatrixUI() {
   }, [revealed, isPlaying, currentTrack.src, activeScenes, tick]);
 
   return (
-    <canvas
+    <motion.canvas
       ref={canvasRef}
       aria-hidden
       className="absolute inset-0 pointer-events-none"
+      initial={false}
+      animate={{
+        opacity: revealed ? 1 : 0,
+        filter: revealed ? "blur(0px)" : "blur(2px)",
+      }}
+      transition={{
+        duration: revealed ? 0.25 : 0.2,
+        ease: [0.22, 1, 0.36, 1],
+      }}
     />
   );
 }
