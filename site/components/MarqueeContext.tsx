@@ -2,28 +2,33 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 
-const MarqueeContext = createContext({
+const MarqueeContext = createContext<{
+  visible: boolean;
+  toggle: () => void;
+  setVisible: (v: boolean) => void;
+}>({
   visible: true,
   toggle: () => {},
+  setVisible: () => {},
 });
 
 export function MarqueeProvider({ children }: { children: React.ReactNode }) {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisibleState] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem("marquee-visible");
-    if (saved === "false") setVisible(false);
+    if (saved === "false") setVisibleState(false);
   }, []);
 
-  const toggle = () => {
-    setVisible((v) => {
-      localStorage.setItem("marquee-visible", String(!v));
-      return !v;
-    });
+  const setVisible = (v: boolean) => {
+    setVisibleState(v);
+    localStorage.setItem("marquee-visible", String(v));
   };
 
+  const toggle = () => setVisible(!visible);
+
   return (
-    <MarqueeContext.Provider value={{ visible, toggle }}>
+    <MarqueeContext.Provider value={{ visible, toggle, setVisible }}>
       {children}
     </MarqueeContext.Provider>
   );

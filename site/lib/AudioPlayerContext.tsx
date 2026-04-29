@@ -33,6 +33,7 @@ interface AudioPlayerState {
   selectTrack: (idx: number) => void;
   closeSession: () => void;
   toggleMiniPlayer: () => void;
+  setMiniPlayerOpen: (open: boolean) => void;
   // Visualizer
   getFrequencyData: (() => Uint8Array | null) | null;
   /** Time-domain (waveform) samples — one byte per sample, 128 = silence. */
@@ -264,6 +265,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       selectTrack,
       closeSession,
       toggleMiniPlayer,
+      setMiniPlayerOpen,
       getFrequencyData,
       getTimeDomainData,
       getSampleRate,

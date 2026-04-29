@@ -2,17 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useMotionValueEvent, animate } from "framer-motion";
-import HeroActions from "./HeroActions";
-import HomeMiniPlayer from "./music/HomeMiniPlayer";
-import ScrambleText from "./ScrambleText";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { HERO_NAME } from "@/lib/bio-content";
-import { typescale } from "@/lib/typography";
-import { ExternalArrowIcon } from "./Icons";
 
-const EXTERNAL_LINKS = [
-  { label: "Email", href: "mailto:hello@marcosevilla.com", external: false },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/marcogsevilla/", external: true },
-];
+const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
 const STAR_SPRING = { type: "spring" as const, stiffness: 300, damping: 34 };
 const LINK_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
@@ -62,9 +55,13 @@ function useActiveSection() {
   return { activeId, setAndLock };
 }
 
-export default function HomeNav({ skipScramble = false }: { skipScramble?: boolean }) {
+export default function HomeNav() {
   const { activeId, setAndLock } = useActiveSection();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
+  const blurInitial = reducedMotion ? false : { opacity: 0, filter: "blur(12px)" };
+  const blurAnimate = { opacity: 1, filter: "blur(0px)" };
+  const blurTransition = { duration: 0.9, ease: BLUR_EASE };
 
   const starY = useMotionValue(0);
   const [passingIndex, setPassingIndex] = useState<number | null>(null);
@@ -91,25 +88,23 @@ export default function HomeNav({ skipScramble = false }: { skipScramble?: boole
 
   return (
     <nav
-      className="hidden lg:flex flex-col fixed top-12 z-40"
-      style={{ left: "max(24px, calc(50vw - 275px - 203px - 32px))", width: "203px" }}
+      className="hidden lg:flex flex-col fixed top-12 left-6 z-40"
+      style={{ width: "203px" }}
       aria-label="Primary"
     >
       {/* Name */}
-      <h1 style={{ ...typescale.body, fontWeight: 500 }}>
-        <ScrambleText text={HERO_NAME} skip={skipScramble} />
-      </h1>
-
-      {/* Action icons row, right below the name */}
-      <div className="mt-3">
-        <HeroActions />
-      </div>
-
-      <HomeMiniPlayer />
+      <motion.h1
+        style={{ fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace", fontSize: "16px", fontWeight: 500, letterSpacing: "-0.01em", lineHeight: 1.2 }}
+        initial={blurInitial}
+        animate={blurAnimate}
+        transition={blurTransition}
+      >
+        {HERO_NAME}
+      </motion.h1>
 
       {/* Nav links with moving star */}
       <ul
-        className="mt-8 flex flex-col gap-2 relative"
+        className="mt-6 flex flex-col gap-2 relative"
         onMouseLeave={() => setHoveredIndex(null)}
       >
         {activeIndex >= 0 && (
@@ -143,7 +138,12 @@ export default function HomeNav({ skipScramble = false }: { skipScramble?: boole
                 href={`#${item.id}`}
                 onClick={(e) => handleClick(e, item.id)}
                 className="block transition-colors"
-                style={{ fontSize: "13px", fontWeight: 400, lineHeight: "20px" }}
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "15px",
+                  fontWeight: 400,
+                  lineHeight: "20px",
+                }}
                 onMouseEnter={() => setHoveredIndex(index)}
               >
                 <motion.span
@@ -160,25 +160,6 @@ export default function HomeNav({ skipScramble = false }: { skipScramble?: boole
         })}
       </ul>
 
-      {/* External links — visually distinct from the in-page anchors above */}
-      <ul className="mt-8 pt-6 flex flex-col gap-2 border-t border-(--color-border)">
-        {EXTERNAL_LINKS.map((link) => (
-          <li key={link.label}>
-            <a
-              href={link.href}
-              {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              className="group inline-flex items-center gap-1.5 transition-colors text-(--color-fg-secondary) hover:text-(--color-accent)"
-              style={{ fontSize: "13px", fontWeight: 400, lineHeight: "20px" }}
-            >
-              {link.label}
-              <ExternalArrowIcon
-                size={11}
-                className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              />
-            </a>
-          </li>
-        ))}
-      </ul>
     </nav>
   );
 }

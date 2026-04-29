@@ -58,8 +58,13 @@ export default function InlineTOC() {
     >
       <Link
         href={backHref ?? "/#work"}
-        className="flex items-center gap-1 text-[13px] transition-colors hover:text-(--color-accent) mb-6"
-        style={{ color: "var(--color-fg-secondary)" }}
+        className="flex items-center gap-1 transition-colors hover:text-(--color-accent) mb-6"
+        style={{
+          color: "var(--color-fg-secondary)",
+          fontFamily: "var(--font-fraunces), serif",
+          fontSize: "15px",
+          lineHeight: "20px",
+        }}
       >
         <BackChevronIcon size={12} />
         Back
@@ -102,7 +107,12 @@ export default function InlineTOC() {
                 href={`#${item.id}`}
                 onClick={(e) => handleClick(e, item.id)}
                 className="block transition-colors"
-                style={{ fontSize: "13px", fontWeight: 400, lineHeight: "20px" }}
+                style={{
+                  fontFamily: "var(--font-fraunces), serif",
+                  fontSize: "15px",
+                  fontWeight: 400,
+                  lineHeight: "20px",
+                }}
                 onMouseEnter={() => setHoveredIndex(index)}
               >
                 <motion.span

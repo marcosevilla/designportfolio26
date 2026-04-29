@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { SPRING_SLOW } from "@/lib/springs";
 import { useMarquee } from "./MarqueeContext";
+
+const REVEAL_EASE = [0.22, 1, 0.36, 1] as const;
 
 const quotes = [
   {
@@ -62,35 +63,61 @@ export default function Marquee() {
   const { visible } = useMarquee();
 
   return (
-    <AnimatePresence>
+    <div style={{ filter: "var(--bio-dropdown-shadow)" }}>
+    <AnimatePresence initial={false}>
       {visible && (
         <motion.div
           key="marquee"
-          className="fixed top-0 left-0 w-screen z-50 overflow-hidden"
+          className="overflow-hidden"
           role="marquee"
           aria-label="Testimonials from colleagues"
-          style={{
-            backgroundColor: "var(--color-surface)",
-            borderBottom: "1px solid var(--color-border)",
+          initial={{ height: 0, opacity: 0, y: -8, filter: "blur(8px)" }}
+          animate={{
+            height: "auto",
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            transition: {
+              height: { duration: 0.35, ease: REVEAL_EASE },
+              opacity: { duration: 0.3, ease: REVEAL_EASE, delay: 0.05 },
+              y: { duration: 0.35, ease: REVEAL_EASE },
+              filter: { duration: 0.4, ease: REVEAL_EASE, delay: 0.05 },
+            },
           }}
-          initial={{ y: "-100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "-100%" }}
-          transition={SPRING_SLOW}
+          exit={{
+            height: 0,
+            opacity: 0,
+            y: -8,
+            filter: "blur(8px)",
+            transition: {
+              height: { duration: 0.25, ease: REVEAL_EASE, delay: 0.08 },
+              opacity: { duration: 0.2, ease: REVEAL_EASE },
+              y: { duration: 0.25, ease: REVEAL_EASE },
+              filter: { duration: 0.22, ease: REVEAL_EASE },
+            },
+          }}
+          style={{ willChange: "transform, opacity, filter" }}
         >
-          <div
-            className="flex items-center whitespace-nowrap py-4 marquee-track"
-            style={{ fontSize: "calc(14px + var(--font-size-offset))", fontWeight: 400 }}
-          >
-            <div className="inline-flex shrink-0">
-              <QuoteSet />
-            </div>
-            <div className="inline-flex shrink-0" aria-hidden>
-              <QuoteSet />
+          <div className="bio-dropdown-container mt-2 mb-4 overflow-hidden">
+            <div
+              className="flex items-center whitespace-nowrap py-2.5 marquee-track"
+              style={{
+                fontSize: "calc(13px + var(--font-size-offset))",
+                fontWeight: 400,
+                lineHeight: 1.4,
+              }}
+            >
+              <div className="inline-flex shrink-0">
+                <QuoteSet />
+              </div>
+              <div className="inline-flex shrink-0" aria-hidden>
+                <QuoteSet />
+              </div>
             </div>
           </div>
         </motion.div>
       )}
     </AnimatePresence>
+    </div>
   );
 }

@@ -16,6 +16,14 @@ const HEIGHT = 200;
 const CORNER_RADIUS = 12;
 const BOOT_FADE_MS = 400;
 
+// ── Intro wipe ──────────────────────────────────────────────────────────
+// Diagonal reveal from bottom-left → top-right. Dots pop in at a larger
+// diameter along the wave front, then settle smoothly to base size.
+const INTRO_WIPE_MS = 1700;
+const INTRO_WAVE_WIDTH_PX = 130; // size-bump tail length in CSS pixels
+const INTRO_REVEAL_FADE_PX = 32; // soft alpha fade at the leading edge (CSS px)
+const INTRO_BUMP_PX = 4.5; // max extra dot diameter at the wave front (CSS px)
+
 // ── Caps for uniform arrays — beyond these, oldest events are evicted ────
 const MAX_SPARKLES = 96;
 const MAX_RIPPLES = 16;
@@ -51,8 +59,8 @@ const IDLE_INTERVAL_MIN_MS = 3500;
 const IDLE_INTERVAL_MAX_MS = 9000;
 const IDLE_DURATION_MIN_MS = 6000;
 const IDLE_DURATION_MAX_MS = 12000;
-const IDLE_INTENSITY_MIN = 0.18;
-const IDLE_INTENSITY_MAX = 0.55;
+const IDLE_INTENSITY_MIN = 0.26;
+const IDLE_INTENSITY_MAX = 0.7;
 
 // ── Helper types ─────────────────────────────────────────────────────────
 type Sparkle = {
@@ -135,6 +143,74 @@ function saturate(rgb: [number, number, number], factor: number): [number, numbe
   if (factor === 1) return rgb;
   const [h, s, l] = rgbToHsl(rgb[0], rgb[1], rgb[2]);
   return hslToRgb(h, Math.min(1, s * factor), l);
+}
+
+// ── Per-theme palette tonemap ─────────────────────────────────────────
+// The track palettes are luminance-stacked (bass dark → air light) which
+// reads great on dark page backgrounds but vanishes on white / pastel
+// themes — light "air" greens, yellows, blushes have only a few percent
+// luminance delta against a near-white bg. We enforce a minimum L distance
+// from bg with a soft cap that preserves intra-palette ordering, and
+// nudge saturation up to compensate when colors get pulled toward mid-L.
+const MIN_L_DIST = 0.35; // minimum HSL lightness distance from page bg
+const SOFT_CAP_OVERSHOOT = 0.12; // how far the soft cap extends beyond the hard threshold
+function softCapHi(l: number, cap: number): number {
+  if (l <= cap) return l;
+  // Compress (cap, 1] into (cap - overshoot, cap], preserving order.
+  const range = Math.max(0.001, 1 - cap);
+  const excess = (l - cap) / range; // 0..1
+  return cap - SOFT_CAP_OVERSHOOT * (1 - Math.exp(-2.2 * excess));
+}
+function softCapLo(l: number, cap: number): number {
+  if (l >= cap) return l;
+  const range = Math.max(0.001, cap);
+  const deficit = (cap - l) / range; // 0..1
+  return cap + SOFT_CAP_OVERSHOOT * (1 - Math.exp(-2.2 * deficit));
+}
+function tonemapForBg(rgb: [number, number, number], bgLum: number): [number, number, number] {
+  const [h, s, l] = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+  const isLightBg = bgLum > 0.55;
+  const newL = isLightBg
+    ? softCapHi(l, Math.max(0.15, bgLum - MIN_L_DIST))
+    : softCapLo(l, Math.min(0.85, bgLum + MIN_L_DIST));
+  // Saturation boost scales with how far we had to move the color.
+  const moved = Math.abs(newL - l);
+  const newS = Math.min(1, s * (1 + moved * 0.7));
+  return hslToRgb(h, newS, Math.max(0, Math.min(1, newL)));
+}
+
+// Stricter tonemap for the waveform stroke specifically — thin one-pixel
+// lines need much more contrast than the blob scenes to feel readable.
+const WAVEFORM_MIN_L_DIST = 0.55;
+function tonemapForWaveform(rgb: [number, number, number], bgLum: number): [number, number, number] {
+  const [h, s, l] = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+  const isLightBg = bgLum > 0.55;
+  const newL = isLightBg
+    ? softCapHi(l, Math.max(0.08, bgLum - WAVEFORM_MIN_L_DIST))
+    : softCapLo(l, Math.min(0.92, bgLum + WAVEFORM_MIN_L_DIST));
+  const moved = Math.abs(newL - l);
+  const newS = Math.min(1, s * (1 + moved * 0.9));
+  return hslToRgb(h, newS, Math.max(0, Math.min(1, newL)));
+}
+
+// Pick the palette color with the largest luminance distance from bg —
+// that's the natural high-contrast pick (typically `bass` on light themes,
+// `air` on dark themes).
+function pickHighestContrast(
+  colors: [number, number, number][],
+  bgLum: number
+): [number, number, number] {
+  let bestIdx = 0;
+  let bestDelta = -1;
+  for (let i = 0; i < colors.length; i++) {
+    const cl = rgbToHsl(colors[i][0], colors[i][1], colors[i][2])[2];
+    const delta = Math.abs(cl - bgLum);
+    if (delta > bestDelta) {
+      bestDelta = delta;
+      bestIdx = i;
+    }
+  }
+  return colors[bestIdx];
 }
 
 // ── WebGL helpers ────────────────────────────────────────────────────────
@@ -282,11 +358,21 @@ uniform float u_time;
 uniform float u_bootP;
 uniform float u_audioMix;
 
+// Intro wipe (diagonal bottom-left → top-right). All values in device pixels.
+uniform float u_introFrontPx;     // current wave-front position along the BL→TR axis
+uniform float u_introWaveWidth;   // length of the trailing size-bump tail
+uniform float u_introRevealFade;  // soft alpha fade-in distance at the leading edge
+uniform float u_introBumpPx;      // max extra dot diameter at the wave front (device px)
+
 uniform vec3 u_offColor;
 uniform vec3 u_onColor;
 
 // Per-track palette (saturated)
 uniform vec3 u_palette[4]; // [bass, mids, highs, air]
+// Dedicated waveform stroke color — chosen for max contrast vs page bg.
+// Thin lines need more luminance delta than blob scenes get from the
+// general palette tonemap, so this gets a stricter contrast pass in JS.
+uniform vec3 u_waveformColor;
 
 uniform float u_spacing;
 uniform float u_dotBase;
@@ -390,6 +476,26 @@ void main() {
   float cy = max(0.0, max(dyT, dyB));
   if (cx > 0.0 && cy > 0.0 && cx * cx + cy * cy > u_cornerRadius * u_cornerRadius) discard;
 
+  // ── Intro wipe ─────────────────────────────────────────────────────────
+  // Project this fragment onto the bottom-left → top-right diagonal axis,
+  // with proj = 0 at bottom-left and proj = diagLen at top-right.
+  vec2 introDir = normalize(vec2(cssW, -cssH));
+  float introProj = uv.x * introDir.x + (uv.y - cssH) * introDir.y;
+  float introDist = u_introFrontPx - introProj;
+  if (introDist < -u_introRevealFade) discard;
+
+  // Soft alpha fade-in at the leading edge (smoothstep for natural roll-on).
+  float revealA = clamp(1.0 + introDist / u_introRevealFade, 0.0, 1.0);
+  revealA = revealA * revealA * (3.0 - 2.0 * revealA);
+
+  // Trailing size bump: peaks at the wave front, smoothly returns to 0.
+  // Cosine S-curve avoids the abrupt onset of polynomial decays.
+  float introBump = 0.0;
+  if (introDist >= 0.0 && introDist < u_introWaveWidth) {
+    float k = introDist / u_introWaveWidth;
+    introBump = 0.5 + 0.5 * cos(PI * k);
+  }
+
   float audioMix = min(u_audioMix, u_audioMixCap);
 
   float lit = 0.0;
@@ -478,7 +584,7 @@ void main() {
         float u = dy / thickness;
         // Plateau in inner 45% (full brightness), then steep linear falloff
         float fall = u < 0.45 ? 1.0 : max(0.0, 1.0 - (u - 0.45) / 0.55);
-        addColor(lit, wColor, wTotal, fall * 1.6 * audioMix, u_palette[3]);
+        addColor(lit, wColor, wTotal, fall * 1.6 * audioMix, u_waveformColor);
       }
     }
   }
@@ -565,10 +671,12 @@ void main() {
 
   // Dot rendering — emit only pixels inside the dot (radius scales with lit)
   float dotDiameter = u_dotBase + (u_dotBloom - u_dotBase) * lit;
+  // Intro size bump rides on top — dots pop in larger, then settle.
+  dotDiameter += introBump * u_introBumpPx;
   float dotRadius = dotDiameter * 0.5;
   if (distToDot > dotRadius) discard;
 
-  outColor = vec4(finalRGB, u_bootP);
+  outColor = vec4(finalRGB, u_bootP * revealA);
 }`;
 
 // ── Component ────────────────────────────────────────────────────────────
@@ -695,6 +803,7 @@ export default function LedMatrix() {
     const uOffColor = u("u_offColor");
     const uOnColor = u("u_onColor");
     const uPalette = u("u_palette");
+    const uWaveformColor = u("u_waveformColor");
     const uSpacing = u("u_spacing");
     const uDotBase = u("u_dotBase");
     const uDotBloom = u("u_dotBloom");
@@ -730,6 +839,10 @@ export default function LedMatrix() {
     const uFeedbackTex = u("u_feedbackTex");
     const uLissajousTex = u("u_lissajousTex");
     const uGridSizeMain = u("u_gridSize");
+    const uIntroFrontPx = u("u_introFrontPx");
+    const uIntroWaveWidth = u("u_introWaveWidth");
+    const uIntroRevealFade = u("u_introRevealFade");
+    const uIntroBumpPx = u("u_introBumpPx");
 
     // Simulation program uniforms
     const fbU = feedbackProgram
@@ -783,15 +896,23 @@ export default function LedMatrix() {
     let midsCol: [number, number, number] = [232, 155, 90];
     let highsCol: [number, number, number] = [242, 210, 155];
     let airCol: [number, number, number] = [255, 241, 214];
+    let waveformCol: [number, number, number] = [180, 100, 30];
     let lastPaletteSrc = "";
     let lastSaturation = -1;
+    let bgLum = 1; // page bg luminance, refreshed from CSS each frame
+    let lastBgLum = NaN;
 
     const refreshThemeColors = () => {
       const styles = getComputedStyle(document.documentElement);
       const offRaw = styles.getPropertyValue("--color-border").trim();
       const onRaw = styles.getPropertyValue("--color-accent").trim();
+      const bgRaw = styles.getPropertyValue("--color-bg").trim();
       if (offRaw) offColor = parseColor(offRaw);
       if (onRaw) onColor = parseColor(onRaw);
+      if (bgRaw) {
+        const bgRgb = parseColor(bgRaw);
+        bgLum = rgbToHsl(bgRgb[0], bgRgb[1], bgRgb[2])[2];
+      }
     };
     refreshThemeColors();
 
@@ -824,6 +945,20 @@ export default function LedMatrix() {
     };
     scheduleNextIdle(t0);
 
+    // Seed an initial idle wave at mount so the matrix feels alive right
+    // as the intro wipe completes — without it, the first ambient pulse
+    // doesn't fire until IDLE_INTERVAL_MIN_MS later, leaving a dead beat.
+    if (!reducedMotion) {
+      idleWaves.push({
+        t0,
+        duration: IDLE_DURATION_MIN_MS + Math.random() * (IDLE_DURATION_MAX_MS - IDLE_DURATION_MIN_MS),
+        intensity: IDLE_INTENSITY_MIN + Math.random() * (IDLE_INTENSITY_MAX - IDLE_INTENSITY_MIN),
+        ox: Math.random() * 1000,
+        oy: Math.random() * 1000,
+        drift: 0.6 + Math.random() * 0.8,
+      });
+    }
+
     // Pre-allocated typed arrays for uniforms (avoid per-frame allocation)
     const sparklePosArr = new Float32Array(MAX_SPARKLES * 4);
     const sparkleAttrArr = new Float32Array(MAX_SPARKLES * 4);
@@ -842,17 +977,31 @@ export default function LedMatrix() {
       // Theme colors might shift live (palette changes)
       refreshThemeColors();
 
-      // Track palette refresh + saturation
+      // Track palette refresh + saturation + per-theme tonemap.
+      // Re-runs when track, saturation dial, or page bg luminance changes
+      // (the last covers light/dark/colored-theme switches at runtime).
       const track = aState.track;
       const sat = d.master.saturation;
       const trackChanged = track.src !== lastPaletteSrc;
-      if (trackChanged || sat !== lastSaturation) {
-        bassCol = saturate(parseColor(track.palette.bass), sat);
-        midsCol = saturate(parseColor(track.palette.mids), sat);
-        highsCol = saturate(parseColor(track.palette.highs), sat);
-        airCol = saturate(parseColor(track.palette.air), sat);
+      const bgChanged = Math.abs(bgLum - lastBgLum) > 0.001 || Number.isNaN(lastBgLum);
+      if (trackChanged || sat !== lastSaturation || bgChanged) {
+        bassCol = tonemapForBg(saturate(parseColor(track.palette.bass), sat), bgLum);
+        midsCol = tonemapForBg(saturate(parseColor(track.palette.mids), sat), bgLum);
+        highsCol = tonemapForBg(saturate(parseColor(track.palette.highs), sat), bgLum);
+        airCol = tonemapForBg(saturate(parseColor(track.palette.air), sat), bgLum);
+        // Waveform color: pick the original palette slot with the largest
+        // luminance gap from bg, then run a stricter tonemap so the thin
+        // line clears the contrast bar even on pastel light themes.
+        const rawPalette: [number, number, number][] = [
+          saturate(parseColor(track.palette.bass), sat),
+          saturate(parseColor(track.palette.mids), sat),
+          saturate(parseColor(track.palette.highs), sat),
+          saturate(parseColor(track.palette.air), sat),
+        ];
+        waveformCol = tonemapForWaveform(pickHighestContrast(rawPalette, bgLum), bgLum);
         lastPaletteSrc = track.src;
         lastSaturation = sat;
+        lastBgLum = bgLum;
         if (trackChanged) analyzer.reset();
       }
 
@@ -1245,6 +1394,7 @@ export default function LedMatrix() {
       gl.uniform3f(uOffColor, offColor[0], offColor[1], offColor[2]);
       gl.uniform3f(uOnColor, onColor[0], onColor[1], onColor[2]);
       gl.uniform3fv(uPalette, paletteArr);
+      gl.uniform3f(uWaveformColor, waveformCol[0], waveformCol[1], waveformCol[2]);
       gl.uniform1f(uSpacing, SPACING * dpr);
       gl.uniform1f(uDotBase, DOT_BASE * dpr);
       gl.uniform1f(uDotBloom, DOT_BLOOM * dpr);
@@ -1271,6 +1421,23 @@ export default function LedMatrix() {
       gl.uniform1i(uSparkleCount, sparkles.length);
       gl.uniform4fv(uSparklePos, sparklePosArr);
       gl.uniform4fv(uSparkleAttr, sparkleAttrArr);
+
+      // ── Intro wipe uniforms ──────────────────────────────────────────
+      const diagLenPx = Math.hypot(canvas.width, canvas.height);
+      const waveWidthPx = INTRO_WAVE_WIDTH_PX * dpr;
+      const revealFadePx = INTRO_REVEAL_FADE_PX * dpr;
+      let introFrontPx: number;
+      if (reducedMotion) {
+        introFrontPx = diagLenPx + waveWidthPx + revealFadePx; // fully revealed, wave exited
+      } else {
+        const introT = Math.min(1, Math.max(0, (now - t0) / INTRO_WIPE_MS));
+        const eased = 1 - Math.pow(1 - introT, 3);
+        introFrontPx = -revealFadePx + eased * (diagLenPx + waveWidthPx + revealFadePx);
+      }
+      gl.uniform1f(uIntroFrontPx, introFrontPx);
+      gl.uniform1f(uIntroWaveWidth, waveWidthPx);
+      gl.uniform1f(uIntroRevealFade, revealFadePx);
+      gl.uniform1f(uIntroBumpPx, INTRO_BUMP_PX * dpr);
 
       gl.uniform1i(uIdleCount, idleWaves.length);
       gl.uniform4fv(uIdleA, idleAArr);

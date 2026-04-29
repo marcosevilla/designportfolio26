@@ -1,21 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { PARAGRAPHS, HERO_NAME } from "@/lib/bio-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
-import { RenderParagraph } from "./StreamingText";
-import ScrambleText from "./ScrambleText";
-import ScrambleParagraph from "./ScrambleParagraph";
-import HeroActions from "./HeroActions";
+import { HighlightableBio } from "./HighlightableBio";
+import { HighlighterProvider } from "./HighlighterContext";
+import HeroToolbar from "./HeroToolbar";
+import ConnectLinks from "./ConnectLinks";
 
-const INTRO_LOADING_DELAY = 1800;
-
-const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
-
-type IntroPhase = "star" | "bio" | "done";
+const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function Hero({
   matrix,
@@ -27,102 +21,59 @@ export default function Hero({
   children?: React.ReactNode;
 }) {
   const reducedMotion = usePrefersReducedMotion();
-  const [introPhase, setIntroPhase] = useState<IntroPhase>("star");
-  const introTimerRef = useRef<ReturnType<typeof setTimeout>>();
-
-  const introDone = introPhase === "done";
-
-  useIsomorphicLayoutEffect(() => {
-    if (reducedMotion) {
-      setIntroPhase("done");
-    }
-  }, [reducedMotion]);
-
-  useEffect(() => {
-    if (introPhase === "star") {
-      introTimerRef.current = setTimeout(() => setIntroPhase("bio"), INTRO_LOADING_DELAY);
-    }
-    return () => {
-      if (introTimerRef.current) clearTimeout(introTimerRef.current);
-    };
-  }, [introPhase]);
-
-  const onBioIntroComplete = useCallback(() => {
-    setIntroPhase("done");
-  }, []);
+  const initial = reducedMotion ? false : { opacity: 0, filter: "blur(12px)" };
+  const animate = { opacity: 1, filter: "blur(0px)" };
+  const transition = { duration: 0.9, ease: BLUR_EASE };
 
   return (
     <>
-      {/* Heading — sticky top bar on mobile only; lg+ uses HomeNav sidebar */}
+      {/* Heading — sticky top bar on mobile only; lg+ uses HomeNav sidebar. */}
       <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-(--color-bg)/90 backdrop-blur-xs">
-        <div className="flex items-center justify-between gap-6">
-          <h1 style={{ ...typescale.body, fontWeight: 500 }}>
-            <ScrambleText text={HERO_NAME} skip={introDone} />
-          </h1>
-          <div className="shrink-0">
-            <HeroActions />
-          </div>
-        </div>
+        <motion.h1
+          style={{ ...typescale.body, fontFamily: "var(--font-fraunces), serif", fontStyle: "italic", fontWeight: 500 }}
+          initial={initial}
+          animate={animate}
+          transition={transition}
+        >
+          {HERO_NAME}
+        </motion.h1>
       </div>
 
-      {/* LED matrix slot — top-aligned with the sidebar at lg+, below the sticky bar on mobile */}
-      {matrix && <div className="mt-6 lg:mt-0">{matrix}</div>}
+      <HighlighterProvider>
+        {/* Toolbar — sits at the top of the hero column so the icon row
+            aligns vertically with "Marco Sevilla" in the sidebar at lg+. */}
+        <motion.div
+          initial={initial}
+          animate={animate}
+          transition={transition}
+        >
+          <HeroToolbar />
+        </motion.div>
 
-      {/* Intro loading star — blinks before bio scrambles in */}
-      {introPhase === "star" && (
-        <div className="mt-4">
-          <span className="text-(--color-accent) text-[16px] animate-[blink-cursor_1s_step-end_infinite]">
-            ✸
-          </span>
-        </div>
-      )}
+        {/* LED matrix slot */}
+        {matrix && (
+          <motion.div
+            className="mt-4"
+            initial={initial}
+            animate={animate}
+            transition={transition}
+          >
+            {matrix}
+          </motion.div>
+        )}
 
-      {/* Bio — short paragraph + link to /about */}
-      {(introPhase === "bio" || introDone) && (
+        {/* Bio — all paragraphs visible at once */}
         <motion.div
           className="mt-8 text-(--color-fg-secondary) leading-[28px]"
           style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
-          initial={false}
-          animate={{ opacity: 1 }}
+          initial={initial}
+          animate={animate}
+          transition={transition}
         >
-          <p>
-            {introPhase === "bio" ? (
-              <ScrambleParagraph
-                para={PARAGRAPHS[0]}
-                onComplete={onBioIntroComplete}
-                skip={reducedMotion}
-                staggerMs={17}
-                cycleMs={15}
-                repeatDelayMs={20}
-              />
-            ) : (
-              <RenderParagraph para={PARAGRAPHS[0]} />
-            )}
-          </p>
-          {introDone && (
-            <>
-              <motion.p
-                className="mt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-              >
-                In my spare time I dabble in music photography.
-              </motion.p>
-              <motion.p
-                className="mt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, ease: "easeOut", delay: 0.05 }}
-              >
-                <Link href="/about" className="dotted-link dotted-link--inline">
-                  More about me <span className="dotted-link-arrow">→</span>
-                </Link>
-              </motion.p>
-            </>
-          )}
+          <HighlightableBio paragraphs={PARAGRAPHS} />
+          <ConnectLinks />
         </motion.div>
-      )}
+      </HighlighterProvider>
 
       {children}
     </>

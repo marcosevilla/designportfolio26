@@ -6,10 +6,11 @@ import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { GLYPH_5x5_TRANSPORT, drawGlyph } from "@/lib/dot-font";
 
 const CELL = 5;
-const PLAY_ORIGIN_COL = 2;
-const PLAY_ORIGIN_ROW = 2;
 const PLAY_GLYPH_W = 5;
 const PLAY_GLYPH_H = 5;
+const PLAY_GLYPH_SCALE = 0.8; // slightly smaller than full cell-grid size
+const PLAY_RECT_W = PLAY_GLYPH_W * CELL * PLAY_GLYPH_SCALE;
+const PLAY_RECT_H = PLAY_GLYPH_H * CELL * PLAY_GLYPH_SCALE;
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -92,13 +93,13 @@ export default function LedMatrixUI() {
         const rect = parent.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        const col = Math.floor(x / CELL);
-        const row = Math.floor(y / CELL);
+        const left = rect.width / 2 - PLAY_RECT_W / 2;
+        const top = rect.height / 2 - PLAY_RECT_H / 2;
         if (
-          col >= PLAY_ORIGIN_COL &&
-          col < PLAY_ORIGIN_COL + PLAY_GLYPH_W &&
-          row >= PLAY_ORIGIN_ROW &&
-          row < PLAY_ORIGIN_ROW + PLAY_GLYPH_H
+          x >= left &&
+          x < left + PLAY_RECT_W &&
+          y >= top &&
+          y < top + PLAY_RECT_H
         ) {
           return; // click handler will toggle play
         }
@@ -128,7 +129,12 @@ export default function LedMatrixUI() {
     if (!revealed) return;
     const accent = readCssVar("--color-accent", "#B5651D");
     const glyph = isPlaying ? GLYPH_5x5_TRANSPORT.pause : GLYPH_5x5_TRANSPORT.play;
-    drawGlyph(ctx, glyph, PLAY_ORIGIN_COL, PLAY_ORIGIN_ROW, CELL, accent);
+    // Center the glyph in the canvas and render it at a slightly reduced scale.
+    ctx.save();
+    ctx.translate(cssW / 2 - PLAY_RECT_W / 2, cssH / 2 - PLAY_RECT_H / 2);
+    ctx.scale(PLAY_GLYPH_SCALE, PLAY_GLYPH_SCALE);
+    drawGlyph(ctx, glyph, 0, 0, CELL, accent);
+    ctx.restore();
   };
 
   useEffect(() => {
@@ -161,12 +167,11 @@ export default function LedMatrixUI() {
           type="button"
           aria-label={isPlaying ? "Pause" : "Play"}
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-          className="absolute pointer-events-auto opacity-0"
+          className="absolute pointer-events-auto opacity-0 left-1/2 top-1/2"
           style={{
-            left: `${PLAY_ORIGIN_COL * CELL}px`,
-            top: `${PLAY_ORIGIN_ROW * CELL}px`,
-            width: `${PLAY_GLYPH_W * CELL}px`,
-            height: `${PLAY_GLYPH_H * CELL}px`,
+            width: `${PLAY_RECT_W}px`,
+            height: `${PLAY_RECT_H}px`,
+            transform: "translate(-50%, -50%)",
           }}
         />
       )}

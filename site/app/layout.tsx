@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Fraunces } from "next/font/google";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
 import MobileNav from "@/components/MobileNav";
 import { MarqueeProvider } from "@/components/MarqueeContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
@@ -13,6 +22,7 @@ import DialKitMount from "@/components/dev/DialKitMount";
 import { Agentation } from "agentation";
 import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
 import { VisualizerSceneProvider } from "@/lib/VisualizerSceneContext";
+import { ThemeStateProvider } from "@/components/ThemeToggle";
 import PlayerChip from "@/components/music/PlayerChip";
 import "./globals.css";
 
@@ -51,9 +61,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={GeistSans.variable}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable}`}>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeStateProvider>
           <AudioPlayerProvider>
           <VisualizerSceneProvider>
           <MarqueeProvider>
@@ -85,6 +96,7 @@ export default function RootLayout({
           </MarqueeProvider>
           </VisualizerSceneProvider>
           </AudioPlayerProvider>
+          </ThemeStateProvider>
         </ThemeProvider>
       </body>
     </html>

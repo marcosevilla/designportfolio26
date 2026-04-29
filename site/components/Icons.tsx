@@ -130,11 +130,35 @@ export function LinkedInIcon({ size = 18, className }: IconProps) {
 export function PaletteIcon({ size = 18, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="7.5" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="8" cy="11" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="16" cy="11" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="10" cy="15.5" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 9 9c0 1.66-1.34 3-3 3h-1.5a1.5 1.5 0 0 0-1.5 1.5c0 .42.13.8.36 1.1.23.3.39.65.39 1.05 0 .8-.65 1.45-1.45 1.45z" />
+      <circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none" />
+      <circle cx="9.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="5.75" r="1" fill="currentColor" stroke="none" />
+      <circle cx="17.25" cy="8.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function SunIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="M4.93 4.93l1.41 1.41" />
+      <path d="M17.66 17.66l1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="M4.93 19.07l1.41-1.41" />
+      <path d="M17.66 6.34l1.41-1.41" />
+    </svg>
+  );
+}
+
+export function MoonIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   );
 }
@@ -177,48 +201,57 @@ export function SkipForwardIcon({ size = 18, className, style }: IconProps) {
 
 // ── Visualizer scenes ──
 
-export function WaveformSceneIcon({ size = 14, className, style }: IconProps) {
+// Waveform — clean oscilloscope sine wave, two cycles.
+export function WaveformSceneIcon({ size = 16, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M2 12 Q5 5, 8 12 T14 12 T20 12 T26 12" />
+      <path d="M2 12 C 5 4, 8 4, 9 12 S 13 20, 14 12 S 18 4, 19 12 S 22 20, 22 12" />
     </svg>
   );
 }
 
-export function SparklesSceneIcon({ size = 14, className, style }: IconProps) {
+// Sparkles — scattered four-point star sparkles (bass-reactive sparkle field).
+export function SparklesSceneIcon({ size = 16, className, style }: IconProps) {
+  const spark = "M0 -3 L0.7 -0.7 L3 0 L0.7 0.7 L0 3 L-0.7 0.7 L-3 0 L-0.7 -0.7 Z";
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className} style={style}>
-      <circle cx="6" cy="8" r="0.9" />
-      <circle cx="17" cy="6" r="1.3" />
-      <circle cx="12" cy="12" r="1" />
-      <circle cx="9" cy="17" r="0.7" />
-      <circle cx="19" cy="16" r="0.9" />
-      <circle cx="15" cy="19" r="0.6" />
+      <path transform="translate(7 8) scale(1.1)" d={spark} />
+      <path transform="translate(16 7) scale(0.7)" d={spark} />
+      <path transform="translate(13 15) scale(0.85)" d={spark} />
+      <path transform="translate(18 17) scale(0.55)" d={spark} />
     </svg>
   );
 }
 
-export function ChladniSceneIcon({ size = 14, className, style }: IconProps) {
+// Chladni — nodal dot lattice (sand particles settled at standing-wave nodes).
+export function ChladniSceneIcon({ size = 16, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M3 9c2 3 4 3 6 0s4-3 6 0 4 3 6 0" />
-      <path d="M3 15c2-3 4-3 6 0s4 3 6 0 4-3 6 0" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className} style={style}>
+      {[5, 12, 19].map((y) =>
+        [5, 12, 19].map((x) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r={(x === 12 && y === 12) ? 1.6 : 1.1} />
+        ))
+      )}
     </svg>
   );
 }
 
-export function FeedbackSceneIcon({ size = 14, className, style }: IconProps) {
+// Feedback — concentric rings (echoing trails / warp).
+export function FeedbackSceneIcon({ size = 16, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M12 12.5c1.4 0 2.5-1 2.5-2.5S13.4 7.5 12 7.5s-3 1.5-3 3.5 1.5 4 4 4 4-2.5 4-5-2-5-5-5-6 2.5-6 6 2 7 7 7" />
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5.5" />
+      <circle cx="12" cy="12" r="2" />
     </svg>
   );
 }
 
-export function LissajousSceneIcon({ size = 14, className, style }: IconProps) {
+// Lissajous — figure-eight parametric trace.
+export function LissajousSceneIcon({ size = 16, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M5 12c0-3 2-5 4-3s2 6 4 6 2-6 4-6 2 2 2 3-2 5-4 3-2-6-4-6-2 6-4 6-2-2-2-3z" />
+      <path d="M3 12 C 3 6, 9 6, 12 12 S 21 18, 21 12 S 15 6, 12 12 S 3 18, 3 12 Z" />
     </svg>
   );
 }
@@ -250,6 +283,25 @@ export function EditPencilIcon({ size = 18, className, style }: IconProps) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
       <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
+export function HighlighterIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="m9 11-6 6v3h9l3-3" />
+      <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" />
+    </svg>
+  );
+}
+
+export function EraserIcon({ size = 16, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l9-9a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L13 21" />
+      <path d="M22 21H7" />
+      <path d="m5 11 9 9" />
     </svg>
   );
 }

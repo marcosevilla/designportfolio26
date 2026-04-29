@@ -1,116 +1,118 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { useThemeState } from "./ThemeToggle";
-import { useMarquee } from "./MarqueeContext";
-import ThemePalette from "./ThemePalette";
-import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { MusicNoteIcon, PaletteIcon, SmileyIcon } from "./Icons";
+
+const HOVER_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 };
+
+// Three alphas → three visually distinct states. Hover and active stack
+// (active layer is always rendered while pressed; hover pill rides on top
+// when the cursor is over the same button), so the combined fill is visibly
+// stronger than either alone.
+const TINT_HOVER = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
+const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
 
 function ActionIcon({
   label,
-  href,
-  external,
+  pressed,
   onClick,
+  hovered,
+  onHover,
   children,
 }: {
   label: string;
-  href?: string;
-  external?: boolean;
-  onClick?: () => void;
+  pressed?: boolean;
+  onClick: () => void;
+  hovered: boolean;
+  onHover: () => void;
   children: React.ReactNode;
 }) {
-  const Tag = href ? "a" : "button";
-  const linkProps = href
-    ? { href, ...(external ? { target: "_blank" as const, rel: "noopener noreferrer" } : {}) }
-    : { onClick, type: "button" as const };
-
   return (
-    <Tag
-      {...(linkProps as any)}
-      className="flex items-center justify-center transition-colors text-(--color-fg-secondary) hover:text-(--color-accent)"
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={onHover}
+      onFocus={onHover}
       aria-label={label}
+      aria-pressed={pressed}
+      className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none aria-pressed:text-(--color-accent)"
     >
-      {children}
-    </Tag>
+      {/* Persistent active background — independent of the sliding hover pill
+          so an active button keeps its accent fill even when hovering away. */}
+      {pressed && (
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-full"
+          style={{ backgroundColor: TINT_ACTIVE }}
+        />
+      )}
+      {/* Single shared sliding pill — only the hovered button renders it, and
+          framer-motion's shared layout animates its position between siblings.
+          Lighter alpha than the active layer so hover+active visibly stacks. */}
+      {hovered && (
+        <motion.span
+          layoutId="hero-action-hover"
+          aria-hidden
+          className="absolute inset-0 rounded-full"
+          style={{ backgroundColor: TINT_HOVER }}
+          transition={HOVER_SPRING}
+        />
+      )}
+      <span className="relative">{children}</span>
+    </button>
   );
 }
 
-export default function HeroActions() {
-  const { visible: marqueeVisible, toggle: toggleMarquee } = useMarquee();
-  const { miniPlayerOpen, toggleMiniPlayer } = useAudioPlayer();
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const paletteButtonRef = useRef<HTMLDivElement>(null);
-  const [anchorPos, setAnchorPos] = useState<{ top: number; left: number } | null>(null);
-  const themeState = useThemeState();
-
-  const togglePalette = useCallback(() => {
-    if (!paletteOpen && paletteButtonRef.current) {
-      const rect = paletteButtonRef.current.getBoundingClientRect();
-      setAnchorPos({ top: rect.bottom + 8, left: rect.left });
-    }
-    setPaletteOpen((o) => !o);
-  }, [paletteOpen]);
+export default function HeroActions({
+  paletteOpen,
+  miniPlayerOpen,
+  marqueeVisible,
+  onTogglePalette,
+  onToggleMusic,
+  onToggleQuotes,
+}: {
+  paletteOpen: boolean;
+  miniPlayerOpen: boolean;
+  marqueeVisible: boolean;
+  onTogglePalette: () => void;
+  onToggleMusic: () => void;
+  onToggleQuotes: () => void;
+}) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <>
-      <div className="flex items-center gap-3">
-        {themeState.mounted && (
-          <div ref={paletteButtonRef}>
-            <ActionIcon label="Theme palette" onClick={togglePalette}>
-              <PaletteIcon size={14} />
-            </ActionIcon>
-          </div>
-        )}
-        <ActionIcon
-          label={miniPlayerOpen ? "Hide music player" : "Show music player"}
-          onClick={toggleMiniPlayer}
-        >
-          <MusicNoteIcon size={14} style={{ opacity: miniPlayerOpen ? 1 : 0.7 }} />
-        </ActionIcon>
-        <ActionIcon
-          label={marqueeVisible ? "Hide quotes" : "Show quotes"}
-          onClick={toggleMarquee}
-        >
-          <SmileyIcon size={14} style={{ opacity: marqueeVisible ? 1 : 0.4 }} />
-        </ActionIcon>
-      </div>
-
-      {/* Theme palette — desktop panel */}
-      <div className="hidden lg:block">
-        <ThemePalette
-          open={paletteOpen}
-          onClose={() => setPaletteOpen(false)}
-          mode={themeState.mode}
-          coloredThemeName={themeState.coloredThemeName}
-          fontSizeOffset={themeState.fontSizeOffset}
-          onSelectLight={themeState.selectLight}
-          onSelectDark={themeState.selectDark}
-          onSelectColored={themeState.selectColored}
-          onIncreaseFontSize={themeState.increaseFontSize}
-          onDecreaseFontSize={themeState.decreaseFontSize}
-          onResetAll={themeState.resetAll}
-          anchorPos={anchorPos}
-        />
-      </div>
-
-      {/* Theme palette — mobile bottom sheet */}
-      <div className="lg:hidden">
-        <ThemePalette
-          open={paletteOpen}
-          onClose={() => setPaletteOpen(false)}
-          mode={themeState.mode}
-          coloredThemeName={themeState.coloredThemeName}
-          fontSizeOffset={themeState.fontSizeOffset}
-          onSelectLight={themeState.selectLight}
-          onSelectDark={themeState.selectDark}
-          onSelectColored={themeState.selectColored}
-          onIncreaseFontSize={themeState.increaseFontSize}
-          onDecreaseFontSize={themeState.decreaseFontSize}
-          onResetAll={themeState.resetAll}
-          isMobile
-        />
-      </div>
-    </>
+    <div
+      className="flex items-center gap-1"
+      onMouseLeave={() => setHoveredIndex(null)}
+    >
+      <ActionIcon
+        label="Theme palette"
+        pressed={paletteOpen}
+        onClick={onTogglePalette}
+        hovered={hoveredIndex === 0}
+        onHover={() => setHoveredIndex(0)}
+      >
+        <PaletteIcon size={16} />
+      </ActionIcon>
+      <ActionIcon
+        label={miniPlayerOpen ? "Hide music player" : "Show music player"}
+        pressed={miniPlayerOpen}
+        onClick={onToggleMusic}
+        hovered={hoveredIndex === 1}
+        onHover={() => setHoveredIndex(1)}
+      >
+        <MusicNoteIcon size={16} />
+      </ActionIcon>
+      <ActionIcon
+        label={marqueeVisible ? "Hide quotes" : "Show quotes"}
+        pressed={marqueeVisible}
+        onClick={onToggleQuotes}
+        hovered={hoveredIndex === 2}
+        onHover={() => setHoveredIndex(2)}
+      >
+        <SmileyIcon size={16} />
+      </ActionIcon>
+    </div>
   );
 }

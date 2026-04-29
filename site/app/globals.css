@@ -187,20 +187,12 @@ body {
 .dotted-link {
   color: var(--color-fg-secondary);
   text-decoration: none;
-  padding: 2px 2px 2px;
   border-radius: 1px;
-  text-decoration: none;
-  border-bottom: 1.5px solid transparent;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .dotted-link:hover {
-  background-color: rgba(181, 101, 29, 0.1);
   color: var(--color-accent);
-}
-
-.dotted-link:active {
-  border-bottom-color: var(--color-accent);
 }
 
 .dotted-link-arrow {
@@ -214,15 +206,210 @@ body {
 
 .dotted-link--inline {
   color: var(--color-accent);
-  border-bottom-color: transparent;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-decoration: none;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0,
+    currentColor 4px,
+    transparent 4px,
+    transparent 7px
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0 1.5px;
+  transition: background-size 350ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.dotted-link--inline:hover {
-  color: var(--color-fg);
+.dotted-link--inline:hover,
+.dotted-link--inline:focus-visible {
+  color: var(--color-accent);
+  background-size: 100% 1.5px;
 }
 
-.dotted-link--inline:active {
-  border-bottom-color: var(--color-fg);
+/* Photo stack — hover trigger inside bio paragraph */
+.photo-stack-trigger {
+  color: var(--color-accent);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0,
+    currentColor 4px,
+    transparent 4px,
+    transparent 7px
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1.5px;
+  outline: none;
+  transition: opacity 0.15s ease;
+}
+
+.photo-stack-trigger:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Portal-mounted overlay — fullscreen, sits above all page content */
+.photo-stack-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.photo-stack-backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 35%, transparent);
+  /* Blur stays at full strength — we animate the layer's opacity instead.
+     Animating blur radius produces visible steps because browsers quantize
+     the filter; opacity is GPU-smooth. */
+  backdrop-filter: blur(14px) saturate(110%);
+  -webkit-backdrop-filter: blur(14px) saturate(110%);
+  will-change: opacity;
+}
+
+/* Cloned label rendered above the blur so the trigger stays sharp */
+.photo-stack-label {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.photo-stack {
+  display: block;
+  pointer-events: none;
+}
+
+.photo-stack__photo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: block;
+  border-radius: 4px;
+  background: var(--color-surface);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 14px 36px rgba(0, 0, 0, 0.24);
+  object-fit: cover;
+  /* All photos bottom-align (same size) → shared pivot below their bottom
+     edge. Rotation alone fans the cards. Larger Y% = wider fan spread. */
+  transform-origin: 50% 200%;
+}
+
+/* Shared container for bio toolbar dropdowns (palette / player / quotes).
+   iOS-style corner radius + light themed fill. The drop shadow is applied via
+   `filter: drop-shadow()` on each dropdown's motion wrapper (see CSS variable
+   below) — using box-shadow here would be clipped by the wrapper's
+   `overflow: hidden` (required for the height animation). */
+.bio-dropdown-container {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  border-radius: 14px;
+}
+
+.dark .bio-dropdown-container {
+  background-color: var(--color-surface-raised);
+}
+
+/* Soft drop shadow tuned to be barely-there. Shared by all three dropdowns
+   AND the sticky hero toolbar via `filter: var(--bio-dropdown-shadow)` on the
+   AnimatePresence wrapper. Single very-faint layer — present, not pronounced. */
+:root {
+  --bio-dropdown-shadow:
+    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.035));
+}
+
+.dark {
+  --bio-dropdown-shadow:
+    drop-shadow(0 4px 14px rgba(0, 0, 0, 0.22));
+}
+
+/* Bio highlighter toolbar — matches ActionIcon footprint (32×32 circle) so it
+   reads as part of the same icon row as HeroActions. Hover and active wear
+   the same accent-tinted background so "active" persists the hover look. */
+.bio-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 0;
+  background: transparent;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.bio-toolbar-btn:hover,
+.bio-toolbar-btn:focus-visible,
+.bio-toolbar-btn--active {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+/* When highlight mode is active, the paragraphs wear a custom highlighter-pen
+   cursor (inline SVG, hotspot at the marker tip). Scoped to .bio-text so the
+   toolbar buttons keep their pointer cursor. Browsers fall back to `text` if
+   the SVG cursor can't be loaded. */
+.bio-highlight-mode .bio-text,
+.bio-highlight-mode .bio-text * {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M3 29 L11 21 L17 27 L9 29 Z' fill='%23FFDC64' stroke='%23222' stroke-width='1.2' stroke-linejoin='round'/><path d='M11 21 L21 11 L29 19 L17 27 Z' fill='%23D4915E' stroke='%23222' stroke-width='1.2' stroke-linejoin='round'/><path d='M21 11 L25 7' stroke='%23222' stroke-width='1.5' stroke-linecap='round'/></svg>")
+      3 29,
+    text;
+}
+
+/* Marker stroke. Yellow translucent gradient with tapered ends, multiply-
+   blended so dark text reads through it like real highlighter on paper. The
+   paint-in keyframe grows background-size from 0% → 100% so the stroke draws
+   itself left-to-right. box-decoration-break: clone makes multi-line
+   highlights render the gradient per line instead of stretching across. */
+mark.bio-highlight {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 220, 100, 0) 0%,
+    rgba(255, 220, 100, 0.65) 6%,
+    rgba(255, 220, 100, 0.65) 94%,
+    rgba(255, 220, 100, 0) 100%
+  );
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 100% 88%;
+  color: inherit;
+  padding: 0.05em 0.18em;
+  margin: 0 -0.18em;
+  mix-blend-mode: multiply;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: bio-highlight-paint 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dark mark.bio-highlight {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 220, 100, 0) 0%,
+    rgba(255, 220, 100, 0.32) 6%,
+    rgba(255, 220, 100, 0.32) 94%,
+    rgba(255, 220, 100, 0) 100%
+  );
+  mix-blend-mode: screen;
+}
+
+@keyframes bio-highlight-paint {
+  from {
+    background-size: 0% 88%;
+  }
+  to {
+    background-size: 100% 88%;
+  }
 }
 
 /* Bento card — Stripe-style scale animation */
@@ -256,7 +443,7 @@ body {
 }
 
 .marquee-track {
-  animation: marquee-scroll 30s linear infinite;
+  animation: marquee-scroll 18s linear infinite;
 }
 
 /* Blinking cursor for verbosity streaming */

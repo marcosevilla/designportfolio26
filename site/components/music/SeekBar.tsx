@@ -14,6 +14,12 @@ interface SeekBarProps {
   /** Optional aria label. */
   ariaLabel?: string;
   className?: string;
+  /**
+   * "default" — track centered with click-padding both sides, thumb always visible.
+   * "flush"   — track sits flush to the bottom edge, click-padding extends upward,
+   *             thumb only appears on hover/drag.
+   */
+  variant?: "default" | "flush";
 }
 
 /**
@@ -28,7 +34,9 @@ export default function SeekBar({
   onCommit,
   ariaLabel = "Seek",
   className,
+  variant = "default",
 }: SeekBarProps) {
+  const flush = variant === "flush";
   const trackRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const [hovered, setHovered] = useState(false);
@@ -64,6 +72,13 @@ export default function SeekBar({
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
   const expanded = hovered || draggingRef.current;
 
+  // In flush mode the track is anchored to the bottom of the wrapper and the
+  // generous click target only extends upward so the bar reads as part of the
+  // container's bottom edge.
+  const wrapperPaddingClass = flush ? "pt-3 pb-0" : "py-2 -my-2";
+  // Thumb visibility — flush hides the thumb at rest; default keeps it visible.
+  const showThumb = flush ? expanded : true;
+
   return (
     <div
       ref={trackRef}
@@ -73,7 +88,7 @@ export default function SeekBar({
       aria-valuemax={max || 0}
       aria-valuenow={value}
       tabIndex={0}
-      className={`relative w-full select-none touch-none cursor-pointer py-2 -my-2 ${className ?? ""}`}
+      className={`relative w-full select-none touch-none cursor-pointer ${wrapperPaddingClass} ${className ?? ""}`}
       onPointerDown={handleDown}
       onPointerMove={handleMove}
       onPointerUp={handleUp}
@@ -83,7 +98,7 @@ export default function SeekBar({
     >
       {/* Track */}
       <div
-        className="rounded-full transition-[height]"
+        className="relative rounded-full transition-[height]"
         style={{
           height: expanded ? 4 : 2,
           backgroundColor: "var(--color-border)",
@@ -97,24 +112,24 @@ export default function SeekBar({
             backgroundColor: "var(--color-accent)",
           }}
         />
+        {/* Thumb — uses the same ✸ blink-cursor character used elsewhere on
+            the homepage (intro, loading state) for a consistent motif. */}
+        <span
+          aria-hidden="true"
+          className="absolute pointer-events-none select-none transition-[font-size,opacity]"
+          style={{
+            left: `${pct}%`,
+            top: "50%",
+            fontSize: expanded ? 20 : 16,
+            lineHeight: 1,
+            transform: "translate(-50%, -50%)",
+            opacity: showThumb ? 1 : 0,
+            color: "var(--color-accent)",
+          }}
+        >
+          ✸
+        </span>
       </div>
-      {/* Thumb — uses the same ✸ blink-cursor character used elsewhere on
-          the homepage (intro, loading state) for a consistent motif. */}
-      <span
-        aria-hidden="true"
-        className="absolute pointer-events-none select-none transition-[font-size]"
-        style={{
-          left: `${pct}%`,
-          top: "50%",
-          fontSize: expanded ? 20 : 16,
-          lineHeight: 1,
-          transform: "translate(-50%, -50%)",
-          opacity: 1,
-          color: "var(--color-accent)",
-        }}
-      >
-        ✸
-      </span>
     </div>
   );
 }
