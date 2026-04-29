@@ -8,6 +8,7 @@ import { HighlightableBio } from "./HighlightableBio";
 import { HighlighterProvider } from "./HighlighterContext";
 import HeroToolbar from "./HeroToolbar";
 import ConnectLinks from "./ConnectLinks";
+import CyclingGreeting from "./CyclingGreeting";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -64,12 +65,13 @@ export default function Hero({
 
         {/* Bio — all paragraphs visible at once */}
         <motion.div
-          className="mt-8 text-(--color-fg-secondary) leading-[28px]"
+          className="mt-16 text-(--color-fg-secondary) leading-[28px]"
           style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
           initial={initial}
           animate={animate}
           transition={transition}
         >
+          <CyclingGreeting />
           <HighlightableBio paragraphs={PARAGRAPHS} />
           <ConnectLinks />
         </motion.div>

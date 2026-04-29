@@ -1,79 +1,68 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { EmailIcon, LinkedInIcon, XIcon } from "./Icons";
 
 const EMAIL = "marcogsevilla@gmail.com";
+const HOVER_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 };
 
+type LinkItem = {
+  key: string;
+  href: string;
+  label: string;
+  icon: (props: { size?: number }) => React.ReactElement;
+  external?: boolean;
+};
+
+const LINKS: LinkItem[] = [
+  { key: "x", href: "https://twitter.com/marcowitss", label: "X (@marcowitss)", icon: XIcon, external: true },
+  { key: "linkedin", href: "https://www.linkedin.com/in/marcogsevilla/", label: "LinkedIn", icon: LinkedInIcon, external: true },
+  { key: "email", href: `mailto:${EMAIL}`, label: `Email ${EMAIL}`, icon: EmailIcon },
+];
+
+/**
+ * Bio "Let's connect" row. Each link is a 32×32 circular icon button styled
+ * to match the toolbar's HeroActions row above — same sliding hover pill
+ * (shared `layoutId`), same accent-tint color treatment.
+ */
 export default function ConnectLinks() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = useCallback(async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(EMAIL);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Clipboard write rejected (e.g., insecure context). Fail silently.
-    }
-  }, []);
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
   return (
-    <p className="mt-6">
-      <span>Let&apos;s connect: </span>
-      <a
-        href="https://twitter.com/marcowitss"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="dotted-link dotted-link--inline"
-      >
-        @marcowitss
-      </a>
-      <span>, </span>
-      <a
-        href="https://www.linkedin.com/in/marcogsevilla/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="dotted-link dotted-link--inline"
-      >
-        LinkedIn
-      </a>
-      <span>, </span>
-      <span className="group/email relative inline-flex items-center gap-1.5 align-baseline">
-        <a
-          href={`mailto:${EMAIL}`}
-          className="dotted-link dotted-link--inline"
-        >
-          Email
-        </a>
-        <button
-          type="button"
-          onClick={handleCopy}
-          aria-label={copied ? "Copied" : `Copy ${EMAIL} to clipboard`}
-          className="opacity-0 group-hover/email:opacity-100 group-focus-within/email:opacity-100 focus-visible:opacity-100 transition-opacity duration-150 cursor-pointer"
-          style={{
-            fontSize: "11px",
-            fontFamily: "var(--font-mono-system)",
-            color: "var(--color-fg-tertiary)",
-            border: "1px solid var(--color-border)",
-            borderRadius: "9999px",
-            padding: "1px 8px",
-            lineHeight: 1.4,
-            backgroundColor: "var(--color-bg)",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "var(--color-accent)";
-            e.currentTarget.style.borderColor = "var(--color-accent)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "var(--color-fg-tertiary)";
-            e.currentTarget.style.borderColor = "var(--color-border)";
-          }}
-        >
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </span>
-    </p>
+    <div
+      className="mt-6 flex items-center gap-1"
+      onMouseLeave={() => setHoveredKey(null)}
+    >
+      {LINKS.map((l) => {
+        const Icon = l.icon;
+        const isHovered = hoveredKey === l.key;
+        return (
+          <a
+            key={l.key}
+            href={l.href}
+            aria-label={l.label}
+            onMouseEnter={() => setHoveredKey(l.key)}
+            onFocus={() => setHoveredKey(l.key)}
+            target={l.external ? "_blank" : undefined}
+            rel={l.external ? "noopener noreferrer" : undefined}
+            className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
+          >
+            {isHovered && (
+              <motion.span
+                layoutId="connect-links-hover"
+                aria-hidden
+                className="absolute inset-0 rounded-full"
+                style={{ backgroundColor: "color-mix(in srgb, var(--color-accent) 8%, transparent)" }}
+                transition={HOVER_SPRING}
+              />
+            )}
+            <span className="relative">
+              <Icon size={16} />
+            </span>
+          </a>
+        );
+      })}
+    </div>
   );
 }

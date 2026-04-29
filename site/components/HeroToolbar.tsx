@@ -168,12 +168,12 @@ export default function HeroToolbar() {
               exit={{ y: -120, opacity: 0 }}
               transition={STICKY_SPRING}
             >
-              {/* Mirror HomeLayout's body wrapper: max-w-[550px] mx-auto with
+              {/* Mirror HomeLayout's body wrapper: max-w-[600px] mx-auto with
                   px-4 sm:px-8 padding so the sticky bar's outer box matches the
                   550px body column and its inner content edges line up with the
                   in-flow toolbar's icon row. */}
               <div
-                className="max-w-[550px] mx-auto px-4 sm:px-8 pointer-events-auto"
+                className="max-w-[600px] mx-auto px-4 sm:px-8 pointer-events-auto"
                 style={{ filter: "var(--bio-dropdown-shadow)" }}
               >
                 <div

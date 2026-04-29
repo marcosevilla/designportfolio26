@@ -367,6 +367,47 @@ body {
     text;
 }
 
+/* "Hello" / section-label shimmer — text fill is the theme accent, with a
+   brighter metallic sheen (accent mixed toward white) that wipes across the
+   letters once per cycle. Both colors are derived from --color-accent so the
+   shimmer follows whichever palette the user has selected. */
+.shimmer-text {
+  background-image: linear-gradient(
+    105deg,
+    var(--color-accent) 0%,
+    var(--color-accent) 42%,
+    color-mix(in srgb, var(--color-accent) 25%, white 75%) 50%,
+    var(--color-accent) 58%,
+    var(--color-accent) 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-text-pass 7s linear infinite;
+}
+
+@keyframes shimmer-text-pass {
+  0%, 14% {
+    background-position: 100% 50%; /* sheen off-right — flat base color */
+  }
+  30% {
+    background-position: 0% 50%;   /* sheen wipes through */
+  }
+  100% {
+    background-position: 0% 50%;   /* hold; loop jumps back invisibly */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-text {
+    animation: none;
+    background-position: 100% 50%;
+  }
+}
+
 /* Marker stroke. Yellow translucent gradient with tapered ends, multiply-
    blended so dark text reads through it like real highlighter on paper. The
    paint-in keyframe grows background-size from 0% → 100% so the stroke draws
@@ -446,10 +487,27 @@ mark.bio-highlight {
   animation: marquee-scroll 18s linear infinite;
 }
 
-/* Blinking cursor for verbosity streaming */
+/* Blunt on/off blink (no fade) — steps(1) flips opacity at the keyframe
+   boundary instead of interpolating. Used by the CyclingGreeting cursor. */
 @keyframes blink-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%, 49.999% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.cycling-greeting-cursor {
+  display: inline-flex;
+  align-items: center;
+  animation: blink-cursor 1.2s steps(1, end) infinite;
+  /* Absolute size — decoupled from the header so enlarging the text doesn't
+     scale the cursor with it. SVG inside fills via width/height: 1em. */
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cycling-greeting-cursor {
+    animation: none;
+  }
 }
 
 /* Gentle float for CTA button */

@@ -127,6 +127,16 @@ export function LinkedInIcon({ size = 18, className }: IconProps) {
   );
 }
 
+// X (formerly Twitter) — stylized X glyph rendered as two crossing strokes.
+export function XIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 4l16 16" />
+      <path d="M20 4L4 20" />
+    </svg>
+  );
+}
+
 export function PaletteIcon({ size = 18, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useDialKit } from "dialkit";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
@@ -703,20 +702,22 @@ export default function LedMatrix() {
     scenes: activeScenes,
   };
 
-  const dial = useDialKit("Visualizer", {
+  // Visualizer parameters — DialKit panel removed; these are the values that
+  // previously rendered as the panel's defaults.
+  const dial = {
     master: {
       enabled: true,
-      audioMixCap: [1.0, 0, 1],
-      saturation: [1.5, 1, 3],
-      vibrancy: [0.65, 0.3, 1.0],
+      audioMixCap: 1.0,
+      saturation: 1.5,
+      vibrancy: 0.65,
     },
     sparkles: {
-      density: [1.0, 0, 3],
-      intensity: [1.0, 0, 2],
-      onsetBurst: [1.0, 0, 3],
-      bigChance: [0.18, 0, 0.6],
+      density: 1.0,
+      intensity: 1.0,
+      onsetBurst: 1.0,
+      bigChance: 0.18,
     },
-  });
+  };
   const dialRef = useRef(dial);
   dialRef.current = dial;
 

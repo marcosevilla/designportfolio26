@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useMotionValueEvent, useVelocity, useReducedMotion, animate, type MotionValue, type PanInfo, type AnimationPlaybackControls } from "framer-motion";
-import { useDialKit } from "dialkit";
 import { CAROUSEL_CARDS, type CarouselCardProps } from "./case-study/carousel/carousel-card-registry";
 import CarouselCardShell from "./case-study/carousel/CarouselCardShell";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -84,51 +83,50 @@ function CarouselItem({
 
 // ─── Main carousel ─────────────────────────────────────────────────────────────
 
+// Static carousel parameters — DialKit panel removed; these are the values
+// that previously rendered as the panel's defaults.
+const dial = {
+  settleSpring: { type: "spring" as const, stiffness: 180, damping: 28, mass: 1 },
+  sizing: {
+    cardWDesktop: 320,
+    cardHDesktop: 420,
+    cardWMobile: 260,
+    cardHMobile: 340,
+    gap: 24,
+    mobileBreakpoint: 1024,
+  },
+  position: {
+    marginTop: 32,
+    heightBuffer: 128,
+  },
+  focal: {
+    activeScale: 1.0,
+    neighborScale: 0.92,
+    farScale: 0.85,
+    activeOpacity: 1.0,
+    neighborOpacity: 0.7,
+    farOpacity: 0.4,
+  },
+  drag: {
+    rubberBand: 0.15,
+    velocityFactor: 0.3,
+    velocityClamp: 3000,
+    tiltMaxDeg: 3,
+    tiltVelocityThreshold: 1500,
+  },
+  wheel: {
+    wheelDeltaThreshold: 5,
+    wheelDebounceMs: 300,
+  },
+  expand: {
+    expandDelayMs: 300,
+    veilDurationSec: 0.25,
+    othersBlur: 6,
+    othersOpacity: 0.4,
+  },
+};
+
 export default function CaseStudyCarousel({ studies }: CaseStudyCarouselProps) {
-  // ─── DialKit panel: live-tunable carousel parameters (dev-only UI) ──────────
-  // Folder-grouped so the panel stays scannable. All values flow into the
-  // component below — change a dial and the carousel updates in real time.
-  const dial = useDialKit("Carousel", {
-    // Settle spring at root so it gets its own dedicated dial UI.
-    settleSpring: { type: "spring" as const, stiffness: 180, damping: 28, mass: 1 },
-    sizing: {
-      cardWDesktop: [320, 200, 500] as [number, number, number],
-      cardHDesktop: [420, 250, 600] as [number, number, number],
-      cardWMobile: [260, 180, 400] as [number, number, number],
-      cardHMobile: [340, 200, 500] as [number, number, number],
-      gap: [24, 0, 80] as [number, number, number],
-      mobileBreakpoint: [1024, 600, 1400] as [number, number, number],
-    },
-    position: {
-      marginTop: [32, 0, 128] as [number, number, number],
-      heightBuffer: [128, 0, 256] as [number, number, number],
-    },
-    focal: {
-      activeScale: [1.0, 0.8, 1.2] as [number, number, number],
-      neighborScale: [0.92, 0.6, 1.0] as [number, number, number],
-      farScale: [0.85, 0.5, 1.0] as [number, number, number],
-      activeOpacity: [1.0, 0.5, 1] as [number, number, number],
-      neighborOpacity: [0.7, 0, 1] as [number, number, number],
-      farOpacity: [0.4, 0, 1] as [number, number, number],
-    },
-    drag: {
-      rubberBand: [0.15, 0, 1] as [number, number, number],
-      velocityFactor: [0.3, 0, 1] as [number, number, number],
-      velocityClamp: [3000, 500, 10000] as [number, number, number],
-      tiltMaxDeg: [3, 0, 15] as [number, number, number],
-      tiltVelocityThreshold: [1500, 500, 3000] as [number, number, number],
-    },
-    wheel: {
-      wheelDeltaThreshold: [5, 1, 50] as [number, number, number],
-      wheelDebounceMs: [300, 50, 1000] as [number, number, number],
-    },
-    expand: {
-      expandDelayMs: [300, 100, 1000] as [number, number, number],
-      veilDurationSec: [0.25, 0, 2] as [number, number, number],
-      othersBlur: [6, 0, 20] as [number, number, number],
-      othersOpacity: [0.4, 0, 1] as [number, number, number],
-    },
-  });
 
   const reducedMotion = useReducedMotion();
   const { expandingSlug, trigger } = useExpandAndNavigate({ delayMs: dial.expand.expandDelayMs });

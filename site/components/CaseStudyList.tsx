@@ -169,7 +169,19 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
     <section className="relative z-10">
       {/* Header */}
       <div className="mb-4" ref={filterAreaRef}>
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-between gap-4">
+          <h2
+            style={{
+              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "11px",
+              fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--color-fg-tertiary)",
+            }}
+          >
+            Selected projects
+          </h2>
           {hydrated && (
             <div className="flex items-center gap-3">
               <ViewToggleButton
