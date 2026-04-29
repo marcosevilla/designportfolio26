@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES } from "@/lib/visualizer-scenes";
-import { GLYPH_7x7, GLYPH_5x5_SCENES, drawGlyph, drawText, truncateToCols, formatClock } from "@/lib/dot-font";
+import { GLYPH_5x5_TRANSPORT, GLYPH_5x5_SCENES, drawGlyph, drawText, truncateToCols, formatClock } from "@/lib/dot-font";
 
 const CELL = 5;
 
@@ -40,9 +40,9 @@ function a11yButtonStyle(
   const SCENE_W = 5;
   const SCENE_GAP = 1;
   const SCENES_LEN = 5;
-  const transportW = 7 + 4 + 7 + 4 + 7;
+  const transportW = 5 + 3 + 5 + 3 + 5; // 21
   const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
-  const transportOriginRow = Math.floor(rows / 2) - 3;
+  const transportOriginRow = Math.floor(rows / 2) - 2;
   const sceneIconsW = SCENES_LEN * SCENE_W + (SCENES_LEN - 1) * SCENE_GAP;
   const sceneOriginCol = cols - sceneIconsW - 2;
 
@@ -55,11 +55,11 @@ function a11yButtonStyle(
 
   switch (region) {
     case "prev":
-      return px(transportOriginCol, transportOriginRow, 7, 7);
+      return px(transportOriginCol, transportOriginRow, 5, 5);
     case "play":
-      return px(transportOriginCol + 11, transportOriginRow, 7, 7);
+      return px(transportOriginCol + 8, transportOriginRow, 5, 5);
     case "next":
-      return px(transportOriginCol + 22, transportOriginRow, 7, 7);
+      return px(transportOriginCol + 16, transportOriginRow, 5, 5);
     case "scene":
       return px(
         sceneOriginCol + sceneIndex * (SCENE_W + SCENE_GAP),
@@ -187,10 +187,10 @@ export default function LedMatrixUI() {
         // Transport
         const midR = Math.floor(rows / 2);
         if (Math.abs(row - midR) <= 5) {
-          const transportW = 7 + 4 + 7 + 4 + 7;
+          const transportW = 5 + 3 + 5 + 3 + 5; // 21
           const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
           const local = col - transportOriginCol;
-          if ((local >= 0 && local < 7) || (local >= 11 && local < 18) || (local >= 22 && local < 29)) return;
+          if ((local >= 0 && local < 5) || (local >= 8 && local < 13) || (local >= 16 && local < 21)) return;
         }
       }
       setRevealed((r) => !r);
@@ -249,12 +249,12 @@ export default function LedMatrixUI() {
       // 3. Transport (centered band)
       const midR = Math.floor(rows / 2);
       if (Math.abs(row - midR) <= 5) {
-        const transportW = 7 + 4 + 7 + 4 + 7;
+        const transportW = 5 + 3 + 5 + 3 + 5; // 21
         const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
         const local = col - transportOriginCol;
-        if (local >= 0 && local < 7) prev();
-        else if (local >= 11 && local < 18) togglePlay();
-        else if (local >= 22 && local < 29) next();
+        if (local >= 0 && local < 5) prev();
+        else if (local >= 8 && local < 13) togglePlay();
+        else if (local >= 16 && local < 21) next();
         return;
       }
     };
@@ -278,9 +278,9 @@ export default function LedMatrixUI() {
 
     // ── Idle revealed: just the play glyph ──
     if (!isPlaying) {
-      const originCol = Math.floor(cols / 2) - 3;
-      const originRow = Math.floor(rows / 2) - 3;
-      drawGlyph(ctx, GLYPH_7x7.play, originCol, originRow, CELL, accent);
+      const originCol = Math.floor(cols / 2) - 2;
+      const originRow = Math.floor(rows / 2) - 2;
+      drawGlyph(ctx, GLYPH_5x5_TRANSPORT.play, originCol, originRow, CELL, accent);
       return;
     }
 
@@ -329,13 +329,13 @@ export default function LedMatrixUI() {
       }
     }
 
-    // Center transport: prev / pause / next, 7×7 each, gap 4 cells
-    const transportW = 7 + 4 + 7 + 4 + 7;
+    // Center transport: prev / pause / next, 5×5 each, gap 3 cells
+    const transportW = 5 + 3 + 5 + 3 + 5; // 21
     const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
-    const transportOriginRow = Math.floor(rows / 2) - 3;
-    drawGlyph(ctx, GLYPH_7x7.prev,  transportOriginCol,      transportOriginRow, CELL, dim);
-    drawGlyph(ctx, GLYPH_7x7.pause, transportOriginCol + 11, transportOriginRow, CELL, accent);
-    drawGlyph(ctx, GLYPH_7x7.next,  transportOriginCol + 22, transportOriginRow, CELL, dim);
+    const transportOriginRow = Math.floor(rows / 2) - 2;
+    drawGlyph(ctx, GLYPH_5x5_TRANSPORT.prev,  transportOriginCol,     transportOriginRow, CELL, dim);
+    drawGlyph(ctx, GLYPH_5x5_TRANSPORT.pause, transportOriginCol + 8, transportOriginRow, CELL, accent);
+    drawGlyph(ctx, GLYPH_5x5_TRANSPORT.next,  transportOriginCol + 16, transportOriginRow, CELL, dim);
 
     // Scrubber: timecodes on row rows-5, dot bar on row rows-3
     const left = formatClock(currentTime);
