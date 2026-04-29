@@ -29,6 +29,47 @@ function withAlpha(color: string, alpha: number): string {
   return color;
 }
 
+type ClickRegion = "prev" | "play" | "next" | "scene";
+
+function a11yButtonStyle(
+  region: ClickRegion,
+  size: { cols: number; rows: number },
+  sceneIndex = 0
+): React.CSSProperties {
+  const { cols, rows } = size;
+  const SCENE_W = 5;
+  const SCENE_GAP = 1;
+  const SCENES_LEN = 5;
+  const transportW = 7 + 4 + 7 + 4 + 7;
+  const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
+  const transportOriginRow = Math.floor(rows / 2) - 3;
+  const sceneIconsW = SCENES_LEN * SCENE_W + (SCENES_LEN - 1) * SCENE_GAP;
+  const sceneOriginCol = cols - sceneIconsW - 2;
+
+  const px = (col: number, row: number, w: number, h: number): React.CSSProperties => ({
+    left: `${col * CELL}px`,
+    top: `${row * CELL}px`,
+    width: `${w * CELL}px`,
+    height: `${h * CELL}px`,
+  });
+
+  switch (region) {
+    case "prev":
+      return px(transportOriginCol, transportOriginRow, 7, 7);
+    case "play":
+      return px(transportOriginCol + 11, transportOriginRow, 7, 7);
+    case "next":
+      return px(transportOriginCol + 22, transportOriginRow, 7, 7);
+    case "scene":
+      return px(
+        sceneOriginCol + sceneIndex * (SCENE_W + SCENE_GAP),
+        3,
+        SCENE_W,
+        SCENE_W
+      );
+  }
+}
+
 export default function LedMatrixUI() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -65,11 +106,6 @@ export default function LedMatrixUI() {
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [currentTrack.src]);
-
-  // Locate the parent wrapper once.
-  useIsoLayoutEffect(() => {
-    wrapperRef.current = canvasRef.current?.parentElement as HTMLDivElement | null;
-  }, []);
 
   // Resize sync — also calls drawNow after every sync.
   useIsoLayoutEffect(() => {
@@ -305,19 +341,102 @@ export default function LedMatrixUI() {
   }, [revealed, isPlaying, currentTrack.src, activeScenes, tick, textOpacity]);
 
   return (
-    <motion.canvas
-      ref={canvasRef}
-      aria-hidden
-      className="absolute inset-0 pointer-events-none"
-      initial={false}
-      animate={{
-        opacity: revealed ? 1 : 0,
-        filter: revealed ? "blur(0px)" : "blur(2px)",
+    <div
+      ref={(el) => { wrapperRef.current = el; }}
+      role="application"
+      aria-label="Music player"
+      tabIndex={0}
+      className="absolute inset-0 outline-offset-2 focus-visible:outline-2 focus-visible:outline-(--color-accent)"
+      onKeyDown={(e) => {
+        switch (e.key) {
+          case " ":
+            e.preventDefault();
+            togglePlay();
+            break;
+          case "ArrowLeft":
+            e.preventDefault();
+            prev();
+            break;
+          case "ArrowRight":
+            e.preventDefault();
+            next();
+            break;
+          case "[": {
+            const ids = SCENES.map((s) => s.id);
+            const cur = ids.indexOf(Array.from(activeScenes)[0] ?? ids[0]);
+            setOnlyScene(ids[(cur - 1 + ids.length) % ids.length]);
+            break;
+          }
+          case "]": {
+            const ids = SCENES.map((s) => s.id);
+            const cur = ids.indexOf(Array.from(activeScenes)[0] ?? ids[0]);
+            setOnlyScene(ids[(cur + 1) % ids.length]);
+            break;
+          }
+          case "Home":
+            e.preventDefault();
+            seek(0);
+            break;
+          case "End":
+            e.preventDefault();
+            seek(duration);
+            break;
+        }
       }}
-      transition={{
-        duration: revealed ? 0.25 : 0.2,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-    />
+    >
+      {/* Screen-reader-only live region for track changes */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {isPlaying ? `Now playing: ${currentTrack.title} by ${currentTrack.artist}` : ""}
+      </div>
+
+      {/* Invisible buttons for SR / keyboard. Sized + positioned over each click region. */}
+      {revealed && isPlaying && (
+        <div className="absolute inset-0 pointer-events-none">
+          <button
+            type="button"
+            aria-label="Previous track"
+            onClick={(e) => { e.stopPropagation(); prev(); }}
+            className="absolute pointer-events-auto opacity-0"
+            style={a11yButtonStyle("prev", sizeRef.current)}
+          />
+          <button
+            type="button"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+            className="absolute pointer-events-auto opacity-0"
+            style={a11yButtonStyle("play", sizeRef.current)}
+          />
+          <button
+            type="button"
+            aria-label="Next track"
+            onClick={(e) => { e.stopPropagation(); next(); }}
+            className="absolute pointer-events-auto opacity-0"
+            style={a11yButtonStyle("next", sizeRef.current)}
+          />
+          {SCENES.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              aria-label={`Activate ${s.label} scene`}
+              onClick={(e) => { e.stopPropagation(); setOnlyScene(s.id); }}
+              className="absolute pointer-events-auto opacity-0"
+              style={a11yButtonStyle("scene", sizeRef.current, i)}
+            />
+          ))}
+        </div>
+      )}
+
+      <motion.canvas
+        ref={canvasRef}
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        initial={false}
+        animate={{
+          opacity: revealed ? 1 : 0,
+          filter: revealed ? "blur(0px)" : "blur(2px)",
+        }}
+        transition={{ duration: revealed ? 0.25 : 0.2, ease: [0.22, 1, 0.36, 1] }}
+      />
+    </div>
   );
 }
