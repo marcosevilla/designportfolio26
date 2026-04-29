@@ -97,6 +97,15 @@ export function ResetIcon({ size = 14, className }: IconProps) {
   );
 }
 
+export function ExternalArrowIcon({ size = 12, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M4 8L8 4" />
+      <path d="M4.5 4H8v3.5" />
+    </svg>
+  );
+}
+
 // ── Footer / social ──
 
 export function EmailIcon({ size = 18, className }: IconProps) {

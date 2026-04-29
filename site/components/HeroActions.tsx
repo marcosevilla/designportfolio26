@@ -5,7 +5,7 @@ import { useThemeState } from "./ThemeToggle";
 import { useMarquee } from "./MarqueeContext";
 import ThemePalette from "./ThemePalette";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import { EmailIcon, LinkedInIcon, MusicNoteIcon, PaletteIcon, SmileyIcon } from "./Icons";
+import { MusicNoteIcon, PaletteIcon, SmileyIcon } from "./Icons";
 
 function ActionIcon({
   label,
@@ -55,16 +55,6 @@ export default function HeroActions() {
   return (
     <>
       <div className="flex items-center gap-3">
-        <ActionIcon href="mailto:hello@marcosevilla.com" label="Email">
-          <EmailIcon size={14} />
-        </ActionIcon>
-        <ActionIcon
-          href="https://www.linkedin.com/in/marcogsevilla/"
-          label="LinkedIn"
-          external
-        >
-          <LinkedInIcon size={14} />
-        </ActionIcon>
         {themeState.mounted && (
           <div ref={paletteButtonRef}>
             <ActionIcon label="Theme palette" onClick={togglePalette}>

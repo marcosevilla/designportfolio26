@@ -10,6 +10,8 @@ import { RenderParagraph } from "./StreamingText";
 import ScrambleText from "./ScrambleText";
 import ScrambleParagraph from "./ScrambleParagraph";
 import HeroActions from "./HeroActions";
+import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { MusicNoteIcon } from "./Icons";
 
 const INTRO_LOADING_DELAY = 1800;
 
@@ -27,6 +29,7 @@ export default function Hero({
   children?: React.ReactNode;
 }) {
   const reducedMotion = usePrefersReducedMotion();
+  const { panelOpen: musicPanelOpen, togglePanel: toggleMusicPanel } = useAudioPlayer();
   const [introPhase, setIntroPhase] = useState<IntroPhase>("star");
   const introTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -53,9 +56,8 @@ export default function Hero({
 
   return (
     <>
-      {/* Heading — sticky to top of viewport at all sizes; frosted bg so
-          content scrolling underneath is muted but visible */}
-      <div className="sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-(--color-bg)/90 backdrop-blur-xs">
+      {/* Heading — sticky top bar on mobile only; lg+ uses HomeNav sidebar */}
+      <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-(--color-bg)/90 backdrop-blur-xs">
         <div className="flex items-center justify-between gap-6">
           <h1 style={{ ...typescale.body, fontWeight: 500 }}>
             <ScrambleText text={HERO_NAME} skip={introDone} />
@@ -66,8 +68,8 @@ export default function Hero({
         </div>
       </div>
 
-      {/* LED matrix slot — sits below the sticky header, above the bio */}
-      {matrix && <div className="mt-6">{matrix}</div>}
+      {/* LED matrix slot — top-aligned with the sidebar at lg+, below the sticky bar on mobile */}
+      {matrix && <div className="mt-6 lg:mt-0">{matrix}</div>}
 
       {/* Intro loading star — blinks before bio scrambles in */}
       {introPhase === "star" && (
@@ -101,16 +103,37 @@ export default function Hero({
             )}
           </p>
           {introDone && (
-            <motion.p
-              className="mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <Link href="/about" className="dotted-link dotted-link--inline">
-                More about me <span className="dotted-link-arrow">→</span>
-              </Link>
-            </motion.p>
+            <>
+              <motion.p
+                className="mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                In my spare time I dabble in music photography
+                <button
+                  type="button"
+                  onClick={toggleMusicPanel}
+                  aria-label={musicPanelOpen ? "Close music player" : "Open music player"}
+                  aria-pressed={musicPanelOpen}
+                  className="inline-flex items-center justify-center align-middle ml-1.5 transition-colors hover:text-(--color-accent)"
+                  style={{ color: musicPanelOpen ? "var(--color-accent)" : "var(--color-fg-secondary)" }}
+                >
+                  <MusicNoteIcon size={14} />
+                </button>
+                .
+              </motion.p>
+              <motion.p
+                className="mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, ease: "easeOut", delay: 0.05 }}
+              >
+                <Link href="/about" className="dotted-link dotted-link--inline">
+                  More about me <span className="dotted-link-arrow">→</span>
+                </Link>
+              </motion.p>
+            </>
           )}
         </motion.div>
       )}
