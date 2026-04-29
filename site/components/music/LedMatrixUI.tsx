@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES } from "@/lib/visualizer-scenes";
-import { GLYPH_7x7, GLYPH_5x5_SCENES, drawGlyph, drawText, truncateToCols } from "@/lib/dot-font";
+import { GLYPH_7x7, GLYPH_5x5_SCENES, drawGlyph, drawText, truncateToCols, formatClock } from "@/lib/dot-font";
 
 const CELL = 5;
 
@@ -34,8 +34,16 @@ export default function LedMatrixUI() {
   const sizeRef = useRef({ cssW: 0, cssH: 0, cols: 0, rows: 0, dpr: 1 });
   const [revealed, setRevealed] = useState(false);
 
-  const { isPlaying, togglePlay, currentTrack, next, prev } = useAudioPlayer();
+  const { isPlaying, togglePlay, currentTrack, currentTime, duration, next, prev, seek } = useAudioPlayer();
   const { activeScenes, setOnlyScene } = useVisualizerScene();
+
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const id = window.setInterval(() => setTick((t) => t + 1), 250);
+    return () => window.clearInterval(id);
+  }, [isPlaying]);
 
   // Locate the parent wrapper once.
   useIsoLayoutEffect(() => {
@@ -172,13 +180,34 @@ export default function LedMatrixUI() {
     drawGlyph(ctx, GLYPH_7x7.prev,  transportOriginCol,      transportOriginRow, CELL, dim);
     drawGlyph(ctx, GLYPH_7x7.pause, transportOriginCol + 11, transportOriginRow, CELL, accent);
     drawGlyph(ctx, GLYPH_7x7.next,  transportOriginCol + 22, transportOriginRow, CELL, dim);
+
+    // Scrubber: timecodes on row rows-5, dot bar on row rows-3
+    const left = formatClock(currentTime);
+    const right = formatClock(duration);
+    drawText(ctx, left, 2, rows - 5, CELL, accent);
+
+    // Right timecode width: each char advances 4 cells, last char no trailing gap.
+    const rightW = right.length * 4 - 1;
+    drawText(ctx, right, cols - 2 - rightW, rows - 5, CELL, accent);
+
+    // Dot bar
+    const BAR_PAD_LEFT = 18;
+    const BAR_PAD_RIGHT = 13;
+    const barStart = BAR_PAD_LEFT;
+    const barEnd = cols - BAR_PAD_RIGHT;
+    const fillRatio = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0;
+    const fillCols = Math.round((barEnd - barStart) * fillRatio);
+    for (let c = barStart; c <= barEnd; c++) {
+      const lit = c <= barStart + fillCols;
+      drawGlyph(ctx, [[1]], c, rows - 3, CELL, lit ? accent : dim);
+    }
   };
 
   // Redraw on state change.
   useEffect(() => {
     drawNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revealed, isPlaying, currentTrack.src, activeScenes]);
+  }, [revealed, isPlaying, currentTrack.src, activeScenes, tick]);
 
   return (
     <canvas
