@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
 import LedMatrix from "./LedMatrix";
+import LedMatrixUI from "./music/LedMatrixUI";
 import PlayerPanel from "./music/PlayerPanel";
 import VisualizerSceneToggle from "./music/VisualizerSceneToggle";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
@@ -57,7 +58,10 @@ function MatrixArea() {
           </motion.div>
         )}
       </AnimatePresence>
-      <LedMatrix />
+      <div className="relative">
+        <LedMatrix />
+        <LedMatrixUI />
+      </div>
     </div>
   );
 }
