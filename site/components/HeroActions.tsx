@@ -4,7 +4,8 @@ import { useState, useRef, useCallback } from "react";
 import { useThemeState } from "./ThemeToggle";
 import { useMarquee } from "./MarqueeContext";
 import ThemePalette from "./ThemePalette";
-import { PaletteIcon, SmileyIcon } from "./Icons";
+import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { MusicNoteIcon, PaletteIcon, SmileyIcon } from "./Icons";
 
 function ActionIcon({
   label,
@@ -37,6 +38,7 @@ function ActionIcon({
 
 export default function HeroActions() {
   const { visible: marqueeVisible, toggle: toggleMarquee } = useMarquee();
+  const { miniPlayerOpen, toggleMiniPlayer } = useAudioPlayer();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const paletteButtonRef = useRef<HTMLDivElement>(null);
   const [anchorPos, setAnchorPos] = useState<{ top: number; left: number } | null>(null);
@@ -60,6 +62,12 @@ export default function HeroActions() {
             </ActionIcon>
           </div>
         )}
+        <ActionIcon
+          label={miniPlayerOpen ? "Hide music player" : "Show music player"}
+          onClick={toggleMiniPlayer}
+        >
+          <MusicNoteIcon size={14} style={{ opacity: miniPlayerOpen ? 1 : 0.7 }} />
+        </ActionIcon>
         <ActionIcon
           label={marqueeVisible ? "Hide quotes" : "Show quotes"}
           onClick={toggleMarquee}
