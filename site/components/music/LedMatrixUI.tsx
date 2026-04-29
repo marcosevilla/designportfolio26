@@ -2,7 +2,9 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import { GLYPH_7x7, drawGlyph } from "@/lib/dot-font";
+import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
+import { SCENES } from "@/lib/visualizer-scenes";
+import { GLYPH_7x7, GLYPH_5x5_SCENES, drawGlyph, drawText, truncateToCols } from "@/lib/dot-font";
 
 const CELL = 5;
 
@@ -14,13 +16,26 @@ function readCssVar(name: string, fallback: string): string {
   return v || fallback;
 }
 
+function withAlpha(color: string, alpha: number): string {
+  // Color is "#RRGGBB", "#RGB", or "rgb(...)" — convert to rgba.
+  if (color.startsWith("#") && (color.length === 7 || color.length === 4)) {
+    const r = parseInt(color.length === 4 ? color[1] + color[1] : color.slice(1, 3), 16);
+    const g = parseInt(color.length === 4 ? color[2] + color[2] : color.slice(3, 5), 16);
+    const b = parseInt(color.length === 4 ? color[3] + color[3] : color.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  if (color.startsWith("rgb(")) return color.replace("rgb(", "rgba(").replace(")", `,${alpha})`);
+  return color;
+}
+
 export default function LedMatrixUI() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const sizeRef = useRef({ cssW: 0, cssH: 0, cols: 0, rows: 0, dpr: 1 });
   const [revealed, setRevealed] = useState(false);
 
-  const { isPlaying, togglePlay } = useAudioPlayer();
+  const { isPlaying, togglePlay, currentTrack, next, prev } = useAudioPlayer();
+  const { activeScenes, setOnlyScene } = useVisualizerScene();
 
   // Locate the parent wrapper once.
   useIsoLayoutEffect(() => {
@@ -111,20 +126,59 @@ export default function LedMatrixUI() {
     if (!revealed) return;
 
     const accent = readCssVar("--color-accent", "#B5651D");
+    const dim = withAlpha(accent, 0.4);
 
+    // ── Idle revealed: just the play glyph ──
     if (!isPlaying) {
-      // 7×7 play glyph centered.
       const originCol = Math.floor(cols / 2) - 3;
       const originRow = Math.floor(rows / 2) - 3;
       drawGlyph(ctx, GLYPH_7x7.play, originCol, originRow, CELL, accent);
+      return;
     }
+
+    // ── Playing revealed ──
+
+    // Title (top-left)
+    const titleCols = Math.max(0, cols - 36); // leave room for scene picker
+    const title = truncateToCols(currentTrack.title ?? "", Math.min(titleCols, 40));
+    drawText(ctx, title, 2, 3, CELL, accent);
+
+    // Artist (top-left, line 2)
+    const artist = truncateToCols(currentTrack.artist ?? "", Math.min(titleCols, 40));
+    drawText(ctx, artist, 2, 10, CELL, dim);
+
+    // Scene picker (top-right)
+    const SCENE_W = 5;
+    const SCENE_GAP = 1;
+    const ICONS_W = SCENES.length * SCENE_W + (SCENES.length - 1) * SCENE_GAP;
+    const sceneOriginCol = cols - ICONS_W - 2;
+    for (let i = 0; i < SCENES.length; i++) {
+      const id = SCENES[i].id as keyof typeof GLYPH_5x5_SCENES;
+      const isActive = activeScenes.has(id);
+      drawGlyph(
+        ctx,
+        GLYPH_5x5_SCENES[id],
+        sceneOriginCol + i * (SCENE_W + SCENE_GAP),
+        3,
+        CELL,
+        isActive ? accent : dim
+      );
+    }
+
+    // Center transport: prev / pause / next, 7×7 each, gap 4 cells
+    const transportW = 7 + 4 + 7 + 4 + 7;
+    const transportOriginCol = Math.floor(cols / 2) - Math.floor(transportW / 2);
+    const transportOriginRow = Math.floor(rows / 2) - 3;
+    drawGlyph(ctx, GLYPH_7x7.prev,  transportOriginCol,      transportOriginRow, CELL, dim);
+    drawGlyph(ctx, GLYPH_7x7.pause, transportOriginCol + 11, transportOriginRow, CELL, accent);
+    drawGlyph(ctx, GLYPH_7x7.next,  transportOriginCol + 22, transportOriginRow, CELL, dim);
   };
 
   // Redraw on state change.
   useEffect(() => {
     drawNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revealed, isPlaying]);
+  }, [revealed, isPlaying, currentTrack.src, activeScenes]);
 
   return (
     <canvas
