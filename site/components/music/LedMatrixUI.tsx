@@ -20,7 +20,7 @@ export default function LedMatrixUI() {
   const sizeRef = useRef({ cssW: 0, cssH: 0, cols: 0, rows: 0, dpr: 1 });
   const [revealed, setRevealed] = useState(false);
 
-  const { isPlaying } = useAudioPlayer();
+  const { isPlaying, togglePlay } = useAudioPlayer();
 
   // Locate the parent wrapper once.
   useIsoLayoutEffect(() => {
@@ -75,6 +75,29 @@ export default function LedMatrixUI() {
       parent.removeEventListener("mouseleave", onLeave);
     };
   }, []);
+
+  // Click handler for play glyph.
+  useEffect(() => {
+    const parent = wrapperRef.current;
+    if (!parent) return;
+    const onClick = (e: MouseEvent) => {
+      if (!revealed) return;
+      const rect = parent.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const { cols, rows } = sizeRef.current;
+      const col = Math.floor(x / CELL);
+      const row = Math.floor(y / CELL);
+      // Center band: rows within ±5 of grid mid, cols within ±15 of grid mid.
+      const midC = Math.floor(cols / 2);
+      const midR = Math.floor(rows / 2);
+      if (Math.abs(row - midR) <= 5 && Math.abs(col - midC) <= 15) {
+        togglePlay();
+      }
+    };
+    parent.addEventListener("click", onClick);
+    return () => parent.removeEventListener("click", onClick);
+  }, [revealed, togglePlay]);
 
   // Single draw entry point.
   const drawNow = () => {
