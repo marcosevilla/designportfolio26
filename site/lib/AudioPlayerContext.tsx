@@ -21,7 +21,6 @@ interface AudioPlayerState {
   currentTime: number;
   duration: number;
   // UI
-  panelOpen: boolean;
   session: PlayerSession;
   // Actions
   play: () => Promise<void>;
@@ -31,8 +30,6 @@ interface AudioPlayerState {
   prev: () => void;
   seek: (sec: number) => void;
   selectTrack: (idx: number) => void;
-  togglePanel: () => void;
-  closePanel: () => void;
   closeSession: () => void;
   // Visualizer
   getFrequencyData: (() => Uint8Array | null) | null;
@@ -52,7 +49,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [session, setSession] = useState<PlayerSession>("idle");
 
   // Web Audio bits (lazily initialized on first play, then reused)
@@ -221,12 +217,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setCurrentIndex(idx);
   }, []);
 
-  const togglePanel = useCallback(() => setPanelOpen((o) => !o), []);
-  const closePanel = useCallback(() => setPanelOpen(false), []);
-
   const closeSession = useCallback(() => {
     audioRef.current?.pause();
-    setPanelOpen(false);
     setSession("idle");
   }, []);
 
@@ -257,7 +249,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       isPlaying,
       currentTime,
       duration,
-      panelOpen,
       session,
       play,
       pause,
@@ -266,8 +257,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       prev,
       seek,
       selectTrack,
-      togglePanel,
-      closePanel,
       closeSession,
       getFrequencyData,
       getTimeDomainData,
@@ -279,7 +268,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       isPlaying,
       currentTime,
       duration,
-      panelOpen,
       session,
       play,
       pause,
@@ -288,8 +276,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       prev,
       seek,
       selectTrack,
-      togglePanel,
-      closePanel,
       closeSession,
       getFrequencyData,
       getTimeDomainData,
