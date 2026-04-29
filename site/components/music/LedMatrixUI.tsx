@@ -118,30 +118,6 @@ export default function LedMatrixUI() {
     };
   }, [revealed]);
 
-  // Click → togglePlay if click lands on the glyph region.
-  useEffect(() => {
-    const parent = wrapperRef.current;
-    if (!parent) return;
-    const onClick = (e: MouseEvent) => {
-      if (!revealed) return;
-      const rect = parent.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const col = Math.floor(x / CELL);
-      const row = Math.floor(y / CELL);
-      if (
-        col >= PLAY_ORIGIN_COL &&
-        col < PLAY_ORIGIN_COL + PLAY_GLYPH_W &&
-        row >= PLAY_ORIGIN_ROW &&
-        row < PLAY_ORIGIN_ROW + PLAY_GLYPH_H
-      ) {
-        togglePlay();
-      }
-    };
-    parent.addEventListener("click", onClick);
-    return () => parent.removeEventListener("click", onClick);
-  }, [revealed, togglePlay]);
-
   const drawNow = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
