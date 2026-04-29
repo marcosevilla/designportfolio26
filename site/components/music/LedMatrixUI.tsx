@@ -39,12 +39,32 @@ export default function LedMatrixUI() {
   const { activeScenes, setOnlyScene } = useVisualizerScene();
 
   const [tick, setTick] = useState(0);
+  const [textOpacity, setTextOpacity] = useState(1);
+  const lastTrackKeyRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (!isPlaying) return;
     const id = window.setInterval(() => setTick((t) => t + 1), 250);
     return () => window.clearInterval(id);
   }, [isPlaying]);
+
+  useEffect(() => {
+    const prevKey = lastTrackKeyRef.current;
+    lastTrackKeyRef.current = currentTrack.src;
+    if (prevKey === undefined || prevKey === currentTrack.src) return;
+    setTextOpacity(0);
+    let raf = 0;
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / 200);
+      // Fade out 0→100ms (opacity 1→0), fade in 100→200ms (opacity 0→1).
+      const opacity = t < 0.5 ? 1 - t * 2 : (t - 0.5) * 2;
+      setTextOpacity(opacity);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [currentTrack.src]);
 
   // Locate the parent wrapper once.
   useIsoLayoutEffect(() => {
@@ -205,31 +225,47 @@ export default function LedMatrixUI() {
 
     // ── Playing revealed ──
 
+    // Responsive gates (spec §6).
+    const showTitle = cols >= 40;
+    const showArtist = cols >= 80;
+    const showScenes = cols >= 60;
+
+    // Crossfaded text accents
+    const titleAccent = withAlpha(accent, textOpacity);
+    const artistAccent = withAlpha(accent, 0.4 * textOpacity);
+
     // Title (top-left)
-    const titleCols = Math.max(0, cols - 36); // leave room for scene picker
-    const title = truncateToCols(currentTrack.title ?? "", Math.min(titleCols, 40));
-    drawText(ctx, title, 2, 3, CELL, accent);
+    if (showTitle) {
+      const titleCols = Math.max(0, cols - 36); // leave room for scene picker
+      const title = truncateToCols(currentTrack.title ?? "", Math.min(titleCols, 40));
+      drawText(ctx, title, 2, 3, CELL, titleAccent);
+    }
 
     // Artist (top-left, line 2)
-    const artist = truncateToCols(currentTrack.artist ?? "", Math.min(titleCols, 40));
-    drawText(ctx, artist, 2, 10, CELL, dim);
+    if (showArtist) {
+      const titleCols = Math.max(0, cols - 36);
+      const artist = truncateToCols(currentTrack.artist ?? "", Math.min(titleCols, 40));
+      drawText(ctx, artist, 2, 10, CELL, artistAccent);
+    }
 
     // Scene picker (top-right)
-    const SCENE_W = 5;
-    const SCENE_GAP = 1;
-    const ICONS_W = SCENES.length * SCENE_W + (SCENES.length - 1) * SCENE_GAP;
-    const sceneOriginCol = cols - ICONS_W - 2;
-    for (let i = 0; i < SCENES.length; i++) {
-      const id = SCENES[i].id as keyof typeof GLYPH_5x5_SCENES;
-      const isActive = activeScenes.has(id);
-      drawGlyph(
-        ctx,
-        GLYPH_5x5_SCENES[id],
-        sceneOriginCol + i * (SCENE_W + SCENE_GAP),
-        3,
-        CELL,
-        isActive ? accent : dim
-      );
+    if (showScenes) {
+      const SCENE_W = 5;
+      const SCENE_GAP = 1;
+      const ICONS_W = SCENES.length * SCENE_W + (SCENES.length - 1) * SCENE_GAP;
+      const sceneOriginCol = cols - ICONS_W - 2;
+      for (let i = 0; i < SCENES.length; i++) {
+        const id = SCENES[i].id as keyof typeof GLYPH_5x5_SCENES;
+        const isActive = activeScenes.has(id);
+        drawGlyph(
+          ctx,
+          GLYPH_5x5_SCENES[id],
+          sceneOriginCol + i * (SCENE_W + SCENE_GAP),
+          3,
+          CELL,
+          isActive ? accent : dim
+        );
+      }
     }
 
     // Center transport: prev / pause / next, 7×7 each, gap 4 cells
@@ -266,7 +302,7 @@ export default function LedMatrixUI() {
   useEffect(() => {
     drawNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revealed, isPlaying, currentTrack.src, activeScenes, tick]);
+  }, [revealed, isPlaying, currentTrack.src, activeScenes, tick, textOpacity]);
 
   return (
     <motion.canvas
