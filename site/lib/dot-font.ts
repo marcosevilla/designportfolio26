@@ -39,7 +39,7 @@ export const FONT_3x5: Record<string, DotGlyph> = {
   "5": [[1,1,1],[1,0,0],[1,1,0],[0,0,1],[1,1,0]],
   "6": [[0,1,1],[1,0,0],[1,1,0],[1,0,1],[0,1,0]],
   "7": [[1,1,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0]],
-  "8": [[0,1,0],[1,0,1],[0,1,0],[1,0,1],[0,1,0]],
+  "8": [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]],
   "9": [[0,1,0],[1,0,1],[0,1,1],[0,0,1],[1,1,0]],
   " ": [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
   "-": [[0,0,0],[0,0,0],[1,1,1],[0,0,0],[0,0,0]],
@@ -49,7 +49,6 @@ export const FONT_3x5: Record<string, DotGlyph> = {
 };
 
 const FALLBACK = FONT_3x5[" "];
-const CHAR_W = 3;
 const CHAR_H = 5;
 const CHAR_ADVANCE = 4; // 3 cols + 1 col gap
 
@@ -65,13 +64,13 @@ export const GLYPH_7x7 = {
     [1,0,0,0,0,0,0],
   ],
   pause: [
-    [1,1,0,1,1,0,0],
-    [1,1,0,1,1,0,0],
-    [1,1,0,1,1,0,0],
-    [1,1,0,1,1,0,0],
-    [1,1,0,1,1,0,0],
-    [1,1,0,1,1,0,0],
-    [1,1,0,1,1,0,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
+    [0,1,1,0,1,1,0],
   ],
   prev: [
     [1,0,1,0,0,0,1],
@@ -98,10 +97,10 @@ export const GLYPH_5x5_SCENES: Record<
   "waveform" | "sparkles" | "chladni" | "feedback" | "lissajous",
   DotGlyph
 > = {
-  waveform: [[0,0,1,0,0],[0,1,0,1,0],[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0]],
+  waveform: [[0,1,0,0,0],[0,1,0,0,1],[1,1,0,1,1],[1,1,1,1,1],[1,1,1,1,1]],
   sparkles: [[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0]],
   chladni:  [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
-  feedback: [[0,0,1,0,0],[0,1,0,1,0],[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0]],
+  feedback: [[1,1,1,1,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,0,0,1],[1,1,1,1,1]],
   lissajous:[[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0],[0,1,0,1,0],[1,0,0,0,1]],
 };
 
@@ -114,6 +113,9 @@ export function measureText(str: string): { cols: number; rows: number } {
 
 /** Truncate `str` so its rendered width fits within `maxCols`, appending "…". */
 export function truncateToCols(str: string, maxCols: number): string {
+  // Below this threshold no truncated form fits — caller should not call us.
+  if (maxCols < CHAR_ADVANCE) return "";
+
   const upper = str.toUpperCase();
   if (measureText(upper).cols <= maxCols) return upper;
   // Account for the ellipsis (1 char = 4 cells of advance, 3 cells visible).
