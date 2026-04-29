@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useMotionValueEvent, animate } from "framer-motion";
 import HeroActions from "./HeroActions";
+import HomeMiniPlayer from "./music/HomeMiniPlayer";
 import ScrambleText from "./ScrambleText";
 import { HERO_NAME } from "@/lib/bio-content";
 import { typescale } from "@/lib/typography";
@@ -103,6 +104,8 @@ export default function HomeNav({ skipScramble = false }: { skipScramble?: boole
       <div className="mt-3">
         <HeroActions />
       </div>
+
+      <HomeMiniPlayer />
 
       {/* Nav links with moving star */}
       <ul

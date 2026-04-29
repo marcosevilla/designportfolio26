@@ -38,7 +38,7 @@ function ActionIcon({
 
 export default function HeroActions() {
   const { visible: marqueeVisible, toggle: toggleMarquee } = useMarquee();
-  const { panelOpen: musicPanelOpen, togglePanel: toggleMusicPanel } = useAudioPlayer();
+  const { miniPlayerOpen, toggleMiniPlayer } = useAudioPlayer();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const paletteButtonRef = useRef<HTMLDivElement>(null);
   const [anchorPos, setAnchorPos] = useState<{ top: number; left: number } | null>(null);
@@ -63,19 +63,16 @@ export default function HeroActions() {
           </div>
         )}
         <ActionIcon
+          label={miniPlayerOpen ? "Hide music player" : "Show music player"}
+          onClick={toggleMiniPlayer}
+        >
+          <MusicNoteIcon size={14} style={{ opacity: miniPlayerOpen ? 1 : 0.7 }} />
+        </ActionIcon>
+        <ActionIcon
           label={marqueeVisible ? "Hide quotes" : "Show quotes"}
           onClick={toggleMarquee}
         >
           <SmileyIcon size={14} style={{ opacity: marqueeVisible ? 1 : 0.4 }} />
-        </ActionIcon>
-        <ActionIcon
-          label={musicPanelOpen ? "Close music player" : "Open music player"}
-          onClick={toggleMusicPanel}
-        >
-          <MusicNoteIcon
-            size={14}
-            style={{ opacity: musicPanelOpen ? 1 : 0.7 }}
-          />
         </ActionIcon>
       </div>
 

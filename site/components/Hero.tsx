@@ -10,8 +10,6 @@ import { RenderParagraph } from "./StreamingText";
 import ScrambleText from "./ScrambleText";
 import ScrambleParagraph from "./ScrambleParagraph";
 import HeroActions from "./HeroActions";
-import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import { MusicNoteIcon } from "./Icons";
 
 const INTRO_LOADING_DELAY = 1800;
 
@@ -29,7 +27,6 @@ export default function Hero({
   children?: React.ReactNode;
 }) {
   const reducedMotion = usePrefersReducedMotion();
-  const { panelOpen: musicPanelOpen, togglePanel: toggleMusicPanel } = useAudioPlayer();
   const [introPhase, setIntroPhase] = useState<IntroPhase>("star");
   const introTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -110,18 +107,7 @@ export default function Hero({
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
               >
-                In my spare time I dabble in music photography
-                <button
-                  type="button"
-                  onClick={toggleMusicPanel}
-                  aria-label={musicPanelOpen ? "Close music player" : "Open music player"}
-                  aria-pressed={musicPanelOpen}
-                  className="inline-flex items-center justify-center align-middle ml-1.5 transition-colors hover:text-(--color-accent)"
-                  style={{ color: musicPanelOpen ? "var(--color-accent)" : "var(--color-fg-secondary)" }}
-                >
-                  <MusicNoteIcon size={14} />
-                </button>
-                .
+                In my spare time I dabble in music photography.
               </motion.p>
               <motion.p
                 className="mt-4"
