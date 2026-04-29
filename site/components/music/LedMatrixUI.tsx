@@ -85,17 +85,44 @@ export default function LedMatrixUI() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealed, isPlaying]);
 
-  // Hover detection on the parent.
+  // Hover (mouse only)
   useEffect(() => {
     const parent = wrapperRef.current;
     if (!parent) return;
-    const onEnter = () => setRevealed(true);
-    const onLeave = () => setRevealed(false);
-    parent.addEventListener("mouseenter", onEnter);
-    parent.addEventListener("mouseleave", onLeave);
+    const onEnter = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      setRevealed(true);
+    };
+    const onLeave = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      setRevealed(false);
+    };
+    parent.addEventListener("pointerenter", onEnter);
+    parent.addEventListener("pointerleave", onLeave);
     return () => {
-      parent.removeEventListener("mouseenter", onEnter);
-      parent.removeEventListener("mouseleave", onLeave);
+      parent.removeEventListener("pointerenter", onEnter);
+      parent.removeEventListener("pointerleave", onLeave);
+    };
+  }, []);
+
+  // Touch tap-to-toggle
+  useEffect(() => {
+    const parent = wrapperRef.current;
+    if (!parent) return;
+    const onParentUp = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") return;
+      setRevealed((r) => !r);
+    };
+    const onDocDown = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") return;
+      if (parent.contains(e.target as Node)) return;
+      setRevealed(false);
+    };
+    parent.addEventListener("pointerup", onParentUp);
+    document.addEventListener("pointerdown", onDocDown);
+    return () => {
+      parent.removeEventListener("pointerup", onParentUp);
+      document.removeEventListener("pointerdown", onDocDown);
     };
   }, []);
 
