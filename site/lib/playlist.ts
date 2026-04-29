@@ -27,6 +27,19 @@ export type Track = {
 // up the same shade).
 export const PLAYLIST: Track[] = [
   {
+    src: "/audio/track-0.mp3",
+    title: "Blue Spring",
+    artist: "Nathan Micay",
+    // Spring sunset — deep blue kicks, sky mids, magenta highs, pale gold air
+    palette: {
+      bass: "#1D4ED8",   // blue-700
+      mids: "#0EA5E9",   // sky-500
+      highs: "#F472B6",  // pink-400
+      air: "#FDE68A",    // amber-200
+    },
+    mood: "energetic",
+  },
+  {
     src: "/audio/track-1.mp3",
     title: "DANCE..",
     artist: "Slayyyter",

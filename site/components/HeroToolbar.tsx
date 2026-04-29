@@ -139,11 +139,22 @@ export default function HeroToolbar() {
     </div>
   );
 
-  const dropdowns = (
+  const inFlowDropdowns = (
     <>
       <PaletteSwatches open={paletteOpen} />
       <HomeMiniPlayer />
       <Marquee />
+    </>
+  );
+
+  // Sticky variant: dropdowns render seamlessly inside the same container as
+  // the icon row (bare = drop their own pill chrome), so an opened menu reads
+  // as a section attached to the floating header rather than a separate panel.
+  const stickyDropdowns = (
+    <>
+      <PaletteSwatches open={paletteOpen} bare />
+      <HomeMiniPlayer bare />
+      <Marquee bare />
     </>
   );
 
@@ -153,7 +164,7 @@ export default function HeroToolbar() {
         <div ref={sentinelRef}>{iconRow}</div>
         {/* Dropdowns are owned by the in-flow toolbar unless the sticky one
             is active, so they animate from a single location at a time. */}
-        {!stickyActive && dropdowns}
+        {!stickyActive && inFlowDropdowns}
       </div>
 
       {mounted && createPortal(
@@ -176,13 +187,10 @@ export default function HeroToolbar() {
                 className="max-w-[600px] mx-auto px-4 sm:px-8 pointer-events-auto"
                 style={{ filter: "var(--bio-dropdown-shadow)" }}
               >
-                <div
-                  className="bio-dropdown-container"
-                  style={{ padding: "10px 12px" }}
-                >
-                  {iconRow}
+                <div className="bio-dropdown-container overflow-hidden">
+                  <div style={{ padding: "10px 12px" }}>{iconRow}</div>
+                  {stickyDropdowns}
                 </div>
-                {dropdowns}
               </div>
             </motion.div>
           )}

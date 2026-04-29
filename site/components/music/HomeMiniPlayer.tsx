@@ -87,7 +87,14 @@ function PlayerIconButton({
   );
 }
 
-export default function HomeMiniPlayer() {
+interface HomeMiniPlayerProps {
+  /** When true, render content seamlessly inside a parent container — drop the
+   *  pill chrome (border, bg, shadow, margins) so the player appears as a
+   *  section of the floating toolbar rather than a separate floating panel. */
+  bare?: boolean;
+}
+
+export default function HomeMiniPlayer({ bare = false }: HomeMiniPlayerProps = {}) {
   const {
     miniPlayerOpen,
     currentTrack,
@@ -110,45 +117,9 @@ export default function HomeMiniPlayer() {
   const [transportHover, setTransportHover] = useState<number | null>(null);
   const [sceneHover, setSceneHover] = useState<number | null>(null);
 
-  return (
-    <div style={{ filter: "var(--bio-dropdown-shadow)" }}>
-    <AnimatePresence initial={false}>
-      {miniPlayerOpen && (
-        <motion.div
-          key="home-mini-player"
-          initial={{ height: 0, opacity: 0, y: -8, filter: "blur(8px)" }}
-          animate={{
-            height: "auto",
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            transition: {
-              height: { duration: 0.35, ease: REVEAL_EASE },
-              opacity: { duration: 0.3, ease: REVEAL_EASE, delay: 0.05 },
-              y: { duration: 0.35, ease: REVEAL_EASE },
-              filter: { duration: 0.4, ease: REVEAL_EASE, delay: 0.05 },
-            },
-          }}
-          exit={{
-            height: 0,
-            opacity: 0,
-            y: -8,
-            filter: "blur(8px)",
-            transition: {
-              height: { duration: 0.25, ease: REVEAL_EASE, delay: 0.08 },
-              opacity: { duration: 0.2, ease: REVEAL_EASE },
-              y: { duration: 0.25, ease: REVEAL_EASE },
-              filter: { duration: 0.22, ease: REVEAL_EASE },
-            },
-          }}
-          style={{ overflow: "hidden", willChange: "transform, opacity, filter" }}
-          aria-label="Music player"
-        >
-          <div
-            className="bio-dropdown-container relative mt-2 mb-4 overflow-hidden"
-            style={{ padding: "8px 12px 14px" }}
-          >
-            {/* Single row, Apple Music ordering:
+  const playerBody = (
+    <>
+      {/* Single row, Apple Music ordering:
                 [Rewind] [Play/Pause] [Skip]  |  [Title + artist]  |  [Visualizer toggles]
                 The scrubber sits flush against the bottom edge as a separate layer. */}
             <div className="flex items-center gap-3">
@@ -259,10 +230,66 @@ export default function HomeMiniPlayer() {
                 }}
               />
             </div>
+    </>
+  );
+
+  const animation = (
+    <motion.div
+      key="home-mini-player"
+      initial={{ height: 0, opacity: 0, y: -8, filter: "blur(8px)" }}
+      animate={{
+        height: "auto",
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: {
+          height: { duration: 0.35, ease: REVEAL_EASE },
+          opacity: { duration: 0.3, ease: REVEAL_EASE, delay: 0.05 },
+          y: { duration: 0.35, ease: REVEAL_EASE },
+          filter: { duration: 0.4, ease: REVEAL_EASE, delay: 0.05 },
+        },
+      }}
+      exit={{
+        height: 0,
+        opacity: 0,
+        y: -8,
+        filter: "blur(8px)",
+        transition: {
+          height: { duration: 0.25, ease: REVEAL_EASE, delay: 0.08 },
+          opacity: { duration: 0.2, ease: REVEAL_EASE },
+          y: { duration: 0.25, ease: REVEAL_EASE },
+          filter: { duration: 0.22, ease: REVEAL_EASE },
+        },
+      }}
+      style={{ overflow: "hidden", willChange: "transform, opacity, filter" }}
+      aria-label="Music player"
+    >
+      {bare ? (
+        <>
+          <div style={{ height: 1, background: "var(--color-border)" }} aria-hidden />
+          <div
+            className="relative overflow-hidden"
+            style={{ padding: "8px 12px 14px" }}
+          >
+            {playerBody}
           </div>
-        </motion.div>
+        </>
+      ) : (
+        <div
+          className="bio-dropdown-container relative mt-2 mb-4 overflow-hidden"
+          style={{ padding: "8px 12px 14px" }}
+        >
+          {playerBody}
+        </div>
       )}
-    </AnimatePresence>
+    </motion.div>
+  );
+
+  return bare ? (
+    <AnimatePresence initial={false}>{miniPlayerOpen && animation}</AnimatePresence>
+  ) : (
+    <div style={{ filter: "var(--bio-dropdown-shadow)" }}>
+      <AnimatePresence initial={false}>{miniPlayerOpen && animation}</AnimatePresence>
     </div>
   );
 }
