@@ -31,7 +31,7 @@ export default function Hero({
       {/* Heading — sticky top bar on mobile only; lg+ uses HomeNav sidebar. */}
       <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 sm:-mx-8 sm:px-8 py-3 bg-(--color-bg)/90 backdrop-blur-xs">
         <motion.h1
-          style={{ ...typescale.body, fontFamily: "var(--font-fraunces), serif", fontStyle: "italic", fontWeight: 500 }}
+          style={{ ...typescale.body, fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace", fontWeight: 500, letterSpacing: "-0.03em" }}
           initial={initial}
           animate={animate}
           transition={transition}

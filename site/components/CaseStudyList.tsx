@@ -13,9 +13,8 @@ import GalleryMode from "./GalleryMode";
 
 // ── View toggle button ──
 
-// Sized + spaced like ActionIcon in HeroActions so the work-toggle row
-// reads as the same family as the email / linkedin / palette / smiley icons
-// next to the "Marco Sevilla" name at the top of the page.
+// Same pill chrome as the buttons in HeroToolbar (.bio-toolbar-btn) so this
+// row reads as the same family as the palette / music / marquee icons up top.
 function ViewToggleButton({
   active,
   onClick,
@@ -29,14 +28,11 @@ function ViewToggleButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-label={label}
-      className="flex items-center justify-center transition-colors hover:text-(--color-accent)"
-      style={{
-        color: active
-          ? "var(--color-accent)"
-          : "var(--color-fg-secondary)",
-      }}
+      aria-pressed={active}
+      className={`bio-toolbar-btn${active ? " bio-toolbar-btn--active" : ""}`}
     >
       {children}
     </button>
@@ -123,29 +119,28 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           <h2
             style={{
               fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "11px",
+              fontSize: "16px",
               fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              color: "var(--color-fg-tertiary)",
+              letterSpacing: "-0.01em",
+              color: "var(--color-fg)",
             }}
           >
             Selected projects
           </h2>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             <ViewToggleButton
               active={activeFilters.length > 0 || filterOpen}
               onClick={() => setFilterOpen((o) => !o)}
               label="Filter projects"
             >
-              <FilterIcon size={14} />
+              <FilterIcon size={16} />
             </ViewToggleButton>
             <ViewToggleButton
               active={galleryOpen}
               onClick={() => setGalleryOpen(true)}
               label="Open gallery mode"
             >
-              <GalleryIcon size={14} />
+              <GalleryIcon size={16} />
             </ViewToggleButton>
           </div>
         </div>

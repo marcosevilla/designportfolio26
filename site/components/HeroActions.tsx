@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MusicNoteIcon, PaletteIcon, SmileyIcon } from "./Icons";
+import { MusicNoteIcon, PaletteIcon, VisualsIcon } from "./Icons";
 
 const HOVER_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 };
 
@@ -36,10 +36,8 @@ function ActionIcon({
       onFocus={onHover}
       aria-label={label}
       aria-pressed={pressed}
-      className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none aria-pressed:text-(--color-accent)"
+      className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors text-(--color-fg-tertiary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none aria-pressed:text-(--color-accent)"
     >
-      {/* Persistent active background — independent of the sliding hover pill
-          so an active button keeps its accent fill even when hovering away. */}
       {pressed && (
         <span
           aria-hidden
@@ -47,9 +45,6 @@ function ActionIcon({
           style={{ backgroundColor: TINT_ACTIVE }}
         />
       )}
-      {/* Single shared sliding pill — only the hovered button renders it, and
-          framer-motion's shared layout animates its position between siblings.
-          Lighter alpha than the active layer so hover+active visibly stacks. */}
       {hovered && (
         <motion.span
           layoutId="hero-action-hover"
@@ -67,17 +62,17 @@ function ActionIcon({
 export default function HeroActions({
   paletteOpen,
   miniPlayerOpen,
-  marqueeVisible,
+  visualsOpen,
   onTogglePalette,
   onToggleMusic,
-  onToggleQuotes,
+  onToggleVisuals,
 }: {
   paletteOpen: boolean;
   miniPlayerOpen: boolean;
-  marqueeVisible: boolean;
+  visualsOpen: boolean;
   onTogglePalette: () => void;
   onToggleMusic: () => void;
-  onToggleQuotes: () => void;
+  onToggleVisuals: () => void;
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -105,13 +100,13 @@ export default function HeroActions({
         <MusicNoteIcon size={16} />
       </ActionIcon>
       <ActionIcon
-        label={marqueeVisible ? "Hide quotes" : "Show quotes"}
-        pressed={marqueeVisible}
-        onClick={onToggleQuotes}
+        label={visualsOpen ? "Hide visuals" : "Show visuals"}
+        pressed={visualsOpen}
+        onClick={onToggleVisuals}
         hovered={hoveredIndex === 2}
         onHover={() => setHoveredIndex(2)}
       >
-        <SmileyIcon size={16} />
+        <VisualsIcon size={16} />
       </ActionIcon>
     </div>
   );

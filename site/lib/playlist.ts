@@ -27,6 +27,19 @@ export type Track = {
 // up the same shade).
 export const PLAYLIST: Track[] = [
   {
+    src: "/audio/track-6.mp3",
+    title: "If (Kaytranada Remix)",
+    artist: "Janet Jackson",
+    // Sultry late-night — wine kicks, rose mids, coral highs, blush air
+    palette: {
+      bass: "#9F1239",   // rose-800
+      mids: "#E11D48",   // rose-600
+      highs: "#FB7185",  // rose-400
+      air: "#FFE4E6",    // rose-100
+    },
+    mood: "warm",
+  },
+  {
     src: "/audio/track-0.mp3",
     title: "Blue Spring",
     artist: "Nathan Micay",

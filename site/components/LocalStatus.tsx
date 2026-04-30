@@ -121,18 +121,18 @@ export default function LocalStatus() {
         fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
         fontSize: "11px",
         lineHeight: "15px",
-        color: "var(--color-fg-tertiary)",
+        color: "var(--color-fg)",
         fontVariantNumeric: "tabular-nums",
       }}
     >
+      <span>{formatTime(now)}</span>
       {weather && (
         <>
+          <span aria-hidden>·</span>
           <WeatherGlyph code={weather.code} isDay={weather.isDay} />
           <span>{weather.temp}°F</span>
-          <span aria-hidden>·</span>
         </>
       )}
-      <span>{formatTime(now)}</span>
     </div>
   );
 }

@@ -10,7 +10,7 @@ export const PARAGRAPHS: Paragraph[] = [
   [
     { text: "I'm a Product Designer in San Francisco. Currently at" },
     { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" },
-    { text: ", where I lead design for our Food & Beverage, Upsells, Guest Hub, and Tipping products. I've built products that have served thousands of guests, supporting operations at the world's largest hotel brands including Marriott, Wyndham, Best Western, and IHG." },
+    { text: ", building software for the world's largest hospitality brands including Marriott, Wyndham, Best Western, and IHG. I lead design for our Food & Beverage, Upsells, Guest Experience, and Tipping products." },
   ],
   [
     { text: "Growing up, I spent countless hours on PCs my dad custom-built, editing videos, manipulating photos, and creating worlds in simulation games. Those digital playgrounds turned into a love for honing my craft, and a deep interest in building systems that help people do their best work." },

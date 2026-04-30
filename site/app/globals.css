@@ -331,6 +331,29 @@ body {
     drop-shadow(0 4px 14px rgba(0, 0, 0, 0.22));
 }
 
+/* iOS-style frosted-glass treatment for the floating sticky hero toolbar.
+   Translucent themed fill + backdrop blur so the page underneath shows through
+   softly. Box-shadow lives on the same element (no parent filter wrapper) so
+   the pill keeps its drop while backdrop-filter samples cleanly. */
+.hero-sticky-toolbar {
+  background-color: color-mix(in srgb, var(--color-bg) 60%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: 14px;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.dark .hero-sticky-toolbar {
+  background-color: color-mix(in srgb, var(--color-surface-raised) 65%, transparent);
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.32),
+    0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
 /* Bio highlighter toolbar — matches ActionIcon footprint (32×32 circle) so it
    reads as part of the same icon row as HeroActions. Hover and active wear
    the same accent-tinted background so "active" persists the hover look. */

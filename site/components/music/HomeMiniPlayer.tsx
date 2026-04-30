@@ -26,12 +26,18 @@ const SCENE_ICONS: Record<VisualizerScene, (props: { size?: number }) => React.R
   lissajous: LissajousSceneIcon,
 };
 
-const REVEAL_EASE = [0.22, 1, 0.36, 1] as const;
-
 const PLAYER_HOVER_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 };
 
-// Tint scale shared across all icon-button rows. Three alphas give three
-// visually distinct states (hover / active / active+hover stack).
+const SWAP_EASE = [0.22, 1, 0.36, 1] as const;
+const SWAP_TRAVEL = 24; // px — title exits up, scrubber enters from below
+
+function formatTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 const TINT_HOVER = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
 const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
 
@@ -42,6 +48,7 @@ function PlayerIconButton({
   hovered,
   onHover,
   layoutId,
+  size = 32,
   children,
 }: {
   label: string;
@@ -49,10 +56,11 @@ function PlayerIconButton({
   active?: boolean;
   hovered: boolean;
   onHover: () => void;
-  /** Shared layoutId so framer-motion slides one pill across the group. */
   layoutId: string;
+  size?: number;
   children: React.ReactNode;
 }) {
+  // Default 32px matches the right-side HeroActions buttons (w-8 h-8).
   return (
     <button
       type="button"
@@ -61,8 +69,10 @@ function PlayerIconButton({
       onFocus={onHover}
       aria-label={label}
       aria-pressed={active}
-      className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors cursor-pointer focus:outline-none"
+      className="relative flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none shrink-0"
       style={{
+        width: size,
+        height: size,
         color: active || hovered ? "var(--color-accent)" : "var(--color-fg-secondary)",
       }}
     >
@@ -87,16 +97,16 @@ function PlayerIconButton({
   );
 }
 
-interface HomeMiniPlayerProps {
-  /** When true, render content seamlessly inside a parent container — drop the
-   *  pill chrome (border, bg, shadow, margins) so the player appears as a
-   *  section of the floating toolbar rather than a separate floating panel. */
-  bare?: boolean;
-}
-
-export default function HomeMiniPlayer({ bare = false }: HomeMiniPlayerProps = {}) {
+/**
+ * Inline-row mini player: transport buttons on the left, then a hover-aware
+ * swap zone in the center that shows track title/artist by default and
+ * swaps to a centered scrubber + timestamps when the row is hovered. Both
+ * elements move upward through the row — title exits up, scrubber rises
+ * from below into the centered position. Designed to slot into the
+ * HeroToolbar's left swap zone (32px tall).
+ */
+export function MiniPlayerRow() {
   const {
-    miniPlayerOpen,
     currentTrack,
     isPlaying,
     currentTime,
@@ -106,190 +116,174 @@ export default function HomeMiniPlayer({ bare = false }: HomeMiniPlayerProps = {
     prev,
     seek,
   } = useAudioPlayer();
-  const { activeScenes, toggleScene } = useVisualizerScene();
 
   const [scrubbing, setScrubbing] = useState(false);
   const [scrubValue, setScrubValue] = useState(0);
-  const displayTime = scrubbing ? scrubValue : currentTime;
-
-  // Per-group hovered index — each group owns its own sliding pill so it
-  // doesn't fly across the title gap between transport and visualizer.
   const [transportHover, setTransportHover] = useState<number | null>(null);
+  const [rowHover, setRowHover] = useState(false);
+  const displayTime = scrubbing ? scrubValue : currentTime;
+  // Stay on the scrubber view while the user is actively dragging, even if
+  // the cursor briefly leaves the row mid-drag.
+  const showScrubber = rowHover || scrubbing;
+
+  return (
+    <div className="relative w-full h-full flex items-center gap-2">
+      <div
+        className="flex items-center shrink-0"
+        onMouseLeave={() => setTransportHover(null)}
+      >
+        <PlayerIconButton
+          label="Previous track"
+          onClick={prev}
+          hovered={transportHover === 0}
+          onHover={() => setTransportHover(0)}
+          layoutId="player-row-transport-hover"
+        >
+          <SkipBackIcon size={16} />
+        </PlayerIconButton>
+        <PlayerIconButton
+          label={isPlaying ? "Pause" : "Play"}
+          onClick={togglePlay}
+          hovered={transportHover === 1}
+          onHover={() => setTransportHover(1)}
+          layoutId="player-row-transport-hover"
+        >
+          {isPlaying ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+        </PlayerIconButton>
+        <PlayerIconButton
+          label="Next track"
+          onClick={next}
+          hovered={transportHover === 2}
+          onHover={() => setTransportHover(2)}
+          layoutId="player-row-transport-hover"
+        >
+          <SkipForwardIcon size={16} />
+        </PlayerIconButton>
+      </div>
+
+      {/* Hover-aware swap zone — title (default) ↔ scrubber+times (hover).
+          Hover trigger is scoped to the title zone only, NOT the transport
+          buttons, so skipping tracks keeps the title visible long enough to
+          read. Both elements move upward through the row on swap: title
+          exits up, scrubber rises from below to the centered position. */}
+      <div
+        className="relative flex-1 min-w-0 h-full overflow-hidden"
+        onMouseEnter={() => setRowHover(true)}
+        onMouseLeave={() => setRowHover(false)}
+      >
+        <AnimatePresence initial={false}>
+          {showScrubber ? (
+            <motion.div
+              key="scrubber"
+              initial={{ y: SWAP_TRAVEL, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: SWAP_TRAVEL, opacity: 0 }}
+              transition={{ duration: 0.24, ease: SWAP_EASE }}
+              className="absolute inset-0 flex items-center gap-2"
+            >
+              <span
+                className="shrink-0 tabular-nums"
+                style={{
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "11px",
+                  color: "var(--color-fg-tertiary)",
+                  fontVariantNumeric: "tabular-nums",
+                  minWidth: "30px",
+                }}
+              >
+                {formatTime(displayTime)}
+              </span>
+              <div className="flex-1 min-w-0">
+                <SeekBar
+                  variant="default"
+                  value={Math.min(displayTime, duration || displayTime)}
+                  max={duration}
+                  onChange={(t) => {
+                    setScrubbing(true);
+                    setScrubValue(t);
+                    seek(t);
+                  }}
+                  onCommit={() => {
+                    requestAnimationFrame(() => setScrubbing(false));
+                  }}
+                />
+              </div>
+              <span
+                className="shrink-0 tabular-nums text-right"
+                style={{
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "11px",
+                  color: "var(--color-fg-tertiary)",
+                  fontVariantNumeric: "tabular-nums",
+                  minWidth: "30px",
+                }}
+              >
+                {formatTime(duration)}
+              </span>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="title"
+              initial={{ y: -SWAP_TRAVEL, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -SWAP_TRAVEL, opacity: 0 }}
+              transition={{ duration: 0.24, ease: SWAP_EASE }}
+              className="absolute inset-0 flex items-center"
+            >
+              <p
+                className="truncate"
+                style={{
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "11px",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.3,
+                  color: "var(--color-fg)",
+                }}
+              >
+                <span style={{ fontWeight: 600 }}>{currentTrack.title}</span>
+                {" / "}
+                <span style={{ color: "var(--color-fg-tertiary)", fontWeight: 400 }}>
+                  {currentTrack.artist}
+                </span>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Inline-row visualizer scene toggles. Five scenes, each toggles independently.
+ * Slots into the HeroToolbar's left swap zone behind the new Visuals button.
+ */
+export function VisualsRow() {
+  const { activeScenes, toggleScene } = useVisualizerScene();
   const [sceneHover, setSceneHover] = useState<number | null>(null);
 
-  const playerBody = (
-    <>
-      {/* Single row, Apple Music ordering:
-                [Rewind] [Play/Pause] [Skip]  |  [Title + artist]  |  [Visualizer toggles]
-                The scrubber sits flush against the bottom edge as a separate layer. */}
-            <div className="flex items-center gap-3">
-              {/* Transport */}
-              <div
-                className="flex items-center gap-1 shrink-0"
-                onMouseLeave={() => setTransportHover(null)}
-              >
-                <PlayerIconButton
-                  label="Previous track"
-                  onClick={prev}
-                  hovered={transportHover === 0}
-                  onHover={() => setTransportHover(0)}
-                  layoutId="player-transport-hover"
-                >
-                  <SkipBackIcon size={16} />
-                </PlayerIconButton>
-                <PlayerIconButton
-                  label={isPlaying ? "Pause" : "Play"}
-                  onClick={togglePlay}
-                  hovered={transportHover === 1}
-                  onHover={() => setTransportHover(1)}
-                  layoutId="player-transport-hover"
-                >
-                  {isPlaying ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
-                </PlayerIconButton>
-                <PlayerIconButton
-                  label="Next track"
-                  onClick={next}
-                  hovered={transportHover === 2}
-                  onHover={() => setTransportHover(2)}
-                  layoutId="player-transport-hover"
-                >
-                  <SkipForwardIcon size={16} />
-                </PlayerIconButton>
-              </div>
-
-              {/* Title + artist (single line) */}
-              <div className="min-w-0 flex-1">
-                <p
-                  className="truncate"
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    color: "var(--color-fg)",
-                    letterSpacing: "-0.005em",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  <span>{currentTrack.title}</span>
-                  <span style={{ color: "var(--color-fg-tertiary)", fontWeight: 400 }}>
-                    {" — "}{currentTrack.artist}
-                  </span>
-                </p>
-              </div>
-
-              {/* Vertical divider — separates audio (transport + title) from
-                  the visualizer scene toggles. */}
-              <span
-                aria-hidden
-                className="shrink-0"
-                style={{
-                  width: 1,
-                  height: 20,
-                  backgroundColor: "var(--color-border)",
-                }}
-              />
-
-              {/* Visualizer toggles (right) */}
-              <div
-                className="flex items-center gap-1 shrink-0"
-                onMouseLeave={() => setSceneHover(null)}
-              >
-                {SCENES.map((s, i) => {
-                  const active = activeScenes.has(s.id);
-                  const Icon = SCENE_ICONS[s.id];
-                  return (
-                    <PlayerIconButton
-                      key={s.id}
-                      label={`Toggle ${s.label} scene`}
-                      onClick={() => toggleScene(s.id)}
-                      active={active}
-                      hovered={sceneHover === i}
-                      onHover={() => setSceneHover(i)}
-                      layoutId="player-scene-hover"
-                    >
-                      <Icon size={16} />
-                    </PlayerIconButton>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Scrubber — flush to the bottom edge, full container width.
-                Hover thickens it and reveals the ✸ thumb. */}
-            <div className="absolute left-0 right-0 bottom-0 px-0">
-              <SeekBar
-                variant="flush"
-                value={Math.min(displayTime, duration || displayTime)}
-                max={duration}
-                onChange={(t) => {
-                  setScrubbing(true);
-                  setScrubValue(t);
-                  seek(t);
-                }}
-                onCommit={() => {
-                  requestAnimationFrame(() => setScrubbing(false));
-                }}
-              />
-            </div>
-    </>
-  );
-
-  const animation = (
-    <motion.div
-      key="home-mini-player"
-      initial={{ height: 0, opacity: 0, y: -8, filter: "blur(8px)" }}
-      animate={{
-        height: "auto",
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        transition: {
-          height: { duration: 0.35, ease: REVEAL_EASE },
-          opacity: { duration: 0.3, ease: REVEAL_EASE, delay: 0.05 },
-          y: { duration: 0.35, ease: REVEAL_EASE },
-          filter: { duration: 0.4, ease: REVEAL_EASE, delay: 0.05 },
-        },
-      }}
-      exit={{
-        height: 0,
-        opacity: 0,
-        y: -8,
-        filter: "blur(8px)",
-        transition: {
-          height: { duration: 0.25, ease: REVEAL_EASE, delay: 0.08 },
-          opacity: { duration: 0.2, ease: REVEAL_EASE },
-          y: { duration: 0.25, ease: REVEAL_EASE },
-          filter: { duration: 0.22, ease: REVEAL_EASE },
-        },
-      }}
-      style={{ overflow: "hidden", willChange: "transform, opacity, filter" }}
-      aria-label="Music player"
+  return (
+    <div
+      className="flex items-center gap-2 w-full h-full"
+      onMouseLeave={() => setSceneHover(null)}
     >
-      {bare ? (
-        <>
-          <div style={{ height: 1, background: "var(--color-border)" }} aria-hidden />
-          <div
-            className="relative overflow-hidden"
-            style={{ padding: "8px 12px 14px" }}
+      {SCENES.map((s, i) => {
+        const active = activeScenes.has(s.id);
+        const Icon = SCENE_ICONS[s.id];
+        return (
+          <PlayerIconButton
+            key={s.id}
+            label={`Toggle ${s.label} scene`}
+            onClick={() => toggleScene(s.id)}
+            active={active}
+            hovered={sceneHover === i}
+            onHover={() => setSceneHover(i)}
+            layoutId="visuals-row-hover"
           >
-            {playerBody}
-          </div>
-        </>
-      ) : (
-        <div
-          className="bio-dropdown-container relative mt-2 mb-4 overflow-hidden"
-          style={{ padding: "8px 12px 14px" }}
-        >
-          {playerBody}
-        </div>
-      )}
-    </motion.div>
-  );
-
-  return bare ? (
-    <AnimatePresence initial={false}>{miniPlayerOpen && animation}</AnimatePresence>
-  ) : (
-    <div style={{ filter: "var(--bio-dropdown-shadow)" }}>
-      <AnimatePresence initial={false}>{miniPlayerOpen && animation}</AnimatePresence>
+            <Icon size={16} />
+          </PlayerIconButton>
+        );
+      })}
     </div>
   );
 }

@@ -1,10 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import { useThemeState, coloredThemes } from "./ThemeToggle";
 import { MoonIcon, SunIcon } from "./Icons";
-
-const REVEAL_EASE = [0.22, 1, 0.36, 1] as const;
 
 // Hue in degrees [0, 360) for chromatic colors, -1 for achromatic — used to
 // sort the swatch row in rainbow order regardless of the source array shape.
@@ -24,28 +21,21 @@ function hexHue(hex: string): number {
   return hue * 60;
 }
 
-interface PaletteSwatchesProps {
-  open: boolean;
-  /** When true, render content seamlessly inside a parent container — drop the
-   *  pill chrome (border, bg, shadow, margins) so the swatches appear as a
-   *  section of the floating toolbar rather than a separate floating panel. */
-  bare?: boolean;
-}
-
-export default function PaletteSwatches({ open, bare = false }: PaletteSwatchesProps) {
+/**
+ * Inline-row palette controls: light/dark toggle + 12 colored-theme swatches.
+ * Renders content only (no wrapper, no animation) — meant to be slotted into
+ * the HeroToolbar's left swap zone where the parent owns the slide animation.
+ */
+export function PaletteRow() {
   const themeState = useThemeState();
 
   if (!themeState.mounted) return null;
 
-  // The light/dark mode toggle now lives in the icon row, so the palette
-  // dropdown is hue-only. Active state reflects the current family; clicking
-  // the active swatch clears it back to neutral.
   const isActiveColor = (id: string) => themeState.themeFamily === id;
   const handleColorClick = (id: string) => themeState.selectColored(id);
 
-  // Swatches use a stable signature color (dark-mode accent — most vibrant)
-  // so the dot identity and the sort order don't shift when the user toggles
-  // between light and dark mode.
+  // Stable signature color (dark-mode accent) so swatch identity & sort order
+  // don't shift when toggling between light/dark.
   const swatches = coloredThemes
     .map((t) => ({
       id: t.name,
@@ -54,10 +44,8 @@ export default function PaletteSwatches({ open, bare = false }: PaletteSwatchesP
     }))
     .sort((a, b) => hexHue(a.accent) - hexHue(b.accent));
 
-  const swatchControls = (
-    <>
-      {/* Light/dark mode toggle — flush left of the color swatches with
-          a vertical hairline divider for visual separation. */}
+  return (
+    <div className="flex items-center gap-2 whitespace-nowrap">
       <button
         type="button"
         onClick={() =>
@@ -93,7 +81,7 @@ export default function PaletteSwatches({ open, bare = false }: PaletteSwatchesP
             onClick={() => handleColorClick(s.id)}
             aria-label={s.label}
             aria-pressed={active}
-            className="rounded-full inline-block cursor-pointer"
+            className="rounded-full inline-block cursor-pointer shrink-0"
             style={{
               width: "16px",
               height: "16px",
@@ -106,67 +94,6 @@ export default function PaletteSwatches({ open, bare = false }: PaletteSwatchesP
           />
         );
       })}
-    </>
-  );
-
-  const animation = (
-    <motion.div
-      key="palette-swatches"
-      initial={{ height: 0, opacity: 0, y: -8, filter: "blur(8px)" }}
-      animate={{
-        height: "auto",
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        transition: {
-          height: { duration: 0.3, ease: REVEAL_EASE },
-          opacity: { duration: 0.3, ease: REVEAL_EASE, delay: 0.05 },
-          y: { duration: 0.3, ease: REVEAL_EASE },
-          filter: { duration: 0.35, ease: REVEAL_EASE, delay: 0.05 },
-        },
-      }}
-      exit={{
-        height: 0,
-        opacity: 0,
-        y: -8,
-        filter: "blur(8px)",
-        transition: {
-          height: { duration: 0.25, ease: REVEAL_EASE, delay: 0.08 },
-          opacity: { duration: 0.18, ease: REVEAL_EASE },
-          y: { duration: 0.25, ease: REVEAL_EASE },
-          filter: { duration: 0.2, ease: REVEAL_EASE },
-        },
-      }}
-      style={{ overflow: "hidden", willChange: "transform, opacity, filter" }}
-    >
-      {bare ? (
-        <>
-          <div style={{ height: 1, background: "var(--color-border)" }} aria-hidden />
-          <div
-            className="flex flex-wrap items-center gap-2 justify-end"
-            style={{ padding: "10px 12px" }}
-          >
-            {swatchControls}
-          </div>
-        </>
-      ) : (
-        <div className="mt-2 mb-4 flex justify-end">
-          <div
-            className="bio-dropdown-container inline-flex flex-wrap items-center gap-2"
-            style={{ padding: "10px 12px" }}
-          >
-            {swatchControls}
-          </div>
-        </div>
-      )}
-    </motion.div>
-  );
-
-  return bare ? (
-    <AnimatePresence initial={false}>{open && animation}</AnimatePresence>
-  ) : (
-    <div style={{ filter: "var(--bio-dropdown-shadow)" }}>
-      <AnimatePresence initial={false}>{open && animation}</AnimatePresence>
     </div>
   );
 }
