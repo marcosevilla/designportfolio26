@@ -237,14 +237,11 @@ export function MiniPlayerRow() {
                   fontSize: "11px",
                   letterSpacing: "-0.02em",
                   lineHeight: 1.3,
-                  color: "var(--color-fg)",
+                  fontWeight: 400,
+                  color: "var(--color-fg-secondary)",
                 }}
               >
-                <span style={{ fontWeight: 600 }}>{currentTrack.title}</span>
-                {" / "}
-                <span style={{ color: "var(--color-fg-tertiary)", fontWeight: 400 }}>
-                  {currentTrack.artist}
-                </span>
+                {currentTrack.title} <span aria-hidden>·</span> {currentTrack.artist}
               </p>
             </motion.div>
           )}

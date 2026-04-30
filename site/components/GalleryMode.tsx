@@ -76,6 +76,8 @@ interface GalleryModeProps {
   open: boolean;
   onClose: () => void;
   studies: CaseStudyMeta[];
+  /** Slug to scroll to on open. Falls back to the first slot. */
+  initialStudySlug?: string | null;
 }
 
 interface ArrowButtonProps {
@@ -134,7 +136,7 @@ function ArrowButton({ side, onClick, label }: ArrowButtonProps) {
 // Fullscreen horizontal-swipe gallery. One slide per image (with a single
 // placeholder slide for any study that has no images yet). Snap scrolling
 // via native CSS — no rAF or framer-motion drag yet.
-export default function GalleryMode({ open, onClose, studies }: GalleryModeProps) {
+export default function GalleryMode({ open, onClose, studies, initialStudySlug }: GalleryModeProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLElement | null)[]>([]);
   const parallaxRefs = useRef<Map<number, HTMLElement>>(new Map());
@@ -150,11 +152,21 @@ export default function GalleryMode({ open, onClose, studies }: GalleryModeProps
     slide.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, [slots.length]);
 
-  // Reset to the first slide each time the gallery opens.
+  // On open, scroll to either the requested study's first slot or slot 0.
+  // Use instant scroll so the gallery opens at the target without animation.
   useEffect(() => {
     if (!open) return;
-    setCurrentIndex(0);
-  }, [open]);
+    const targetIdx = initialStudySlug
+      ? Math.max(0, slots.findIndex((s) => s.study.slug === initialStudySlug))
+      : 0;
+    setCurrentIndex(targetIdx);
+    // Defer to next frame so the slides have mounted with refs attached.
+    requestAnimationFrame(() => {
+      const slide = slideRefs.current[targetIdx];
+      if (slide) slide.scrollIntoView({ behavior: "auto", inline: "center", block: "nearest" });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialStudySlug]);
 
   // Keyboard: ←/→ navigate, Escape closes.
   useEffect(() => {
@@ -286,20 +298,24 @@ export default function GalleryMode({ open, onClose, studies }: GalleryModeProps
           aria-modal="true"
           aria-label="Project gallery"
         >
-          {/* Close button */}
+          {/* Close button — visual style matches HeroActions ActionIcon
+              (transparent w-8 h-8 pill, fg-tertiary → accent on hover with
+              an accent-tinted hover layer) so the gallery's affordances read
+              as the same family as the toolbar icons. */}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close gallery"
-            className="fixed top-6 right-6 z-10 flex items-center justify-center w-10 h-10 rounded-full transition-colors"
-            style={{
-              backgroundColor: "var(--color-surface-raised)",
-              color: "var(--color-fg-secondary)",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg-secondary)"; }}
+            className="group fixed top-6 right-6 z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors text-(--color-fg-tertiary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
           >
-            <CloseIcon size={14} />
+            <span
+              aria-hidden
+              className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity"
+              style={{ backgroundColor: "color-mix(in srgb, var(--color-accent) 8%, transparent)" }}
+            />
+            <span className="relative">
+              <CloseIcon size={16} />
+            </span>
           </button>
 
           {/* Floating prev/next arrows — only render when there's content
@@ -324,51 +340,6 @@ export default function GalleryMode({ open, onClose, studies }: GalleryModeProps
               />
             )}
           </AnimatePresence>
-
-          {/* Keyboard hint — bottom-center, signals ←/→ are wired up. */}
-          <div
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full pointer-events-none"
-            style={{
-              backgroundColor: "var(--color-surface-raised)",
-              color: "var(--color-fg-tertiary)",
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "11px",
-              letterSpacing: "0.04em",
-            }}
-            aria-hidden
-          >
-            <kbd
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 18,
-                height: 18,
-                borderRadius: 4,
-                border: "1px solid var(--color-border)",
-                fontFamily: "inherit",
-                fontSize: "11px",
-              }}
-            >
-              ←
-            </kbd>
-            <kbd
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 18,
-                height: 18,
-                borderRadius: 4,
-                border: "1px solid var(--color-border)",
-                fontFamily: "inherit",
-                fontSize: "11px",
-              }}
-            >
-              →
-            </kbd>
-            <span>to navigate</span>
-          </div>
 
           {/* Horizontal scroll-snap track. Padding-inline equal to half the
               viewport-minus-slide width so the first and last slides can

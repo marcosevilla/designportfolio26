@@ -10,6 +10,7 @@ export interface CaseStudy {
   company?: string;
   role?: string;
   metric?: string;
+  description?: string;
   content: string;
 }
 
@@ -25,4 +26,5 @@ export interface CaseStudyMeta {
   company?: string;
   role?: string;
   metric?: string;
+  description?: string;
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MusicNoteIcon, PaletteIcon, VisualsIcon } from "./Icons";
+import { MusicNoteIcon, PaletteIcon, SmileyIcon, VisualsIcon } from "./Icons";
 
 const HOVER_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 };
 
@@ -63,16 +63,20 @@ export default function HeroActions({
   paletteOpen,
   miniPlayerOpen,
   visualsOpen,
+  greetingActive,
   onTogglePalette,
   onToggleMusic,
   onToggleVisuals,
+  onToggleGreeting,
 }: {
   paletteOpen: boolean;
   miniPlayerOpen: boolean;
   visualsOpen: boolean;
+  greetingActive: boolean;
   onTogglePalette: () => void;
   onToggleMusic: () => void;
   onToggleVisuals: () => void;
+  onToggleGreeting: () => void;
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -107,6 +111,15 @@ export default function HeroActions({
         onHover={() => setHoveredIndex(2)}
       >
         <VisualsIcon size={16} />
+      </ActionIcon>
+      <ActionIcon
+        label={greetingActive ? "Stop greeting cycle" : "Start greeting cycle"}
+        pressed={greetingActive}
+        onClick={onToggleGreeting}
+        hovered={hoveredIndex === 3}
+        onHover={() => setHoveredIndex(3)}
+      >
+        <SmileyIcon size={16} />
       </ActionIcon>
     </div>
   );

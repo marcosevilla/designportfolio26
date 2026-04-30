@@ -72,9 +72,30 @@ function formatTime(now: Date): string {
   }).format(now);
 }
 
+type TempUnit = "F" | "C";
+const TEMP_UNIT_STORAGE_KEY = "weather-temp-unit";
+
 export default function LocalStatus() {
   const [now, setNow] = useState<Date | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [tempUnit, setTempUnit] = useState<TempUnit>("F");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(TEMP_UNIT_STORAGE_KEY);
+    if (saved === "F" || saved === "C") setTempUnit(saved);
+  }, []);
+
+  const toggleTempUnit = () => {
+    setTempUnit((prev) => {
+      const next: TempUnit = prev === "F" ? "C" : "F";
+      try {
+        window.localStorage.setItem(TEMP_UNIT_STORAGE_KEY, next);
+      } catch {
+        // Quota or privacy mode — toggle still works in-session.
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     setNow(new Date());
@@ -121,7 +142,8 @@ export default function LocalStatus() {
         fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
         fontSize: "11px",
         lineHeight: "15px",
-        color: "var(--color-fg)",
+        fontWeight: 400,
+        color: "var(--color-fg-secondary)",
         fontVariantNumeric: "tabular-nums",
       }}
     >
@@ -130,7 +152,15 @@ export default function LocalStatus() {
         <>
           <span aria-hidden>·</span>
           <WeatherGlyph code={weather.code} isDay={weather.isDay} />
-          <span>{weather.temp}°F</span>
+          <button
+            type="button"
+            onClick={toggleTempUnit}
+            aria-label={`Temperature in °${tempUnit}. Click to switch to °${tempUnit === "F" ? "C" : "F"}.`}
+            className="cursor-pointer transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
+            style={{ font: "inherit", color: "inherit", background: "none", border: 0, padding: 0 }}
+          >
+            {tempUnit === "F" ? weather.temp : Math.round((weather.temp - 32) * 5 / 9)}°{tempUnit}
+          </button>
         </>
       )}
     </div>

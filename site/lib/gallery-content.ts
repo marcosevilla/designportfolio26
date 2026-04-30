@@ -62,9 +62,19 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
       },
     },
   ],
-  compendium: [],
+  compendium: [
+    {
+      src: "/images/gallery/compendium/guest-experience-app.png",
+      fit: "cover",
+    },
+  ],
   upsells: [],
-  checkin: [],
+  checkin: [
+    {
+      src: "/images/gallery/checkin/check-in.png",
+      fit: "cover",
+    },
+  ],
   "general-task": [],
   "design-system": [],
   "ai-workflow": [],

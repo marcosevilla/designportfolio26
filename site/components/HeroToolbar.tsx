@@ -8,32 +8,65 @@ import { PaletteRow } from "./PaletteSwatches";
 import { MiniPlayerRow, VisualsRow } from "./music/HomeMiniPlayer";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import LocalStatus from "./LocalStatus";
+import CyclingGreeting from "./CyclingGreeting";
 
 const STICKY_SPRING = { type: "spring" as const, stiffness: 320, damping: 32 };
 const SLOT_EASE = [0.22, 1, 0.36, 1] as const;
 const SLOT_TRAVEL = 32; // px — full row height; old slides down out, new slides down in.
 const IDLE_CYCLE_MS = 6000; // status ↔ now-playing alternation when music is on.
 
-type SlotKind = "status" | "now-playing" | "palette" | "music" | "visuals";
+type SlotKind = "status" | "now-playing" | "greeting" | "palette" | "music" | "visuals";
+type IdleSlot = "status" | "now-playing" | "greeting";
 
 function NowPlayingStatus({ title, artist }: { title: string; artist: string }) {
   return (
     <div
-      className="min-w-0"
+      className="min-w-0 flex items-center gap-1.5"
       style={{
         fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
         fontSize: "11px",
         lineHeight: "15px",
-        color: "var(--color-fg)",
+        fontWeight: 400,
+        color: "var(--color-fg-secondary)",
       }}
     >
+      <motion.span
+        aria-hidden
+        className="inline-flex shrink-0"
+        style={{ color: "var(--color-accent)" }}
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+      >
+        <SpinningDiscIcon size={16} />
+      </motion.span>
       <p className="truncate">
-        Now playing:{" "}
-        <span style={{ fontWeight: 600 }}>{title}</span>
-        {" / "}
-        <span style={{ fontWeight: 400 }}>{artist}</span>
+        {title} <span aria-hidden>·</span> {artist}
       </p>
     </div>
+  );
+}
+
+function SpinningDiscIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none">
+      {/* Filled disc body */}
+      <circle cx="6" cy="6" r="5.6" fill="currentColor" />
+      {/* Off-axis shimmer arc — makes rotation legible */}
+      <path
+        d="M2.6 3.7 A 5 5 0 0 1 8.6 1.7"
+        stroke="white"
+        strokeOpacity="0.7"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Secondary smaller shimmer for extra glint */}
+      <circle cx="3.5" cy="8.2" r="0.45" fill="white" fillOpacity="0.45" />
+      {/* Inner label ring (lighter so it pops on the filled body) */}
+      <circle cx="6" cy="6" r="2" fill="var(--color-bg)" />
+      {/* Spindle hole */}
+      <circle cx="6" cy="6" r="0.55" fill="currentColor" />
+    </svg>
   );
 }
 
@@ -53,7 +86,8 @@ export default function HeroToolbar() {
   const audio = useAudioPlayer();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [visualsOpen, setVisualsOpen] = useState(false);
-  const [idleSlot, setIdleSlot] = useState<"status" | "now-playing">("status");
+  const [greetingActive, setGreetingActive] = useState(true);
+  const [idleSlot, setIdleSlot] = useState<IdleSlot>("greeting");
   const [stickyActive, setStickyActive] = useState(false);
   const [mounted, setMounted] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -105,20 +139,32 @@ export default function HeroToolbar() {
     visualsOpen ? "visuals" :
     idleSlot;
 
-  // Ambient cycling: when nothing is toggled and music is playing, alternate
-  // the LocalStatus slot between weather/time and "Now playing: …". On any
-  // dropdown open or pause, snap back to status so the next idle reveal
-  // doesn't surprise with the wrong content.
+  // Ambient cycling:
+  //   • Smiley ON  → slot is locked to "greeting" so the typewriter cycle
+  //     plays uninterrupted.
+  //   • Smiley OFF → rotate "status" ↔ "now-playing" (when music plays).
+  //   • Any dropdown open → pre-seed the next idle slot for a clean reveal.
   useEffect(() => {
-    if (!idle || !audio.isPlaying) {
-      setIdleSlot("status");
+    if (!idle) {
+      setIdleSlot(greetingActive ? "greeting" : "status");
       return;
     }
+    if (greetingActive) {
+      setIdleSlot("greeting");
+      return;
+    }
+    setIdleSlot((prev) => (prev === "greeting" ? "status" : prev));
     const id = setInterval(() => {
-      setIdleSlot((prev) => (prev === "status" ? "now-playing" : "status"));
+      setIdleSlot((prev) => {
+        const order: IdleSlot[] = audio.isPlaying
+          ? ["status", "now-playing"]
+          : ["status"];
+        const i = order.indexOf(prev);
+        return order[(i + 1) % order.length] ?? "status";
+      });
     }, IDLE_CYCLE_MS);
     return () => clearInterval(id);
-  }, [idle, audio.isPlaying]);
+  }, [idle, audio.isPlaying, greetingActive]);
 
   // Activate the floating sticky toolbar once the in-flow row is fully out.
   useEffect(() => {
@@ -152,6 +198,7 @@ export default function HeroToolbar() {
       case "music":       return <MiniPlayerRow />;
       case "visuals":     return <VisualsRow />;
       case "now-playing": return <NowPlayingStatus title={audio.currentTrack.title} artist={audio.currentTrack.artist} />;
+      case "greeting":    return <CyclingGreeting compact />;
       default:            return <LocalStatus />;
     }
   };
@@ -181,9 +228,11 @@ export default function HeroToolbar() {
           paletteOpen={paletteOpen}
           miniPlayerOpen={audio.miniPlayerOpen}
           visualsOpen={visualsOpen}
+          greetingActive={greetingActive}
           onTogglePalette={togglePalette}
           onToggleMusic={toggleMusic}
           onToggleVisuals={toggleVisuals}
+          onToggleGreeting={() => setGreetingActive((prev) => !prev)}
         />
       </div>
     </div>
@@ -207,9 +256,9 @@ export default function HeroToolbar() {
               exit={{ y: -120, opacity: 0 }}
               transition={STICKY_SPRING}
             >
-              <div className="max-w-[600px] mx-auto px-4 sm:px-8 pointer-events-auto">
+              <div className="max-w-[650px] mx-auto px-4 sm:px-8 pointer-events-auto">
                 <div className="hero-sticky-toolbar">
-                  <div style={{ padding: "4px 4px" }}>{iconRow}</div>
+                  <div style={{ padding: "4px 10px" }}>{iconRow}</div>
                 </div>
               </div>
             </motion.div>

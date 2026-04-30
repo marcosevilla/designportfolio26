@@ -25,6 +25,7 @@ export function getCaseStudies(): CaseStudyMeta[] {
       company: data.company ?? "",
       role: data.role ?? "",
       metric: data.metric ?? "",
+      description: data.description ?? "",
     } satisfies CaseStudyMeta;
   });
 
@@ -55,6 +56,7 @@ export function getCaseStudy(slug: string): CaseStudy | null {
         company: data.company ?? "",
         role: data.role ?? "",
         metric: data.metric ?? "",
+        description: data.description ?? "",
         content,
       };
     }

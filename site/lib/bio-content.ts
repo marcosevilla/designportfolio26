@@ -13,9 +13,6 @@ export const PARAGRAPHS: Paragraph[] = [
     { text: ", building software for the world's largest hospitality brands including Marriott, Wyndham, Best Western, and IHG. I lead design for our Food & Beverage, Upsells, Guest Experience, and Tipping products." },
   ],
   [
-    { text: "Growing up, I spent countless hours on PCs my dad custom-built, editing videos, manipulating photos, and creating worlds in simulation games. Those digital playgrounds turned into a love for honing my craft, and a deep interest in building systems that help people do their best work." },
-  ],
-  [
     { text: "Previously, I helped democratize wine discovery at" },
     { text: "Vivino", href: "https://www.vivino.com/" },
     { text: ", made animated video production more accessible at" },
@@ -23,6 +20,9 @@ export const PARAGRAPHS: Paragraph[] = [
     { text: ", and built an all-in-one productivity tool for software engineers at" },
     { text: "General Task", href: "https://www.generaltask.com/" },
     { text: "." },
+  ],
+  [
+    { text: "Growing up, I spent countless hours on PCs my dad custom-built, editing videos, manipulating photos, and creating worlds in simulation games. Those digital playgrounds turned into a love for honing my craft, and a deep interest in building systems that help people do their best work." },
   ],
   [
     { text: "When I'm not designing, you'll find me shooting" },

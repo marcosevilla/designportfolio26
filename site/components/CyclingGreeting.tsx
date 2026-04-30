@@ -25,16 +25,9 @@ type Phrase = {
 
 const PRE_PHRASES: Phrase[] = [
   { segments: ["Hello, friend.", " Welcome to my portfolio."], segmentPauseMs: 5000 },
-  { segments: ["Hope you like it!"] },
+  { segments: ["Made with <3 and a few cans of Celsius in SF"] },
   { segments: [":P"] },
-  { segments: ["Made with <3 and a few cans of Celsius in San Francisco"] },
-  { segments: ["Say vibe-code 10x fast", " hahaha"], segmentPauseMs: 5000 },
-  { segments: ["If you're a fellow designer, let's chat!"] },
-  { segments: ["If you're a recruiter, scroll down to see my work :)"] },
-  { segments: ["If you're a friend who's stalking me, heyyyy (text me)"] },
-  { segments: ["If you made it this far...", " thanks for being here!"], segmentPauseMs: 5000 },
   { segments: ["Hope you're having a wonderful day~"] },
-  { segments: ['For funsies, here is "hello" in 10 different languages'] },
 ];
 
 // Translations cycled forever after the pre-phrases finish.
@@ -78,23 +71,23 @@ const computeReadMs = (chars: number) =>
 
 // ─── Visual constants ────────────────────────────────────────────────────────
 // Sized so the longest pre-phrase (~55 chars) fits on one line within the
-// 536px content area (600px column − 32px padding × 2 at sm+). Translations
+// 436px content area (500px column − 32px padding × 2 at sm+). Translations
 // stay at the larger header scale.
 const PRE_FONT_SIZE = "16px";
 const TRANSLATION_FONT_SIZE = "22px";
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-export default function CyclingGreeting() {
+export default function CyclingGreeting({ compact = false }: { compact?: boolean }) {
   const [display, setDisplay] = useState("");
-  const [fontSize, setFontSize] = useState(PRE_FONT_SIZE);
+  const [fontSize, setFontSize] = useState(compact ? "13px" : PRE_FONT_SIZE);
   const reducedMotion = usePrefersReducedMotion();
 
   const cancelledRef = useRef(false);
 
   useEffect(() => {
     if (reducedMotion) {
-      setFontSize(TRANSLATION_FONT_SIZE);
+      if (!compact) setFontSize(TRANSLATION_FONT_SIZE);
       setDisplay("Hello");
       return;
     }
@@ -149,7 +142,7 @@ export default function CyclingGreeting() {
       // Outer loop: pre-phrases → translations → pre-phrases → … forever.
       while (!cancelledRef.current) {
         // ─── Pre-phrases ───────────────────────────────────────────────────
-        setFontSize(PRE_FONT_SIZE);
+        if (!compact) setFontSize(PRE_FONT_SIZE);
         for (const phrase of PRE_PHRASES) {
           let built = "";
           for (let i = 0; i < phrase.segments.length; i++) {
@@ -173,7 +166,7 @@ export default function CyclingGreeting() {
         }
 
         // ─── Translations (10 languages, one full pass) ────────────────────
-        setFontSize(TRANSLATION_FONT_SIZE);
+        if (!compact) setFontSize(TRANSLATION_FONT_SIZE);
         for (let idx = 0; idx < GREETINGS.length; idx++) {
           await typeWithScramble(GREETINGS[idx]);
           if (cancelledRef.current) return;
@@ -196,7 +189,7 @@ export default function CyclingGreeting() {
     return () => {
       cancelledRef.current = true;
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, compact]);
 
   return (
     <h2
@@ -210,11 +203,12 @@ export default function CyclingGreeting() {
         maxWidth: "100%",
         fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
         fontSize,
-        fontWeight: 500,
-        letterSpacing: "0.01em",
-        marginBottom: "14px",
+        fontWeight: compact ? 400 : 500,
+        letterSpacing: compact ? "-0.01em" : "0.01em",
+        marginBottom: compact ? 0 : "14px",
         lineHeight: 1,
-        height: 36,
+        height: compact ? "100%" : 36,
+        color: compact ? "var(--color-fg-secondary)" : undefined,
         overflow: "hidden",
         whiteSpace: "nowrap",
       }}
@@ -227,18 +221,11 @@ export default function CyclingGreeting() {
         style={{
           color: "var(--color-accent)",
           marginLeft: display ? "0.25em" : 0,
+          fontSize: compact ? "16px" : "1em",
+          lineHeight: 1,
         }}
       >
-        <svg
-          viewBox="0 0 24 24"
-          width="1em"
-          height="1em"
-          fill="currentColor"
-          shapeRendering="geometricPrecision"
-          aria-hidden
-        >
-          <path d="M12 1 L13.2 9.2 L19.8 4.2 L14.8 10.9 L23 12 L14.8 13.2 L19.8 19.8 L13.2 14.8 L12 23 L10.9 14.8 L4.2 19.8 L9.2 13.2 L1 12 L9.2 10.9 L4.2 4.2 L10.9 9.2 Z" />
-        </svg>
+        ✸
       </span>
     </h2>
   );

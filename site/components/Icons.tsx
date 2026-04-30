@@ -147,12 +147,11 @@ export function LinkedInIcon({ size = 18, className }: IconProps) {
   );
 }
 
-// X (formerly Twitter) — stylized X glyph rendered as two crossing strokes.
+// X (formerly Twitter) — official brand glyph.
 export function XIcon({ size = 18, className }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M4 4l16 16" />
-      <path d="M20 4L4 20" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   );
 }
@@ -197,7 +196,7 @@ export function MoonIcon({ size = 16, className, style }: IconProps) {
 
 export function PlayIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className={className} style={style}>
       <path d="M8 5.5L19 12 8 18.5z" />
     </svg>
   );
@@ -205,16 +204,17 @@ export function PlayIcon({ size = 18, className, style }: IconProps) {
 
 export function PauseIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M9 6v12M15 6v12" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
+      <rect x="7.5" y="5.5" width="3.5" height="13" rx="1" />
+      <rect x="13" y="5.5" width="3.5" height="13" rx="1" />
     </svg>
   );
 }
 
 export function SkipBackIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M6 6v12" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className={className} style={style}>
+      <rect x="5" y="6" width="2.6" height="12" rx="0.8" stroke="none" />
       <path d="M19 6L9 12l10 6z" />
     </svg>
   );
@@ -222,8 +222,8 @@ export function SkipBackIcon({ size = 18, className, style }: IconProps) {
 
 export function SkipForwardIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="M18 6v12" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className={className} style={style}>
+      <rect x="16.4" y="6" width="2.6" height="12" rx="0.8" stroke="none" />
       <path d="M5 6l10 6L5 18z" />
     </svg>
   );

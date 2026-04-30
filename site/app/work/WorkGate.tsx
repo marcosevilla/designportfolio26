@@ -12,8 +12,8 @@ export default function WorkGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { unlocked, hydrated, requestUnlock } = usePasswordGate();
 
-  // /work index isn't gated — only deeper case-study pages are.
-  const isCaseStudyPath = pathname !== "/work" && pathname?.startsWith("/work/");
+  // Gate /work index and all deeper case-study pages.
+  const isCaseStudyPath = pathname === "/work" || pathname?.startsWith("/work/");
   const shouldGate = isCaseStudyPath && hydrated && !unlocked;
 
   useEffect(() => {
