@@ -11,7 +11,7 @@ interface GalleryLayers {
   ui: string;
   uiWidth: string | null;
   uiHeight: string | null;
-  parallax: "left" | "bottom";
+  parallax: "left" | "right" | "bottom";
   uiBorderRadius: string | null;
   uiShadow: string | null;
 }
@@ -233,10 +233,15 @@ export default function GalleryMode({ open, onClose, studies, initialStudySlug }
         const slideCenter = slideRect.left + slideRect.width / 2;
         const distance = slideCenter - center;
         const progress = Math.min(1, Math.abs(distance) / slideRect.width);
-        const direction = ui.dataset.parallax === "left" ? "left" : "bottom";
+        const raw = ui.dataset.parallax;
+        const direction: "left" | "right" | "bottom" =
+          raw === "left" ? "left" : raw === "right" ? "right" : "bottom";
         if (direction === "left") {
           const tx = progress * ((frameRect.width + ui.offsetWidth) / 2);
           ui.style.transform = `translate(calc(-50% - ${tx}px), -50%)`;
+        } else if (direction === "right") {
+          const tx = progress * ((frameRect.width + ui.offsetWidth) / 2);
+          ui.style.transform = `translate(calc(-50% + ${tx}px), -50%)`;
         } else {
           const ty = progress * ((frameRect.height + ui.offsetHeight) / 2);
           ui.style.transform = `translate(-50%, calc(-50% + ${ty}px))`;
@@ -418,7 +423,9 @@ export default function GalleryMode({ open, onClose, studies, initialStudySlug }
                           transform:
                             slot.layers.parallax === "left"
                               ? "translate(calc(-50% - 100vw), -50%)"
-                              : "translate(-50%, calc(-50% + 100vh))",
+                              : slot.layers.parallax === "right"
+                                ? "translate(calc(-50% + 100vw), -50%)"
+                                : "translate(-50%, calc(-50% + 100vh))",
                           pointerEvents: "none",
                           willChange: "transform",
                         }}

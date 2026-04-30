@@ -62,6 +62,15 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
     ? studies
     : studies.filter((s) => matchingSlugs.has(s.slug));
 
+  // Studies whose first gallery slot has a layered UI mock — anything
+  // without a foreground UI is hidden from the gallery view (empty arrays
+  // and backdrop-only photos).
+  const galleryReadyStudies = filteredStudies.filter((s) => {
+    const items = galleryContent[s.slug] ?? [];
+    const first = items[0];
+    return first != null && typeof first === "object" && "layers" in first;
+  });
+
   // Compute disabled tags (would yield 0 results if added)
   const disabledTags = new Set(
     ALL_TAGS.filter((tag) => {
@@ -282,9 +291,10 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
       </div>
 
       {/* Gallery card list — one card per study. Clicking any card opens
-          the gallery overlay starting at that project. */}
+          the gallery overlay starting at that project. Studies without a
+          UI mock in their first gallery slot are hidden. */}
       <GalleryCardList
-        studies={filteredStudies}
+        studies={galleryReadyStudies}
         onOpen={(slug) => {
           setGalleryStartSlug(slug);
           setGalleryOpen(true);
@@ -294,7 +304,7 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
       <GalleryMode
         open={galleryOpen}
         onClose={() => setGalleryOpen(false)}
-        studies={filteredStudies}
+        studies={galleryReadyStudies}
         initialStudySlug={galleryStartSlug}
       />
     </section>

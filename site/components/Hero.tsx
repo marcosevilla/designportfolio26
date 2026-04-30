@@ -367,7 +367,8 @@ export default function Hero({
                 transition={transition}
               >
                 <HighlightableBio paragraphs={mainParagraphs} />
-                <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />
+                {/* Temporarily hidden for recruiter share. */}
+                {false && <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />}
               </motion.div>
             </div>
 

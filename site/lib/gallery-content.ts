@@ -31,7 +31,7 @@ export type GallerySlotConfig =
          *  mocks; let width auto. */
         uiHeight?: string;
         /** Direction the UI slides in from. Default "bottom". */
-        parallax?: "left" | "bottom";
+        parallax?: "left" | "right" | "bottom";
         /** CSS border-radius applied to the UI mock (e.g. for rounding
          *  raw screenshots into iOS-style phone corners). */
         uiBorderRadius?: string;
@@ -64,8 +64,15 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
   ],
   compendium: [
     {
-      src: "/images/gallery/compendium/guest-experience-app.png",
-      fit: "cover",
+      layers: {
+        bg: "/images/gallery/compendium/guest-experience-app.png",
+        ui: "/images/gallery/compendium/guest-experience-mobile.png",
+        uiHeight: "92%",
+        parallax: "bottom",
+        uiBorderRadius: "16px",
+        uiShadow:
+          "0 30px 60px rgba(0, 0, 0, 0.30), 0 12px 24px rgba(0, 0, 0, 0.18)",
+      },
     },
   ],
   upsells: [
@@ -76,8 +83,13 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
   ],
   checkin: [
     {
-      src: "/images/gallery/checkin/check-in.png",
-      fit: "cover",
+      layers: {
+        bg: "/images/gallery/checkin/check-in.png",
+        ui: "/images/gallery/checkin/check-in-dash.png",
+        uiWidth: "82%",
+        parallax: "right",
+        uiBorderRadius: "8px",
+      },
     },
   ],
   "general-task": [],

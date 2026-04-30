@@ -15,7 +15,8 @@ const ROW_HEIGHT = 28;
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Work" },
-  { id: "playground", label: "Playground" },
+  // Playground temporarily hidden for recruiter share.
+  // { id: "playground", label: "Playground" },
 ];
 
 const SCROLL_LOCK_MS = 900;
