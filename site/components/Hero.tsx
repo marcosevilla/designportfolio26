@@ -342,21 +342,18 @@ export default function Hero({
                 )}
               </AnimatePresence>
 
-              {/* LED matrix — gated alongside the toolbar. */}
-              <AnimatePresence initial={false}>
-                {matrix && toolbarOpen && (
-                  <motion.div
-                    key="hero-matrix"
-                    initial={{ opacity: 0, filter: "blur(12px)", height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, filter: "blur(0px)", height: "auto", marginTop: 16 }}
-                    exit={{ opacity: 0, filter: "blur(12px)", height: 0, marginTop: 0 }}
-                    transition={{ duration: 0.9, ease: BLUR_EASE }}
-                    style={{ overflow: "hidden" }}
-                  >
-                    {matrix}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* LED matrix — shown by default; the playground star toggles
+                  only the toolbar above it. */}
+              {matrix && (
+                <motion.div
+                  className="mt-4"
+                  initial={initial}
+                  animate={animate}
+                  transition={transition}
+                >
+                  {matrix}
+                </motion.div>
+              )}
 
               {/* Bio — paragraphs 1, 2, 4 (childhood lives on About me) */}
               <motion.div

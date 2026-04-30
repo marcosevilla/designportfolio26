@@ -112,15 +112,19 @@ export default function HeroActions({
       >
         <VisualsIcon size={16} />
       </ActionIcon>
-      <ActionIcon
-        label={greetingActive ? "Stop greeting cycle" : "Start greeting cycle"}
-        pressed={greetingActive}
-        onClick={onToggleGreeting}
-        hovered={hoveredIndex === 3}
-        onHover={() => setHoveredIndex(3)}
-      >
-        <SmileyIcon size={16} />
-      </ActionIcon>
+      {/* Smiley toggle (entrypoint to the cycling greeting) temporarily
+          hidden for recruiter share. */}
+      {false && (
+        <ActionIcon
+          label={greetingActive ? "Stop greeting cycle" : "Start greeting cycle"}
+          pressed={greetingActive}
+          onClick={onToggleGreeting}
+          hovered={hoveredIndex === 3}
+          onHover={() => setHoveredIndex(3)}
+        >
+          <SmileyIcon size={16} />
+        </ActionIcon>
+      )}
     </div>
   );
 }

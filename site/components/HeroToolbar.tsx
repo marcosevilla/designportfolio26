@@ -86,8 +86,9 @@ export default function HeroToolbar() {
   const audio = useAudioPlayer();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [visualsOpen, setVisualsOpen] = useState(false);
-  const [greetingActive, setGreetingActive] = useState(true);
-  const [idleSlot, setIdleSlot] = useState<IdleSlot>("greeting");
+  // Greeting cycle hidden by default for recruiter share.
+  const [greetingActive, setGreetingActive] = useState(false);
+  const [idleSlot, setIdleSlot] = useState<IdleSlot>("status");
   const [stickyActive, setStickyActive] = useState(false);
   const [mounted, setMounted] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
