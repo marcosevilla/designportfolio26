@@ -68,7 +68,12 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
       fit: "cover",
     },
   ],
-  upsells: [],
+  upsells: [
+    {
+      src: "/images/gallery/upsells/upsells.png",
+      fit: "cover",
+    },
+  ],
   checkin: [
     {
       src: "/images/gallery/checkin/check-in.png",

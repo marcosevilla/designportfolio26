@@ -117,6 +117,19 @@ export const PLAYLIST: Track[] = [
     },
     mood: "chill",
   },
+  {
+    src: "/audio/track-7.mp3",
+    title: "dance 2",
+    artist: "Oklou",
+    // Dreamy iridescent — indigo kicks, lavender mids, cyan highs, pearl air
+    palette: {
+      bass: "#4338CA",   // indigo-700
+      mids: "#A78BFA",   // violet-400
+      highs: "#67E8F9",  // cyan-300
+      air: "#E0E7FF",    // indigo-100
+    },
+    mood: "dreamy",
+  },
 ];
 
 // Mood modulators — global scalars applied to the visualizer per track.
