@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PARAGRAPHS, HERO_NAME } from "@/lib/bio-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -246,6 +246,8 @@ export default function Hero({
   children,
   aboutMeOpen,
   onAboutMeChange,
+  toolbarOpen,
+  onToolbarChange,
   wordmarkRef: externalWordmarkRef,
 }: {
   /** Optional render slot for the LED matrix area, placed between the
@@ -254,13 +256,14 @@ export default function Hero({
   children?: React.ReactNode;
   aboutMeOpen: boolean;
   onAboutMeChange: (open: boolean) => void;
+  toolbarOpen: boolean;
+  onToolbarChange: (open: boolean) => void;
   wordmarkRef?: React.Ref<HTMLDivElement>;
 }) {
   const reducedMotion = usePrefersReducedMotion();
   const initial = reducedMotion ? false : { opacity: 0, filter: "blur(12px)" };
   const animate = { opacity: 1, filter: "blur(0px)" };
   const transition = { duration: 0.9, ease: BLUR_EASE };
-  const [toolbarOpen, setToolbarOpen] = useState(false);
   const wordmarkWrapperRef = useRef<HTMLDivElement | null>(null);
   // Cap the fit container at the original 500px-column inner width (500 - 32
   // for sm:px-8) so the wordmark — and the projects "Work" h2, which reads
@@ -323,7 +326,7 @@ export default function Hero({
                 >
                   {HERO_NAME}
                 </h1>
-                <PlaygroundStar open={toolbarOpen} onClick={() => setToolbarOpen((prev) => !prev)} />
+                <PlaygroundStar open={toolbarOpen} onClick={() => onToolbarChange(!toolbarOpen)} />
               </motion.div>
 
               {/* Toolbar — collapsed by default; revealed by the playground star. */}
@@ -343,10 +346,11 @@ export default function Hero({
               </AnimatePresence>
 
               {/* LED matrix — shown by default; the playground star toggles
-                  only the toolbar above it. */}
+                  only the toolbar above it. mt-16 matches the bio's mt-16 so
+                  the matrix sits equidistant between the wordmark and bio. */}
               {matrix && (
                 <motion.div
-                  className="mt-4"
+                  className="mt-16"
                   initial={initial}
                   animate={animate}
                   transition={transition}

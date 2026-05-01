@@ -20,13 +20,17 @@ function readCssVar(name: string, fallback: string): string {
   return v || fallback;
 }
 
-export default function LedMatrixUI() {
+export default function LedMatrixUI({ onPlay }: { onPlay?: () => void } = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const sizeRef = useRef({ cssW: 0, cssH: 0, cols: 0, rows: 0, dpr: 1 });
   const [revealed, setRevealed] = useState(false);
 
   const { isPlaying, togglePlay, currentTrack } = useAudioPlayer();
+  const handlePlay = () => {
+    togglePlay();
+    onPlay?.();
+  };
 
   // Resize sync.
   useIsoLayoutEffect(() => {
@@ -152,7 +156,7 @@ export default function LedMatrixUI() {
       onKeyDown={(e) => {
         if (e.key === " ") {
           e.preventDefault();
-          togglePlay();
+          handlePlay();
         }
       }}
     >
@@ -166,7 +170,7 @@ export default function LedMatrixUI() {
         <button
           type="button"
           aria-label={isPlaying ? "Pause" : "Play"}
-          onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+          onClick={(e) => { e.stopPropagation(); handlePlay(); }}
           className="absolute pointer-events-auto opacity-0 left-1/2 top-1/2"
           style={{
             width: `${PLAY_RECT_W}px`,

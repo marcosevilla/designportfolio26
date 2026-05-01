@@ -128,7 +128,7 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           <h2
             style={{
               fontFamily: "var(--font-sans)",
-              fontSize: "var(--wordmark-fontsize, 48px)",
+              fontSize: "calc(var(--wordmark-fontsize, 48px) * 0.7)",
               fontWeight: 600,
               lineHeight: 1.05,
               letterSpacing: "-0.025em",
@@ -138,21 +138,39 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           >
             Work
           </h2>
-          <div className="flex items-center gap-1">
-            <ViewToggleButton
-              active={activeFilters.length > 0 || filterOpen}
-              onClick={() => setFilterOpen((o) => !o)}
-              label="Filter projects"
+          {/* Filter / Gallery icon toggles temporarily hidden for recruiter
+              share. */}
+          {false && (
+            <div className="flex items-center gap-1">
+              <ViewToggleButton
+                active={activeFilters.length > 0 || filterOpen}
+                onClick={() => setFilterOpen((o) => !o)}
+                label="Filter projects"
+              >
+                <FilterIcon size={16} />
+              </ViewToggleButton>
+              <ViewToggleButton
+                active={galleryOpen}
+                onClick={() => setGalleryOpen(true)}
+                label="Open gallery mode"
+              >
+                <GalleryIcon size={16} />
+              </ViewToggleButton>
+            </div>
+          )}
+
+          {/* Section entrypoints — flush right of the "Work" title. Open
+              the gallery overlay or route to the full case studies page. */}
+          <div className="flex items-center gap-6">
+            <SectionLinkButton
+              onClick={() => {
+                setGalleryStartSlug(null);
+                setGalleryOpen(true);
+              }}
             >
-              <FilterIcon size={16} />
-            </ViewToggleButton>
-            <ViewToggleButton
-              active={galleryOpen}
-              onClick={() => setGalleryOpen(true)}
-              label="Open gallery mode"
-            >
-              <GalleryIcon size={16} />
-            </ViewToggleButton>
+              Gallery
+            </SectionLinkButton>
+            <SectionLinkButton href="/work" icon="lock">Case studies</SectionLinkButton>
           </div>
         </div>
 
@@ -274,21 +292,6 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           {filteredStudies.length} project{filteredStudies.length !== 1 ? "s" : ""} shown
         </span>
       )}
-
-      {/* Section entrypoints — open the gallery overlay or route to the
-          full case studies page. Same treatment as the "Learn more" button
-          on the home bio. */}
-      <div className="flex items-center gap-6 mb-8">
-        <SectionLinkButton
-          onClick={() => {
-            setGalleryStartSlug(null);
-            setGalleryOpen(true);
-          }}
-        >
-          Gallery
-        </SectionLinkButton>
-        <SectionLinkButton href="/work" icon="lock">Case studies</SectionLinkButton>
-      </div>
 
       {/* Gallery card list — one card per study. Clicking any card opens
           the gallery overlay starting at that project. Studies without a

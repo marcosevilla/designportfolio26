@@ -6,12 +6,12 @@ import HomeNav from "./HomeNav";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI from "./music/LedMatrixUI";
 
-function MatrixArea() {
+function MatrixArea({ onPlay }: { onPlay?: () => void }) {
   return (
     <div>
       <div className="relative">
         <LedMatrix />
-        <LedMatrixUI />
+        <LedMatrixUI onPlay={onPlay} />
       </div>
     </div>
   );
@@ -23,6 +23,7 @@ export default function HomeLayout({
   work: React.ReactNode;
 }) {
   const [aboutMeOpen, setAboutMeOpen] = useState(false);
+  const [toolbarOpen, setToolbarOpen] = useState(false);
   const wordmarkRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
@@ -73,9 +74,11 @@ export default function HomeLayout({
         }}
       >
         <Hero
-          matrix={<MatrixArea />}
+          matrix={<MatrixArea onPlay={() => setToolbarOpen(true)} />}
           aboutMeOpen={aboutMeOpen}
           onAboutMeChange={setAboutMeOpen}
+          toolbarOpen={toolbarOpen}
+          onToolbarChange={setToolbarOpen}
           wordmarkRef={wordmarkRef}
         />
       </div>
