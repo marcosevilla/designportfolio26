@@ -8,6 +8,7 @@ import { typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
 import { HighlighterProvider } from "./HighlighterContext";
 import HeroToolbar from "./HeroToolbar";
+import Resume from "./Resume";
 
 const CV_ENTRIES = [
   { company: "Canary Technologies", title: "Product Designer", city: "San Francisco" },
@@ -145,34 +146,11 @@ function useFitWordmark(
   }, [wrapperRef, widthFraction]);
 }
 
-function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void }) {
+function PlaygroundStar() {
   const reducedMotion = usePrefersReducedMotion();
-  const isResting = open || reducedMotion;
 
-  // Cycle: 6.5s total
-  //   • 0 → ~70%   ✸ rests in fg (black)
-  //   • ~70% → ~80% color crossfades to accent
-  //   • ~80% → ~92% a bright shine streak sweeps across the glyph
-  //   • ~92% → 100% color crossfades back to fg
-  const baseColorKeyframes = {
-    color: [
-      "var(--color-fg)",
-      "var(--color-fg)",
-      "var(--color-accent)",
-      "var(--color-accent)",
-      "var(--color-fg)",
-    ],
-  };
-  const baseColorTransition = {
-    duration: 6.5,
-    times: [0, 0.7, 0.8, 0.92, 1],
-    repeat: Infinity,
-    ease: "easeInOut" as const,
-  };
-
-  // Shine streak: a thin white band sweeps left-to-right across the glyph,
-  // masked to the glyph shape via background-clip:text. Hidden the rest of
-  // the cycle (opacity 0 outside the sweep window).
+  // Decorative themed star — always rendered, always pinned to the accent
+  // color. Subtle shine streak sweeps across the glyph on a slow cycle.
   const streakKeyframes = {
     opacity: [0, 0, 1, 1, 0],
     backgroundPositionX: ["150%", "150%", "150%", "-150%", "-150%"],
@@ -185,15 +163,11 @@ function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void 
   };
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={open ? "Hide playground controls" : "Show playground controls"}
-      aria-expanded={open}
-      aria-pressed={open}
-      className="flex items-center justify-center rounded-full transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none cursor-pointer shrink-0"
+    <span
+      aria-hidden
+      className="flex items-center justify-center shrink-0"
       style={{
-        color: open ? "var(--color-accent)" : "var(--color-fg)",
+        color: "var(--color-accent)",
         // Sized in em so the star scales with the wordmark group. Translate
         // also in em — top of star sits near the cap height, tucked tight
         // against the final "a" of "Sevilla".
@@ -204,17 +178,10 @@ function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void 
       }}
     >
       <span
-        aria-hidden
         style={{ position: "relative", display: "inline-block", fontSize: "0.42em", lineHeight: 1 }}
       >
-        <motion.span
-          style={{ display: "inline-block" }}
-          animate={isResting ? undefined : baseColorKeyframes}
-          transition={isResting ? undefined : baseColorTransition}
-        >
-          ✸
-        </motion.span>
-        {!isResting && (
+        <span style={{ display: "inline-block" }}>✸</span>
+        {!reducedMotion && (
           <motion.span
             style={{
               position: "absolute",
@@ -237,7 +204,7 @@ function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void 
           </motion.span>
         )}
       </span>
-    </button>
+    </span>
   );
 }
 
@@ -246,9 +213,8 @@ export default function Hero({
   children,
   aboutMeOpen,
   onAboutMeChange,
-  toolbarOpen,
-  onToolbarChange,
   wordmarkRef: externalWordmarkRef,
+  aboutMeHeaderRef,
 }: {
   /** Optional render slot for the LED matrix area, placed between the
    *  sticky header and the bio so it sits *under* the pinned header. */
@@ -256,9 +222,8 @@ export default function Hero({
   children?: React.ReactNode;
   aboutMeOpen: boolean;
   onAboutMeChange: (open: boolean) => void;
-  toolbarOpen: boolean;
-  onToolbarChange: (open: boolean) => void;
   wordmarkRef?: React.Ref<HTMLDivElement>;
+  aboutMeHeaderRef?: React.Ref<HTMLHeadingElement>;
 }) {
   const reducedMotion = usePrefersReducedMotion();
   const initial = reducedMotion ? false : { opacity: 0, filter: "blur(12px)" };
@@ -290,20 +255,31 @@ export default function Hero({
   return (
     <>
       <HighlighterProvider>
-        {/* Two-page horizontal carousel:
-              Page 1 = home (wordmark + bio + Learn more & CV button)
-              Page 2 = About me (paragraph 3 + experience list)
-            Clicking the Learn more button slides the column left to reveal
-            page 2; the back button slides it back. */}
-        <div style={{ width: "100%", overflow: "hidden" }}>
-          <motion.div
-            style={{ display: "flex", width: "200%" }}
-            animate={{ x: aboutMeOpen ? "-50%" : "0%" }}
-            transition={{ duration: 0.55, ease: BLUR_EASE }}
-          >
-            {/* ─── Page 1 — Home ───────────────────────────────────────── */}
-            <div style={{ width: "50%", flex: "0 0 50%" }}>
-              {/* Wordmark + playground toggle */}
+        {/* Page swap — AnimatePresence handles the slide+blur cross-fade
+            between the home page (wordmark + bio) and the About-me page
+            (intro paragraph + Resume). Body has overflow-x: hidden so the
+            outgoing slide can leave the viewport without horizontal scroll. */}
+        <AnimatePresence mode="wait" initial={false}>
+          {!aboutMeOpen ? (
+            <motion.div
+              key="hero-home"
+              initial={false}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: -120, filter: "blur(12px)" }}
+              transition={{ duration: 0.35, ease: BLUR_EASE }}
+            >
+              {/* Toolbar — always visible, sits above the wordmark. The
+                  toolbar manages its own scroll-past sticky portal. */}
+              <motion.div
+                className="mb-8"
+                initial={initial}
+                animate={animate}
+                transition={transition}
+              >
+                <HeroToolbar />
+              </motion.div>
+
+              {/* Wordmark + decorative themed star */}
               <motion.div
                 ref={setWordmarkRef}
                 className="flex items-start justify-start"
@@ -326,31 +302,13 @@ export default function Hero({
                 >
                   {HERO_NAME}
                 </h1>
-                <PlaygroundStar open={toolbarOpen} onClick={() => onToolbarChange(!toolbarOpen)} />
+                <PlaygroundStar />
               </motion.div>
 
-              {/* Toolbar — collapsed by default; revealed by the playground star. */}
-              <AnimatePresence initial={false}>
-                {toolbarOpen && (
-                  <motion.div
-                    key="hero-toolbar"
-                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginTop: 24 }}
-                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                    transition={{ duration: 0.32, ease: BLUR_EASE }}
-                    style={{ overflow: "hidden" }}
-                  >
-                    <HeroToolbar />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* LED matrix — shown by default; the playground star toggles
-                  only the toolbar above it. mt-16 matches the bio's mt-16 so
-                  the matrix sits equidistant between the wordmark and bio. */}
+              {/* LED matrix — pulled close to the wordmark. */}
               {matrix && (
                 <motion.div
-                  className="mt-16"
+                  className="mt-6"
                   initial={initial}
                   animate={animate}
                   transition={transition}
@@ -368,19 +326,27 @@ export default function Hero({
                 transition={transition}
               >
                 <HighlightableBio paragraphs={mainParagraphs} />
-                {/* Temporarily hidden for recruiter share. */}
-                {false && <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />}
+                <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />
               </motion.div>
-            </div>
-
-            {/* ─── Page 2 — About me ───────────────────────────────────── */}
-            <div style={{ width: "50%", flex: "0 0 50%" }}>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="hero-about"
+              initial={{ opacity: 0, x: 120, filter: "blur(12px)" }}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: 120, filter: "blur(12px)" }}
+              transition={{ duration: 0.35, ease: BLUR_EASE }}
+              className="pb-24"
+            >
               <h1
                 style={{
                   fontFamily: "var(--font-sans)",
-                  fontSize: "clamp(calc(36px + var(--font-size-offset)), 5vw, calc(48px + var(--font-size-offset)))",
+                  // Match Return-button text height so cap-tops align in
+                  // the side nav. Bigger than nav text for hierarchy, but
+                  // line-height 1 puts the cap at the box top.
+                  fontSize: "clamp(calc(28px + var(--font-size-offset)), 4vw, calc(36px + var(--font-size-offset)))",
                   fontWeight: 600,
-                  lineHeight: 1.05,
+                  lineHeight: 1,
                   letterSpacing: "-0.025em",
                   color: "var(--color-fg)",
                 }}
@@ -393,11 +359,11 @@ export default function Hero({
                 style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
-                <ExperienceList />
+                <Resume />
               </div>
-            </div>
-          </motion.div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </HighlighterProvider>
 
       {children}

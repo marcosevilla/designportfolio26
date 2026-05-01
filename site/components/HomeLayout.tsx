@@ -1,18 +1,23 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI from "./music/LedMatrixUI";
+import { StickyToolbarContext } from "@/lib/StickyToolbarContext";
 
-function MatrixArea({ onPlay }: { onPlay?: () => void }) {
+function MatrixArea({ sentinelRef }: { sentinelRef: React.Ref<HTMLDivElement> }) {
   return (
     <div>
       <div className="relative">
         <LedMatrix />
-        <LedMatrixUI onPlay={onPlay} />
+        <LedMatrixUI />
       </div>
+      {/* Sentinel placed directly below the matrix; once it scrolls out of
+          view the floating sticky toolbar variant is allowed to appear, so
+          the page never shows two visualizers at once. */}
+      <div ref={sentinelRef} aria-hidden style={{ height: 1 }} />
     </div>
   );
 }
@@ -23,9 +28,24 @@ export default function HomeLayout({
   work: React.ReactNode;
 }) {
   const [aboutMeOpen, setAboutMeOpen] = useState(false);
-  const [toolbarOpen, setToolbarOpen] = useState(false);
+  const [pastMatrix, setPastMatrix] = useState(false);
   const wordmarkRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const matrixSentinelRef = useRef<HTMLDivElement>(null);
+
+  // Activate the floating sticky toolbar variant only after the in-flow LED
+  // matrix has scrolled out of view, so the home page never shows two
+  // visualizers stacked on top of each other.
+  useEffect(() => {
+    const el = matrixSentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setPastMatrix(!entry.isIntersecting),
+      { threshold: 0, rootMargin: "0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   // Pin the side nav's top to the wordmark's top so they share the same
   // baseline on first load. Re-measures on resize, font load, and content
@@ -57,6 +77,7 @@ export default function HomeLayout({
 
 
   return (
+    <StickyToolbarContext.Provider value={pastMatrix}>
     <div id="home">
       <HomeNav
         navRef={navRef}
@@ -74,11 +95,9 @@ export default function HomeLayout({
         }}
       >
         <Hero
-          matrix={<MatrixArea onPlay={() => setToolbarOpen(true)} />}
+          matrix={<MatrixArea sentinelRef={matrixSentinelRef} />}
           aboutMeOpen={aboutMeOpen}
           onAboutMeChange={setAboutMeOpen}
-          toolbarOpen={toolbarOpen}
-          onToolbarChange={setToolbarOpen}
           wordmarkRef={wordmarkRef}
         />
       </div>
@@ -97,5 +116,6 @@ export default function HomeLayout({
         {/* Placeholder for now — anchor target for the Playground nav item. */}
       </section>
     </div>
+    </StickyToolbarContext.Provider>
   );
 }

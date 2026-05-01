@@ -11,7 +11,7 @@ import { type Track } from "@/lib/playlist";
 const SPACING = 5;
 const DOT_BASE = 2;
 const DOT_BLOOM = 3;
-const HEIGHT = 200;
+const DEFAULT_HEIGHT = 200;
 const CORNER_RADIUS = 12;
 const BOOT_FADE_MS = 400;
 
@@ -679,9 +679,11 @@ void main() {
 }`;
 
 // ── Component ────────────────────────────────────────────────────────────
-export default function LedMatrix() {
+export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number } = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reducedMotion = usePrefersReducedMotion();
+  const heightRef = useRef(height);
+  heightRef.current = height;
 
   const audio = useAudioPlayer();
   const { activeScenes } = useVisualizerScene();
@@ -874,13 +876,13 @@ export default function LedMatrix() {
     // Sizing
     let dpr = window.devicePixelRatio || 1;
     let cssW = 0;
-    let cssH = HEIGHT;
+    let cssH = heightRef.current;
     let cols = 0;
     let rows = 0;
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       cssW = rect.width;
-      cssH = HEIGHT;
+      cssH = heightRef.current;
       dpr = window.devicePixelRatio || 1;
       canvas.width = Math.round(cssW * dpr);
       canvas.height = Math.round(cssH * dpr);
@@ -1516,7 +1518,7 @@ export default function LedMatrix() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ display: "block", width: "100%", height: HEIGHT }}
+      style={{ display: "block", width: "100%", height }}
       aria-hidden="true"
     />
   );
