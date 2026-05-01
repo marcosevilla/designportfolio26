@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PARAGRAPHS, HERO_NAME } from "@/lib/bio-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -8,6 +8,7 @@ import { typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
 import { HighlighterProvider } from "./HighlighterContext";
 import HeroToolbar from "./HeroToolbar";
+import Resume from "./Resume";
 
 const CV_ENTRIES = [
   { company: "Canary Technologies", title: "Product Designer", city: "San Francisco" },
@@ -105,27 +106,35 @@ const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
  * scale as a single visual unit.
  */
 function useFitWordmark(
-  wrapperRef: React.RefObject<HTMLDivElement | null>,
+  el: HTMLDivElement | null,
   widthFraction = 1,
   maxContainerPx?: number,
 ) {
   useLayoutEffect(() => {
-    const el = wrapperRef.current;
     if (!el) return;
 
     const fit = () => {
+      // Bail before mutating any vars if the element is detached or
+      // zero-sized — otherwise we'd leave --wordmark-fontsize stuck at
+      // the 100px reference size and the wordmark would render huge on
+      // remount.
+      if (!el.isConnected) return;
+      // Set the reference size on the wrapper only — doc-level var stays
+      // at its last good value if measurement fails.
+      el.style.setProperty("--wordmark-fontsize", "100px");
+      const rawW = el.clientWidth;
+      const naturalW = el.scrollWidth;
+      if (rawW === 0 || naturalW === 0) {
+        el.style.removeProperty("--wordmark-fontsize");
+        return;
+      }
+      const containerW = maxContainerPx ? Math.min(rawW, maxContainerPx) : rawW;
+      const scale = (containerW / naturalW) * widthFraction;
+      const next = `${100 * scale}px`;
       // Set on documentElement so other sections (e.g. the projects h2)
       // can match the wordmark size. Also mirror on the wrapper for the
       // PlaygroundStar's em-based sizing.
       const root = document.documentElement;
-      root.style.setProperty("--wordmark-fontsize", "100px");
-      el.style.setProperty("--wordmark-fontsize", "100px");
-      const rawW = el.clientWidth;
-      const containerW = maxContainerPx ? Math.min(rawW, maxContainerPx) : rawW;
-      const naturalW = el.scrollWidth;
-      if (containerW === 0 || naturalW === 0) return;
-      const scale = (containerW / naturalW) * widthFraction;
-      const next = `${100 * scale}px`;
       root.style.setProperty("--wordmark-fontsize", next);
       el.style.setProperty("--wordmark-fontsize", next);
     };
@@ -142,7 +151,7 @@ function useFitWordmark(
     const obs = new ResizeObserver(fit);
     obs.observe(el);
     return () => obs.disconnect();
-  }, [wrapperRef, widthFraction]);
+  }, [el, widthFraction, maxContainerPx]);
 }
 
 function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void }) {
@@ -249,6 +258,7 @@ export default function Hero({
   toolbarOpen,
   onToolbarChange,
   wordmarkRef: externalWordmarkRef,
+  aboutMeHeaderRef: externalAboutMeHeaderRef,
 }: {
   /** Optional render slot for the LED matrix area, placed between the
    *  sticky header and the bio so it sits *under* the pinned header. */
@@ -259,28 +269,41 @@ export default function Hero({
   toolbarOpen: boolean;
   onToolbarChange: (open: boolean) => void;
   wordmarkRef?: React.Ref<HTMLDivElement>;
+  aboutMeHeaderRef?: React.Ref<HTMLHeadingElement>;
 }) {
   const reducedMotion = usePrefersReducedMotion();
   const initial = reducedMotion ? false : { opacity: 0, filter: "blur(12px)" };
   const animate = { opacity: 1, filter: "blur(0px)" };
   const transition = { duration: 0.9, ease: BLUR_EASE };
-  const wordmarkWrapperRef = useRef<HTMLDivElement | null>(null);
+
+  // Track the wordmark element via state so useFitWordmark re-runs when
+  // the wordmark unmounts during AnimatePresence transitions and a fresh
+  // element mounts on return — without it, --wordmark-fontsize would
+  // stay stuck at the last-fit value (or worse, at 100px).
+  const [wordmarkEl, setWordmarkEl] = useState<HTMLDivElement | null>(null);
+
   // Cap the fit container at the original 500px-column inner width (500 - 32
   // for sm:px-8) so the wordmark — and the projects "Work" h2, which reads
   // the same CSS var — stay at their original size after the body column
   // widens to 650px.
-  useFitWordmark(wordmarkWrapperRef, 2 / 3, 468);
+  useFitWordmark(wordmarkEl, 2 / 3, 468);
 
-  // Combined ref: keeps the local ref (for fit-to-width) and forwards to any
-  // external ref (used by HomeLayout to align the side nav's top).
-  const setWordmarkRef = (el: HTMLDivElement | null) => {
-    wordmarkWrapperRef.current = el;
+  const setWordmarkRef = useCallback((el: HTMLDivElement | null) => {
+    setWordmarkEl(el);
     if (typeof externalWordmarkRef === "function") {
       externalWordmarkRef(el);
     } else if (externalWordmarkRef && "current" in externalWordmarkRef) {
       (externalWordmarkRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
     }
-  };
+  }, [externalWordmarkRef]);
+
+  const setAboutMeHeaderRef = useCallback((el: HTMLHeadingElement | null) => {
+    if (typeof externalAboutMeHeaderRef === "function") {
+      externalAboutMeHeaderRef(el);
+    } else if (externalAboutMeHeaderRef && "current" in externalAboutMeHeaderRef) {
+      (externalAboutMeHeaderRef as React.MutableRefObject<HTMLHeadingElement | null>).current = el;
+    }
+  }, [externalAboutMeHeaderRef]);
 
   // The "Growing up..." paragraph (index 2) lives on the About me page; the
   // main bio shows the rest in their original order.
@@ -290,19 +313,19 @@ export default function Hero({
   return (
     <>
       <HighlighterProvider>
-        {/* Two-page horizontal carousel:
-              Page 1 = home (wordmark + bio + Learn more & CV button)
-              Page 2 = About me (paragraph 3 + experience list)
-            Clicking the Learn more button slides the column left to reveal
-            page 2; the back button slides it back. */}
-        <div style={{ width: "100%", overflow: "hidden" }}>
-          <motion.div
-            style={{ display: "flex", width: "200%" }}
-            animate={{ x: aboutMeOpen ? "-50%" : "0%" }}
-            transition={{ duration: 0.55, ease: BLUR_EASE }}
-          >
-            {/* ─── Page 1 — Home ───────────────────────────────────────── */}
-            <div style={{ width: "50%", flex: "0 0 50%" }}>
+        {/* Page swap — AnimatePresence handles a slide+blur cross-fade
+            between the home page and the About-me / Resume page. Body has
+            overflow-x: hidden so outgoing slides leave the viewport
+            without horizontal scroll. */}
+        <AnimatePresence mode="wait" initial={false}>
+          {!aboutMeOpen ? (
+            <motion.div
+              key="hero-home"
+              initial={false}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: -160, filter: "blur(12px)" }}
+              transition={{ duration: 0.4, ease: BLUR_EASE }}
+            >
               {/* Wordmark + playground toggle */}
               <motion.div
                 ref={setWordmarkRef}
@@ -345,9 +368,7 @@ export default function Hero({
                 )}
               </AnimatePresence>
 
-              {/* LED matrix — shown by default; the playground star toggles
-                  only the toolbar above it. mt-16 matches the bio's mt-16 so
-                  the matrix sits equidistant between the wordmark and bio. */}
+              {/* LED matrix */}
               {matrix && (
                 <motion.div
                   className="mt-16"
@@ -368,19 +389,29 @@ export default function Hero({
                 transition={transition}
               >
                 <HighlightableBio paragraphs={mainParagraphs} />
-                {/* Temporarily hidden for recruiter share. */}
-                {false && <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />}
+                <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />
               </motion.div>
-            </div>
-
-            {/* ─── Page 2 — About me ───────────────────────────────────── */}
-            <div style={{ width: "50%", flex: "0 0 50%" }}>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="hero-about"
+              initial={{ opacity: 0, x: 160, filter: "blur(12px)" }}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, x: 160, filter: "blur(12px)" }}
+              transition={{ duration: 0.4, ease: BLUR_EASE }}
+              className="pb-24"
+            >
               <h1
+                ref={setAboutMeHeaderRef}
                 style={{
                   fontFamily: "var(--font-sans)",
-                  fontSize: "clamp(calc(36px + var(--font-size-offset)), 5vw, calc(48px + var(--font-size-offset)))",
+                  // Sized smaller than the wordmark so the home/about
+                  // hierarchy stays distinct. Line-height 1 puts the cap
+                  // top flush with the box top so it visually top-aligns
+                  // with the side-nav Return button.
+                  fontSize: "calc(var(--wordmark-fontsize, 48px) * 0.85)",
                   fontWeight: 600,
-                  lineHeight: 1.05,
+                  lineHeight: 1,
                   letterSpacing: "-0.025em",
                   color: "var(--color-fg)",
                 }}
@@ -393,11 +424,11 @@ export default function Hero({
                 style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
-                <ExperienceList />
+                <Resume />
               </div>
-            </div>
-          </motion.div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </HighlighterProvider>
 
       {children}

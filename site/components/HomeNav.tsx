@@ -152,7 +152,10 @@ export default function HomeNav({
               fontFamily: "var(--font-sans)",
               fontSize: "15px",
               fontWeight: 600,
-              lineHeight: "20px",
+              // line-height 1 keeps the cap-top at the box-top so the
+              // button visually top-aligns with the About-me h1, which
+              // also uses line-height 1.
+              lineHeight: 1,
               color: "var(--color-fg-secondary)",
               background: "none",
               border: 0,
