@@ -64,6 +64,7 @@ export default function HeroActions({
   miniPlayerOpen,
   visualsOpen,
   greetingActive,
+  showVisuals,
   onTogglePalette,
   onToggleMusic,
   onToggleVisuals,
@@ -73,6 +74,9 @@ export default function HeroActions({
   miniPlayerOpen: boolean;
   visualsOpen: boolean;
   greetingActive: boolean;
+  /** Eye/visuals icon is gated on music playing — only relevant when the
+   *  visualizer has audio to react to. */
+  showVisuals: boolean;
   onTogglePalette: () => void;
   onToggleMusic: () => void;
   onToggleVisuals: () => void;
@@ -103,15 +107,17 @@ export default function HeroActions({
       >
         <MusicNoteIcon size={16} />
       </ActionIcon>
-      <ActionIcon
-        label={visualsOpen ? "Hide visuals" : "Show visuals"}
-        pressed={visualsOpen}
-        onClick={onToggleVisuals}
-        hovered={hoveredIndex === 2}
-        onHover={() => setHoveredIndex(2)}
-      >
-        <VisualsIcon size={16} />
-      </ActionIcon>
+      {showVisuals && (
+        <ActionIcon
+          label={visualsOpen ? "Hide visuals" : "Show visuals"}
+          pressed={visualsOpen}
+          onClick={onToggleVisuals}
+          hovered={hoveredIndex === 2}
+          onHover={() => setHoveredIndex(2)}
+        >
+          <VisualsIcon size={16} />
+        </ActionIcon>
+      )}
       {/* Smiley toggle (entrypoint to the cycling greeting) temporarily
           hidden for recruiter share. */}
       {false && (

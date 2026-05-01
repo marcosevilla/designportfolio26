@@ -5,6 +5,8 @@ import Hero from "./Hero";
 import HomeNav from "./HomeNav";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI from "./music/LedMatrixUI";
+import { StickyToolbarContext } from "@/lib/StickyToolbarContext";
+
 function MatrixArea({ sentinelRef }: { sentinelRef: React.Ref<HTMLDivElement> }) {
   return (
     <div>
@@ -26,11 +28,7 @@ export default function HomeLayout({
   work: React.ReactNode;
 }) {
   const [aboutMeOpen, setAboutMeOpen] = useState(false);
-  const [toolbarOpen, setToolbarOpen] = useState(false);
   const [pastMatrix, setPastMatrix] = useState(false);
-  // pastMatrix retained for future consumers; currently unused since the
-  // sticky-toolbar context was removed.
-  void pastMatrix;
   const wordmarkElRef = useRef<HTMLDivElement | null>(null);
   const aboutMeHeaderElRef = useRef<HTMLHeadingElement | null>(null);
   const matrixSentinelElRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +119,7 @@ export default function HomeLayout({
 
 
   return (
+    <StickyToolbarContext.Provider value={pastMatrix}>
     <div id="home">
       <HomeNav
         navRef={navRef}
@@ -141,8 +140,6 @@ export default function HomeLayout({
           matrix={<MatrixArea sentinelRef={setMatrixSentinelRef} />}
           aboutMeOpen={aboutMeOpen}
           onAboutMeChange={setAboutMeOpen}
-          toolbarOpen={toolbarOpen}
-          onToolbarChange={setToolbarOpen}
           wordmarkRef={setWordmarkRef}
           aboutMeHeaderRef={setAboutMeHeaderRef}
         />
@@ -162,5 +159,6 @@ export default function HomeLayout({
         {/* Placeholder for now — anchor target for the Playground nav item. */}
       </section>
     </div>
+    </StickyToolbarContext.Provider>
   );
 }

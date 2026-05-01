@@ -154,34 +154,11 @@ function useFitWordmark(
   }, [el, widthFraction, maxContainerPx]);
 }
 
-function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void }) {
+function PlaygroundStar() {
   const reducedMotion = usePrefersReducedMotion();
-  const isResting = open || reducedMotion;
 
-  // Cycle: 6.5s total
-  //   • 0 → ~70%   ✸ rests in fg (black)
-  //   • ~70% → ~80% color crossfades to accent
-  //   • ~80% → ~92% a bright shine streak sweeps across the glyph
-  //   • ~92% → 100% color crossfades back to fg
-  const baseColorKeyframes = {
-    color: [
-      "var(--color-fg)",
-      "var(--color-fg)",
-      "var(--color-accent)",
-      "var(--color-accent)",
-      "var(--color-fg)",
-    ],
-  };
-  const baseColorTransition = {
-    duration: 6.5,
-    times: [0, 0.7, 0.8, 0.92, 1],
-    repeat: Infinity,
-    ease: "easeInOut" as const,
-  };
-
-  // Shine streak: a thin white band sweeps left-to-right across the glyph,
-  // masked to the glyph shape via background-clip:text. Hidden the rest of
-  // the cycle (opacity 0 outside the sweep window).
+  // Decorative themed star — always rendered, always pinned to the accent
+  // color. Subtle shine streak sweeps across the glyph on a slow cycle.
   const streakKeyframes = {
     opacity: [0, 0, 1, 1, 0],
     backgroundPositionX: ["150%", "150%", "150%", "-150%", "-150%"],
@@ -194,15 +171,11 @@ function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void 
   };
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={open ? "Hide playground controls" : "Show playground controls"}
-      aria-expanded={open}
-      aria-pressed={open}
-      className="flex items-center justify-center rounded-full transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none cursor-pointer shrink-0"
+    <span
+      aria-hidden
+      className="flex items-center justify-center shrink-0"
       style={{
-        color: open ? "var(--color-accent)" : "var(--color-fg)",
+        color: "var(--color-accent)",
         // Sized in em so the star scales with the wordmark group. Translate
         // also in em — top of star sits near the cap height, tucked tight
         // against the final "a" of "Sevilla".
@@ -213,17 +186,10 @@ function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void 
       }}
     >
       <span
-        aria-hidden
         style={{ position: "relative", display: "inline-block", fontSize: "0.42em", lineHeight: 1 }}
       >
-        <motion.span
-          style={{ display: "inline-block" }}
-          animate={isResting ? undefined : baseColorKeyframes}
-          transition={isResting ? undefined : baseColorTransition}
-        >
-          ✸
-        </motion.span>
-        {!isResting && (
+        <span style={{ display: "inline-block" }}>✸</span>
+        {!reducedMotion && (
           <motion.span
             style={{
               position: "absolute",
@@ -246,7 +212,7 @@ function PlaygroundStar({ open, onClick }: { open: boolean; onClick: () => void 
           </motion.span>
         )}
       </span>
-    </button>
+    </span>
   );
 }
 
@@ -255,8 +221,6 @@ export default function Hero({
   children,
   aboutMeOpen,
   onAboutMeChange,
-  toolbarOpen,
-  onToolbarChange,
   wordmarkRef: externalWordmarkRef,
   aboutMeHeaderRef: externalAboutMeHeaderRef,
 }: {
@@ -266,8 +230,6 @@ export default function Hero({
   children?: React.ReactNode;
   aboutMeOpen: boolean;
   onAboutMeChange: (open: boolean) => void;
-  toolbarOpen: boolean;
-  onToolbarChange: (open: boolean) => void;
   wordmarkRef?: React.Ref<HTMLDivElement>;
   aboutMeHeaderRef?: React.Ref<HTMLHeadingElement>;
 }) {
@@ -326,7 +288,18 @@ export default function Hero({
               exit={{ opacity: 0, x: -160, filter: "blur(12px)" }}
               transition={{ duration: 0.4, ease: BLUR_EASE }}
             >
-              {/* Wordmark + playground toggle */}
+              {/* Toolbar — always visible, sits above the wordmark. The
+                  toolbar manages its own scroll-past sticky portal. */}
+              <motion.div
+                className="mb-8"
+                initial={initial}
+                animate={animate}
+                transition={transition}
+              >
+                <HeroToolbar />
+              </motion.div>
+
+              {/* Wordmark + decorative themed star */}
               <motion.div
                 ref={setWordmarkRef}
                 className="flex items-start justify-start"
@@ -349,29 +322,13 @@ export default function Hero({
                 >
                   {HERO_NAME}
                 </h1>
-                <PlaygroundStar open={toolbarOpen} onClick={() => onToolbarChange(!toolbarOpen)} />
+                <PlaygroundStar />
               </motion.div>
 
-              {/* Toolbar — collapsed by default; revealed by the playground star. */}
-              <AnimatePresence initial={false}>
-                {toolbarOpen && (
-                  <motion.div
-                    key="hero-toolbar"
-                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginTop: 24 }}
-                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                    transition={{ duration: 0.32, ease: BLUR_EASE }}
-                    style={{ overflow: "hidden" }}
-                  >
-                    <HeroToolbar />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* LED matrix */}
+              {/* LED matrix — pulled close to the wordmark. */}
               {matrix && (
                 <motion.div
-                  className="mt-16"
+                  className="mt-6"
                   initial={initial}
                   animate={animate}
                   transition={transition}
