@@ -130,6 +130,29 @@ export default function ChatBar() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
 
+  // Keyboard avoidance on mobile. iOS Safari does NOT shrink innerHeight or
+  // 100dvh when the virtual keyboard appears — but visualViewport.height does
+  // track it. Mirror that height into a `--chat-vh` CSS variable so the
+  // full-screen mobile sheet (sized via this variable in globals.css) shrinks
+  // to leave the composer visible above the keyboard. Cleared on close so
+  // pages outside chat aren't affected.
+  useEffect(() => {
+    if (!open) return;
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const update = () => {
+      document.documentElement.style.setProperty("--chat-vh", `${vv.height}px`);
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+      document.documentElement.style.removeProperty("--chat-vh");
+    };
+  }, [open]);
+
   const submit = useCallback(
     async (text: string) => {
       setErrorLine(null);
@@ -295,14 +318,18 @@ export default function ChatBar() {
                     hides .chat-overlay at lg+ since the persistent side panel
                     leaves the page interactive. */}
                 <ChatOverlay onClose={close} />
-                {/* Panel slot — fixed to the right edge. Top:52 clears the
-                    40px system-chrome toolbar with a 12px gap; bottom 12,
-                    right 12. Width: near-full at <lg (drawer), fixed 360px
-                    at lg+ (side panel). The morph pill→panel is handled by
-                    framer-motion interpolating layoutId rects. */}
+                {/* Panel slot — geometry handled in globals.css under
+                    `.chat-panel-slot` so we can swap layouts at the lg
+                    breakpoint cleanly:
+                      - <lg: full-screen sheet sized to visualViewport
+                        (via --chat-vh) so the keyboard doesn't cover the
+                        composer.
+                      - lg+: 360px-wide side panel, top:52 clears the
+                        toolbar, 12px gutters bottom/right.
+                    The morph pill→panel/sheet is handled by framer-motion
+                    interpolating layoutId rects. */}
                 <div
-                  className="chat-panel-slot fixed bottom-3 right-3 z-[160] pointer-events-none flex flex-col"
-                  style={{ top: 52, width: "min(calc(100vw - 24px), 360px)" }}
+                  className="chat-panel-slot fixed z-[160] pointer-events-none flex flex-col"
                 >
                   <motion.div
                     key="chat-panel-wrap"

@@ -621,6 +621,43 @@ img[class*="rounded-"] {
     0 24px 56px rgba(0, 0, 0, 0.08);
 }
 
+/* Chat panel slot — wraps the morphing chat-surface and sets its layout box.
+   Mobile default = full-screen sheet, sized to visualViewport via --chat-vh
+   (set in ChatBar.tsx) so the iOS keyboard shrinks the available area and
+   the composer stays visible. Desktop override below. */
+.chat-panel-slot {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  /* dvh as fallback for browsers without the visualViewport listener;
+     the JS-set --chat-vh wins when present and tracks the keyboard. */
+  height: var(--chat-vh, 100dvh);
+}
+
+/* Mobile sheet: drop the rounded corners and floating border so the surface
+   reads as a full-bleed sheet, not a panel-stuck-to-the-edge. */
+@media (max-width: 1023px) {
+  .chat-panel-slot .chat-surface {
+    border-radius: 0;
+    border: 0;
+  }
+}
+
+/* Desktop side panel — restore the original geometry (top:52 to clear the
+   40px system-chrome toolbar, 12px gutters, fixed 360px). */
+@media (min-width: 1024px) {
+  .chat-panel-slot {
+    top: 52px;
+    bottom: 12px;
+    right: 12px;
+    left: auto;
+    width: 360px;
+    height: auto;
+  }
+}
+
 .dark .chat-surface {
   background-color: color-mix(in srgb, var(--color-surface-raised) 50%, transparent);
   box-shadow:

@@ -121,10 +121,14 @@ export default function ChatPanel({
         filter: CONTENT_TRANSITION,
       }}
     >
-      {/* Header */}
+      {/* Header — pt accounts for the iOS notch when this is a full-screen
+          sheet (<lg). Desktop side-panel just uses pt-3. */}
       <div
-        className="flex items-center gap-2 px-4 pt-3 pb-2"
-        style={{ borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)" }}
+        className="flex items-center gap-2 px-4 pb-2"
+        style={{
+          paddingTop: "max(env(safe-area-inset-top, 0px), 12px)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
+        }}
       >
         <SparkIcon size={14} />
         <span
@@ -251,15 +255,17 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Privacy footnote */}
+      {/* Privacy footnote — pb accounts for the iOS home indicator when this
+          is a full-screen sheet (<lg). Desktop side-panel uses pb-2. */}
       <p
-        className="px-4 pb-2"
+        className="px-4"
         style={{
           fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
           fontSize: "10px",
           color: "var(--color-fg-tertiary)",
           textAlign: "center",
           opacity: 0.7,
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
         }}
       >
         Powered by Claude · Conversations aren't stored.
