@@ -295,13 +295,14 @@ export default function ChatBar() {
                     hides .chat-overlay at lg+ since the persistent side panel
                     leaves the page interactive. */}
                 <ChatOverlay onClose={close} />
-                {/* Panel slot — fixed to the right edge with 12px gutters,
-                    full viewport height. Width: near-full at <lg (drawer),
-                    fixed 360px at lg+ (side panel). The morph pill→panel is
-                    handled by framer-motion interpolating layoutId rects. */}
+                {/* Panel slot — fixed to the right edge. Top:48 clears the
+                    36px system-chrome toolbar with a 12px gap; bottom 12,
+                    right 12. Width: near-full at <lg (drawer), fixed 360px
+                    at lg+ (side panel). The morph pill→panel is handled by
+                    framer-motion interpolating layoutId rects. */}
                 <div
-                  className="chat-panel-slot fixed top-3 bottom-3 right-3 z-[160] pointer-events-none flex flex-col"
-                  style={{ width: "min(calc(100vw - 24px), 360px)" }}
+                  className="chat-panel-slot fixed bottom-3 right-3 z-[160] pointer-events-none flex flex-col"
+                  style={{ top: 48, width: "min(calc(100vw - 24px), 360px)" }}
                 >
                   <motion.div
                     key="chat-panel-wrap"

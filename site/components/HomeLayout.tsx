@@ -10,21 +10,16 @@ import LedMatrix from "./LedMatrix";
 import LedMatrixUI from "./music/LedMatrixUI";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
-import { StickyToolbarContext } from "@/lib/StickyToolbarContext";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
-function MatrixArea({ sentinelRef }: { sentinelRef: React.Ref<HTMLDivElement> }) {
+/* The page-level visualizer. Single instance — the previous sticky-toolbar
+   variant rendered a second LED inside its chrome; that variant is gone. */
+function MatrixArea() {
   return (
-    <div>
-      <div className="relative">
-        <LedMatrix />
-        <LedMatrixUI />
-      </div>
-      {/* Sentinel placed directly below the matrix; once it scrolls out of
-          view the floating sticky toolbar variant is allowed to appear, so
-          the page never shows two visualizers at once. */}
-      <div ref={sentinelRef} aria-hidden style={{ height: 1 }} />
+    <div className="relative">
+      <LedMatrix />
+      <LedMatrixUI />
     </div>
   );
 }
@@ -35,7 +30,6 @@ export default function HomeLayout({
   work: React.ReactNode;
 }) {
   const [aboutMeOpen, setAboutMeOpen] = useState(false);
-  const [pastMatrix, setPastMatrix] = useState(false);
   // Gates Hero's blur-in animation. Flipped to true either when the
   // LoadingOverlay starts fading (first-time visit) or immediately when
   // the overlay is skipped (repeat visit).
@@ -47,7 +41,6 @@ export default function HomeLayout({
   const [loaderOwnsStar, setLoaderOwnsStar] = useState(true);
   const wordmarkElRef = useRef<HTMLDivElement | null>(null);
   const aboutMeHeaderElRef = useRef<HTMLHeadingElement | null>(null);
-  const matrixSentinelElRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const aboutMeOpenRef = useRef(aboutMeOpen);
   // Keep a ref-mirror of state so the callback ref handlers can read the
@@ -85,27 +78,6 @@ export default function HomeLayout({
     const top = target.getBoundingClientRect().top + window.scrollY;
     nav.style.top = `${top}px`;
     nav.style.transform = "none";
-  }, []);
-
-  // Sticky-toolbar gate: tracks whether the LED matrix has scrolled out
-  // of view. Stable so the callback ref can re-attach the IO when the
-  // matrix sentinel remounts after AnimatePresence transitions.
-  const setMatrixSentinelRef = useCallback((el: HTMLDivElement | null) => {
-    matrixSentinelElRef.current = el;
-    if (!el) {
-      // Sentinel detached — reset gate so the sticky toolbar doesn't
-      // leak across navigations.
-      setPastMatrix(false);
-      return;
-    }
-    const obs = new IntersectionObserver(
-      ([entry]) => setPastMatrix(!entry.isIntersecting),
-      { threshold: 0, rootMargin: "0px" }
-    );
-    obs.observe(el);
-    // Disconnect when the element changes again.
-    const cleanup = () => obs.disconnect();
-    (el as unknown as { __cleanup?: () => void }).__cleanup = cleanup;
   }, []);
 
   // Callback refs for nav anchors — fire on mount/unmount so we can
@@ -151,7 +123,7 @@ export default function HomeLayout({
 
 
   return (
-    <StickyToolbarContext.Provider value={pastMatrix}>
+    <>
     <LoadingOverlay
       onFade={() => {
         // First-time visitors: the loader has released the star and is
@@ -175,12 +147,11 @@ export default function HomeLayout({
         onAboutMeClose={() => setAboutMeOpen(false)}
         ready={heroReady}
       />
-      {/* Hero toolbar — position: absolute against <body>, so it escapes
-          <main>'s max-w-[960px] constraint and spans body's padding box.
-          The CSS owns top/left/right; body's padding-right (chat open)
-          shrinks the right edge automatically. The bio column below
-          reserves vertical space with paddingTop since the toolbar is
-          out of flow. */}
+      {/* Hero toolbar — system chrome pinned to top:0 of the viewport.
+          Spans full window width, frosted background, ~36px tall. CSS
+          owns position. Body content scrolls under it; bio column below
+          gets enough top padding so the wordmark sits comfortably under
+          the toolbar. */}
       <motion.div
         className="hero-toolbar-host"
         initial={{ opacity: 0, filter: "blur(12px)" }}
@@ -193,17 +164,16 @@ export default function HomeLayout({
         <HeroToolbar />
       </motion.div>
 
-      {/* Hero column: paddingTop reserves space for the absolute toolbar
-          (top inset + ~32px toolbar height + 32px gap to wordmark). */}
+      {/* Hero column: paddingTop = toolbar height (36) + breathing room. */}
       <div
         className="max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
         style={{
-          paddingTop: "calc(clamp(48px, 6vh, 96px) + 64px)",
+          paddingTop: "clamp(96px, 12vh, 144px)",
           minHeight: "clamp(560px, 78vh, 880px)",
         }}
       >
         <Hero
-          matrix={<MatrixArea sentinelRef={setMatrixSentinelRef} />}
+          matrix={<MatrixArea />}
           aboutMeOpen={aboutMeOpen}
           onAboutMeChange={setAboutMeOpen}
           wordmarkRef={setWordmarkRef}
@@ -250,6 +220,6 @@ export default function HomeLayout({
         </motion.div>
       </section>
     </div>
-    </StickyToolbarContext.Provider>
+    </>
   );
 }
