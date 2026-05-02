@@ -33,7 +33,7 @@ function InAppLink({ label, onClose }: { label: string; onClose: () => void }) {
         router.push("/?about=1");
       }}
       className="dotted-link dotted-link--inline"
-      style={{ background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit" }}
+      style={{ border: 0, padding: 0, cursor: "pointer", font: "inherit", backgroundColor: "transparent" }}
     >
       {label}
     </button>
