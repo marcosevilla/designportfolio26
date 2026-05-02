@@ -49,7 +49,7 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
   upsells: {
     slug: "upsells",
     title: "Upsells Forms",
-    company: "Canary Technologies",
+    company: "Canary",
     role: "Lead designer",
     year: "2025",
     metric: "$3.8M CARR",
@@ -58,7 +58,7 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
   checkin: {
     slug: "checkin",
     title: "Hotel Check-in",
-    company: "Canary Technologies",
+    company: "Canary",
     role: "Product designer",
     year: "2024",
     metric: "4,500+ hotels",
