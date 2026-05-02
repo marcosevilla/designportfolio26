@@ -1,3 +1,5 @@
+import "server-only";
+
 // Reads case-study markdown drafts at module load and exports them by slug.
 // Server-only (uses fs). Imported by lib/chat/system-prompt.ts.
 

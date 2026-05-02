@@ -1,3 +1,5 @@
+import "server-only";
+
 // Per-IP rate limiting via Upstash Redis. Two windows in parallel:
 //   - 8 messages per minute (catches spam loops)
 //   - 60 messages per day  (catches a determined abuser)

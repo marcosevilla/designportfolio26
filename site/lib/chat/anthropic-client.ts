@@ -1,3 +1,5 @@
+import "server-only";
+
 // Singleton Anthropic SDK client. Constructed once per function instance.
 // Server-only.
 
