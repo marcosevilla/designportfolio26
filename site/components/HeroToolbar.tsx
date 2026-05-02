@@ -2,239 +2,256 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import HeroActions from "./HeroActions";
 import HamburgerMenu from "./HamburgerMenu";
 import { PaletteRow } from "./PaletteSwatches";
-import { MiniPlayerRow, VisualsRow } from "./music/HomeMiniPlayer";
+import { MiniPlayerRow } from "./music/HomeMiniPlayer";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import LocalStatus from "./LocalStatus";
-import CyclingGreeting from "./CyclingGreeting";
+import {
+  ChevronDownIcon,
+  MoonIcon,
+  MusicNoteIcon,
+  PaletteIcon,
+  PlayIcon,
+  SunIcon,
+  VisualsIcon,
+} from "./Icons";
+import { useThemeState } from "./ThemeToggle";
 
-const SLOT_EASE = [0.22, 1, 0.36, 1] as const;
-const SLOT_TRAVEL = 32; // px — full row height; old slides down out, new slides down in.
-const IDLE_CYCLE_MS = 6000; // status ↔ now-playing alternation when music is on.
+const POPOVER_SPRING = { type: "spring" as const, stiffness: 380, damping: 32 };
+const POPOVER_EASE = [0.22, 1, 0.36, 1] as const;
 
-type SlotKind = "status" | "now-playing" | "greeting" | "palette" | "music" | "visuals";
-type IdleSlot = "status" | "now-playing" | "greeting";
+const TINT_HOVER = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
+const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
 
-function NowPlayingStatus({ title, artist }: { title: string; artist: string }) {
+/** Shared shell for the toolbar's icon buttons — same chrome treatment as the
+ *  prior HeroActions cluster (hover tint, active tint, focus ring). Disabled
+ *  variant lowers contrast and removes hover/click affordances. */
+function ToolbarIconButton({
+  label,
+  pressed = false,
+  onClick,
+  disabled = false,
+  children,
+}: {
+  label: string;
+  pressed?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={disabled ? undefined : onClick}
+      aria-label={label}
+      aria-pressed={pressed}
+      aria-disabled={disabled}
+      disabled={disabled}
+      className={[
+        "relative flex items-center justify-center w-7 h-7 rounded-md transition-colors focus:outline-none",
+        disabled
+          ? "text-(--color-fg-tertiary) opacity-50 cursor-not-allowed"
+          : "text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) cursor-pointer",
+      ].join(" ")}
+    >
+      {pressed && !disabled && (
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-md"
+          style={{ backgroundColor: TINT_ACTIVE }}
+        />
+      )}
+      {!disabled && (
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-md opacity-0 hover:opacity-100 transition-opacity"
+          style={{ backgroundColor: TINT_HOVER }}
+        />
+      )}
+      <span className="relative inline-flex items-center gap-1">{children}</span>
+    </button>
+  );
+}
+
+/** Light/dark mode toggle. Renders nothing pre-hydration to avoid SSR mismatch. */
+function ThemeModeButton() {
+  const themeState = useThemeState();
+  if (!themeState.mounted) {
+    // Reserve footprint so neighbour buttons don't shift on hydrate.
+    return <span aria-hidden style={{ width: 28, height: 28, display: "inline-block" }} />;
+  }
+  const isLight = themeState.mode === "light";
+  return (
+    <ToolbarIconButton
+      label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+      onClick={() => (isLight ? themeState.selectDark() : themeState.selectLight())}
+    >
+      {isLight ? <MoonIcon size={14} /> : <SunIcon size={14} />}
+    </ToolbarIconButton>
+  );
+}
+
+/** Palette button: icon + chevron. Click opens a popover with the 10
+ *  colored-theme swatches. Active when popover is open. */
+function PaletteButton({
+  open,
+  onToggle,
+}: {
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label="Theme palette"
+        aria-pressed={open}
+        aria-expanded={open}
+        className="relative flex items-center justify-center h-7 px-1.5 rounded-md transition-colors focus:outline-none text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) cursor-pointer aria-pressed:text-(--color-accent)"
+      >
+        {open && (
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-md"
+            style={{ backgroundColor: TINT_ACTIVE }}
+          />
+        )}
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-md opacity-0 hover:opacity-100 transition-opacity"
+          style={{ backgroundColor: TINT_HOVER }}
+        />
+        <span className="relative inline-flex items-center gap-1">
+          <PaletteIcon size={14} />
+          <ChevronDownIcon size={9} />
+        </span>
+      </button>
+    </div>
+  );
+}
+
+/** Visualizer button — DISABLED placeholder for now. Visible in the toolbar
+ *  but does nothing. Scene controls live at the LED matrix's bottom-left
+ *  (will land in Phase 3). */
+function VisualizerButton() {
+  return (
+    <ToolbarIconButton label="Visualizer (coming soon)" disabled>
+      <VisualsIcon size={14} />
+    </ToolbarIconButton>
+  );
+}
+
+/** Music slot. Collapsed (not playing) → just the play button. Playing →
+ *  inline-expanded MiniPlayerRow with rewind / pause / skip / title-with-
+ *  hover-scrubber. The expansion of the row itself (max-width on the
+ *  scrubber, polished entrance) lands in Phase 3. */
+function MusicSlot() {
+  const { isPlaying, togglePlay } = useAudioPlayer();
+  if (!isPlaying) {
+    return (
+      <ToolbarIconButton label="Play music" onClick={togglePlay}>
+        <PlayIcon size={14} />
+      </ToolbarIconButton>
+    );
+  }
   return (
     <div
-      className="min-w-0 flex items-center gap-1.5"
+      className="flex items-center"
       style={{
-        fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-        fontSize: "11px",
-        lineHeight: "15px",
-        fontWeight: 400,
-        color: "var(--color-fg-secondary)",
+        // Sized so the inline expansion has room without dominating the bar.
+        // Phase 3 polishes this with a max-width on the hover scrubber.
+        minWidth: 200,
+        height: 28,
       }}
     >
-      <motion.span
-        aria-hidden
-        className="inline-flex shrink-0"
-        style={{ color: "var(--color-accent)" }}
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-      >
-        <SpinningDiscIcon size={16} />
-      </motion.span>
-      <p className="truncate">
-        {title} <span aria-hidden>·</span> {artist}
-      </p>
+      <MiniPlayerRow />
     </div>
   );
 }
 
-function SpinningDiscIcon({ size = 12 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 12 12" fill="none">
-      {/* Filled disc body */}
-      <circle cx="6" cy="6" r="5.6" fill="currentColor" />
-      {/* Off-axis shimmer arc — makes rotation legible */}
-      <path
-        d="M2.6 3.7 A 5 5 0 0 1 8.6 1.7"
-        stroke="white"
-        strokeOpacity="0.7"
-        strokeWidth="0.8"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Secondary smaller shimmer for extra glint */}
-      <circle cx="3.5" cy="8.2" r="0.45" fill="white" fillOpacity="0.45" />
-      {/* Inner label ring (lighter so it pops on the filled body) */}
-      <circle cx="6" cy="6" r="2" fill="var(--color-bg)" />
-      {/* Spindle hole */}
-      <circle cx="6" cy="6" r="0.55" fill="currentColor" />
-    </svg>
-  );
-}
-
-/**
- * Single-row toolbar at the top of the hero column. Right side holds icon
- * buttons (palette / music / visuals); left side is a swap zone that shows
- * LocalStatus by default, replaced inline by the active dropdown's controls.
- *
- * The slide animation is owned here: when the active slot changes, the old
- * content slides down out of frame and the new content slides down into
- * frame. Mutex enforced — at most one dropdown active at a time.
- *
- * On scroll-past, a sticky portal-mounted twin pins to the top of the
- * viewport. Both surfaces share state, so they always show the same slot.
+/** Single-row system-chrome toolbar.
+ *  Layout: [hamburger?] [theme] [palette+⌄] [visualizer (disabled)] [music] ...... [time/weather]
+ *  - Hamburger surfaces in compressed mode via .chat-cmp-show CSS.
+ *  - Palette opens a popover with 10 colored-theme swatches.
+ *  - Visualizer is a placeholder (disabled); scene controls move to LED.
+ *  - Music collapsed = play button only; expands inline when playing.
+ *  - Time/weather pinned flush right.
  */
 export default function HeroToolbar() {
-  const audio = useAudioPlayer();
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [visualsOpen, setVisualsOpen] = useState(false);
-  // Greeting cycle hidden by default for recruiter share.
-  const [greetingActive, setGreetingActive] = useState(false);
-  const [idleSlot, setIdleSlot] = useState<IdleSlot>("status");
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
-  const closeAll = () => {
-    setPaletteOpen(false);
-    audio.setMiniPlayerOpen(false);
-    setVisualsOpen(false);
-  };
-
-  const togglePalette = () => {
-    if (paletteOpen) {
-      setPaletteOpen(false);
-    } else {
-      audio.setMiniPlayerOpen(false);
-      setVisualsOpen(false);
-      setPaletteOpen(true);
-    }
-  };
-  const toggleMusic = () => {
-    if (audio.miniPlayerOpen) {
-      audio.setMiniPlayerOpen(false);
-    } else {
-      setPaletteOpen(false);
-      setVisualsOpen(false);
-      audio.setMiniPlayerOpen(true);
-    }
-  };
-  const toggleVisuals = () => {
-    if (visualsOpen) {
-      setVisualsOpen(false);
-    } else {
-      setPaletteOpen(false);
-      audio.setMiniPlayerOpen(false);
-      setVisualsOpen(true);
-    }
-  };
-
-  const idle = !paletteOpen && !audio.miniPlayerOpen && !visualsOpen;
-
-  const activeSlot: SlotKind =
-    paletteOpen ? "palette" :
-    audio.miniPlayerOpen ? "music" :
-    visualsOpen ? "visuals" :
-    idleSlot;
-
-  // Ambient cycling:
-  //   • Smiley ON  → slot is locked to "greeting" so the typewriter cycle
-  //     plays uninterrupted.
-  //   • Smiley OFF → rotate "status" ↔ "now-playing" (when music plays).
-  //   • Any dropdown open → pre-seed the next idle slot for a clean reveal.
+  // Close the palette popover on Escape and pointer-down outside both the
+  // popover and the toolbar wrapper (which contains the trigger button).
   useEffect(() => {
-    if (!idle) {
-      setIdleSlot(greetingActive ? "greeting" : "status");
-      return;
-    }
-    if (greetingActive) {
-      setIdleSlot("greeting");
-      return;
-    }
-    setIdleSlot((prev) => (prev === "greeting" ? "status" : prev));
-    const id = setInterval(() => {
-      setIdleSlot((prev) => {
-        const order: IdleSlot[] = audio.isPlaying
-          ? ["status", "now-playing"]
-          : ["status"];
-        const i = order.indexOf(prev);
-        return order[(i + 1) % order.length] ?? "status";
-      });
-    }, IDLE_CYCLE_MS);
-    return () => clearInterval(id);
-  }, [idle, audio.isPlaying, greetingActive]);
-
-  // Auto-close the visuals slot when music stops — the eye icon disappears
-  // alongside it, so leaving it open would orphan the embedded LED.
-  useEffect(() => {
-    if (!audio.isPlaying && visualsOpen) setVisualsOpen(false);
-  }, [audio.isPlaying, visualsOpen]);
-
-  // Click-outside: any pointerdown outside both wrappers closes the active slot.
-  useEffect(() => {
-    if (activeSlot === "status") return;
-    const handle = (e: PointerEvent) => {
+    if (!paletteOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPaletteOpen(false);
+    };
+    const onPointer = (e: PointerEvent) => {
       const target = e.target as Node;
       if (wrapperRef.current?.contains(target)) return;
-      closeAll();
+      if (popoverRef.current?.contains(target)) return;
+      setPaletteOpen(false);
     };
-    document.addEventListener("pointerdown", handle);
-    return () => document.removeEventListener("pointerdown", handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSlot]);
-
-  const renderSlot = (slot: SlotKind) => {
-    switch (slot) {
-      case "palette":     return <PaletteRow />;
-      case "music":       return <MiniPlayerRow />;
-      case "visuals":     return <VisualsRow />;
-      case "now-playing": return <NowPlayingStatus title={audio.currentTrack.title} artist={audio.currentTrack.artist} />;
-      case "greeting":    return <CyclingGreeting compact />;
-      default:            return <LocalStatus />;
-    }
-  };
-
-  const iconRow = (
-    <div className="flex flex-1 min-w-0 items-center gap-2">
-      {/* Compressed-mode hamburger — only renders (display: flex) when the
-          chat side panel is open AND viewport < xl. CSS-driven so we don't
-          have to plumb chat state into HeroToolbar. */}
-      <HamburgerMenu />
-      {/* Left swap zone — fixed 32px height, clips the off-frame content
-          while the slide animation runs. AnimatePresence keys on activeSlot
-          so old/new co-exist briefly during the transition. */}
-      <div className="relative flex-1 min-w-0 h-8 overflow-hidden">
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={activeSlot}
-            initial={{ y: -SLOT_TRAVEL, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: SLOT_TRAVEL, opacity: 0 }}
-            transition={{ duration: 0.5, ease: SLOT_EASE }}
-            className="absolute inset-0 flex items-center"
-          >
-            {renderSlot(activeSlot)}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div className="flex items-center gap-1 shrink-0">
-        <HeroActions
-          paletteOpen={paletteOpen}
-          miniPlayerOpen={audio.miniPlayerOpen}
-          visualsOpen={visualsOpen}
-          greetingActive={greetingActive}
-          showVisuals={audio.isPlaying}
-          onTogglePalette={togglePalette}
-          onToggleMusic={toggleMusic}
-          onToggleVisuals={toggleVisuals}
-          onToggleGreeting={() => setGreetingActive((prev) => !prev)}
-        />
-      </div>
-    </div>
-  );
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [paletteOpen]);
 
   return (
-    /* Single in-flow row. The toolbar sits in HomeLayout's hero-toolbar-host
-       which is itself fixed top:0 (system chrome). The previous sticky portal
-       variant + embedded LED were deleted — there's exactly one toolbar now. */
-    <div ref={wrapperRef} className="flex items-center gap-1.5">
-      {iconRow}
+    <div ref={wrapperRef} className="w-full flex items-center justify-between gap-2">
+      {/* Left cluster */}
+      <div className="flex items-center gap-1 min-w-0">
+        <HamburgerMenu />
+        <ThemeModeButton />
+        <PaletteButton
+          open={paletteOpen}
+          onToggle={() => setPaletteOpen((v) => !v)}
+        />
+        <VisualizerButton />
+        <MusicSlot />
+      </div>
+
+      {/* Right: time + weather, flush right, mono single line. */}
+      <div className="shrink-0 flex items-center pl-2">
+        <LocalStatus />
+      </div>
+
+      {/* Palette popover — anchored to the palette button via the
+          paletteAnchorRef. Hangs below the toolbar with a small gap. */}
+      <AnimatePresence>
+        {paletteOpen && (
+          <motion.div
+            ref={popoverRef}
+            key="palette-popover"
+            initial={{ opacity: 0, y: -4, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -4, filter: "blur(6px)" }}
+            transition={{ ...POPOVER_SPRING, duration: 0.22, ease: POPOVER_EASE }}
+            className="chat-surface absolute z-[100]"
+            style={{
+              // Position relative to the toolbar host: ~top of toolbar +
+              // toolbar height + 8px gap, anchored under the palette button.
+              top: 44,
+              // Offset from the left cluster start (hamburger + theme width).
+              // Hardcoded to roughly match the palette button's x — the
+              // anchor ref isn't used for measurement here, just popover
+              // dismissal scoping. Phase 3 can refine with a proper measure.
+              left: 88,
+              padding: "10px 12px",
+            }}
+          >
+            <PaletteRow />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
