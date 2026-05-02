@@ -9,6 +9,8 @@ import {
   type PlaygroundCard,
   isWide,
 } from "@/lib/playground-cards";
+import LockGate from "./LockGate";
+import { isLocked } from "@/lib/locked-content";
 
 export default function Playground({
   hideHeader = false,
@@ -54,7 +56,9 @@ export default function Playground({
             key={card.slug}
             className={isWide(card) ? "sm:col-span-2" : "sm:col-span-1"}
           >
-            <PlaygroundCardItem card={card} />
+            <LockGate mode="card" locked={isLocked(card.slug)}>
+              <PlaygroundCardItem card={card} />
+            </LockGate>
           </div>
         ))}
       </div>
