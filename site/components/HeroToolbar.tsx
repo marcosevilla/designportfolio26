@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HeroActions from "./HeroActions";
+import HamburgerMenu from "./HamburgerMenu";
 import LedMatrix from "./LedMatrix";
 import { PaletteRow } from "./PaletteSwatches";
 import { MiniPlayerRow, VisualsRow } from "./music/HomeMiniPlayer";
@@ -202,6 +203,10 @@ export default function HeroToolbar() {
 
   const iconRow = (
     <div className="flex flex-1 min-w-0 items-center gap-2">
+      {/* Compressed-mode hamburger — only renders (display: flex) when the
+          chat side panel is open AND viewport < xl. CSS-driven so we don't
+          have to plumb chat state into HeroToolbar. */}
+      <HamburgerMenu />
       {/* Left swap zone — fixed 32px height, clips the off-frame content
           while the slide animation runs. AnimatePresence keys on activeSlot
           so old/new co-exist briefly during the transition. */}
@@ -258,11 +263,11 @@ export default function HeroToolbar() {
               exit={{ y: -120, opacity: 0 }}
               transition={STICKY_SPRING}
             >
-              {/* Wider than the in-flow column (650 → 672px) so the chrome's
-                  1px border + 10px inner padding offset cancels out, keeping
-                  the icons in the row at the same x-coords as the in-flow
-                  toolbar above the wordmark. */}
-              <div className="max-w-[672px] mx-auto px-4 sm:px-8 pointer-events-auto">
+              {/* Full window width host — padding adjusts for the left rail
+                  (when visible) and the right chat panel (when open). Mirrors
+                  the in-flow toolbar's host so the toolbars feel like the
+                  same row whether at top of page or pinned. */}
+              <div className="hero-toolbar-sticky-host pointer-events-auto">
                 <div className="hero-sticky-toolbar">
                   <div style={{ padding: "4px 10px" }}>{iconRow}</div>
                   {/* Embedded half-height visualizer. Mounting is gated on

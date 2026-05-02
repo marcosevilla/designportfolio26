@@ -5,11 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
+import HeroToolbar from "./HeroToolbar";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI from "./music/LedMatrixUI";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
 import { StickyToolbarContext } from "@/lib/StickyToolbarContext";
+
+const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
 function MatrixArea({ sentinelRef }: { sentinelRef: React.Ref<HTMLDivElement> }) {
   return (
@@ -172,13 +175,30 @@ export default function HomeLayout({
         onAboutMeClose={() => setAboutMeOpen(false)}
         ready={heroReady}
       />
-      {/* Hero column: small top inset, height capped so the next section
-          peeks from the bottom of the viewport. clamp() keeps the peek
-          consistent across short and tall viewports. */}
+      {/* Hero toolbar — position: absolute against <body>, so it escapes
+          <main>'s max-w-[960px] constraint and spans body's padding box.
+          The CSS owns top/left/right; body's padding-right (chat open)
+          shrinks the right edge automatically. The bio column below
+          reserves vertical space with paddingTop since the toolbar is
+          out of flow. */}
+      <motion.div
+        className="hero-toolbar-host"
+        initial={{ opacity: 0, filter: "blur(12px)" }}
+        animate={{
+          opacity: heroReady ? 1 : 0,
+          filter: heroReady ? "blur(0px)" : "blur(12px)",
+        }}
+        transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.08 }}
+      >
+        <HeroToolbar />
+      </motion.div>
+
+      {/* Hero column: paddingTop reserves space for the absolute toolbar
+          (top inset + ~32px toolbar height + 32px gap to wordmark). */}
       <div
         className="max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
         style={{
-          paddingTop: "clamp(48px, 6vh, 96px)",
+          paddingTop: "calc(clamp(48px, 6vh, 96px) + 64px)",
           minHeight: "clamp(560px, 78vh, 880px)",
         }}
       >

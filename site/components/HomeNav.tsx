@@ -12,12 +12,15 @@ const STAR_SPRING = { type: "spring" as const, stiffness: 300, damping: 34 };
 const LINK_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
 const ROW_HEIGHT = 28;
 
-// In-page anchors only — every nav target lives on the homepage.
-const NAV_ITEMS = [
+// In-page anchors only — every nav target lives on the homepage. Exported
+// so HamburgerMenu (compressed-mode replacement when the chat panel pushes
+// the layout below xl) can render the same set of links.
+export const HOME_NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Work" },
   { id: "playground", label: "Playground" },
 ];
+const NAV_ITEMS = HOME_NAV_ITEMS;
 
 const SCROLL_LOCK_MS = 900;
 
@@ -125,16 +128,17 @@ export default function HomeNav({
   return (
     <motion.nav
       ref={navRef}
-      className="hidden lg:flex flex-col fixed top-1/2 z-40"
-      // Anchor the nav to the left edge of the centered 650px body column
-      // (with a 32px gap) so it reads as a second column of the page rather
-      // than a viewport-edge floater. 325 = half of column width, 32 = gap,
-      // 203 = nav width. The default top:50% + translateY(-50%) is the
-      // SSR fallback; HomeLayout pins `top` to the wordmark's measured
-      // position once mounted (and clears the transform).
+      className="chat-cmp-hide hidden lg:flex flex-col fixed top-1/2 z-40"
+      // Pinned to the viewport's left edge with a 12px gutter. Prior version
+      // anchored to the centered 650px column ('calc(50% - 325 - 32 - 203)'),
+      // but that math doesn't account for the chat side panel pushing <body>
+      // left when open — the nav stayed put while content moved, overlapping
+      // the bio. Viewport-pinned avoids the overlap; the nav becomes a true
+      // viewport-edge rail. Below xl-with-chat-open, .chat-cmp-hide hides it
+      // and HamburgerMenu takes over.
       style={{
         width: "203px",
-        left: "calc(50% - 325px - 32px - 203px)",
+        left: "12px",
         transform: "translateY(-50%)",
       }}
       aria-label="Primary"

@@ -7,7 +7,6 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
 import { HighlighterProvider } from "./HighlighterContext";
-import HeroToolbar from "./HeroToolbar";
 import Resume from "./Resume";
 import { ArrowRightIcon } from "./Icons";
 
@@ -345,17 +344,9 @@ export default function Hero({
               exit={{ opacity: 0, x: -160, filter: "blur(12px)" }}
               transition={{ duration: 0.4, ease: BLUR_EASE }}
             >
-              {/* Toolbar — sits above the wordmark visually, but the
-                  cascade origin is the wordmark (where the star lands),
-                  so this slots in just after with a small delay. */}
-              <motion.div
-                className="mb-8"
-                initial={initial}
-                animate={animate}
-                transition={tx(0.08)}
-              >
-                <HeroToolbar />
-              </motion.div>
+              {/* Toolbar lives in HomeLayout above this column so it can
+                  span the full window width responsive to the left rail
+                  and right chat panel; cascade animation moves with it. */}
 
               {/* Wordmark wrapper — flex row holding the name and the
                   star. The wrapper itself is NOT animated so the star

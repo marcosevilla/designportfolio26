@@ -83,9 +83,15 @@ export type ChatTurn = { role: "user" | "assistant"; content: string };
 export default function ChatMessage({
   turn,
   onClose,
+  streaming = false,
 }: {
   turn: ChatTurn;
   onClose: () => void;
+  /** True only for the assistant turn currently receiving stream chunks.
+   *  Renders a trailing ✸ cursor at the end of the text, blinking via the
+   *  .chat-typing-cursor CSS class. Hides the copy/feedback actions until
+   *  the stream completes. */
+  streaming?: boolean;
 }) {
   if (turn.role === "user") {
     return (
@@ -121,9 +127,17 @@ export default function ChatMessage({
         }}
       >
         <RenderSegments raw={turn.content} onClose={onClose} />
+        {streaming && (
+          <span aria-hidden className="chat-typing-cursor" style={{ fontSize: "0.85em" }}>
+            ✸
+          </span>
+        )}
       </div>
-      {slug && isStudySlug(slug) && <CaseStudyCardUnfurl slug={slug} />}
-      <ChatMessageActions raw={turn.content} />
+      {/* Hold artifact + actions until the stream finishes so partially-
+          parsed content (e.g. a half-typed `<artifact slug=…`) doesn't
+          flicker an unfurl card mid-response. */}
+      {!streaming && slug && isStudySlug(slug) && <CaseStudyCardUnfurl slug={slug} />}
+      {!streaming && <ChatMessageActions raw={turn.content} />}
     </motion.div>
   );
 }

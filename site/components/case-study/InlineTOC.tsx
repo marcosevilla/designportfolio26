@@ -53,7 +53,7 @@ export default function InlineTOC() {
 
   return (
     <nav
-      className="hidden lg:block fixed top-[18vh]"
+      className="chat-cmp-hide hidden lg:block fixed top-[18vh]"
       style={{ width: "130px", left: "48px" }}
     >
       <Link
@@ -61,8 +61,11 @@ export default function InlineTOC() {
         className="flex items-center gap-1 transition-colors hover:text-(--color-accent) mb-6"
         style={{
           color: "var(--color-fg-secondary)",
-          fontFamily: "var(--font-fraunces), serif",
-          fontSize: "15px",
+          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+          fontSize: "12px",
+          fontWeight: 500,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
           lineHeight: "20px",
         }}
       >
@@ -108,9 +111,11 @@ export default function InlineTOC() {
                 onClick={(e) => handleClick(e, item.id)}
                 className="block transition-colors"
                 style={{
-                  fontFamily: "var(--font-fraunces), serif",
-                  fontSize: "15px",
-                  fontWeight: 400,
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
                   lineHeight: "20px",
                 }}
                 onMouseEnter={() => setHoveredIndex(index)}

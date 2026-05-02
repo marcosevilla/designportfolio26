@@ -162,6 +162,11 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Establishes body as the containing block for position: absolute children
+     (.hero-toolbar-host). Body's padding-right (set when the chat panel is
+     open) shrinks the padding box, so `right: 12px` on absolute children
+     follows the panel automatically. */
+  position: relative;
 }
 
 /* Skip to content link */
@@ -611,6 +616,11 @@ mark.bio-highlight {
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
   border-radius: 18px;
+  /* Clip contents to the rounded rect — important during the layoutId
+     morph from pill→panel, so chrome (header, X, transcript bubbles, input
+     row) stays inside the morphing shape instead of spilling over the
+     rounded corners. */
+  overflow: hidden;
   box-shadow:
     0 24px 60px rgba(0, 0, 0, 0.18),
     0 2px 8px rgba(0, 0, 0, 0.08);
@@ -623,6 +633,122 @@ mark.bio-highlight {
     0 2px 8px rgba(0, 0, 0, 0.32);
 }
 
+/* Hero toolbar host — escapes <main>'s max-w-[960px] constraint by being
+   position: absolute against <body>. Always pinned to body's padding-box
+   left:12 so time/weather sits flush-left regardless of whether the rail
+   is visible (the rail sits vertically centered and the toolbar at top,
+   so they don't visually collide even though both anchor near left:12).
+   Body's own padding-right (set when chat is open at lg+) automatically
+   shrinks the right side of the host without any chat-state CSS here.
+   The sticky portal variant uses a separate class because it's
+   position:fixed (viewport-relative), so body padding doesn't affect it. */
+.hero-toolbar-host {
+  position: absolute;
+  top: clamp(48px, 6vh, 96px);
+  left: 12px;
+  right: 12px;
+  z-index: 5;
+}
+
+/* Sticky-portal variant — fixed-positioned in a portal, so it doesn't
+   inherit body padding. Always 12px on the left; right pads to clear the
+   chat panel when it's open at lg+. */
+.hero-toolbar-sticky-host {
+  padding-left: 12px;
+  padding-right: 12px;
+  transition: padding-right 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (min-width: 1024px) {
+  [data-chat-open="true"] .hero-toolbar-sticky-host {
+    /* 12px gutter + 360px panel + 12px gap = 384 from the right edge. */
+    padding-right: 384px;
+  }
+}
+
+/* Body push when the persistent side panel is open at lg+. Panel = 360px
+   wide with 12px gutters (12 + 360 + 12 = 384px taken on the right).
+   Applied as body padding-right so <main>'s mx-auto re-centers smoothly
+   inside the shrinking content box — putting margin-right on <main>
+   directly *doesn't* animate, because mx-auto's margin-left side resolves
+   to `auto` and CSS can't transition between auto values. Padding-right
+   on body sidesteps that and gives a proper slide. Below lg the panel is
+   a drawer that overlays content (no push). */
+body {
+  transition: padding-right 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: padding-right;
+}
+@media (min-width: 1024px) {
+  [data-chat-open="true"] body {
+    padding-right: 384px;
+  }
+}
+
+/* The fullscreen backdrop only makes sense when the panel is a centered or
+   drawer overlay. At lg+ the panel sits inline at the edge and the page
+   stays interactive, so the overlay would block clicks for no reason. */
+@media (min-width: 1024px) {
+  .chat-overlay {
+    display: none;
+  }
+}
+
+/* Compressed-mode nav handoff.
+   Hamburger trigger fires when the left rail can't fit alongside the actual
+   content (650px Hero column on home / 960px on case studies) without
+   overlap. Two ranges:
+   1. Always at < 1100px — anywhere narrower, the rail pinned at left:12
+      starts overlapping the centered column even without chat.
+   2. 1100–1499px with chat open — the body shifts left by 384px when chat
+      opens, and the column re-centers into the smaller content box; that's
+      what eats the rail's breathing room above 1100px.
+   Above 1500px the rail fits in both states.
+   .chat-cmp-show: hamburger trigger (hidden by default, flex when active).
+   .chat-cmp-hide: rails (HomeNav, InlineTOC) — hide when active.
+   .chat-cmp-show-as-mobilenav: MobileNav — normally lg:hidden; in active
+                                ranges surfaces at lg+ too. */
+.chat-cmp-show {
+  display: none;
+}
+@media (max-width: 1099px) {
+  .chat-cmp-hide {
+    display: none !important;
+  }
+  .chat-cmp-show {
+    display: flex;
+  }
+  .chat-cmp-show-as-mobilenav {
+    display: block !important;
+  }
+}
+@media (min-width: 1100px) and (max-width: 1499px) {
+  [data-chat-open="true"] .chat-cmp-hide {
+    display: none !important;
+  }
+  [data-chat-open="true"] .chat-cmp-show {
+    display: flex;
+  }
+  [data-chat-open="true"] .chat-cmp-show-as-mobilenav {
+    display: block !important;
+  }
+}
+
+/* Typing cursor — sits inline at the end of streaming assistant text. Same
+   ✸ glyph as the rest of the brand, blinking to read as a "still typing"
+   signal. The blink is a soft fade, not a binary on/off, so it feels alive
+   instead of clinical. */
+.chat-typing-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  vertical-align: baseline;
+  color: var(--color-accent);
+  animation: chat-cursor-blink 1.1s steps(2, end) infinite;
+}
+
+@keyframes chat-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.18; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Defensive — no animation property is set on .chat-surface, but disable
      transitions just in case. */
@@ -633,5 +759,14 @@ mark.bio-highlight {
      The button itself remains, just static. */
   .chat-cta__shimmer {
     display: none;
+  }
+  /* Skip the body-push transition under reduced-motion. */
+  body {
+    transition: none;
+  }
+  /* Static cursor — no blink under reduced-motion. */
+  .chat-typing-cursor {
+    animation: none;
+    opacity: 1;
   }
 }
