@@ -407,32 +407,28 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** Carousel view (Phase 1) — third homepage view alongside cards/list
+- **Last worked on:** Playground case studies — interview, write, ship subpages, build reusable interview methodology
 - **Completed this session:**
-  - New `CaseStudyCarousel.tsx`: drag-to-scroll, velocity-projected snap, rubber-band edges, subtle scale/opacity active state, drag-velocity-derived tilt, trackpad horizontal scroll (debounced ticks), arrow-key nav, sessionStorage persistence, ARIA region + live region, reduced-motion fallback (native CSS scroll snap), mobile breakpoint (260×340), velocity clamp.
-  - `CarouselCardShell.tsx`: chrome (sized via CSS vars), 1px border, gradient bg from `study.gradient`, auto scrim, bottom-anchored typography (year + title + company·role, white text), focus-visible ring.
-  - 7 per-study card files in `components/case-study/carousel/` registered via `carousel-card-registry.ts` — gradient-only baselines ready for per-study illustration overlays.
-  - `useExpandAndNavigate` hook in `lib/carousel-transition.ts` — accepts `{ delayMs }`, scale-up-then-cut transition.
-  - **Click semantics:** click on side card → `settleTo(index)` (scroll to it); click on active centered card → `trigger(slug)` (expand+navigate).
-  - **Route hand-off (final approach):** scrapped position:fixed card morph (jaggy). Replaced with a fullscreen gradient veil that fades in (color-matched to destination case study hero), masking the route swap. Bulletproof.
-  - **DialKit panel** wired in (dev-only, top-right): folders for sizing, position, focal hierarchy, drag, wheel, expand. Live-tunable everything. Mounted via `components/dev/DialKitMount.tsx` behind `NODE_ENV === "development"` gate.
-- **Branch + worktree:** `feature/carousel-view` lives in `.worktrees/carousel-view`. 30 commits above `b96205d` (the gitignore commit before scaffold). Not yet merged to main.
+  - **Playground card copy refreshed** in `Playground.tsx` — three new descriptions in voice (b) crafted/quietly self-assured + flashes of (a) playful/confident; new section subtitle ("Personal experiments and gifts. Software as a love language; AI as the way I get the ideas in my head out into the world."); cards now `<Link>` into subpages with title-color hover.
+  - **Three Playground subpages** at `/play/{six-degrees,pajamagrams,custom-wrapped}` built on `CaseStudyShell` pattern (matching `ai-workflow` style — no gradient hero, autoplay video as visual anchor). Each: header + autoplay video + 4–5 sections in TwoCol.Left + ImagePlaceholders + NextProject cycling through the trio.
+  - **`/play` is now a real index page** — replaced "Coming soon" with page title + subtitle + reused `<Playground hideHeader />`.
+  - **Shared roster** extracted to `lib/playground-cards.ts` (single source of truth for homepage Playground component + `/play` index).
+  - **`backHref` threaded through `CaseStudyShell`** — Playground subpages route mobile "Back" to `/play` instead of `/#projects`.
+  - **6 source docs** under `case-studies/playground/` — `{slug}-outline.md` (raw context: stack, architecture, decisions, hard parts) + `{slug}.md` (polished short case study) for each project.
+  - **`docs/CASE-STUDY-INTERVIEW.md`** — reusable interview methodology + 12 question banks (A–F universal battle-tested; G–K work/corporate proposed; L synthesis). Paste into future case study sessions to repeat the rhythm.
+- **Methodology insight worth keeping:** parallel research (read repo + ask questions simultaneously) + one Q at a time + brief "Logged: X" reframes + propose voice options with recommendation + propose drafts before writing files. Documented in `CASE-STUDY-INTERVIEW.md`.
+- **PR #4 merged** via rebase into `origin/main` (`cee72df`). Local main reset to match origin (history previously diverged because PR #3 chat-bar merge landed in parallel — content was identical, SHAs differed). Vercel deploy succeeded.
 - **In progress:**
-  - Per-study illustration/imagery overlays for each carousel card (author at your own pace by editing the per-study files in `components/case-study/carousel/`)
-  - 42 ImagePlaceholders remain in case studies (F&B 10, Compendium 15, Upsells 17)
+  - Per-study illustration/imagery to swap into the ImagePlaceholders on the new Playground subpages (Marco can author at own pace by editing each `[Name]Content.tsx`)
+  - 42 ImagePlaceholders still remain in main work case studies (F&B 10, Compendium 15, Upsells 17)
+  - Carousel view (`feature/carousel-view` worktree) still unmerged — separate workstream
 - **Known issues:** none from this session.
-- **Spec & plan:**
-  - `docs/superpowers/specs/2026-04-26-carousel-view-design.md`
-  - `docs/superpowers/plans/2026-04-26-carousel-view.md`
-- **Deferred to v2:** Stitched cross-route morph (overlay lives in `layout.tsx`, persists across route change). Phase 1 ships the veil approach instead — see spec.
+- **Nav model clarification (CLAUDE.md was stale):** `DesktopSidebar.tsx` no longer exists — homepage uses `HomeNav.tsx` with anchor-only nav (Home / Work / Playground, all in-page anchors). No global route nav with "enable Play" toggle to flip; Playground is already discoverable via the `#playground` anchor. `MobileNav.tsx` only shows on case study subpages with a single "Back" link driven by `SidebarContext.backHref`.
 - **Key files added/modified this session:**
-  - `site/components/CaseStudyCarousel.tsx` — new (rewritten from placeholder)
-  - `site/components/case-study/carousel/CarouselCardShell.tsx` — new
-  - `site/components/case-study/carousel/carousel-card-registry.ts` — new
-  - `site/components/case-study/carousel/{FBOrdering,Compendium,Upsells,Checkin,GeneralTask,DesignSystem,AIWorkflow}CarouselCard.tsx` — new (7 files)
-  - `site/lib/carousel-transition.ts` — new
-  - `site/components/dev/DialKitMount.tsx` — new (DialRoot wrapper)
-  - `site/components/Icons.tsx` — added `CarouselIcon` (3-bar SVG)
-  - `site/components/CaseStudyList.tsx` — third view toggle button + AnimatePresence branch for carousel
-  - `site/app/layout.tsx` — mounts DialKitMount in dev only
-  - `site/package.json` — added `dialkit ^1.2.0`
+  - `site/components/Playground.tsx` — refreshed copy, subtitle, clickable Link wrapper, accepts `hideHeader` prop, imports from shared roster
+  - `site/components/case-study/CaseStudyShell.tsx` — added `backHref` prop pass-through
+  - `site/lib/playground-cards.ts` — new (shared roster + helpers)
+  - `site/app/play/page.tsx` — rewritten as real index
+  - `site/app/play/{six-degrees,pajamagrams,custom-wrapped}/page.tsx` + `[Name]Content.tsx` — new (6 files)
+  - `case-studies/playground/{six-degrees,pajamagrams,custom-wrapped}{-outline,}.md` — new (6 files)
+  - `docs/CASE-STUDY-INTERVIEW.md` — new reusable interview method
