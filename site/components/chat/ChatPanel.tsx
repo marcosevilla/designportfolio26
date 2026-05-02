@@ -9,8 +9,21 @@
 // ChatBar's job. ChatPanel is purely presentational + input wiring.
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import ChatMessage, { type ChatTurn } from "./ChatMessage";
 import ChipPrompt from "./ChipPrompt";
+
+// Contents emit from the panel's origin: opacity 0 + slight blur on enter,
+// so when the layoutId morph from the pill begins, the panel chrome (rect
+// + border + shadow) is the only thing visible at first — header, transcript
+// bubbles, X button, input row all blur-fade in together as the morph
+// settles. Small delay on enter lets the rect establish before contents
+// arrive. Exit is handled by the wrapper's opacity fade in ChatBar.tsx.
+const CONTENT_TRANSITION = {
+  duration: 0.28,
+  delay: 0.06,
+  ease: [0.22, 1, 0.36, 1] as const,
+};
 
 const MAX_INPUT_CHARS = 1000;
 
@@ -98,12 +111,14 @@ export default function ChatPanel({
   const showSubmit = value.trim().length > 0;
 
   return (
-    <div
+    <motion.div
       onClick={(e) => e.stopPropagation()}
-      className="chat-surface flex flex-col"
-      style={{
-        width: "min(640px, calc(100vw - 32px))",
-        maxHeight: "min(60vh, 560px)",
+      className="chat-surface flex flex-col h-full w-full"
+      initial={{ opacity: 0, filter: "blur(8px)" }}
+      animate={{ opacity: 1, filter: "blur(0px)" }}
+      transition={{
+        opacity: CONTENT_TRANSITION,
+        filter: CONTENT_TRANSITION,
       }}
     >
       {/* Header */}
@@ -163,21 +178,21 @@ export default function ChatPanel({
           </div>
         ) : (
           <div className="flex flex-col gap-5">
-            {turns.map((turn, i) => (
-              <ChatMessage key={i} turn={turn} onClose={onClose} />
-            ))}
-            {pending && (
-              <div
-                aria-live="polite"
-                style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "11px",
-                  color: "var(--color-fg-tertiary)",
-                }}
-              >
-                …
-              </div>
-            )}
+            {turns.map((turn, i) => {
+              // Stream cursor lives on the last assistant turn while a
+              // response is in flight — replaces the standalone "…" line so
+              // the typing signal sits exactly where the text is appearing.
+              const isStreaming =
+                pending && i === turns.length - 1 && turn.role === "assistant";
+              return (
+                <ChatMessage
+                  key={i}
+                  turn={turn}
+                  onClose={onClose}
+                  streaming={isStreaming}
+                />
+              );
+            })}
             {errorLine && (
               <div
                 style={{
@@ -252,6 +267,6 @@ export default function ChatPanel({
       >
         Powered by Claude · Conversations aren't stored.
       </p>
-    </div>
+    </motion.div>
   );
 }

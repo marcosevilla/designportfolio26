@@ -9,9 +9,13 @@
 //
 // Mounted once globally in app/layout.tsx. The pill is a fixed
 // bottom-right floating primary CTA. When opened, the pill morphs into
-// the centered chat panel via shared layoutId="chat-surface".
+// a right-aligned side panel via shared layoutId="chat-surface".
+//
+// At lg+ the panel is persistent and pushes <main> left (body reflow via
+// `[data-chat-open="true"]` attr + CSS transition in globals.css). At <lg
+// the panel is a right-side drawer that overlays content via ChatOverlay.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatPanel from "./ChatPanel";
@@ -20,7 +24,10 @@ import { parseSseStream } from "./parseStream";
 import type { ChatTurn } from "./ChatMessage";
 
 const STORAGE_KEY = "chat-transcript";
-const MORPH_SPRING = { type: "spring" as const, stiffness: 320, damping: 32 };
+// Damping ratio ≈ 0.85 (damping / (2·√stiffness)). Reads as a soft physical
+// settle without any visible overshoot — there's still a feel of inertia
+// near the target, just no bounce-back. Lower damping read as cartoony.
+const MORPH_SPRING = { type: "spring" as const, stiffness: 380, damping: 33 };
 
 function readStored(): ChatTurn[] {
   if (typeof window === "undefined") return [];
@@ -79,10 +86,32 @@ export default function ChatBar() {
   const [pending, setPending] = useState(false);
   const [errorLine, setErrorLine] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // True once the user has opened the panel at least once. Drives whether
+  // the pill's contents fade-blur in on mount: skip on first page load (the
+  // pill should be visible immediately), play on every subsequent close so
+  // the close morph reads as polished.
+  const hasOpenedRef = useRef(false);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => setTurns(readStored()), []);
   useEffect(() => writeStored(turns), [turns]);
+
+  // Publish open state to <html> so the global CSS rule in globals.css can
+  // push <main> at lg+ when the persistent side panel is open. Using a data
+  // attribute (instead of a context) avoids threading a provider through the
+  // entire app — and CSS handles the transition timing.
+  //
+  // Runs synchronously after render but BEFORE the browser paints, so the
+  // body-push CSS transition kicks off on the same frame as the layoutId
+  // morph. With a regular useEffect (post-paint), the panel started growing
+  // a frame before <main> began sliding, which read as desynced.
+  useLayoutEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    if (open) root.setAttribute("data-chat-open", "true");
+    else root.removeAttribute("data-chat-open");
+    return () => root.removeAttribute("data-chat-open");
+  }, [open]);
 
   const close = useCallback(() => {
     abortRef.current?.abort();
@@ -175,11 +204,14 @@ export default function ChatBar() {
   const pill = (
     <motion.button
       type="button"
-      onClick={() => setOpen(true)}
+      onClick={() => {
+        hasOpenedRef.current = true;
+        setOpen(true);
+      }}
       layoutId="chat-surface"
       transition={MORPH_SPRING}
       aria-label="Open chat — Ask me anything"
-      className="chat-cta fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
+      className="chat-cta fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
         height: 44,
         padding: "0 18px",
@@ -187,29 +219,45 @@ export default function ChatBar() {
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
         border: 0,
-        borderRadius: 22,
+        /* Round-rectangle: smaller radius than full pill (which would be 22)
+           so the corner reads as a CTA button rather than a floating tab. */
+        borderRadius: 14,
         boxShadow:
           "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)",
         overflow: "hidden",
         position: "fixed",
       }}
     >
-      <SparkGlyph size={13} color="var(--color-on-accent)" />
-      <span
-        style={{
-          fontFamily: "var(--font-sans)",
-          fontSize: "14px",
-          fontWeight: 500,
-          color: "var(--color-on-accent)",
-          lineHeight: 1,
-          letterSpacing: "-0.005em",
-        }}
+      {/* Pill contents — wrapped so we can fade-blur them in *after* the
+          layoutId morph has finished collapsing the rect from panel size
+          back to pill size. Without this wrapper, the children render at
+          full opacity throughout the morph and read as stretched type
+          while the parent's transform still scales them. On first page
+          load (hasOpenedRef false) we skip the initial animation so the
+          pill appears instantly. */}
+      <motion.span
+        className="inline-flex items-center gap-2"
+        initial={hasOpenedRef.current ? { opacity: 0, filter: "blur(6px)" } : false}
+        animate={{ opacity: 1, filter: "blur(0px)" }}
+        transition={{ duration: 0.22, delay: 0.34, ease: [0.22, 1, 0.36, 1] }}
       >
-        Ask me anything
-      </span>
+        <SparkGlyph size={13} color="var(--color-on-accent)" />
+        <span
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "var(--color-on-accent)",
+            lineHeight: 1,
+            letterSpacing: "-0.005em",
+          }}
+        >
+          Ask me anything
+        </span>
+      </motion.span>
       {/* Shimmer overlay — soft white sweep across the button surface on
           the same cadence as the wordmark star. Hidden under reduced-motion
-          via the @media query in globals.css (.chat-cta::before). */}
+          via the @media query in globals.css (.chat-cta__shimmer). */}
       <motion.span
         aria-hidden
         className="chat-cta__shimmer"
@@ -243,15 +291,34 @@ export default function ChatBar() {
           <AnimatePresence>
             {open && (
               <>
+                {/* Backdrop — only shown <lg (the drawer variant). globals.css
+                    hides .chat-overlay at lg+ since the persistent side panel
+                    leaves the page interactive. */}
                 <ChatOverlay onClose={close} />
+                {/* Panel slot — fixed to the right edge with 12px gutters,
+                    full viewport height. Width: near-full at <lg (drawer),
+                    fixed 360px at lg+ (side panel). The morph pill→panel is
+                    handled by framer-motion interpolating layoutId rects. */}
                 <div
-                  className="fixed inset-0 z-[160] flex items-center justify-center pointer-events-none p-4"
+                  className="chat-panel-slot fixed top-3 bottom-3 right-3 z-[160] pointer-events-none flex flex-col"
+                  style={{ width: "min(calc(100vw - 24px), 360px)" }}
                 >
                   <motion.div
                     key="chat-panel-wrap"
                     layoutId="chat-surface"
-                    transition={MORPH_SPRING}
-                    className="pointer-events-auto"
+                    /* Add a quick opacity fade on exit so the panel chrome
+                       and contents disappear in sync with the morph reversing
+                       back to the pill, instead of staying full-opacity until
+                       the rect snaps to pill size. */
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      layout: MORPH_SPRING,
+                      default: MORPH_SPRING,
+                      opacity: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
+                    }}
+                    className="pointer-events-auto h-full w-full"
                   >
                     <ChatPanel
                       turns={turns}

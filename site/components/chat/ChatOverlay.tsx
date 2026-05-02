@@ -1,8 +1,12 @@
 "use client";
 
-// Fixed-inset backdrop overlay. Click anywhere to close.
-// Uses pointer-events-auto so it actually receives the click — the chat
-// panel sits at a higher z-index and stops propagation.
+// Click-outside catcher for the chat panel. Visually transparent — when
+// the panel overlaps body content (narrow viewport drawer mode), we keep
+// the body clearly visible behind it. The user closes by clicking outside
+// the panel surface; this element catches that click.
+//
+// Hidden entirely at lg+ via globals.css (.chat-overlay), since the
+// persistent side panel leaves the page interactive.
 
 import { motion } from "framer-motion";
 
@@ -11,14 +15,15 @@ export default function ChatOverlay({ onClose }: { onClose: () => void }) {
     <motion.div
       key="chat-overlay"
       onClick={onClose}
-      className="fixed inset-0 z-[150]"
-      initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-      animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
-      exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      className="chat-overlay fixed inset-0 z-[150]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
       style={{
-        backgroundColor: "color-mix(in srgb, var(--color-bg) 60%, transparent)",
-        WebkitBackdropFilter: "blur(8px)",
+        // Fully transparent — no tint, no blur. The opacity transition still
+        // runs so the click-target attaches/detaches without visual artifact.
+        backgroundColor: "transparent",
       }}
       aria-hidden
     />
