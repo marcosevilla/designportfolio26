@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import DesignSystemContent from "./DesignSystemContent";
+import LockGate from "@/components/LockGate";
+import { isLocked } from "@/lib/locked-content";
 
 export const metadata: Metadata = {
   title: "Design System — Marco Sevilla",
@@ -14,8 +16,16 @@ export const metadata: Metadata = {
 
 export default function DesignSystemPage() {
   return (
-    <div className="pb-20">
-      <DesignSystemContent />
-    </div>
+    <LockGate
+      mode="page"
+      locked={isLocked("design-system")}
+      title="Building a visual language 0-1"
+      subtitle="Creating a scalable design system for a productivity startup"
+      backHref="/work"
+    >
+      <div className="pb-20">
+        <DesignSystemContent />
+      </div>
+    </LockGate>
   );
 }
