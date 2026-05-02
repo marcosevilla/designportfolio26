@@ -8,15 +8,17 @@ import type { TOCItem } from "@/lib/SidebarContext";
 
 export default function CaseStudyShell({
   tocItems,
+  backHref,
   children,
 }: {
   tocItems: TOCItem[];
+  backHref?: string;
   children: ReactNode;
 }) {
   return (
     <>
       <ProgressBar />
-      <SidebarTOCBridge items={tocItems} />
+      <SidebarTOCBridge items={tocItems} backHref={backHref} />
       <TOCObserver sectionIds={tocItems.map((i) => i.id)} />
       <article
         className="text-(--color-fg-secondary)"
