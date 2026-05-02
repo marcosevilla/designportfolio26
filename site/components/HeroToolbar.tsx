@@ -1,23 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HeroActions from "./HeroActions";
 import HamburgerMenu from "./HamburgerMenu";
-import LedMatrix from "./LedMatrix";
 import { PaletteRow } from "./PaletteSwatches";
 import { MiniPlayerRow, VisualsRow } from "./music/HomeMiniPlayer";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import { useStickyToolbarActive } from "@/lib/StickyToolbarContext";
 import LocalStatus from "./LocalStatus";
 import CyclingGreeting from "./CyclingGreeting";
 
-const STICKY_SPRING = { type: "spring" as const, stiffness: 320, damping: 32 };
 const SLOT_EASE = [0.22, 1, 0.36, 1] as const;
 const SLOT_TRAVEL = 32; // px — full row height; old slides down out, new slides down in.
 const IDLE_CYCLE_MS = 6000; // status ↔ now-playing alternation when music is on.
-const STICKY_LED_HEIGHT = 100; // half-height variant embedded in the sticky bar.
 
 type SlotKind = "status" | "now-playing" | "greeting" | "palette" | "music" | "visuals";
 type IdleSlot = "status" | "now-playing" | "greeting";
@@ -93,13 +88,7 @@ export default function HeroToolbar() {
   // Greeting cycle hidden by default for recruiter share.
   const [greetingActive, setGreetingActive] = useState(false);
   const [idleSlot, setIdleSlot] = useState<IdleSlot>("status");
-  const stickyActive = useStickyToolbarActive();
-  const [mounted, setMounted] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const stickyRef = useRef<HTMLDivElement>(null);
-
-  // Portal target — `document` only exists after hydration.
-  useEffect(() => setMounted(true), []);
 
   const closeAll = () => {
     setPaletteOpen(false);
@@ -182,7 +171,6 @@ export default function HeroToolbar() {
     const handle = (e: PointerEvent) => {
       const target = e.target as Node;
       if (wrapperRef.current?.contains(target)) return;
-      if (stickyRef.current?.contains(target)) return;
       closeAll();
     };
     document.addEventListener("pointerdown", handle);
@@ -242,61 +230,11 @@ export default function HeroToolbar() {
   );
 
   return (
-    <>
-      {/* In-flow toolbar — icon row only. The chat pill was relocated to a
-          fixed bottom-right floating CTA mounted globally in app/layout.tsx,
-          so it's reachable from every page rather than only when the user
-          is at the top of the homepage. */}
-      <div ref={wrapperRef} className="flex items-center gap-1.5">
-        {iconRow}
-      </div>
-
-      {mounted && createPortal(
-        <AnimatePresence>
-          {stickyActive && (
-            <motion.div
-              ref={stickyRef}
-              key="hero-toolbar-sticky"
-              className="fixed top-3 left-0 right-0 z-50 pointer-events-none"
-              initial={{ y: -120, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -120, opacity: 0 }}
-              transition={STICKY_SPRING}
-            >
-              {/* Full window width host — padding adjusts for the left rail
-                  (when visible) and the right chat panel (when open). Mirrors
-                  the in-flow toolbar's host so the toolbars feel like the
-                  same row whether at top of page or pinned. */}
-              <div className="hero-toolbar-sticky-host pointer-events-auto">
-                <div className="hero-sticky-toolbar">
-                  <div style={{ padding: "4px 10px" }}>{iconRow}</div>
-                  {/* Embedded half-height visualizer. Mounting is gated on
-                      `visualsOpen` so the LedMatrix runs its diagonal intro
-                      wave each time the eye icon is toggled — same entrance
-                      as the home page's main visualizer. */}
-                  <AnimatePresence initial={false}>
-                    {visualsOpen && (
-                      <motion.div
-                        key="sticky-led"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: STICKY_LED_HEIGHT + 22, opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.32, ease: SLOT_EASE }}
-                        style={{ overflow: "hidden" }}
-                      >
-                        <div style={{ padding: "12px 10px 10px" }}>
-                          <LedMatrix height={STICKY_LED_HEIGHT} />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
-    </>
+    /* Single in-flow row. The toolbar sits in HomeLayout's hero-toolbar-host
+       which is itself fixed top:0 (system chrome). The previous sticky portal
+       variant + embedded LED were deleted — there's exactly one toolbar now. */
+    <div ref={wrapperRef} className="flex items-center gap-1.5">
+      {iconRow}
+    </div>
   );
 }

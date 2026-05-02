@@ -162,11 +162,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Establishes body as the containing block for position: absolute children
-     (.hero-toolbar-host). Body's padding-right (set when the chat panel is
-     open) shrinks the padding box, so `right: 12px` on absolute children
-     follows the panel automatically. */
-  position: relative;
 }
 
 /* Skip to content link */
@@ -633,36 +628,25 @@ mark.bio-highlight {
     0 2px 8px rgba(0, 0, 0, 0.32);
 }
 
-/* Hero toolbar host — escapes <main>'s max-w-[960px] constraint by being
-   position: absolute against <body>. Always pinned to body's padding-box
-   left:12 so time/weather sits flush-left regardless of whether the rail
-   is visible (the rail sits vertically centered and the toolbar at top,
-   so they don't visually collide even though both anchor near left:12).
-   Body's own padding-right (set when chat is open at lg+) automatically
-   shrinks the right side of the host without any chat-state CSS here.
-   The sticky portal variant uses a separate class because it's
-   position:fixed (viewport-relative), so body padding doesn't affect it. */
+/* Hero toolbar host — system chrome pinned to top:0 of the viewport.
+   36px tall, full window width, frosted background with a hairline bottom
+   border (browser-bookmarks-bar feel). Sits above page content via z-index;
+   body scrolls under it. The chat panel sits below the toolbar (top:48,
+   wired in ChatBar) so they don't overlap when chat is open. */
 .hero-toolbar-host {
-  position: absolute;
-  top: clamp(48px, 6vh, 96px);
-  left: 12px;
-  right: 12px;
-  z-index: 5;
-}
-
-/* Sticky-portal variant — fixed-positioned in a portal, so it doesn't
-   inherit body padding. Always 12px on the left; right pads to clear the
-   chat panel when it's open at lg+. */
-.hero-toolbar-sticky-host {
-  padding-left: 12px;
-  padding-right: 12px;
-  transition: padding-right 0.46s cubic-bezier(0.22, 1, 0.36, 1);
-}
-@media (min-width: 1024px) {
-  [data-chat-open="true"] .hero-toolbar-sticky-host {
-    /* 12px gutter + 360px panel + 12px gap = 384 from the right edge. */
-    padding-right: 384px;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  z-index: 40;
+  background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
 }
 
 /* Body push when the persistent side panel is open at lg+. Panel = 360px
