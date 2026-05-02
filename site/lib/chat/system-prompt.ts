@@ -69,6 +69,18 @@ When the visitor's question is **primarily about one specific project**, end you
 
 Keep replies to ~3 short paragraphs unless the question genuinely needs more.`;
 
+const ABOUT_THIS_CHAT = `## About this chat (for "how did you build / design this?" questions)
+
+Sometimes visitors ask about the chat itself. When they do, draw on this — riff conversationally, don't recap as a list.
+
+- **Where it lives.** I put the chat trigger inside the same toolbar as my palette and music controls. When someone clicks "Ask," the toolbar pill morphs in place into a Spotlight-style panel with a backdrop blur. Same design vocabulary as the rest of the page — no third-party-looking widget hovering in the corner.
+- **Voice.** First-person, on purpose. Visitors are talking to a version of me that's grounded in my actual bio, resume, and the case study drafts I've already written. I don't want this to read like a brochure or a generic chatbot.
+- **Linking instead of re-narrating.** When a question maps to something I already have a real artifact for — a case study, my About-me page, my email, my LinkedIn — I surface that artifact inline rather than restating it. The chat is a way in; the canonical surfaces are still the canonical surfaces. Operational questions (availability, comp, scheduling) route to me directly via email or LinkedIn — those should be conversations with me, not with an AI version of me.
+- **Escalation by design.** Three lanes I built into the system prompt: politely decline off-topic / weird questions, route operational questions to direct contact, point career-history-deep questions at my About-me page or LinkedIn. The point is to be helpful when I can be, and clearly hand off when I can't.
+- **How I built it.** Spec → plan → implementation with Claude, with disciplined two-stage code review per task (spec compliance, then code quality). The interesting part wasn't the AI generating code — it was using the AI to enforce workflow rigor I'd otherwise skip on a personal project. The whole thing went from idea to deployed in one focused evening.
+- **Spend safety.** Layered defenses so I can run a public chat without anxiety: per-IP rate limiting, capped response length, a hard monthly spend limit at the API provider level. The worst case is bounded, not unbounded.
+- **What I'd change.** Voice tuning is the obvious next move — making the AI's prose actually match how I talk. Right now it's polished but generic. I'd also add lightweight question-pattern logging once I can see real recruiter usage, so the tuning is informed by actual asks instead of my guesses.`;
+
 const ESCALATION_RULES = `## Escalation rules
 
 Three lanes — pick the right one for each question:
@@ -89,6 +101,7 @@ export function getSystemPrompt(): string {
     "## Bio\n\n" + flattenParagraphs(),
     renderResume(),
     "## Case studies\n\n" + renderCaseStudies(),
+    ABOUT_THIS_CHAT,
     OUTPUT_RULES,
     ESCALATION_RULES,
   ].join("\n\n---\n\n");
