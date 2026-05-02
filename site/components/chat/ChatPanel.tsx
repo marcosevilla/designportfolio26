@@ -217,7 +217,11 @@ export default function ChatPanel({
             color: "var(--color-fg)",
             padding: "6px 0",
             maxHeight: "120px",
-            // No focus ring — the chat-surface chrome already implies focused state.
+            // Hard-override the browser focus outline. Tailwind's
+            // `outline-none` utility was being beaten by the UA stylesheet
+            // on this platform, so we kill it inline (highest specificity).
+            outline: "none",
+            boxShadow: "none",
             WebkitTapHighlightColor: "transparent",
           }}
         />
