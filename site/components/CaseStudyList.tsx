@@ -64,11 +64,6 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
     ? studies
     : studies.filter((s) => matchingSlugs.has(s.slug));
 
-  // All filtered studies render, regardless of gallery readiness — locked
-  // studies still appear via the LockGate hover treatment (cards intercept
-  // clicks and open the unlock modal).
-  const galleryReadyStudies = filteredStudies;
-
   // Compute disabled tags (would yield 0 results if added)
   const disabledTags = new Set(
     ALL_TAGS.filter((tag) => {
@@ -294,11 +289,12 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
         </span>
       )}
 
-      {/* Gallery card list — one card per study. Clicking any card opens
-          the gallery overlay starting at that project. Studies without a
-          UI mock in their first gallery slot are hidden. */}
+      {/* Gallery card list — one card per study. Locked studies (per
+          lib/locked-content) render with the LockGate hover treatment
+          and route clicks to the unlock modal; unlocked clicks open the
+          fullscreen gallery starting at that project. */}
       <GalleryCardList
-        studies={galleryReadyStudies}
+        studies={filteredStudies}
         onOpen={(slug) => {
           setGalleryStartSlug(slug);
           setGalleryOpen(true);
@@ -308,7 +304,7 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
       <GalleryMode
         open={galleryOpen}
         onClose={() => setGalleryOpen(false)}
-        studies={galleryReadyStudies}
+        studies={filteredStudies}
         initialStudySlug={galleryStartSlug}
       />
     </section>
