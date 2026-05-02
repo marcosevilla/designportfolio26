@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import SixDegreesContent from "./SixDegreesContent";
+import LockGate from "@/components/LockGate";
+import { isLocked } from "@/lib/locked-content";
 
 export const metadata: Metadata = {
   title: "Six Degrees — Marco Sevilla",
@@ -14,8 +16,16 @@ export const metadata: Metadata = {
 
 export default function SixDegreesPage() {
   return (
-    <div className="pb-20">
-      <SixDegreesContent />
-    </div>
+    <LockGate
+      mode="page"
+      locked={isLocked("six-degrees")}
+      title="Six Degrees"
+      subtitle="Movie-graph puzzle game built with Next.js, TMDb, and Web Audio"
+      backHref="/play"
+    >
+      <div className="pb-20">
+        <SixDegreesContent />
+      </div>
+    </LockGate>
   );
 }

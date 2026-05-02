@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import CustomWrappedContent from "./CustomWrappedContent";
+import LockGate from "@/components/LockGate";
+import { isLocked } from "@/lib/locked-content";
 
 export const metadata: Metadata = {
   title: "Custom Wrapped — Marco Sevilla",
@@ -14,8 +16,16 @@ export const metadata: Metadata = {
 
 export default function CustomWrappedPage() {
   return (
-    <div className="pb-20">
-      <CustomWrappedContent />
-    </div>
+    <LockGate
+      mode="page"
+      locked={isLocked("custom-wrapped")}
+      title="Custom Wrapped"
+      subtitle="A year-in-review experience built like Spotify Wrapped"
+      backHref="/play"
+    >
+      <div className="pb-20">
+        <CustomWrappedContent />
+      </div>
+    </LockGate>
   );
 }
