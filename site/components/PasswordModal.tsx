@@ -40,8 +40,15 @@ export default function PasswordModal() {
     e.preventDefault();
     if (submitting) return;
     setSubmitting(true);
-    const ok = await attemptUnlock(value);
-    setSubmitting(false);
+    // try/finally guarantees we reset the submitting flag even if
+    // crypto.subtle.digest rejects (e.g., non-secure context). Otherwise
+    // the button would stick on "…" until the modal closes.
+    let ok = false;
+    try {
+      ok = await attemptUnlock(value);
+    } finally {
+      setSubmitting(false);
+    }
     if (!ok) {
       setError(true);
       inputRef.current?.focus();
@@ -61,7 +68,8 @@ export default function PasswordModal() {
           transition={{ duration: 0.18, ease: "easeOut" }}
         >
           <button
-            aria-label="Close"
+            aria-label="Close dialog"
+            tabIndex={-1}
             onClick={closeModal}
             className="absolute inset-0"
             style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(8px)" }}
