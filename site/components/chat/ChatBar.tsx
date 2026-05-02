@@ -7,8 +7,9 @@
 //   - submit logic against /api/chat
 //   - the morph between toolbar pill (closed) and panel (open)
 //
-// Mounted once inside HeroToolbar. The pill and the panel share
-// layoutId="chat-surface" so framer-motion interpolates between them.
+// Mounted once globally in app/layout.tsx. The pill is a fixed
+// bottom-right floating primary CTA. When opened, the pill morphs into
+// the centered chat panel via shared layoutId="chat-surface".
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -49,13 +50,27 @@ function writeStored(turns: ChatTurn[]) {
   }
 }
 
-function SparkGlyph({ size = 13 }: { size?: number }) {
+function SparkGlyph({ size = 13, color = "var(--color-accent)" }: { size?: number; color?: string }) {
   return (
-    <span aria-hidden style={{ fontSize: size, lineHeight: 1, color: "var(--color-accent)" }}>
+    <span aria-hidden style={{ fontSize: size, lineHeight: 1, color }}>
       ✸
     </span>
   );
 }
+
+// Sweep timing matches the wordmark star (Hero.tsx PlaygroundStar) so the two
+// shimmer animations feel like part of the same family. 6.5s loop with the
+// streak alive only between 80%–94% of the cycle (long quiet → fast pass).
+const SHIMMER_KEYFRAMES = {
+  opacity: [0, 0, 1, 1, 0],
+  backgroundPositionX: ["150%", "150%", "150%", "-150%", "-150%"],
+};
+const SHIMMER_TRANSITION = {
+  duration: 6.5,
+  times: [0, 0.78, 0.8, 0.92, 0.94],
+  repeat: Infinity,
+  ease: "linear" as const,
+};
 
 export default function ChatBar() {
   const [open, setOpen] = useState(false);
@@ -164,37 +179,64 @@ export default function ChatBar() {
       layoutId="chat-surface"
       transition={MORPH_SPRING}
       aria-label="Open chat — Ask me anything"
-      className="chat-surface inline-flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+      className="chat-cta fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
-        // Pill state — small, sits at toolbar-height. Border-radius is large
-        // enough to read as a fully-rounded pill at this size.
-        height: 28,
-        padding: "0 12px",
+        height: 44,
+        padding: "0 18px",
         cursor: "pointer",
+        background: "var(--color-accent)",
+        color: "var(--color-on-accent)",
+        border: 0,
+        borderRadius: 22,
+        boxShadow:
+          "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)",
+        overflow: "hidden",
+        position: "fixed",
       }}
     >
-      <SparkGlyph size={11} />
+      <SparkGlyph size={13} color="var(--color-on-accent)" />
       <span
         style={{
           fontFamily: "var(--font-sans)",
-          fontSize: "13px",
+          fontSize: "14px",
           fontWeight: 500,
-          color: "var(--color-fg)",
+          color: "var(--color-on-accent)",
           lineHeight: 1,
+          letterSpacing: "-0.005em",
         }}
       >
-        Ask
+        Ask me anything
       </span>
+      {/* Shimmer overlay — soft white sweep across the button surface on
+          the same cadence as the wordmark star. Hidden under reduced-motion
+          via the @media query in globals.css (.chat-cta::before). */}
+      <motion.span
+        aria-hidden
+        className="chat-cta__shimmer"
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          borderRadius: "inherit",
+          backgroundImage:
+            "linear-gradient(110deg, transparent 38%, color-mix(in srgb, var(--color-on-accent) 45%, transparent) 50%, transparent 62%)",
+          backgroundSize: "300% 100%",
+          backgroundRepeat: "no-repeat",
+          mixBlendMode: "screen",
+          willChange: "background-position, opacity",
+        }}
+        animate={SHIMMER_KEYFRAMES}
+        transition={SHIMMER_TRANSITION}
+      />
     </motion.button>
   );
 
   return (
     <>
-      {/* Pill is always rendered in HeroToolbar's flow when closed. When open,
-          it remains in the same place but is visually hidden — the morph
-          target is the panel rendered via portal. */}
+      {/* Pill is always rendered in the global layout when closed. When open,
+          the morph target is the panel rendered via portal — the pill itself
+          is unmounted so the layoutId animation has a single destination. */}
       {!open && pill}
-      {open && <span aria-hidden style={{ display: "inline-block", height: 28, width: 64 }} />}
 
       {mounted &&
         createPortal(
