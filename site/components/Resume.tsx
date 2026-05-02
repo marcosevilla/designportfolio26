@@ -13,7 +13,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   textTransform: "uppercase",
   letterSpacing: "0.06em",
   color: "var(--color-fg-tertiary)",
-  marginBottom: "12px",
+  marginBottom: "20px",
 };
 
 const COMPANY_STYLE: React.CSSProperties = {
@@ -54,7 +54,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-10">
+    <section className="mt-14">
       <p style={SECTION_LABEL_STYLE}>{label}</p>
       {children}
     </section>
@@ -66,7 +66,7 @@ export default function Resume() {
     <div>
       {/* Experience */}
       <Section label="Experience">
-        <ul className="flex flex-col gap-7">
+        <ul className="flex flex-col gap-10">
           {RESUME_EXPERIENCE.map((job) => (
             <li key={`${job.company}-${job.period}`}>
               <div className="flex items-baseline justify-between gap-4">

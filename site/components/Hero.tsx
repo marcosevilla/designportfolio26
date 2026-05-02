@@ -415,6 +415,38 @@ export default function Hero({
               transition={{ duration: 0.4, ease: BLUR_EASE }}
               className="pb-24"
             >
+              {/* Mobile-only Return button. The desktop sidebar (HomeNav) owns
+                  this affordance at lg+; below lg the sidebar is hidden and the
+                  user has no way out otherwise. Sits above the h1 so it's the
+                  first thing thumbs land on. */}
+              <button
+                type="button"
+                onClick={() => onAboutMeChange(false)}
+                aria-label="Return to home"
+                className="lg:hidden group inline-flex items-center gap-1.5 mt-6 -ml-2 px-2 py-3 transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
+                style={{
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  lineHeight: 1,
+                  color: "var(--color-fg-secondary)",
+                  background: "none",
+                  border: 0,
+                }}
+              >
+                <span
+                  aria-hidden
+                  className="inline-flex items-center transition-transform duration-200 ease-out group-hover:-translate-x-1"
+                >
+                  <span style={{ display: "inline-flex", transform: "scaleX(-1)" }}>
+                    <ArrowRightIcon size={14} />
+                  </span>
+                </span>
+                <span>Return</span>
+              </button>
+
               <h1
                 ref={setAboutMeHeaderRef}
                 className="mt-16"
