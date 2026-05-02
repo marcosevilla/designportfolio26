@@ -10,6 +10,8 @@ import { SPRING_HEAVY } from "@/lib/springs";
 import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
 import GalleryMode from "./GalleryMode";
 import { galleryContent } from "@/lib/gallery-content";
+import LockGate from "./LockGate";
+import { isLocked } from "@/lib/locked-content";
 
 
 // ── View toggle button ──
@@ -62,14 +64,10 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
     ? studies
     : studies.filter((s) => matchingSlugs.has(s.slug));
 
-  // Studies whose first gallery slot has a layered UI mock — anything
-  // without a foreground UI is hidden from the gallery view (empty arrays
-  // and backdrop-only photos).
-  const galleryReadyStudies = filteredStudies.filter((s) => {
-    const items = galleryContent[s.slug] ?? [];
-    const first = items[0];
-    return first != null && typeof first === "object" && "layers" in first;
-  });
+  // All filtered studies render, regardless of gallery readiness — locked
+  // studies still appear via the LockGate hover treatment (cards intercept
+  // clicks and open the unlock modal).
+  const galleryReadyStudies = filteredStudies;
 
   // Compute disabled tags (would yield 0 results if added)
   const disabledTags = new Set(
@@ -396,7 +394,9 @@ function GalleryCardList({
   return (
     <div className="mt-8 flex flex-col gap-20">
       {studies.map((study) => (
-        <GalleryCard key={study.slug} study={study} onOpen={() => onOpen(study.slug)} />
+        <LockGate key={study.slug} mode="card" locked={isLocked(study.slug)}>
+          <GalleryCard study={study} onOpen={() => onOpen(study.slug)} />
+        </LockGate>
       ))}
     </div>
   );
