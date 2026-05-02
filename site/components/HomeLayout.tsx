@@ -146,7 +146,7 @@ export default function HomeLayout({
       </div>
       <section
         id="projects"
-        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-12 lg:pt-12"
+        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-32"
         style={aboutMeOpen ? { display: "none" } : undefined}
       >
         {work}

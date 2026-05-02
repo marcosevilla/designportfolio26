@@ -11,7 +11,6 @@ import {
   SkipBackIcon,
   SkipForwardIcon,
   WaveformSceneIcon,
-  SparklesSceneIcon,
   ChladniSceneIcon,
   FeedbackSceneIcon,
   LissajousSceneIcon,
@@ -20,7 +19,6 @@ import SeekBar from "./SeekBar";
 
 const SCENE_ICONS: Record<VisualizerScene, (props: { size?: number }) => React.ReactElement> = {
   waveform: WaveformSceneIcon,
-  sparkles: SparklesSceneIcon,
   chladni: ChladniSceneIcon,
   feedback: FeedbackSceneIcon,
   lissajous: LissajousSceneIcon,

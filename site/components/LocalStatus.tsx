@@ -32,30 +32,40 @@ function WeatherGlyph({ code, isDay }: { code: number; isDay: boolean }) {
   if (cat === "clear") {
     return isDay ? <SunIcon size={ICON_SIZE} /> : <MoonIcon size={ICON_SIZE} />;
   }
+  // The cloud silhouette's leftmost arc bulges to x ≈ -0.25 in the
+  // viewBox; with the 1.5-unit stroke on top it gets clipped at the
+  // left edge. Wrap the contents in a `translate(1.5 0)` so the cloud
+  // sits inside the viewBox and visually centers properly.
   if (cat === "rain") {
     return (
       <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 14a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2 4 4 0 0 0 .5 8z" />
-        <line x1="8" y1="18" x2="8" y2="21" />
-        <line x1="12" y1="18" x2="12" y2="22" />
-        <line x1="16" y1="18" x2="16" y2="21" />
+        <g transform="translate(1.5 0)">
+          <path d="M17 14a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2 4 4 0 0 0 .5 8z" />
+          <line x1="8" y1="18" x2="8" y2="21" />
+          <line x1="12" y1="18" x2="12" y2="22" />
+          <line x1="16" y1="18" x2="16" y2="21" />
+        </g>
       </svg>
     );
   }
   if (cat === "snow") {
     return (
       <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 14a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2 4 4 0 0 0 .5 8z" />
-        <circle cx="8" cy="20" r="0.7" fill="currentColor" stroke="none" />
-        <circle cx="12" cy="20.5" r="0.7" fill="currentColor" stroke="none" />
-        <circle cx="16" cy="20" r="0.7" fill="currentColor" stroke="none" />
+        <g transform="translate(1.5 0)">
+          <path d="M17 14a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2 4 4 0 0 0 .5 8z" />
+          <circle cx="8" cy="20" r="0.7" fill="currentColor" stroke="none" />
+          <circle cx="12" cy="20.5" r="0.7" fill="currentColor" stroke="none" />
+          <circle cx="16" cy="20" r="0.7" fill="currentColor" stroke="none" />
+        </g>
       </svg>
     );
   }
   // cloudy / fog / fallback
   return (
     <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17.5 19a4.5 4.5 0 0 0 0-9 7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0 .5 9z" />
+      <g transform="translate(1.5 0)">
+        <path d="M17.5 19a4.5 4.5 0 0 0 0-9 7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0 .5 9z" />
+      </g>
     </svg>
   );
 }

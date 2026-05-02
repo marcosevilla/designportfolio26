@@ -86,11 +86,10 @@ export const GLYPH_5x5_TRANSPORT = {
 
 /** 5×5 scene icons — same id strings as `VisualizerScene`. */
 export const GLYPH_5x5_SCENES: Record<
-  "waveform" | "sparkles" | "chladni" | "feedback" | "lissajous",
+  "waveform" | "chladni" | "feedback" | "lissajous",
   DotGlyph
 > = {
   waveform: [[0,1,0,0,0],[0,1,0,0,1],[1,1,0,1,1],[1,1,1,1,1],[1,1,1,1,1]],
-  sparkles: [[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0]],
   chladni:  [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
   feedback: [[1,1,1,1,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,0,0,1],[1,1,1,1,1]],
   lissajous:[[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0],[0,1,0,1,0],[1,0,0,0,1]],

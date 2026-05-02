@@ -252,7 +252,11 @@ export default function HeroToolbar() {
               exit={{ y: -120, opacity: 0 }}
               transition={STICKY_SPRING}
             >
-              <div className="max-w-[650px] mx-auto px-4 sm:px-8 pointer-events-auto">
+              {/* Wider than the in-flow column (650 → 672px) so the chrome's
+                  1px border + 10px inner padding offset cancels out, keeping
+                  the icons in the row at the same x-coords as the in-flow
+                  toolbar above the wordmark. */}
+              <div className="max-w-[672px] mx-auto px-4 sm:px-8 pointer-events-auto">
                 <div className="hero-sticky-toolbar">
                   <div style={{ padding: "4px 10px" }}>{iconRow}</div>
                   {/* Embedded half-height visualizer. Mounting is gated on

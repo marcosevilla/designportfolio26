@@ -22,19 +22,19 @@ function LearnMoreCVButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="group mt-6 inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)"
+      className="group mt-6 inline-flex items-center gap-1.5 cursor-pointer focus:outline-none"
       style={{
         fontFamily: "var(--font-sans)",
         fontSize: "14px",
         fontWeight: 500,
         lineHeight: 1.4,
-        color: "var(--color-fg)",
+        color: "var(--color-accent)",
         background: "none",
         border: 0,
         padding: 0,
       }}
     >
-      <span className="underline underline-offset-4 decoration-1">Learn more &amp; CV</span>
+      <span>Learn more</span>
       <span
         aria-hidden
         className="inline-block transition-transform duration-200 ease-out group-hover:translate-x-1"
@@ -325,10 +325,11 @@ export default function Hero({
                 <PlaygroundStar />
               </motion.div>
 
-              {/* LED matrix — pulled close to the wordmark. */}
+              {/* LED matrix — equidistant 40px (mt-10) from wordmark above
+                  and bio below. */}
               {matrix && (
                 <motion.div
-                  className="mt-6"
+                  className="mt-10"
                   initial={initial}
                   animate={animate}
                   transition={transition}
@@ -339,7 +340,7 @@ export default function Hero({
 
               {/* Bio — paragraphs 1, 2, 4 (childhood lives on About me) */}
               <motion.div
-                className="mt-16 text-(--color-fg-secondary) leading-[28px]"
+                className="mt-10 text-(--color-fg-secondary) leading-[28px]"
                 style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
                 initial={initial}
                 animate={animate}
@@ -360,12 +361,19 @@ export default function Hero({
             >
               <h1
                 ref={setAboutMeHeaderRef}
+                className="mt-16"
                 style={{
                   fontFamily: "var(--font-sans)",
                   // Sized smaller than the wordmark so the home/about
                   // hierarchy stays distinct. Line-height 1 puts the cap
                   // top flush with the box top so it visually top-aligns
                   // with the side-nav Return button.
+                  //
+                  // mt-16 (64px) matches the home page's toolbar (≈32px)
+                  // + mb-8 (32px) stack so this header lands at roughly
+                  // the same y as "Marco Sevilla". The side nav's
+                  // setAboutMeHeaderRef callback re-measures off this
+                  // h1's bounding rect, so the Return button follows.
                   fontSize: "calc(var(--wordmark-fontsize, 48px) * 0.85)",
                   fontWeight: 600,
                   lineHeight: 1,
