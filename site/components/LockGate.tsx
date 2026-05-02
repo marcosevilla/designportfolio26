@@ -12,6 +12,12 @@ const LINKEDIN_URL = "https://www.linkedin.com/in/marcogsevilla/";
 type CardModeProps = {
   mode: "card";
   locked: boolean;
+  /**
+   * Tailwind radius class for the overlay. Must match the underlying card so the
+   * dim/blur layer doesn't show slivers of the card at the corners. Defaults to
+   * `rounded-2xl` (Playground cards). Pass `rounded-none` for sharp work cards.
+   */
+  cardRadius?: string;
   children: React.ReactNode;
 };
 
@@ -36,7 +42,11 @@ export default function LockGate(props: LockGateProps) {
   if (!props.locked || unlocked) return <>{props.children}</>;
 
   if (props.mode === "card") {
-    return <LockedCardWrapper onClick={requestUnlock}>{props.children}</LockedCardWrapper>;
+    return (
+      <LockedCardWrapper onClick={requestUnlock} cardRadius={props.cardRadius ?? "rounded-2xl"}>
+        {props.children}
+      </LockedCardWrapper>
+    );
   }
 
   // Page mode — render placeholder once hydrated. Pre-hydration we
@@ -62,9 +72,11 @@ export default function LockGate(props: LockGateProps) {
 function LockedCardWrapper({
   children,
   onClick,
+  cardRadius,
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  cardRadius: string;
 }) {
   return (
     <div className="relative group">
@@ -77,7 +89,7 @@ function LockedCardWrapper({
         type="button"
         onClick={onClick}
         aria-label="Locked — click to view unlock options"
-        className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer rounded-2xl opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none transition-opacity duration-200 ease-out"
+        className={`absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer ${cardRadius} opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none transition-opacity duration-200 ease-out`}
         style={{
           background: "color-mix(in oklab, var(--color-bg) 50%, transparent)",
           backdropFilter: "blur(2px)",
@@ -121,7 +133,7 @@ function LockedPagePlaceholder({
           content but below the unlock modal (z-[100]). */}
       <Link
         href={backHref}
-        className="fixed top-6 left-6 z-50 inline-flex items-center gap-1.5 transition-colors"
+        className="fixed top-3 left-3 z-50 inline-flex items-center gap-1.5 px-3 py-2 -m-1 transition-colors"
         style={{
           ...typescale.body,
           color: "var(--color-fg-secondary)",
@@ -135,126 +147,137 @@ function LockedPagePlaceholder({
         Back
       </Link>
 
-      <motion.div
-        className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-24"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
-        <h1
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-6 py-24">
+        <motion.h1
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
           style={{
             ...typescale.caseStudyHero,
             color: "var(--color-fg)",
             marginBottom: 8,
             maxWidth: 720,
+            textWrap: "balance",
           }}
         >
           {title}
-        </h1>
+        </motion.h1>
         {subtitle && (
-          <p
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
             style={{
               ...typescale.subtitle,
               color: "var(--color-fg-secondary)",
               maxWidth: 560,
               marginBottom: 32,
+              textWrap: "pretty",
             }}
           >
             {subtitle}
-          </p>
+          </motion.p>
         )}
 
-        <div
-          className="flex items-center justify-center mb-4 rounded-2xl"
-          style={{
-            width: 44,
-            height: 44,
-            background: "var(--color-muted)",
-            color: "var(--color-fg-secondary)",
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+          className="flex flex-col items-center"
         >
-          <LockIcon size={20} />
-        </div>
+          <div
+            className="flex items-center justify-center mb-4 rounded-2xl"
+            style={{
+              width: 44,
+              height: 44,
+              background: "var(--color-muted)",
+              color: "var(--color-fg-secondary)",
+            }}
+          >
+            <LockIcon size={20} />
+          </div>
 
-        <h2
-          style={{ ...typescale.h3, color: "var(--color-fg)", marginBottom: 6 }}
-        >
-          Wax on. Wax off.
-        </h2>
-        <p
-          style={{
-            ...typescale.body,
-            color: "var(--color-fg-secondary)",
-            maxWidth: 420,
-            marginBottom: 24,
-          }}
-        >
-          This case study is currently being polished. Reach out directly if you'd like early access.
-        </p>
+          <h2
+            style={{ ...typescale.h3, color: "var(--color-fg)", marginBottom: 6, textWrap: "balance" }}
+          >
+            Wax on. Wax off.
+          </h2>
+          <p
+            style={{
+              ...typescale.body,
+              color: "var(--color-fg-secondary)",
+              maxWidth: 420,
+              marginBottom: 24,
+              textWrap: "pretty",
+            }}
+          >
+            This case study is currently being polished. Reach out directly if you'd like early access.
+          </p>
 
-        <div className="flex items-center gap-2">
-          <a
-            href={`mailto:${EMAIL}`}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors"
-            style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "12px",
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--color-fg)",
-              background: "var(--color-bg)",
-              border: "1px solid var(--color-border)",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
-            onFocus={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
-            onBlur={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
-          >
-            <EmailIcon size={14} />
-            Email
-          </a>
-          <a
-            href={LINKEDIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors"
-            style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "12px",
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--color-fg)",
-              background: "var(--color-bg)",
-              border: "1px solid var(--color-border)",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
-            onFocus={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
-            onBlur={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
-          >
-            <LinkedInIcon size={14} />
-            LinkedIn
-          </a>
-          <button
-            type="button"
-            onClick={onUnlockClick}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-opacity"
-            style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "12px",
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--color-bg)",
-              background: "var(--color-fg)",
-            }}
-          >
-            Got a code?
-          </button>
-        </div>
-      </motion.div>
+          <div className="flex items-center gap-2">
+            <a
+              href={`mailto:${EMAIL}`}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
+              style={{
+                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: "12px",
+                fontWeight: 500,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "var(--color-fg)",
+                background: "var(--color-bg)",
+                border: "1px solid var(--color-border)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+              onFocus={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+              onBlur={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+            >
+              <EmailIcon size={14} />
+              Email
+            </a>
+            <a
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
+              style={{
+                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: "12px",
+                fontWeight: 500,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "var(--color-fg)",
+                background: "var(--color-bg)",
+                border: "1px solid var(--color-border)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+              onFocus={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+              onBlur={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+            >
+              <LinkedInIcon size={14} />
+              LinkedIn
+            </a>
+            <button
+              type="button"
+              onClick={onUnlockClick}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.96] transition-transform duration-150 ease-out"
+              style={{
+                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: "12px",
+                fontWeight: 500,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "var(--color-bg)",
+                background: "var(--color-fg)",
+              }}
+            >
+              Got a code?
+            </button>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
