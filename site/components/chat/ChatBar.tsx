@@ -203,8 +203,7 @@ export default function ChatBar() {
               <>
                 <ChatOverlay onClose={close} />
                 <div
-                  className="fixed inset-x-0 z-[160] flex justify-center pointer-events-none"
-                  style={{ top: "60vh" }}
+                  className="fixed inset-0 z-[160] flex items-center justify-center pointer-events-none p-4"
                 >
                   <motion.div
                     key="chat-panel-wrap"
