@@ -11,6 +11,8 @@ A prioritization framework for completing Marco's portfolio before job applicati
 
 - **Chat bar** (in flight, deploys with feature/chat-bar branch): "Ask me anything" AI chat in HeroToolbar — Claude Sonnet 4.6, $25/mo cap, per-IP rate-limit. Spec: `docs/superpowers/specs/2026-05-01-chat-bar-design.md`.
 
+- **Locked content gating** (feature/locked-content branch, ready to merge): WIP-courtesy gate on 6 work case studies + 3 Playground subpages. "Wax on. Wax off." modal with email/LinkedIn primary CTAs and a single global password (SHA-256 hash, persists per-device via localStorage). **Vercel env var required:** `NEXT_PUBLIC_UNLOCK_CODE_HASH` — paste the hash from `site/.env.local` into Vercel → Settings → Environment Variables before merging. Hash generator: `npm run hash:code -- <code>`. To unlock a single study permanently when ready, remove its slug from `site/lib/locked-content.ts`. Default code is `miyagi`. Spec: `docs/superpowers/specs/2026-05-02-locked-content-gating-design.md`. Plan: `docs/superpowers/plans/2026-05-02-locked-content-gating.md`.
+
 ---
 
 ## Current State Assessment
