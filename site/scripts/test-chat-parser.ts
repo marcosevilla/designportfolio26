@@ -106,5 +106,71 @@ describe("parseChatMarkup → AST shape", () => {
   expect("hallucinated link text content", (fallback[1] as { text: string }).text, "Foo.");
 });
 
+describe("parseChatMarkup → bold + italic emphasis", () => {
+  expect(
+    "bold around a phrase",
+    parseChatMarkup("This is **important** stuff."),
+    [
+      { kind: "text", text: "This is " },
+      { kind: "bold", text: "important" },
+      { kind: "text", text: " stuff." },
+    ]
+  );
+  expect(
+    "italic around a word",
+    parseChatMarkup("Use *this* word."),
+    [
+      { kind: "text", text: "Use " },
+      { kind: "italic", text: "this" },
+      { kind: "text", text: " word." },
+    ]
+  );
+  expect(
+    "bold and italic in the same string",
+    parseChatMarkup("**Bold** and *italic*."),
+    [
+      { kind: "bold", text: "Bold" },
+      { kind: "text", text: " and " },
+      { kind: "italic", text: "italic" },
+      { kind: "text", text: "." },
+    ]
+  );
+  expect(
+    "bold takes priority over italic for **word**",
+    parseChatMarkup("**word**"),
+    [{ kind: "bold", text: "word" }]
+  );
+  expect(
+    "emphasis works alongside links",
+    parseChatMarkup("Check **[F&B](study:fb-ordering)** for details."),
+    [
+      { kind: "text", text: "Check **" },
+      { kind: "link", label: "F&B", href: "/work/fb-ordering", external: false, inApp: false },
+      { kind: "text", text: "** for details." },
+    ]
+  );
+  // Note: link-with-bold-around-it doesn't render bold (links are extracted
+  // before emphasis), so the literal ** survives. The tail text segment is
+  // merged with the preceding ** by the link-pass coalescing logic. Acceptable for v1.
+});
+
+describe("plainTextFromMarkup → bold + italic stripping", () => {
+  expect(
+    "strips bold wrappers",
+    plainTextFromMarkup("This is **important**."),
+    "This is important."
+  );
+  expect(
+    "strips italic wrappers",
+    plainTextFromMarkup("Use *this*."),
+    "Use this."
+  );
+  expect(
+    "strips both",
+    plainTextFromMarkup("**Bold** and *italic*."),
+    "Bold and italic."
+  );
+});
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

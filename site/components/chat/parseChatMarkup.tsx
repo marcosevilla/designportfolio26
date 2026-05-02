@@ -24,6 +24,8 @@ const ARTIFACT_REGEX = /\n\s*<artifact\s+slug="([^"]+)"\s*\/>\s*$/;
 
 export type ChatSegment =
   | { kind: "text"; text: string }
+  | { kind: "bold"; text: string }
+  | { kind: "italic"; text: string }
   | {
       kind: "link";
       label: string;
@@ -75,7 +77,40 @@ export function extractArtifact(raw: string): { text: string; slug: string | nul
  *  Used by the copy button so recruiters paste clean prose. */
 export function plainTextFromMarkup(raw: string): string {
   const { text } = extractArtifact(raw);
-  return text.replace(LINK_REGEX, (_, label) => label);
+  return text
+    .replace(LINK_REGEX, (_, label) => label)
+    .replace(/\*\*([^*]+)\*\*|\*([^*]+)\*/g, (_, bold, italic) => bold ?? italic ?? "");
+}
+
+const EMPHASIS_REGEX = /\*\*([^*]+)\*\*|\*([^*]+)\*/g;
+
+/** Walk text segments and split them into text/bold/italic runs. */
+function expandEmphasis(segments: ChatSegment[]): ChatSegment[] {
+  const result: ChatSegment[] = [];
+  for (const seg of segments) {
+    if (seg.kind !== "text") {
+      result.push(seg);
+      continue;
+    }
+    EMPHASIS_REGEX.lastIndex = 0;
+    let cursor = 0;
+    let m: RegExpExecArray | null;
+    while ((m = EMPHASIS_REGEX.exec(seg.text)) !== null) {
+      if (m.index > cursor) {
+        result.push({ kind: "text", text: seg.text.slice(cursor, m.index) });
+      }
+      if (m[1] !== undefined) {
+        result.push({ kind: "bold", text: m[1] });
+      } else if (m[2] !== undefined) {
+        result.push({ kind: "italic", text: m[2] });
+      }
+      cursor = EMPHASIS_REGEX.lastIndex;
+    }
+    if (cursor < seg.text.length) {
+      result.push({ kind: "text", text: seg.text.slice(cursor) });
+    }
+  }
+  return result;
 }
 
 /** Parses one assistant message into structured segments for rendering.
@@ -118,5 +153,5 @@ export function parseChatMarkup(raw: string): ChatSegment[] {
       segments.push({ kind: "text", text: tail });
     }
   }
-  return segments;
+  return expandEmphasis(segments);
 }
