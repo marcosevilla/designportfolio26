@@ -179,7 +179,7 @@ export default function PasswordModal() {
               <span
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "11px",
+                  fontSize: "13px",
                   color: "var(--color-fg-tertiary)",
                   textTransform: "uppercase",
                   letterSpacing: "0.06em",
@@ -207,7 +207,9 @@ export default function PasswordModal() {
                 className="flex-1 px-3 py-2 rounded-xl outline-none"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "12px",
+                  // 16px minimum prevents iOS Safari from auto-zooming the
+                  // viewport when the input is focused on mobile.
+                  fontSize: "16px",
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
                   color: "var(--color-fg)",
@@ -240,6 +242,7 @@ export default function PasswordModal() {
                 role="alert"
                 style={{
                   ...typescale.label,
+                  fontSize: "13px",
                   color: "var(--color-accent)",
                   marginTop: 8,
                 }}
