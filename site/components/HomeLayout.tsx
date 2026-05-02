@@ -51,6 +51,21 @@ export default function HomeLayout({
     aboutMeOpenRef.current = aboutMeOpen;
   }, [aboutMeOpen]);
 
+  // Consume `?about=1` on mount — chat-bar [About me](about) links route
+  // here to flip into the About-me view without a route change.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("about") === "1") {
+      setAboutMeOpen(true);
+      // Clean the URL so refreshing doesn't re-trigger.
+      params.delete("about");
+      const qs = params.toString();
+      const next = window.location.pathname + (qs ? `?${qs}` : "");
+      window.history.replaceState(null, "", next);
+    }
+  }, []);
+
   // Update the side-nav's top to align with the current visual anchor —
   // the wordmark on the home page, or the "About me" h1 when the About-me
   // page is open. Stable so callback refs can call it on element changes.
