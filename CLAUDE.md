@@ -407,7 +407,14 @@ Before ending any session:
 
 ## Current State
 _Updated by Claude at end of each session_
-- **Last worked on:** Playground case studies — interview, write, ship subpages, build reusable interview methodology
+- **Last worked on:** Locked content gating — "Wax on. Wax off." WIP-courtesy gate on 6 work case studies + 3 Playground subpages. Single global password (SHA-256 hash via `NEXT_PUBLIC_UNLOCK_CODE_HASH` env var, default code `miyagi`), persists in localStorage. Built on feature/locked-content branch (commits `698f663` → `b3f11e0`). Spec: `docs/superpowers/specs/2026-05-02-locked-content-gating-design.md`. Plan: `docs/superpowers/plans/2026-05-02-locked-content-gating.md`. **Pre-merge gate:** Marco needs to run the QA matrix in a browser (homepage card hover overlays, locked page placeholders, modal CTAs) and set `NEXT_PUBLIC_UNLOCK_CODE_HASH` in Vercel env vars before merging to main.
+- **Locked content architecture:** `lib/locked-content.ts` is the single source of truth (9 slugs in `LOCKED_SLUGS` Set). `components/LockGate.tsx` is the wrapper component (modes: `card` for hover overlay + click intercept, `page` for full-screen placeholder with return arrow + email/LinkedIn/code CTAs). `lib/PasswordGateContext.tsx` is the unlocked-state provider (refactored from hardcoded `marcopolo` to env-hash + multi-tab sync). `components/PasswordModal.tsx` is the global modal (mounted in `app/layout.tsx`).
+- **Files added this session:** `site/lib/locked-content.ts`, `site/components/LockGate.tsx`, `site/scripts/hash-code.mjs`, `npm run hash:code` script in package.json, `NEXT_PUBLIC_UNLOCK_CODE_HASH` block in `.env.local.example`.
+- **Files refactored:** `site/lib/PasswordGateContext.tsx` (env-hash + multi-tab sync), `site/components/PasswordModal.tsx` (Wax on. Wax off. copy + email/LinkedIn primary CTAs + secondary password field + try/finally hardening).
+- **Files deleted:** `site/app/work/WorkGate.tsx`, `site/app/work/layout.tsx` (replaced by per-page `<LockGate mode="page">` on each of the 6 work case-study pages and 3 Playground subpages).
+- **Stash to restore on main:** `stash@{0}` contains chat-bar WIP work (chat surface in root layout, HeroToolbar tweaks). Pop on main with `git stash pop` after merging the locked-content branch.
+
+- **Previous session: Playground case studies** — interview, write, ship subpages, build reusable interview methodology
 - **Completed this session:**
   - **Playground card copy refreshed** in `Playground.tsx` — three new descriptions in voice (b) crafted/quietly self-assured + flashes of (a) playful/confident; new section subtitle ("Personal experiments and gifts. Software as a love language; AI as the way I get the ideas in my head out into the world."); cards now `<Link>` into subpages with title-color hover.
   - **Three Playground subpages** at `/play/{six-degrees,pajamagrams,custom-wrapped}` built on `CaseStudyShell` pattern (matching `ai-workflow` style — no gradient hero, autoplay video as visual anchor). Each: header + autoplay video + 4–5 sections in TwoCol.Left + ImagePlaceholders + NextProject cycling through the trio.
