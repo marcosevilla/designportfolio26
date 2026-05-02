@@ -3,21 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePasswordGate } from "@/lib/PasswordGateContext";
-import { LockIcon, CloseIcon } from "./Icons";
+import { LockIcon, CloseIcon, EmailIcon, LinkedInIcon } from "./Icons";
 import { typescale } from "@/lib/typography";
+
+const EMAIL = "marcogsevilla@gmail.com";
+const LINKEDIN_URL = "https://www.linkedin.com/in/marcogsevilla/";
 
 export default function PasswordModal() {
   const { isModalOpen, closeModal, attemptUnlock } = usePasswordGate();
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Reset state on open. Don't autofocus the input — primary CTAs are
+  // email/LinkedIn, so initial focus stays on the close button (a11y
+  // default for the dialog).
   useEffect(() => {
     if (isModalOpen) {
       setValue("");
       setError(false);
-      const id = window.setTimeout(() => inputRef.current?.focus(), 60);
-      return () => window.clearTimeout(id);
+      setSubmitting(false);
     }
   }, [isModalOpen]);
 
@@ -30,14 +36,18 @@ export default function PasswordModal() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isModalOpen, closeModal]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const ok = attemptUnlock(value);
+    if (submitting) return;
+    setSubmitting(true);
+    const ok = await attemptUnlock(value);
+    setSubmitting(false);
     if (!ok) {
       setError(true);
       inputRef.current?.focus();
       inputRef.current?.select();
     }
+    // On success, the provider closes the modal — no extra UI here.
   };
 
   return (
@@ -60,7 +70,7 @@ export default function PasswordModal() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="password-modal-title"
-            className="relative w-full max-w-[400px]"
+            className="relative w-full max-w-[420px]"
             initial={{ opacity: 0, y: 12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
@@ -68,12 +78,12 @@ export default function PasswordModal() {
             style={{
               background: "var(--color-surface-raised)",
               border: "1px solid var(--color-border)",
-              padding: "28px",
+              padding: "32px",
             }}
           >
             <button
               onClick={closeModal}
-              aria-label="Close password prompt"
+              aria-label="Close"
               className="absolute top-3 right-3 flex items-center justify-center w-7 h-7 transition-colors"
               style={{ color: "var(--color-fg-tertiary)" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-fg)"; }}
@@ -98,19 +108,74 @@ export default function PasswordModal() {
               id="password-modal-title"
               style={{ ...typescale.h3, color: "var(--color-fg)", marginBottom: 4 }}
             >
-              Work in progress
+              Wax on. Wax off.
             </h2>
             <p
               style={{
                 ...typescale.body,
                 color: "var(--color-fg-secondary)",
-                marginBottom: 20,
+                marginBottom: 24,
               }}
             >
-              These case studies aren't quite ready for the world yet. Drop in the password to take a peek.
+              This case study is currently being polished. Reach out directly if you'd like early access.
             </p>
 
-            <form onSubmit={handleSubmit}>
+            {/* Primary CTAs — email + LinkedIn. */}
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`mailto:${EMAIL}`}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 transition-colors"
+                style={{
+                  ...typescale.body,
+                  fontWeight: 500,
+                  color: "var(--color-fg)",
+                  background: "var(--color-bg)",
+                  border: "1px solid var(--color-border)",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+              >
+                <EmailIcon size={14} />
+                Email
+              </a>
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 transition-colors"
+                style={{
+                  ...typescale.body,
+                  fontWeight: 500,
+                  color: "var(--color-fg)",
+                  background: "var(--color-bg)",
+                  border: "1px solid var(--color-border)",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+              >
+                <LinkedInIcon size={14} />
+                LinkedIn
+              </a>
+            </div>
+
+            {/* "Got a code?" divider */}
+            <div className="flex items-center gap-3 my-6">
+              <span className="flex-1" style={{ height: 1, background: "var(--color-border)" }} />
+              <span
+                style={{
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "11px",
+                  color: "var(--color-fg-tertiary)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                Got a code?
+              </span>
+              <span className="flex-1" style={{ height: 1, background: "var(--color-border)" }} />
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex gap-2">
               <input
                 ref={inputRef}
                 type="password"
@@ -119,12 +184,12 @@ export default function PasswordModal() {
                   setValue(e.target.value);
                   if (error) setError(false);
                 }}
-                placeholder="Password"
-                aria-label="Password"
+                placeholder="Enter code"
+                aria-label="Unlock code"
                 aria-invalid={error || undefined}
                 autoComplete="off"
                 spellCheck={false}
-                className="w-full px-3 py-2 outline-none"
+                className="flex-1 px-3 py-2 outline-none"
                 style={{
                   ...typescale.body,
                   color: "var(--color-fg)",
@@ -132,34 +197,35 @@ export default function PasswordModal() {
                   border: `1px solid ${error ? "var(--color-accent)" : "var(--color-border)"}`,
                 }}
               />
-              {error && (
-                <p
-                  role="alert"
-                  style={{
-                    ...typescale.label,
-                    color: "var(--color-accent)",
-                    marginTop: 8,
-                  }}
-                >
-                  Not quite — try again.
-                </p>
-              )}
               <button
                 type="submit"
-                className="w-full mt-4 px-4 py-2 transition-opacity"
+                className="px-4 py-2 transition-opacity"
                 style={{
                   ...typescale.body,
                   fontWeight: 500,
                   color: "var(--color-bg)",
                   background: "var(--color-fg)",
-                  cursor: value.length === 0 ? "not-allowed" : "pointer",
-                  opacity: value.length === 0 ? 0.5 : 1,
+                  cursor: value.length === 0 || submitting ? "not-allowed" : "pointer",
+                  opacity: value.length === 0 || submitting ? 0.5 : 1,
+                  minWidth: 64,
                 }}
-                disabled={value.length === 0}
+                disabled={value.length === 0 || submitting}
               >
-                Unlock
+                {submitting ? "…" : "Go"}
               </button>
             </form>
+            {error && (
+              <p
+                role="alert"
+                style={{
+                  ...typescale.label,
+                  color: "var(--color-accent)",
+                  marginTop: 8,
+                }}
+              >
+                Wrong code. Reach out and I'll send you one.
+              </p>
+            )}
           </motion.div>
         </motion.div>
       )}
