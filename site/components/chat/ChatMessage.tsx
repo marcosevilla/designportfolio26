@@ -46,6 +46,12 @@ function RenderSegments({ raw, onClose }: { raw: string; onClose: () => void }) 
     <>
       {segments.map((seg, i) => {
         if (seg.kind === "text") return <span key={i}>{seg.text}</span>;
+        if (seg.kind === "bold") {
+          return <strong key={i} style={{ fontWeight: 600 }}>{seg.text}</strong>;
+        }
+        if (seg.kind === "italic") {
+          return <em key={i}>{seg.text}</em>;
+        }
         if (seg.inApp) {
           return <InAppLink key={i} label={seg.label} onClose={onClose} />;
         }
