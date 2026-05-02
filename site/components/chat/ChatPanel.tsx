@@ -209,7 +209,7 @@ export default function ChatPanel({
           onKeyDown={onKeyDown}
           placeholder="Ask me anything…"
           rows={1}
-          className="flex-1 resize-none bg-transparent border-0 outline-none placeholder:text-(--color-fg-tertiary)"
+          className="flex-1 resize-none bg-transparent border-0 outline-none focus:outline-none focus:ring-0 placeholder:text-(--color-fg-tertiary)"
           style={{
             fontFamily: "var(--font-sans)",
             fontSize: "16px",
@@ -217,6 +217,8 @@ export default function ChatPanel({
             color: "var(--color-fg)",
             padding: "6px 0",
             maxHeight: "120px",
+            // No focus ring — the chat-surface chrome already implies focused state.
+            WebkitTapHighlightColor: "transparent",
           }}
         />
         {showSubmit && (

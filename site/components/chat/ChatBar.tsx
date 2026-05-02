@@ -202,25 +202,25 @@ export default function ChatBar() {
             {open && (
               <>
                 <ChatOverlay onClose={close} />
-                <motion.div
-                  key="chat-panel-wrap"
-                  layoutId="chat-surface"
-                  transition={MORPH_SPRING}
-                  className="fixed left-1/2 z-[160]"
-                  style={{
-                    // Lower-third position: ~70% from top of viewport.
-                    top: "70vh",
-                    transform: "translate(-50%, -50%)",
-                  }}
+                <div
+                  className="fixed inset-x-0 z-[160] flex justify-center pointer-events-none"
+                  style={{ top: "60vh" }}
                 >
-                  <ChatPanel
-                    turns={turns}
-                    pending={pending}
-                    errorLine={errorLine}
-                    onSubmit={submit}
-                    onClose={close}
-                  />
-                </motion.div>
+                  <motion.div
+                    key="chat-panel-wrap"
+                    layoutId="chat-surface"
+                    transition={MORPH_SPRING}
+                    className="pointer-events-auto"
+                  >
+                    <ChatPanel
+                      turns={turns}
+                      pending={pending}
+                      errorLine={errorLine}
+                      onSubmit={submit}
+                      onClose={close}
+                    />
+                  </motion.div>
+                </div>
               </>
             )}
           </AnimatePresence>,
