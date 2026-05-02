@@ -202,7 +202,7 @@ export default function HeroToolbar() {
   };
 
   const iconRow = (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-1 min-w-0 items-center gap-2">
       {/* Left swap zone — fixed 32px height, clips the off-frame content
           while the slide animation runs. AnimatePresence keys on activeSlot
           so old/new co-exist briefly during the transition. */}
