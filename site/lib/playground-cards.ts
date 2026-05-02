@@ -28,7 +28,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     title: "Six Degrees",
     year: "Feb 2026 →",
     description:
-      "A movie-graph puzzle game that started as a roadtrip car game with friends. The architecture is the easy part — a TMDb actor pool filtered for real blockbuster careers, with the graph itself acting as the difficulty oracle: share a film (easy), one degree apart (medium), no obvious connection (hard). The craft was in the snap, the sound (synthesized in Web Audio so I could shape every chime by hand), and tuning difficulty so even cinephiles wouldn't rage-quit. Plays well in the wild now, with the same friends.",
+      "A movie-graph puzzle: connect two actors through their shared films, six-degrees-of-separation style. Started as a roadtrip car game with friends — I designed and built the version we play now.",
     video: "/videos/playground/six-degrees.mp4",
     aspect: "1756 / 1080",
   },
@@ -37,7 +37,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     title: "Pajamagrams",
     year: "Jan 2026",
     description:
-      "A mobile-first puzzle gift inspired by Bananagrams — drag tiles, clue-based rounds, given to someone I love. A stress test for the Figma-MCP workflow at the time: every letter, every state designed in Figma first, then handed to Claude with the mechanics and the desired feel. Most of the work went into tile snap — the few pixels of forgiveness between “this tile knows where I want it” and “this is frustrating” — and breaking down that taste into terms granular enough for Claude to translate.",
+      "A mobile-first word puzzle inspired by Bananagrams — drag tiles into place across clue-based rounds.",
     video: "/videos/playground/pajamagrams.mp4",
     aspect: "628 / 1080",
   },
@@ -46,7 +46,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     title: "Custom Wrapped",
     year: "Nov 2025",
     description:
-      "A year-in-review experience built like Spotify Wrapped — vertical swipe carousel, GSAP-driven timelines, stop-motion animation that feels more vintage video game than smooth web. Three font voices play three roles: 8-bit pixel as the throughline, Geist for loud beats, Caveat for the intimate slides (a wedding thank-you card needs handwriting). Built as a gift, but the real unlock was the data — flights from my calendar to count vacations, Letterboxd cross-referenced with theater visits to surface a year in movies. AI is the tool that finally lets a vault of half-formed ideas become real things you can hand to someone.",
+      "A personal year-in-review styled like Spotify Wrapped — vertical swipes through milestones pulled from my calendar, Letterboxd, and other vaults.",
     video: "/videos/playground/custom-wrapped.mp4",
     aspect: "648 / 1080",
   },
