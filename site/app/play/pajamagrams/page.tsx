@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import PajamagramsContent from "./PajamagramsContent";
+import LockGate from "@/components/LockGate";
+import { isLocked } from "@/lib/locked-content";
 
 export const metadata: Metadata = {
   title: "Pajamagrams — Marco Sevilla",
@@ -14,8 +16,16 @@ export const metadata: Metadata = {
 
 export default function PajamagramsPage() {
   return (
-    <div className="pb-20">
-      <PajamagramsContent />
-    </div>
+    <LockGate
+      mode="page"
+      locked={isLocked("pajamagrams")}
+      title="Pajamagrams"
+      subtitle="A mobile-first puzzle gift inspired by Bananagrams"
+      backHref="/play"
+    >
+      <div className="pb-20">
+        <PajamagramsContent />
+      </div>
+    </LockGate>
   );
 }
