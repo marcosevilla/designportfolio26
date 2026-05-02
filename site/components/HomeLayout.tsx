@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
 import HeroToolbar from "./HeroToolbar";
+import MobileToolbar from "./MobileToolbar";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI, { SceneToggles } from "./music/LedMatrixUI";
 import { AnimatePresence } from "framer-motion";
@@ -179,6 +180,12 @@ export default function HomeLayout({
       >
         <HeroToolbar />
       </motion.div>
+
+      {/* Mobile-only floating bottom pill. Replaces HeroToolbar's
+          functionality below lg with 40×40 hit targets and a layout that
+          actually works on a phone. globals.css hides .hero-toolbar-host
+          below lg; MobileToolbar's own `lg:hidden` keeps it off desktop. */}
+      <MobileToolbar />
 
       {/* Hero column: paddingTop = toolbar height (36) + breathing room. */}
       <div

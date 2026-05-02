@@ -670,8 +670,11 @@ img[class*="rounded-"] {
    36px tall, full window width, frosted background with a hairline bottom
    border (browser-bookmarks-bar feel). Sits above page content via z-index;
    body scrolls under it. The chat panel sits below the toolbar (top:48,
-   wired in ChatBar) so they don't overlap when chat is open. */
+   wired in ChatBar) so they don't overlap when chat is open.
+   Hidden below lg — mobile uses the floating <MobileToolbar /> bottom pill
+   instead, since the dense 28×28 desktop buttons aren't tappable on phones. */
 .hero-toolbar-host {
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -682,9 +685,13 @@ img[class*="rounded-"] {
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-  display: flex;
   align-items: center;
   padding: 0 12px;
+}
+@media (min-width: 1024px) {
+  .hero-toolbar-host {
+    display: flex;
+  }
 }
 
 /* Body push when the persistent side panel is open at lg+. Panel = 360px

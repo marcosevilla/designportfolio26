@@ -173,7 +173,9 @@ export default function HamburgerMenu({
                       <Link
                         href={backHref ?? "/#projects"}
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-1.5 px-2 py-2 mb-1 rounded-md transition-colors hover:text-(--color-accent)"
+                        // py-4 + 12px text = 44px tap target (was py-2 = 28px,
+                        // below the 40×40 mobile minimum)
+                        className="flex items-center gap-1.5 px-2 py-4 mb-1 rounded-md transition-colors hover:text-(--color-accent)"
                         style={{
                           ...NAV_LABEL_STYLE,
                           color: "var(--color-fg-secondary)",
@@ -195,7 +197,9 @@ export default function HamburgerMenu({
                                   ? handleTocClick(e, item.id)
                                   : handleHomeAnchorClick(e, item.id)
                               }
-                              className="block px-2 py-2 rounded-md transition-colors hover:bg-(--color-muted) hover:text-(--color-accent)"
+                              // py-4 = 44px tap target on mobile; full row
+                              // hit area thanks to `block`. Was py-2 (28px).
+                              className="block px-2 py-4 rounded-md transition-colors hover:bg-(--color-muted) hover:text-(--color-accent)"
                               style={{
                                 ...NAV_LABEL_STYLE,
                                 color: active
