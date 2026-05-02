@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HeroActions from "./HeroActions";
+import ChatBar from "./chat/ChatBar";
 import LedMatrix from "./LedMatrix";
 import { PaletteRow } from "./PaletteSwatches";
 import { MiniPlayerRow, VisualsRow } from "./music/HomeMiniPlayer";
@@ -238,7 +239,16 @@ export default function HeroToolbar() {
 
   return (
     <>
-      <div ref={wrapperRef}>{iconRow}</div>
+      {/* In-flow toolbar: icon row + chat pill side by side.
+          ChatBar is rendered ONLY here (not inside iconRow) to avoid a
+          layoutId collision — iconRow is also rendered in the sticky portal
+          variant, and two simultaneous <ChatBar /> instances with the same
+          layoutId="chat-surface" would trigger a framer-motion warning.
+          v1 limitation: the chat pill does not appear in the sticky toolbar. */}
+      <div ref={wrapperRef} className="flex items-center gap-1.5">
+        {iconRow}
+        <ChatBar />
+      </div>
 
       {mounted && createPortal(
         <AnimatePresence>
