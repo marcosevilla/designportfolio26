@@ -160,18 +160,21 @@ export default function CaseStudyList({ studies }: CaseStudyListProps) {
           )}
 
           {/* Section entrypoints — flush right of the "Work" title. Open
-              the gallery overlay or route to the full case studies page. */}
-          <div className="flex items-center gap-6">
-            <SectionLinkButton
-              onClick={() => {
-                setGalleryStartSlug(null);
-                setGalleryOpen(true);
-              }}
-            >
-              Gallery
-            </SectionLinkButton>
-            <SectionLinkButton href="/work" icon="lock">Case studies</SectionLinkButton>
-          </div>
+              the gallery overlay or route to the full case studies page.
+              Hidden for now per design pass. */}
+          {false && (
+            <div className="flex items-center gap-6">
+              <SectionLinkButton
+                onClick={() => {
+                  setGalleryStartSlug(null);
+                  setGalleryOpen(true);
+                }}
+              >
+                Gallery
+              </SectionLinkButton>
+              <SectionLinkButton href="/work" icon="lock">Case studies</SectionLinkButton>
+            </div>
+          )}
         </div>
 
         {/* Filter dropdown */}

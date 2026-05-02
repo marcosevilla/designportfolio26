@@ -54,10 +54,10 @@ const RIPPLE_RING_DECAY = 0.66;
 const RIPPLE_GLOW_CAP = 0.45;
 
 // ── Idle Perlin ──────────────────────────────────────────────────────────
-const IDLE_INTERVAL_MIN_MS = 3500;
-const IDLE_INTERVAL_MAX_MS = 9000;
-const IDLE_DURATION_MIN_MS = 6000;
-const IDLE_DURATION_MAX_MS = 12000;
+const IDLE_INTERVAL_MIN_MS = 1800;
+const IDLE_INTERVAL_MAX_MS = 4500;
+const IDLE_DURATION_MIN_MS = 7000;
+const IDLE_DURATION_MAX_MS = 13000;
 const IDLE_INTENSITY_MIN = 0.26;
 const IDLE_INTENSITY_MAX = 0.7;
 
@@ -501,26 +501,46 @@ void main() {
   vec3 wColor = vec3(0.0);
   float wTotal = 0.0;
 
-  // ── Idle Perlin waves ────────────────────────────────────────────────
-  float idleWeight = 1.0 - audioMix;
+  // ── Idle lava-lamp field ─────────────────────────────────────────────
+  // Continuous two-octave value-noise FBM with a slow time morph and a
+  // gentle upward drift, so blobs rise lazily through the field. The
+  // baseline is independent of per-wave spawn timing — the matrix never
+  // goes dark during idle. Per-wave envelopes layer on top as occasional
+  // brightness swells.
+  //
+  // Plays whenever no scene is selected — even when music is playing —
+  // so clearing every effect always falls back to the perlin field. When
+  // a scene IS active, the idle field fades out behind it as audioMix
+  // ramps up.
+  bool anySceneActive = u_sceneSparkles || u_sceneWaveform || u_sceneChladni
+                      || u_sceneFeedback || u_sceneLissajous;
+  float idleWeight = anySceneActive ? (1.0 - audioMix) : 1.0;
   if (idleWeight > 0.01) {
-    float idleLit = 0.0;
+    float ts = u_time * 0.001; // ms → s
+    // Lower frequency than before (0.018 → 0.012) for larger, blob-shaped
+    // features; horizontal sway + gentle upward drift give the lava-lamp
+    // sense of motion.
+    vec2 p = cellCenter * 0.012 + vec2(ts * 0.22, -ts * 0.30);
+    float n = valueNoise(p);
+    n += valueNoise(p * 2.13 + vec2(11.1, 7.3)) * 0.5;
+    n /= 1.5;
+
+    // Soft-edged threshold (smoothstep) gives organic blob boundaries
+    // instead of the previous hard half-rectify.
+    float baseField = smoothstep(0.42, 0.68, n);
+
+    // Per-wave pulses still add occasional warmth/brightness swells on
+    // top of the baseline.
+    float pulse = 0.0;
     for (int i = 0; i < MAX_IDLE; i++) {
       if (i >= u_idleCount) break;
       vec4 a = u_idleA[i];
       vec4 b = u_idleB[i];
-      float age = b.x;
-      float duration = b.y;
-      float t = age / duration;
-      float env = sin(t * PI);
-      if (env <= 0.0) continue;
-      float n = valueNoise(vec2(
-        cellCenter.x * 0.018 + a.x,
-        cellCenter.y * 0.018 + a.y + age * 0.00018 * a.z
-      ));
-      float v = max(0.0, n - 0.5) * 2.0;
-      idleLit += env * a.w * v;
+      float t = b.x / b.y;
+      pulse += sin(t * PI) * a.w;
     }
+
+    float idleLit = baseField * 0.5 + baseField * pulse * 0.45;
     addColor(lit, wColor, wTotal, idleLit * idleWeight, u_onColor);
   }
 
@@ -1061,8 +1081,11 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
       }
 
       // ── SPARKLES — bass-reactive spawn + cull ──────────────────────
+      // Sparkles ride along with the "wavelength" preset (waveform +
+      // sparkles), so they spawn whenever the user has selected the
+      // wavelength scene.
       if (
-        scenes.has("sparkles") &&
+        scenes.has("waveform") &&
         d.master.enabled &&
         audioMix > 0.01 &&
         !reducedMotion
@@ -1414,7 +1437,9 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
       gl.uniform1f(uBeatPhase, analysis?.beatPhase ?? 0);
       gl.uniform1f(uBarPhase, analysis?.barPhase ?? 0);
 
-      gl.uniform1i(uSceneSparkles, scenes.has("sparkles") && d.master.enabled ? 1 : 0);
+      // "Wavelength" preset drives both the waveform line and the sparkle
+      // field — they are bound together so one button controls both.
+      gl.uniform1i(uSceneSparkles, scenes.has("waveform") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneWaveform, scenes.has("waveform") && d.master.enabled ? 1 : 0);
       gl.uniform1i(uSceneChladni, scenes.has("chladni") && d.master.enabled ? 1 : 0);
 

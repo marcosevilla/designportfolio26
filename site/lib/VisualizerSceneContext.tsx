@@ -5,8 +5,8 @@ import { DEFAULT_SCENE, SCENES, type VisualizerScene } from "./visualizer-scenes
 
 const VALID_SCENES = new Set<string>(SCENES.map((s) => s.id));
 
-// Bumped key — old single-scene values (visualizer-scene) are ignored.
-const STORAGE_KEY = "visualizer-scenes-v2";
+// Bumped key — radio-with-clear semantics; old multi-select state is ignored.
+const STORAGE_KEY = "visualizer-scenes-v3";
 
 interface SceneCtx {
   activeScenes: Set<VisualizerScene>;
@@ -32,9 +32,9 @@ export function VisualizerSceneProvider({ children }: { children: React.ReactNod
       const arr = JSON.parse(saved) as string[];
       if (!Array.isArray(arr)) return;
       const filtered = arr.filter((s): s is VisualizerScene => VALID_SCENES.has(s));
-      if (filtered.length > 0) {
-        setActiveScenesState(new Set(filtered));
-      }
+      // Mutually exclusive — keep at most one. Empty array is a valid
+      // persisted state (user cleared all scenes → falls back to idle).
+      setActiveScenesState(new Set(filtered.slice(0, 1)));
     } catch {
       /* ignore */
     }
@@ -48,11 +48,13 @@ export function VisualizerSceneProvider({ children }: { children: React.ReactNod
     }
   };
 
+  // Radio-with-clear: clicking a scene makes it the only active one;
+  // clicking the currently-active scene clears the set, falling back to
+  // the idle perlin field.
   const toggleScene = useCallback((s: VisualizerScene) => {
     setActiveScenesState((prev) => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s);
-      else next.add(s);
+      const isOnlyActive = prev.size === 1 && prev.has(s);
+      const next = isOnlyActive ? new Set<VisualizerScene>() : new Set<VisualizerScene>([s]);
       persist(next);
       return next;
     });

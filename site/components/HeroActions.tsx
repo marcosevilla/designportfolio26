@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MusicNoteIcon, PaletteIcon, SmileyIcon, VisualsIcon } from "./Icons";
+import { MoonIcon, MusicNoteIcon, PaletteIcon, SmileyIcon, SunIcon, VisualsIcon } from "./Icons";
+import { useThemeState } from "./ThemeToggle";
 
 const HOVER_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 };
 
@@ -59,6 +60,31 @@ function ActionIcon({
   );
 }
 
+/**
+ * Top-level light/dark mode toggle. Sits next to palette/music/visuals as
+ * its own first-class button — separated from the palette swap zone so the
+ * mode flip is one click instead of two. Renders nothing pre-hydration to
+ * avoid an SSR/CSR mode mismatch.
+ */
+function ThemeModeAction({ hovered, onHover }: { hovered: boolean; onHover: () => void }) {
+  const themeState = useThemeState();
+  if (!themeState.mounted) {
+    // Reserve the button's footprint so neighbouring icons don't shift on hydrate.
+    return <span aria-hidden style={{ width: 32, height: 32, display: "inline-block" }} />;
+  }
+  const isLight = themeState.mode === "light";
+  return (
+    <ActionIcon
+      label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+      onClick={() => (isLight ? themeState.selectDark() : themeState.selectLight())}
+      hovered={hovered}
+      onHover={onHover}
+    >
+      {isLight ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+    </ActionIcon>
+  );
+}
+
 export default function HeroActions({
   paletteOpen,
   miniPlayerOpen,
@@ -89,12 +115,16 @@ export default function HeroActions({
       className="flex items-center gap-1"
       onMouseLeave={() => setHoveredIndex(null)}
     >
+      <ThemeModeAction
+        hovered={hoveredIndex === 0}
+        onHover={() => setHoveredIndex(0)}
+      />
       <ActionIcon
         label="Theme palette"
         pressed={paletteOpen}
         onClick={onTogglePalette}
-        hovered={hoveredIndex === 0}
-        onHover={() => setHoveredIndex(0)}
+        hovered={hoveredIndex === 1}
+        onHover={() => setHoveredIndex(1)}
       >
         <PaletteIcon size={16} />
       </ActionIcon>
@@ -102,8 +132,8 @@ export default function HeroActions({
         label={miniPlayerOpen ? "Hide music player" : "Show music player"}
         pressed={miniPlayerOpen}
         onClick={onToggleMusic}
-        hovered={hoveredIndex === 1}
-        onHover={() => setHoveredIndex(1)}
+        hovered={hoveredIndex === 2}
+        onHover={() => setHoveredIndex(2)}
       >
         <MusicNoteIcon size={16} />
       </ActionIcon>
@@ -112,8 +142,8 @@ export default function HeroActions({
           label={visualsOpen ? "Hide visuals" : "Show visuals"}
           pressed={visualsOpen}
           onClick={onToggleVisuals}
-          hovered={hoveredIndex === 2}
-          onHover={() => setHoveredIndex(2)}
+          hovered={hoveredIndex === 3}
+          onHover={() => setHoveredIndex(3)}
         >
           <VisualsIcon size={16} />
         </ActionIcon>
@@ -125,8 +155,8 @@ export default function HeroActions({
           label={greetingActive ? "Stop greeting cycle" : "Start greeting cycle"}
           pressed={greetingActive}
           onClick={onToggleGreeting}
-          hovered={hoveredIndex === 3}
-          onHover={() => setHoveredIndex(3)}
+          hovered={hoveredIndex === 4}
+          onHover={() => setHoveredIndex(4)}
         >
           <SmileyIcon size={16} />
         </ActionIcon>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useThemeState, coloredThemes } from "./ThemeToggle";
-import { MoonIcon, SunIcon } from "./Icons";
 
 // Hue in degrees [0, 360) for chromatic colors, -1 for achromatic — used to
 // sort the swatch row in rainbow order regardless of the source array shape.
@@ -22,7 +21,8 @@ function hexHue(hex: string): number {
 }
 
 /**
- * Inline-row palette controls: light/dark toggle + 12 colored-theme swatches.
+ * Inline-row palette controls: 12 colored-theme swatches. The light/dark
+ * toggle lives as its own top-level button on the toolbar's right cluster.
  * Renders content only (no wrapper, no animation) — meant to be slotted into
  * the HeroToolbar's left swap zone where the parent owns the slide animation.
  */
@@ -45,33 +45,10 @@ export function PaletteRow() {
     .sort((a, b) => hexHue(a.accent) - hexHue(b.accent));
 
   return (
-    <div className="flex items-center gap-2 whitespace-nowrap">
-      <button
-        type="button"
-        onClick={() =>
-          themeState.mode === "light" ? themeState.selectDark() : themeState.selectLight()
-        }
-        aria-label={themeState.mode === "light" ? "Switch to dark mode" : "Switch to light mode"}
-        className="flex items-center justify-center rounded-full transition-colors cursor-pointer"
-        style={{
-          width: 20,
-          height: 20,
-          color: "var(--color-fg-secondary)",
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg-secondary)"; }}
-      >
-        {themeState.mode === "light" ? <MoonIcon size={14} /> : <SunIcon size={14} />}
-      </button>
-      <span
-        aria-hidden
-        style={{
-          display: "inline-block",
-          width: 1,
-          height: 16,
-          backgroundColor: "var(--color-border)",
-        }}
-      />
+    // 4px horizontal inset gives the active swatch's outer ring (3.5px
+    // box-shadow) room to render — without it the swap zone's
+    // overflow:hidden clips the leftmost selection state.
+    <div className="flex items-center gap-2 whitespace-nowrap px-1">
       {swatches.map((s) => {
         const active = isActiveColor(s.id);
         return (
