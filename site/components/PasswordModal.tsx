@@ -92,7 +92,7 @@ export default function PasswordModal() {
             <button
               onClick={closeModal}
               aria-label="Close"
-              className="absolute top-3 right-3 flex items-center justify-center w-7 h-7 transition-colors"
+              className="absolute top-2 right-2 flex items-center justify-center w-10 h-10 rounded-full active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
               style={{ color: "var(--color-fg-tertiary)" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-fg)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg-tertiary)"; }}
@@ -114,7 +114,7 @@ export default function PasswordModal() {
 
             <h2
               id="password-modal-title"
-              style={{ ...typescale.h3, color: "var(--color-fg)", marginBottom: 4 }}
+              style={{ ...typescale.h3, color: "var(--color-fg)", marginBottom: 4, textWrap: "balance" }}
             >
               Wax on. Wax off.
             </h2>
@@ -123,6 +123,7 @@ export default function PasswordModal() {
                 ...typescale.body,
                 color: "var(--color-fg-secondary)",
                 marginBottom: 24,
+                textWrap: "pretty",
               }}
             >
               This case study is currently being polished. Reach out directly if you'd like early access.
@@ -132,7 +133,7 @@ export default function PasswordModal() {
             <div className="grid grid-cols-2 gap-2">
               <a
                 href={`mailto:${EMAIL}`}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-colors"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                   fontSize: "12px",
@@ -153,7 +154,7 @@ export default function PasswordModal() {
                 href={LINKEDIN_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-colors"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                   fontSize: "12px",
@@ -216,7 +217,7 @@ export default function PasswordModal() {
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl transition-opacity"
+                className="px-4 py-2 rounded-xl enabled:active:scale-[0.96] transition-[opacity,transform] duration-150 ease-out"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                   fontSize: "12px",
