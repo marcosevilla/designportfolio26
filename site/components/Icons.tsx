@@ -16,6 +16,17 @@ export function BackChevronIcon({ size = 14, className }: IconProps) {
   );
 }
 
+// Slim horizontal arrow — shaft + small chevron head. Use `scaleX(-1)` via
+// the wrapper element for a left-facing variant so callers can keep one icon.
+export function ArrowRightIcon({ size = 14, className, style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <path d="M3 8h10" />
+      <path d="M9 4l4 4-4 4" />
+    </svg>
+  );
+}
+
 // ── View toggles ──
 
 // All view-toggle icons use viewBox 24×24 with strokeWidth 1.5, matching the

@@ -9,6 +9,7 @@ import { HighlightableBio } from "./HighlightableBio";
 import { HighlighterProvider } from "./HighlighterContext";
 import HeroToolbar from "./HeroToolbar";
 import Resume from "./Resume";
+import { ArrowRightIcon } from "./Icons";
 
 const CV_ENTRIES = [
   { company: "Canary Technologies", title: "Product Designer", city: "San Francisco" },
@@ -37,9 +38,9 @@ function LearnMoreCVButton({ onClick }: { onClick: () => void }) {
       <span>Learn more</span>
       <span
         aria-hidden
-        className="inline-block transition-transform duration-200 ease-out group-hover:translate-x-1"
+        className="inline-flex items-center transition-transform duration-200 ease-out group-hover:translate-x-1"
       >
-        →
+        <ArrowRightIcon size={14} />
       </span>
     </button>
   );

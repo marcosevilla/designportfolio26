@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CaseStudyMeta } from "@/lib/types";
 import { galleryContent } from "@/lib/gallery-content";
@@ -141,6 +142,10 @@ export default function GalleryMode({ open, onClose, studies, initialStudySlug }
   const slideRefs = useRef<(HTMLElement | null)[]>([]);
   const parallaxRefs = useRef<Map<number, HTMLElement>>(new Map());
   const [currentIndex, setCurrentIndex] = useState(0);
+  // Portal target — `document` only exists after hydration. Mounting flag
+  // ensures SSR returns null and the portal attaches on the client.
+  const [portalReady, setPortalReady] = useState(false);
+  useEffect(() => setPortalReady(true), []);
 
   const slots = buildSlots(studies);
 
@@ -288,7 +293,9 @@ export default function GalleryMode({ open, onClose, studies, initialStudySlug }
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < slots.length - 1;
 
-  return (
+  if (!portalReady) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -475,6 +482,7 @@ export default function GalleryMode({ open, onClose, studies, initialStudySlug }
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

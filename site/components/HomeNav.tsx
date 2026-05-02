@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useMotionValueEvent, animate } from "framer-motion";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import ConnectLinks from "./ConnectLinks";
+import { ArrowRightIcon } from "./Icons";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -15,8 +16,7 @@ const ROW_HEIGHT = 28;
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Work" },
-  // Playground temporarily hidden for recruiter share.
-  // { id: "playground", label: "Playground" },
+  { id: "playground", label: "Playground" },
 ];
 
 const SCROLL_LOCK_MS = 900;
@@ -179,9 +179,11 @@ export default function HomeNav({
           >
             <span
               aria-hidden
-              className="inline-block transition-transform duration-200 ease-out group-hover:-translate-x-1"
+              className="inline-flex items-center transition-transform duration-200 ease-out group-hover:-translate-x-1"
             >
-              ←
+              <span style={{ display: "inline-flex", transform: "scaleX(-1)" }}>
+                <ArrowRightIcon size={14} />
+              </span>
             </span>
             <span>Return</span>
           </motion.button>

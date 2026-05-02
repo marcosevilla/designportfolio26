@@ -157,7 +157,7 @@ export default function LoadingOverlay({
       {visible && (
         <motion.div
           key="loading-overlay"
-          className="fixed inset-0 z-[200] flex items-center justify-center px-4"
+          className="fixed inset-0 z-[200] flex items-center justify-center px-4 pointer-events-none"
           style={{ backgroundColor: "var(--color-bg)" }}
           initial={{ opacity: 1 }}
           animate={{ opacity: phase === "fading" ? 0 : 1 }}

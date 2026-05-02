@@ -132,6 +132,13 @@ export default function HomeLayout({
   return (
     <StickyToolbarContext.Provider value={pastMatrix}>
     <LoadingOverlay
+      onFade={() => {
+        // First-time visitors: the loader has released the star and is
+        // beginning its bg fade-out. Flip heroReady here so the cascade
+        // is guaranteed to play even if the layoutId morph callback
+        // never fires (reduced-motion, no layout delta, etc).
+        setHeroReady(true);
+      }}
       onDone={() => {
         // Repeat visitors skip the loader entirely, so there's no morph
         // to wait for — flip ready immediately so Hero can blur in.
