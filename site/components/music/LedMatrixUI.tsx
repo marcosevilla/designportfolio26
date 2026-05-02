@@ -3,7 +3,69 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
+import { SCENES, type VisualizerScene } from "@/lib/visualizer-scenes";
+import {
+  ChladniSceneIcon,
+  FeedbackSceneIcon,
+  LissajousSceneIcon,
+  WaveformSceneIcon,
+} from "@/components/Icons";
 import { GLYPH_5x5_TRANSPORT, drawGlyph } from "@/lib/dot-font";
+
+const SCENE_ICONS: Record<
+  VisualizerScene,
+  (props: { size?: number }) => React.ReactElement
+> = {
+  waveform: WaveformSceneIcon,
+  chladni: ChladniSceneIcon,
+  feedback: FeedbackSceneIcon,
+  lissajous: LissajousSceneIcon,
+};
+
+/** Bottom-left scene toggles overlaid on the LED matrix. Each scene is an
+ *  independent toggle. Visible only on hover (gated by `revealed`) so the
+ *  matrix reads as clean visuals at rest and surfaces controls when the
+ *  user moves into it. Same fade as the play/pause glyph. */
+function SceneToggles({ revealed }: { revealed: boolean }) {
+  const { activeScenes, toggleScene } = useVisualizerScene();
+  return (
+    <motion.div
+      className="absolute bottom-2 left-2 z-10 flex items-center gap-0.5"
+      onClick={(e) => e.stopPropagation()}
+      initial={false}
+      animate={{
+        opacity: revealed ? 1 : 0,
+        filter: revealed ? "blur(0px)" : "blur(2px)",
+      }}
+      transition={{ duration: revealed ? 0.25 : 0.2, ease: [0.22, 1, 0.36, 1] }}
+      style={{ pointerEvents: revealed ? "auto" : "none" }}
+    >
+      {SCENES.map((s) => {
+        const Icon = SCENE_ICONS[s.id];
+        const active = activeScenes.has(s.id);
+        return (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => toggleScene(s.id)}
+            aria-label={`Toggle ${s.label} scene`}
+            aria-pressed={active}
+            className="flex items-center justify-center w-7 h-7 rounded-md transition-colors focus:outline-none cursor-pointer"
+            style={{
+              color: active ? "var(--color-accent)" : "rgba(255,255,255,0.55)",
+              backgroundColor: active
+                ? "color-mix(in srgb, var(--color-accent) 18%, transparent)"
+                : "transparent",
+            }}
+          >
+            <Icon size={14} />
+          </button>
+        );
+      })}
+    </motion.div>
+  );
+}
 
 const CELL = 5;
 const PLAY_GLYPH_W = 5;
@@ -191,6 +253,11 @@ export default function LedMatrixUI({ onPlay }: { onPlay?: () => void } = {}) {
         }}
         transition={{ duration: revealed ? 0.25 : 0.2, ease: [0.22, 1, 0.36, 1] }}
       />
+
+      {/* Scene toggles — bottom-left of the matrix, visible only on hover
+          (mirrors the play/pause glyph reveal). Mounted only when audio is
+          playing; scenes are irrelevant when the matrix is idle. */}
+      {isPlaying && <SceneToggles revealed={revealed} />}
     </div>
   );
 }

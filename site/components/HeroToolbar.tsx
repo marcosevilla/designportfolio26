@@ -11,14 +11,12 @@ import {
   ChevronDownIcon,
   MoonIcon,
   MusicNoteIcon,
-  PaletteIcon,
   PlayIcon,
   SunIcon,
   VisualsIcon,
 } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
 
-const POPOVER_SPRING = { type: "spring" as const, stiffness: 380, damping: 32 };
 const POPOVER_EASE = [0.22, 1, 0.36, 1] as const;
 
 const TINT_HOVER = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
@@ -93,7 +91,8 @@ function ThemeModeButton() {
 }
 
 /** Palette button: icon + chevron. Click opens a popover with the 10
- *  colored-theme swatches. Active when popover is open. */
+ *  colored-theme swatches, anchored beneath this button (left-aligned to
+ *  the button's left edge). Active when popover is open. */
 function PaletteButton({
   open,
   onToggle,
@@ -124,10 +123,47 @@ function PaletteButton({
           style={{ backgroundColor: TINT_HOVER }}
         />
         <span className="relative inline-flex items-center gap-1">
-          <PaletteIcon size={14} />
+          {/* Theme swatch — a solid disc filled with the active accent. Acts
+              as the color preview AND the dropdown trigger glyph. Slightly
+              smaller than the light/dark toggle so the chevron doesn't read
+              as a second adjacent glyph. */}
+          <span
+            aria-hidden
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              backgroundColor: "var(--color-accent)",
+              display: "inline-block",
+              boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-fg) 12%, transparent)",
+            }}
+          />
           <ChevronDownIcon size={9} />
         </span>
       </button>
+      {/* Popover anchored to the button's left edge, hangs below with a
+          small gap. Less rounded than .chat-surface's default 18px so it
+          reads as menu chrome rather than a floating chat surface. */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="palette-popover"
+            initial={{ opacity: 0, y: -4, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -4, filter: "blur(6px)" }}
+            transition={{ duration: 0.22, ease: POPOVER_EASE }}
+            className="chat-surface absolute z-[100]"
+            style={{
+              top: "calc(100% + 8px)",
+              left: 0,
+              padding: "6px",
+              borderRadius: 10,
+            }}
+          >
+            <PaletteRow />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -143,31 +179,56 @@ function VisualizerButton() {
   );
 }
 
-/** Music slot. Collapsed (not playing) → just the play button. Playing →
- *  inline-expanded MiniPlayerRow with rewind / pause / skip / title-with-
- *  hover-scrubber. The expansion of the row itself (max-width on the
- *  scrubber, polished entrance) lands in Phase 3. */
+// Width spring shapes the collapse/expand of the music slot. Lightly
+// underdamped so the row settles with a touch of inertia at the end —
+// matches the chat-CTA morph spring's character.
+const MUSIC_WIDTH_SPRING = { type: "spring" as const, stiffness: 320, damping: 36 };
+
+/** Music slot. Collapsed (not playing) = just the play button. Playing =
+ *  inline-expanded MiniPlayerRow (transport + title-with-hover-scrubber).
+ *  The transition between states is a width spring on the container plus
+ *  a cross-fade between the two layers. The expanded layer enters from
+ *  the play button's left-anchored origin (x:-16 → x:0 + blur fade) so
+ *  the controls feel like they emerge from the play button rather than
+ *  popping in. */
 function MusicSlot() {
   const { isPlaying, togglePlay } = useAudioPlayer();
-  if (!isPlaying) {
-    return (
-      <ToolbarIconButton label="Play music" onClick={togglePlay}>
-        <PlayIcon size={14} />
-      </ToolbarIconButton>
-    );
-  }
   return (
-    <div
-      className="flex items-center"
-      style={{
-        // Sized so the inline expansion has room without dominating the bar.
-        // Phase 3 polishes this with a max-width on the hover scrubber.
-        minWidth: 200,
-        height: 28,
-      }}
+    <motion.div
+      animate={{ width: isPlaying ? 320 : 28 }}
+      transition={MUSIC_WIDTH_SPRING}
+      style={{ height: 28, overflow: "hidden", position: "relative" }}
     >
-      <MiniPlayerRow />
-    </div>
+      {/* Collapsed play button — fades out when expanded takes over. */}
+      <motion.div
+        animate={{
+          opacity: isPlaying ? 0 : 1,
+          filter: isPlaying ? "blur(4px)" : "blur(0px)",
+        }}
+        transition={{ duration: 0.18, delay: isPlaying ? 0 : 0.18 }}
+        style={{ pointerEvents: isPlaying ? "none" : "auto" }}
+        className="absolute inset-0 flex items-center"
+      >
+        <ToolbarIconButton label="Play music" onClick={togglePlay}>
+          <PlayIcon size={14} />
+        </ToolbarIconButton>
+      </motion.div>
+      {/* Expanded transport row — slides in from x:-16 (≈ play button's
+          left edge) so the controls read as emerging from the play
+          button's position rather than popping in. */}
+      <motion.div
+        animate={{
+          opacity: isPlaying ? 1 : 0,
+          filter: isPlaying ? "blur(0px)" : "blur(8px)",
+          x: isPlaying ? 0 : -16,
+        }}
+        transition={{ duration: 0.3, delay: isPlaying ? 0.1 : 0 }}
+        style={{ pointerEvents: isPlaying ? "auto" : "none" }}
+        className="absolute inset-0"
+      >
+        <MiniPlayerRow />
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -182,10 +243,11 @@ function MusicSlot() {
 export default function HeroToolbar() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
 
-  // Close the palette popover on Escape and pointer-down outside both the
-  // popover and the toolbar wrapper (which contains the trigger button).
+  // Close the palette popover on Escape and pointer-down outside the toolbar
+  // wrapper (the popover is rendered inside PaletteButton, which is itself
+  // inside wrapperRef, so wrapperRef.contains() covers both the trigger and
+  // the popover).
   useEffect(() => {
     if (!paletteOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -194,7 +256,6 @@ export default function HeroToolbar() {
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Node;
       if (wrapperRef.current?.contains(target)) return;
-      if (popoverRef.current?.contains(target)) return;
       setPaletteOpen(false);
     };
     window.addEventListener("keydown", onKey);
@@ -224,34 +285,6 @@ export default function HeroToolbar() {
         <LocalStatus />
       </div>
 
-      {/* Palette popover — anchored to the palette button via the
-          paletteAnchorRef. Hangs below the toolbar with a small gap. */}
-      <AnimatePresence>
-        {paletteOpen && (
-          <motion.div
-            ref={popoverRef}
-            key="palette-popover"
-            initial={{ opacity: 0, y: -4, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -4, filter: "blur(6px)" }}
-            transition={{ ...POPOVER_SPRING, duration: 0.22, ease: POPOVER_EASE }}
-            className="chat-surface absolute z-[100]"
-            style={{
-              // Position relative to the toolbar host: ~top of toolbar +
-              // toolbar height + 8px gap, anchored under the palette button.
-              top: 44,
-              // Offset from the left cluster start (hamburger + theme width).
-              // Hardcoded to roughly match the palette button's x — the
-              // anchor ref isn't used for measurement here, just popover
-              // dismissal scoping. Phase 3 can refine with a proper measure.
-              left: 88,
-              padding: "10px 12px",
-            }}
-          >
-            <PaletteRow />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

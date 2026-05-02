@@ -38,32 +38,32 @@ function WeatherGlyph({ code, isDay }: { code: number; isDay: boolean }) {
   // sits inside the viewBox and visually centers properly.
   if (cat === "rain") {
     return (
-      <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <g transform="translate(1.5 0)">
+      <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="currentColor">
+        <g transform="translate(1.5 -1)">
           <path d="M17 14a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2 4 4 0 0 0 .5 8z" />
-          <line x1="8" y1="18" x2="8" y2="21" />
-          <line x1="12" y1="18" x2="12" y2="22" />
-          <line x1="16" y1="18" x2="16" y2="21" />
+          <rect x="7.5" y="18" width="1" height="3.5" rx="0.5" />
+          <rect x="11.5" y="18" width="1" height="4" rx="0.5" />
+          <rect x="15.5" y="18" width="1" height="3.5" rx="0.5" />
         </g>
       </svg>
     );
   }
   if (cat === "snow") {
     return (
-      <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <g transform="translate(1.5 0)">
+      <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="currentColor">
+        <g transform="translate(1.5 -1)">
           <path d="M17 14a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2 4 4 0 0 0 .5 8z" />
-          <circle cx="8" cy="20" r="0.7" fill="currentColor" stroke="none" />
-          <circle cx="12" cy="20.5" r="0.7" fill="currentColor" stroke="none" />
-          <circle cx="16" cy="20" r="0.7" fill="currentColor" stroke="none" />
+          <circle cx="8" cy="20" r="0.9" />
+          <circle cx="12" cy="20.5" r="0.9" />
+          <circle cx="16" cy="20" r="0.9" />
         </g>
       </svg>
     );
   }
-  // cloudy / fog / fallback
+  // cloudy / fog / fallback — solid silhouette
   return (
-    <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <g transform="translate(1.5 0)">
+    <svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="currentColor">
+      <g transform="translate(1.5 -1)">
         <path d="M17.5 19a4.5 4.5 0 0 0 0-9 7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0 .5 9z" />
       </g>
     </svg>
@@ -147,7 +147,7 @@ export default function LocalStatus() {
 
   return (
     <div
-      className="flex items-center gap-1.5 whitespace-nowrap"
+      className="flex items-center whitespace-nowrap"
       style={{
         fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
         fontSize: "11px",
@@ -155,12 +155,17 @@ export default function LocalStatus() {
         fontWeight: 400,
         color: "var(--color-fg-secondary)",
         fontVariantNumeric: "tabular-nums",
+        // Outer gap separates the time cluster from the weather cluster.
+        gap: "12px",
       }}
     >
-      <span>{formatTime(now)}</span>
+      {/* Time string — wordSpacing tightens the space between hour:minute,
+          AM/PM, and timezone tokens without affecting digit kerning. */}
+      <span style={{ wordSpacing: "-2px" }}>{formatTime(now)}</span>
       {weather && (
-        <>
-          <span aria-hidden>·</span>
+        <div className="flex items-center" style={{ gap: "3px" }}>
+          {/* Cloud icon and temperature read as one cluster (tight gap)
+              so they're visually distinct from the time on their left. */}
           <WeatherGlyph code={weather.code} isDay={weather.isDay} />
           <button
             type="button"
@@ -171,7 +176,7 @@ export default function LocalStatus() {
           >
             {tempUnit === "F" ? weather.temp : Math.round((weather.temp - 32) * 5 / 9)}°{tempUnit}
           </button>
-        </>
+        </div>
       )}
     </div>
   );
