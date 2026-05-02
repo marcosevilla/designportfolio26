@@ -154,11 +154,30 @@ function useFitWordmark(
   }, [el, widthFraction, maxContainerPx]);
 }
 
-function PlaygroundStar() {
+function PlaygroundStar({
+  hideForLoader = false,
+  onMorphComplete,
+}: {
+  /** When true, the wordmark slot reserves its space (no layout shift)
+   *  but the star glyph + layoutId aren't rendered. While the loader
+   *  owns `layoutId="hero-star"` only one element in the tree carries
+   *  it, which is what makes the morph seamless. */
+  hideForLoader?: boolean;
+  /** Fired the first time the layoutId-driven morph completes — i.e.
+   *  when the star "lands" in its final wordmark slot. Used to gate the
+   *  cascading blur-in of the rest of the home page on first-time load. */
+  onMorphComplete?: () => void;
+}) {
+  const morphFiredRef = useRef(false);
+  const handleLayoutAnimationComplete = () => {
+    if (morphFiredRef.current) return;
+    morphFiredRef.current = true;
+    onMorphComplete?.();
+  };
   const reducedMotion = usePrefersReducedMotion();
 
-  // Decorative themed star — always rendered, always pinned to the accent
-  // color. Subtle shine streak sweeps across the glyph on a slow cycle.
+  // Decorative themed star — always pinned to the accent color. Subtle
+  // shine streak sweeps across the glyph on a slow cycle.
   const streakKeyframes = {
     opacity: [0, 0, 1, 1, 0],
     backgroundPositionX: ["150%", "150%", "150%", "-150%", "-150%"],
@@ -185,33 +204,45 @@ function PlaygroundStar() {
         transform: "translate(-0.12em, -0.05em)",
       }}
     >
-      <span
-        style={{ position: "relative", display: "inline-block", fontSize: "0.42em", lineHeight: 1 }}
-      >
-        <span style={{ display: "inline-block" }}>✸</span>
-        {!reducedMotion && (
+      {!hideForLoader && (
+        <span
+          style={{ position: "relative", display: "inline-block", fontSize: "0.42em", lineHeight: 1 }}
+        >
+          {/* layoutId pairs with the loading-overlay's star, so when the
+              loader unmounts its star this element morphs from the large
+              centered position into the wordmark slot. */}
           <motion.span
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              backgroundImage:
-                "linear-gradient(110deg, transparent 38%, rgba(255,255,255,0.95) 50%, transparent 62%)",
-              backgroundSize: "300% 100%",
-              backgroundRepeat: "no-repeat",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              color: "transparent",
-              willChange: "background-position, opacity",
-            }}
-            animate={streakKeyframes}
-            transition={streakTransition}
+            layoutId="hero-star"
+            style={{ display: "inline-block" }}
+            transition={{ type: "spring", stiffness: 220, damping: 26 }}
+            onLayoutAnimationComplete={handleLayoutAnimationComplete}
           >
             ✸
           </motion.span>
-        )}
-      </span>
+          {!reducedMotion && (
+            <motion.span
+              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                backgroundImage:
+                  "linear-gradient(110deg, transparent 38%, rgba(255,255,255,0.95) 50%, transparent 62%)",
+                backgroundSize: "300% 100%",
+                backgroundRepeat: "no-repeat",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                color: "transparent",
+                willChange: "background-position, opacity",
+              }}
+              animate={streakKeyframes}
+              transition={streakTransition}
+            >
+              ✸
+            </motion.span>
+          )}
+        </span>
+      )}
     </span>
   );
 }
@@ -223,6 +254,9 @@ export default function Hero({
   onAboutMeChange,
   wordmarkRef: externalWordmarkRef,
   aboutMeHeaderRef: externalAboutMeHeaderRef,
+  ready = true,
+  hideStarForLoader = false,
+  onStarMorphComplete,
 }: {
   /** Optional render slot for the LED matrix area, placed between the
    *  sticky header and the bio so it sits *under* the pinned header. */
@@ -232,11 +266,31 @@ export default function Hero({
   onAboutMeChange: (open: boolean) => void;
   wordmarkRef?: React.Ref<HTMLDivElement>;
   aboutMeHeaderRef?: React.Ref<HTMLHeadingElement>;
+  /** Gates the blur-in animation. While false, every motion.div sits at
+   *  the initial (blurred) state. When it flips true, all panels animate
+   *  in together — used to lock-step the home blur-in with the loading
+   *  overlay's fade-out on first-time visits. */
+  ready?: boolean;
+  /** While true, the wordmark's PlaygroundStar reserves its slot but
+   *  doesn't render the glyph, so the LoadingOverlay can own
+   *  `layoutId="hero-star"` and morph cleanly into this slot when the
+   *  loader's star unmounts. */
+  hideStarForLoader?: boolean;
+  /** Fired the first time the layoutId-driven star morph completes. */
+  onStarMorphComplete?: () => void;
 }) {
   const reducedMotion = usePrefersReducedMotion();
   const initial = reducedMotion ? false : { opacity: 0, filter: "blur(12px)" };
-  const animate = { opacity: 1, filter: "blur(0px)" };
+  const animate = ready
+    ? { opacity: 1, filter: "blur(0px)" }
+    : { opacity: 0, filter: "blur(12px)" };
   const transition = { duration: 0.9, ease: BLUR_EASE };
+
+  // Cascade delays so the home content blurs in like a top-to-bottom
+  // domino once `ready` flips — triggered when the loader's star lands
+  // in the wordmark slot. Each step is ~70ms so the whole cascade kicks
+  // off inside ~250ms after the morph completes.
+  const tx = (delay: number) => ({ ...transition, delay });
 
   // Track the wordmark element via state so useFitWordmark re-runs when
   // the wordmark unmounts during AnimatePresence transitions and a fresh
@@ -288,27 +342,32 @@ export default function Hero({
               exit={{ opacity: 0, x: -160, filter: "blur(12px)" }}
               transition={{ duration: 0.4, ease: BLUR_EASE }}
             >
-              {/* Toolbar — always visible, sits above the wordmark. The
-                  toolbar manages its own scroll-past sticky portal. */}
+              {/* Toolbar — sits above the wordmark visually, but the
+                  cascade origin is the wordmark (where the star lands),
+                  so this slots in just after with a small delay. */}
               <motion.div
                 className="mb-8"
                 initial={initial}
                 animate={animate}
-                transition={transition}
+                transition={tx(0.08)}
               >
                 <HeroToolbar />
               </motion.div>
 
-              {/* Wordmark + decorative themed star */}
-              <motion.div
+              {/* Wordmark wrapper — flex row holding the name and the
+                  star. The wrapper itself is NOT animated so the star
+                  (a child of it) isn't hidden behind the parent's
+                  opacity gate while the layoutId morph is running.
+                  Only the <h1> name participates in the cascade. */}
+              <div
                 ref={setWordmarkRef}
                 className="flex items-start justify-start"
                 style={{ width: "100%" }}
-                initial={initial}
-                animate={animate}
-                transition={transition}
               >
-                <h1
+                <motion.h1
+                  initial={initial}
+                  animate={animate}
+                  transition={tx(0)}
                   style={{
                     fontFamily: "var(--font-sans)",
                     fontSize: "var(--wordmark-fontsize, 48px)",
@@ -321,9 +380,12 @@ export default function Hero({
                   }}
                 >
                   {HERO_NAME}
-                </h1>
-                <PlaygroundStar />
-              </motion.div>
+                </motion.h1>
+                <PlaygroundStar
+                  hideForLoader={hideStarForLoader}
+                  onMorphComplete={onStarMorphComplete}
+                />
+              </div>
 
               {/* LED matrix — pulled close to the wordmark. */}
               {matrix && (
@@ -331,7 +393,7 @@ export default function Hero({
                   className="mt-6"
                   initial={initial}
                   animate={animate}
-                  transition={transition}
+                  transition={tx(0.16)}
                 >
                   {matrix}
                 </motion.div>
@@ -343,7 +405,7 @@ export default function Hero({
                 style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
                 initial={initial}
                 animate={animate}
-                transition={transition}
+                transition={tx(0.24)}
               >
                 <HighlightableBio paragraphs={mainParagraphs} />
                 <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />

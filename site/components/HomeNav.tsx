@@ -72,10 +72,14 @@ export default function HomeNav({
   aboutMeOpen = false,
   onAboutMeClose,
   navRef,
+  ready = true,
 }: {
   aboutMeOpen?: boolean;
   onAboutMeClose?: () => void;
   navRef?: React.Ref<HTMLElement>;
+  /** Gates the nav's blur-in. Hooked to HomeLayout's `heroReady` so it
+   *  joins the cascade triggered by the loader's star landing. */
+  ready?: boolean;
 } = {}) {
   const { activeId, setAndLock } = useActiveSection();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -119,7 +123,7 @@ export default function HomeNav({
   };
 
   return (
-    <nav
+    <motion.nav
       ref={navRef}
       className="hidden lg:flex flex-col fixed top-1/2 z-40"
       // Anchor the nav to the left edge of the centered 650px body column
@@ -134,6 +138,16 @@ export default function HomeNav({
         transform: "translateY(-50%)",
       }}
       aria-label="Primary"
+      initial={reducedMotion ? false : { opacity: 0, filter: "blur(12px)" }}
+      animate={
+        reducedMotion
+          ? undefined
+          : {
+              opacity: ready ? 1 : 0,
+              filter: ready ? "blur(0px)" : "blur(12px)",
+            }
+      }
+      transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.08 }}
     >
       {/* Return link — appears above the primary nav while the About me
           carousel page is open. Same typographic scale as nav items. */}
@@ -249,6 +263,6 @@ export default function HomeNav({
         </motion.div>
       )}
 
-    </nav>
+    </motion.nav>
   );
 }

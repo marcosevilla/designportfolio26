@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI from "./music/LedMatrixUI";
+import LoadingOverlay from "./LoadingOverlay";
 import { StickyToolbarContext } from "@/lib/StickyToolbarContext";
 
 function MatrixArea({ sentinelRef }: { sentinelRef: React.Ref<HTMLDivElement> }) {
@@ -29,6 +31,15 @@ export default function HomeLayout({
 }) {
   const [aboutMeOpen, setAboutMeOpen] = useState(false);
   const [pastMatrix, setPastMatrix] = useState(false);
+  // Gates Hero's blur-in animation. Flipped to true either when the
+  // LoadingOverlay starts fading (first-time visit) or immediately when
+  // the overlay is skipped (repeat visit).
+  const [heroReady, setHeroReady] = useState(false);
+  // While true, the LoadingOverlay owns `layoutId="hero-star"`. The
+  // wordmark's PlaygroundStar reserves the slot but doesn't render the
+  // glyph, so when the loader releases the layoutId framer-motion has
+  // exactly one destination element to morph into.
+  const [loaderOwnsStar, setLoaderOwnsStar] = useState(true);
   const wordmarkElRef = useRef<HTMLDivElement | null>(null);
   const aboutMeHeaderElRef = useRef<HTMLHeadingElement | null>(null);
   const matrixSentinelElRef = useRef<HTMLDivElement | null>(null);
@@ -120,11 +131,21 @@ export default function HomeLayout({
 
   return (
     <StickyToolbarContext.Provider value={pastMatrix}>
+    <LoadingOverlay
+      onDone={() => {
+        // Repeat visitors skip the loader entirely, so there's no morph
+        // to wait for — flip ready immediately so Hero can blur in.
+        setHeroReady(true);
+        setLoaderOwnsStar(false);
+      }}
+      onStarReleased={() => setLoaderOwnsStar(false)}
+    />
     <div id="home">
       <HomeNav
         navRef={navRef}
         aboutMeOpen={aboutMeOpen}
         onAboutMeClose={() => setAboutMeOpen(false)}
+        ready={heroReady}
       />
       {/* Hero column: small top inset, height capped so the next section
           peeks from the bottom of the viewport. clamp() keeps the peek
@@ -142,6 +163,9 @@ export default function HomeLayout({
           onAboutMeChange={setAboutMeOpen}
           wordmarkRef={setWordmarkRef}
           aboutMeHeaderRef={setAboutMeHeaderRef}
+          ready={heroReady}
+          hideStarForLoader={loaderOwnsStar}
+          onStarMorphComplete={() => setHeroReady(true)}
         />
       </div>
       <section
@@ -149,7 +173,18 @@ export default function HomeLayout({
         className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-12 lg:pt-12"
         style={aboutMeOpen ? { display: "none" } : undefined}
       >
-        {work}
+        {/* Work content participates in the cascade — last in the
+            chain so the eye lands on Hero first, then sweeps down. */}
+        <motion.div
+          initial={{ opacity: 0, filter: "blur(12px)" }}
+          animate={{
+            opacity: heroReady ? 1 : 0,
+            filter: heroReady ? "blur(0px)" : "blur(12px)",
+          }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.32 }}
+        >
+          {work}
+        </motion.div>
       </section>
       <section
         id="playground"
