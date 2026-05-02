@@ -7,6 +7,7 @@ import HomeNav from "./HomeNav";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI from "./music/LedMatrixUI";
 import LoadingOverlay from "./LoadingOverlay";
+import Playground from "./Playground";
 import { StickyToolbarContext } from "@/lib/StickyToolbarContext";
 
 function MatrixArea({ sentinelRef }: { sentinelRef: React.Ref<HTMLDivElement> }) {
@@ -195,10 +196,21 @@ export default function HomeLayout({
       </section>
       <section
         id="playground"
-        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-12 lg:pt-12"
+        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-32 pb-48"
         style={aboutMeOpen ? { display: "none" } : undefined}
       >
-        {/* Placeholder for now — anchor target for the Playground nav item. */}
+        {/* Mirrors the Work section's cascade so Playground blurs in
+            alongside the rest of the page once the loader releases. */}
+        <motion.div
+          initial={{ opacity: 0, filter: "blur(12px)" }}
+          animate={{
+            opacity: heroReady ? 1 : 0,
+            filter: heroReady ? "blur(0px)" : "blur(12px)",
+          }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+        >
+          <Playground />
+        </motion.div>
       </section>
     </div>
     </StickyToolbarContext.Provider>

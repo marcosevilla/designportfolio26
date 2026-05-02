@@ -280,30 +280,25 @@ export function ThemeStateProvider({ children }: { children: React.ReactNode }) 
     setMounted(true);
 
     let initialMode: Mode = theme === "dark" ? "dark" : "light";
-    let initialFamily: string = DEFAULT_THEME_FAMILY;
+    // Hue family is intentionally NOT persisted — every fresh load starts
+    // at the default. Only light/dark mode and font-size are sticky.
+    const initialFamily: string = DEFAULT_THEME_FAMILY;
 
     const savedMode = localStorage.getItem("theme-mode");
-    const savedFamily = localStorage.getItem("theme-family");
 
-    // Migration from legacy schema: theme-mode === "colored" with separate
-    // colored-theme-name. Infer mode from the theme's original variant.
-    const legacyName = localStorage.getItem("colored-theme-name");
-    if (savedMode === "colored" && legacyName) {
-      const found = coloredThemes.find((t) => t.name === legacyName);
-      if (found) {
-        initialFamily = found.name;
-        initialMode = LEGACY_NATURALLY_DARK.has(found.name) ? "dark" : "light";
+    // Migration: drop any prior schemas that persisted hue family.
+    if (savedMode === "colored") {
+      const legacyName = localStorage.getItem("colored-theme-name");
+      if (legacyName) {
+        const found = coloredThemes.find((t) => t.name === legacyName);
+        initialMode = found && LEGACY_NATURALLY_DARK.has(found.name) ? "dark" : "light";
       }
-      localStorage.removeItem("colored-theme-name");
       localStorage.setItem("theme-mode", initialMode);
-      localStorage.setItem("theme-family", initialFamily);
-    } else {
-      if (savedMode === "light" || savedMode === "dark") initialMode = savedMode;
-      if (savedFamily) {
-        const found = coloredThemes.find((t) => t.name === savedFamily);
-        if (found) initialFamily = found.name;
-      }
+    } else if (savedMode === "light" || savedMode === "dark") {
+      initialMode = savedMode;
     }
+    localStorage.removeItem("colored-theme-name");
+    localStorage.removeItem("theme-family");
 
     setModeState(initialMode);
     setThemeFamilyState(initialFamily);
@@ -312,14 +307,10 @@ export function ThemeStateProvider({ children }: { children: React.ReactNode }) 
     const foundInitial = coloredThemes.find((t) => t.name === initialFamily);
     if (foundInitial) applyColoredTheme(foundInitial, initialMode);
 
-    const savedSize = localStorage.getItem("font-size-offset");
-    if (savedSize) {
-      const offset = parseInt(savedSize, 10);
-      if (!isNaN(offset) && offset >= FONT_SIZE_MIN && offset <= FONT_SIZE_MAX) {
-        setFontSizeOffset(offset);
-        if (offset !== 0) applyFontSizeOffset(offset);
-      }
-    }
+    // Font-size offset is intentionally NOT persisted — every fresh load
+    // starts at 0, matching the hue-family behavior. Clean up any stale
+    // value from prior sessions so the offset doesn't linger.
+    localStorage.removeItem("font-size-offset");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -345,14 +336,14 @@ export function ThemeStateProvider({ children }: { children: React.ReactNode }) 
     if (!found) return;
     setThemeFamilyState(familyName);
     applyColoredTheme(found, mode);
-    localStorage.setItem("theme-family", familyName);
+    // Hue family is session-only — do not persist.
   }, [themeFamily, mode]);
 
   const increaseFontSize = useCallback(() => {
     setFontSizeOffset((prev) => {
       const next = Math.min(prev + FONT_SIZE_STEP, FONT_SIZE_MAX);
       applyFontSizeOffset(next);
-      localStorage.setItem("font-size-offset", String(next));
+      // Session-only — no persistence.
       return next;
     });
   }, []);
@@ -361,7 +352,7 @@ export function ThemeStateProvider({ children }: { children: React.ReactNode }) 
     setFontSizeOffset((prev) => {
       const next = Math.max(prev - FONT_SIZE_STEP, FONT_SIZE_MIN);
       applyFontSizeOffset(next);
-      localStorage.setItem("font-size-offset", String(next));
+      // Session-only — no persistence.
       return next;
     });
   }, []);
@@ -373,7 +364,7 @@ export function ThemeStateProvider({ children }: { children: React.ReactNode }) 
     const found = coloredThemes.find((t) => t.name === DEFAULT_THEME_FAMILY);
     if (found) applyColoredTheme(found, "light");
     localStorage.setItem("theme-mode", "light");
-    localStorage.setItem("theme-family", DEFAULT_THEME_FAMILY);
+    localStorage.removeItem("theme-family");
     localStorage.removeItem("colored-theme-name");
     clearFontSizeOffset();
     setFontSizeOffset(0);
