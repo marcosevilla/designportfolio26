@@ -77,7 +77,7 @@ function LockedCardWrapper({
         type="button"
         onClick={onClick}
         aria-label="Locked — click to view unlock options"
-        className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 ease-out"
+        className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none transition-opacity duration-200 ease-out"
         style={{
           background: "color-mix(in oklab, var(--color-bg) 50%, transparent)",
           backdropFilter: "blur(2px)",
@@ -117,17 +117,19 @@ function LockedPagePlaceholder({
 }) {
   return (
     <div className="relative">
-      {/* Sticky return arrow at top-left. Matches the existing
-          MobileNav "back" pattern. */}
+      {/* Viewport-pinned return arrow at top-left, sits above page
+          content but below the unlock modal (z-[100]). */}
       <Link
         href={backHref}
-        className="absolute top-6 left-6 inline-flex items-center gap-1.5 transition-colors"
+        className="fixed top-6 left-6 z-50 inline-flex items-center gap-1.5 transition-colors"
         style={{
           ...typescale.body,
           color: "var(--color-fg-secondary)",
         }}
         onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-fg)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg-secondary)"; }}
+        onFocus={(e) => { e.currentTarget.style.color = "var(--color-fg)"; }}
+        onBlur={(e) => { e.currentTarget.style.color = "var(--color-fg-secondary)"; }}
       >
         <BackChevronIcon size={14} />
         Back
@@ -203,6 +205,8 @@ function LockedPagePlaceholder({
             }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+            onFocus={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+            onBlur={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
           >
             <EmailIcon size={14} />
             Email
@@ -221,6 +225,8 @@ function LockedPagePlaceholder({
             }}
             onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
+            onFocus={(e) => { e.currentTarget.style.color = "var(--color-accent)"; e.currentTarget.style.borderColor = "var(--color-accent)"; }}
+            onBlur={(e) => { e.currentTarget.style.color = "var(--color-fg)"; e.currentTarget.style.borderColor = "var(--color-border)"; }}
           >
             <LinkedInIcon size={14} />
             LinkedIn
