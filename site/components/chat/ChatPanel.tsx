@@ -164,7 +164,7 @@ export default function ChatPanel({
         ) : (
           <div className="flex flex-col gap-5">
             {turns.map((turn, i) => (
-              <ChatMessage key={i} turn={turn} />
+              <ChatMessage key={i} turn={turn} onClose={onClose} />
             ))}
             {pending && (
               <div

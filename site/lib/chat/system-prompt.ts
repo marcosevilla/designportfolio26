@@ -1,3 +1,5 @@
+import "server-only";
+
 // Assembles the Claude system prompt once at module load. Cached for the life
 // of the function instance; Anthropic prompt caching takes care of the rest.
 //

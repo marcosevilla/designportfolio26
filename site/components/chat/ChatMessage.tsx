@@ -20,7 +20,7 @@ const FADE_IN = {
   transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const },
 };
 
-function InAppLink({ label }: { label: string }) {
+function InAppLink({ label, onClose }: { label: string; onClose: () => void }) {
   // The "about" / "resume" link routes back to home with About-me state.
   // We use a Next link with a query string the home page reads on mount.
   // (HomeLayout already centralizes aboutMeOpen state — see follow-up note.)
@@ -28,7 +28,10 @@ function InAppLink({ label }: { label: string }) {
   return (
     <button
       type="button"
-      onClick={() => router.push("/?about=1")}
+      onClick={() => {
+        onClose();
+        router.push("/?about=1");
+      }}
       className="dotted-link dotted-link--inline"
       style={{ background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit" }}
     >
@@ -37,14 +40,14 @@ function InAppLink({ label }: { label: string }) {
   );
 }
 
-function RenderSegments({ raw }: { raw: string }) {
+function RenderSegments({ raw, onClose }: { raw: string; onClose: () => void }) {
   const segments = parseChatMarkup(raw);
   return (
     <>
       {segments.map((seg, i) => {
         if (seg.kind === "text") return <span key={i}>{seg.text}</span>;
         if (seg.inApp) {
-          return <InAppLink key={i} label={seg.label} />;
+          return <InAppLink key={i} label={seg.label} onClose={onClose} />;
         }
         if (seg.external) {
           return (
@@ -71,7 +74,13 @@ function RenderSegments({ raw }: { raw: string }) {
 
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
-export default function ChatMessage({ turn }: { turn: ChatTurn }) {
+export default function ChatMessage({
+  turn,
+  onClose,
+}: {
+  turn: ChatTurn;
+  onClose: () => void;
+}) {
   if (turn.role === "user") {
     return (
       <motion.div {...FADE_IN} className="flex justify-end">
@@ -105,7 +114,7 @@ export default function ChatMessage({ turn }: { turn: ChatTurn }) {
           whiteSpace: "pre-wrap",
         }}
       >
-        <RenderSegments raw={turn.content} />
+        <RenderSegments raw={turn.content} onClose={onClose} />
       </div>
       {slug && isStudySlug(slug) && <CaseStudyCardUnfurl slug={slug} />}
       <ChatMessageActions raw={turn.content} />
