@@ -77,7 +77,7 @@ function LockedCardWrapper({
         type="button"
         onClick={onClick}
         aria-label="Locked — click to view unlock options"
-        className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none transition-opacity duration-200 ease-out"
+        className="absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer rounded-2xl opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none transition-opacity duration-200 ease-out"
         style={{
           background: "color-mix(in oklab, var(--color-bg) 50%, transparent)",
           backdropFilter: "blur(2px)",
@@ -165,7 +165,7 @@ function LockedPagePlaceholder({
         )}
 
         <div
-          className="flex items-center justify-center mb-4"
+          className="flex items-center justify-center mb-4 rounded-2xl"
           style={{
             width: 44,
             height: 44,
@@ -195,10 +195,13 @@ function LockedPagePlaceholder({
         <div className="flex items-center gap-2">
           <a
             href={`mailto:${EMAIL}`}
-            className="inline-flex items-center gap-2 px-4 py-2.5 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors"
             style={{
-              ...typescale.body,
+              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "12px",
               fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
               color: "var(--color-fg)",
               background: "var(--color-bg)",
               border: "1px solid var(--color-border)",
@@ -215,10 +218,13 @@ function LockedPagePlaceholder({
             href={LINKEDIN_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2.5 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors"
             style={{
-              ...typescale.body,
+              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "12px",
               fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
               color: "var(--color-fg)",
               background: "var(--color-bg)",
               border: "1px solid var(--color-border)",
@@ -234,10 +240,13 @@ function LockedPagePlaceholder({
           <button
             type="button"
             onClick={onUnlockClick}
-            className="inline-flex items-center gap-2 px-4 py-2.5 transition-opacity"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-opacity"
             style={{
-              ...typescale.body,
+              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "12px",
               fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
               color: "var(--color-bg)",
               background: "var(--color-fg)",
             }}
