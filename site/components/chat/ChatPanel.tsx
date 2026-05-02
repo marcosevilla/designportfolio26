@@ -143,7 +143,7 @@ export default function ChatPanel({
           type="button"
           onClick={onClose}
           aria-label="Close chat"
-          className="rounded-full p-1.5 transition-colors hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+          className="rounded-full w-10 h-10 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
           style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
         >
           <CloseIcon size={12} />
@@ -243,7 +243,7 @@ export default function ChatPanel({
             onClick={() => send(value)}
             disabled={pending}
             aria-label="Send message"
-            className="rounded-full p-1.5 transition-colors hover:bg-(--color-muted) disabled:opacity-50 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+            className="rounded-full w-10 h-10 inline-flex items-center justify-center enabled:active:scale-[0.96] transition-[background-color,color,transform,opacity] duration-150 ease-out hover:bg-(--color-muted) disabled:opacity-50 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
             style={{ color: "var(--color-accent)", cursor: pending ? "not-allowed" : "pointer" }}
           >
             <SendIcon size={14} />

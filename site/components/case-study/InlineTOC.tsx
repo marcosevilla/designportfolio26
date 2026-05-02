@@ -85,9 +85,9 @@ export default function InlineTOC() {
               lineHeight: "20px",
               y: starY,
             }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ type: "spring", duration: 0.3, bounce: 0 }}
             aria-hidden
           >
             ✸

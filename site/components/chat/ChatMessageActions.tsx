@@ -46,7 +46,7 @@ export default function ChatMessageActions({ raw }: { raw: string }) {
         type="button"
         onClick={onCopy}
         aria-label={copied ? "Copied" : "Copy message"}
-        className="inline-flex items-center gap-1 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent) rounded"
+        className="relative inline-flex items-center gap-1 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent) rounded before:absolute before:inset-0 before:-m-3 before:content-['']"
         style={{
           fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
           fontSize: "11px",

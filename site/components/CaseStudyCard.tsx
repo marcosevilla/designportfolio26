@@ -70,7 +70,7 @@ export default function CaseStudyCard({ study, cardSize = "standard", showYear =
     >
       <Link
         href={`/work/${study.slug}`}
-        className="block w-full text-left relative overflow-hidden cursor-pointer rounded-none bg-surface-raised shadow-[0_12px_40px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.02)]"
+        className="block w-full text-left relative overflow-hidden cursor-pointer rounded-none bg-surface-raised shadow-[0_12px_40px_rgba(0,0,0,0.03),0_4px_16px_rgba(0,0,0,0.02)] active:scale-[0.96] transition-transform duration-150 ease-out"
         style={{ aspectRatio: ASPECT_RATIOS[cardSize] }}
       >
         {/* Content */}

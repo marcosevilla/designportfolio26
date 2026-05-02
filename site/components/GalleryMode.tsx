@@ -318,7 +318,7 @@ export default function GalleryMode({ open, onClose, studies, initialStudySlug }
             type="button"
             onClick={onClose}
             aria-label="Close gallery"
-            className="group fixed top-6 right-6 z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors text-(--color-fg-tertiary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
+            className="group fixed top-6 right-6 z-10 flex items-center justify-center w-10 h-10 rounded-full active:scale-[0.96] transition-[color,transform] duration-150 ease-out text-(--color-fg-tertiary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
           >
             <span
               aria-hidden

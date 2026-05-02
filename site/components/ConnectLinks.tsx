@@ -46,7 +46,7 @@ export default function ConnectLinks() {
             onFocus={() => setHoveredKey(l.key)}
             target={l.external ? "_blank" : undefined}
             rel={l.external ? "noopener noreferrer" : undefined}
-            className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
+            className="relative flex items-center justify-center w-8 h-8 rounded-full active:scale-[0.96] transition-[color,transform] duration-150 ease-out text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
           >
             {isHovered && (
               <motion.span

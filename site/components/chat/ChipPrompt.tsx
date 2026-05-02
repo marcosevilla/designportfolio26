@@ -20,6 +20,7 @@ export default function ChipPrompt({
       type="button"
       onClick={() => onSelect(label)}
       whileHover={{ y: -1 }}
+      whileTap={{ scale: 0.96 }}
       transition={HOVER_SPRING}
       className="text-left rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
       style={{

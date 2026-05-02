@@ -21,7 +21,7 @@ export default function CaseStudyCardUnfurl({ slug }: { slug: StudySlug }) {
     >
       <Link
         href={`/work/${slug}`}
-        className="group flex items-stretch overflow-hidden rounded-xl"
+        className="group flex items-stretch overflow-hidden rounded-xl active:scale-[0.96] transition-transform duration-150 ease-out"
         style={{
           border: "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)",
           backgroundColor: "var(--color-surface)",

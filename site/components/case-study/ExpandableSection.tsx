@@ -31,7 +31,7 @@ export default function ExpandableSection({
       <div className="md:hidden">
         <button
           onClick={() => setOpen((o) => !o)}
-          className="w-full flex items-center justify-between mb-4 text-left"
+          className="w-full flex items-center justify-between mb-4 text-left py-3 -my-1"
           aria-expanded={open}
           aria-controls={`${id}-content`}
         >

@@ -60,6 +60,10 @@
   --color-muted: #f3f3f3;
   --color-accent: #B5651D;
   --color-glow: #B5651D;
+  /* 1px low-opacity outline for raster images / video thumbnails.
+     Pure black in light, pure white in dark — never tinted, since a tinted
+     outline picks up the surface underneath and reads as dirt on the edge. */
+  --color-image-outline: rgba(0, 0, 0, 0.1);
   /* Foreground color for use on top of --color-accent (e.g. primary CTA fills).
      Resolves to bg, which is hand-tuned per theme for WCAG-AA contrast against
      the accent — so pinning on-accent text to bg gets correct contrast for free
@@ -114,6 +118,7 @@
   --color-muted: #1e1e1e;
   --color-accent: #D4915E;
   --color-glow: #F5C28A;
+  --color-image-outline: rgba(255, 255, 255, 0.1);
   /* on-accent defined in :root resolves via var(--color-bg) at use-site, so
      no override needed here. */
   --background: oklch(0.145 0 0);
@@ -304,6 +309,8 @@ body {
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.1),
     0 14px 36px rgba(0, 0, 0, 0.24);
+  outline: 1px solid var(--color-image-outline);
+  outline-offset: -1px;
   object-fit: cover;
   /* All photos bottom-align (same size) → shared pivot below their bottom
      edge. Rotation alone fans the cards. Larger Y% = wider fan spread. */
@@ -481,6 +488,15 @@ mark.bio-highlight {
   to {
     background-size: 100% 88%;
   }
+}
+
+/* Subtle 1px outline for raster images / video thumbnails so the edge
+   reads cleanly against any surface. Pure black in light / pure white in
+   dark — see --color-image-outline (never tinted neutrals). */
+.image-outline,
+img[class*="rounded-"] {
+  outline: 1px solid var(--color-image-outline);
+  outline-offset: -1px;
 }
 
 /* Bento card — Stripe-style scale animation */
