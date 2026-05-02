@@ -1,0 +1,257 @@
+"use client";
+
+// Open-state internals of the chat surface.
+// Top: header strip (sparkle glyph, "Ask me anything" mono label, X).
+// Middle: transcript (chips empty-state when no messages yet).
+// Bottom: input row (Spotlight-feel — leading icon, large input, Enter to send).
+//
+// This component does NOT own the morph wrapper or sessionStorage — that's
+// ChatBar's job. ChatPanel is purely presentational + input wiring.
+
+import { useEffect, useRef, useState } from "react";
+import ChatMessage, { type ChatTurn } from "./ChatMessage";
+import ChipPrompt from "./ChipPrompt";
+
+const MAX_INPUT_CHARS = 1000;
+
+const DEFAULT_CHIPS = [
+  "Walk me through your most impactful project",
+  "What's your design process?",
+  "How do you collaborate with engineering?",
+  "What got you into design?",
+];
+
+function SparkIcon({ size = 14 }: { size?: number }) {
+  return (
+    <span aria-hidden style={{ fontSize: size, lineHeight: 1, color: "var(--color-accent)" }}>
+      ✸
+    </span>
+  );
+}
+
+function CloseIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+      <path d="M4 4l8 8M12 4l-8 8" />
+    </svg>
+  );
+}
+
+function SendIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8l10-5-3.5 11L8 9 3 8z" />
+    </svg>
+  );
+}
+
+export default function ChatPanel({
+  turns,
+  pending,
+  errorLine,
+  onSubmit,
+  onClose,
+}: {
+  turns: ChatTurn[];
+  /** True while a streaming response is in flight; disables submit. */
+  pending: boolean;
+  /** Optional inline assistant-style line (rate-limit / network error). */
+  errorLine: string | null;
+  onSubmit: (text: string) => void;
+  onClose: () => void;
+}) {
+  const [value, setValue] = useState("");
+  const transcriptRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-scroll transcript to bottom on new content unless the user has
+  // scrolled up themselves.
+  useEffect(() => {
+    const el = transcriptRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
+    if (distanceFromBottom < 120) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [turns, pending]);
+
+  // Focus input on mount so visitors can start typing immediately.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const send = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || pending) return;
+    onSubmit(trimmed.slice(0, MAX_INPUT_CHARS));
+    setValue("");
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send(value);
+    }
+  };
+
+  const isEmpty = turns.length === 0;
+  const showSubmit = value.trim().length > 0;
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="chat-surface flex flex-col"
+      style={{
+        width: "min(640px, calc(100vw - 32px))",
+        maxHeight: "min(60vh, 560px)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center gap-2 px-4 pt-3 pb-2"
+        style={{ borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)" }}
+      >
+        <SparkIcon size={14} />
+        <span
+          className="flex-1"
+          style={{
+            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+            fontSize: "11px",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            color: "var(--color-fg-tertiary)",
+          }}
+        >
+          Ask me anything
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close chat"
+          className="rounded-full p-1.5 transition-colors hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+          style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
+        >
+          <CloseIcon size={12} />
+        </button>
+      </div>
+
+      {/* Transcript / empty state */}
+      <div ref={transcriptRef} className="flex-1 overflow-y-auto px-4 py-4">
+        {isEmpty ? (
+          <div className="flex flex-col gap-4">
+            <p
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: "14px",
+                lineHeight: 1.5,
+                color: "var(--color-fg-secondary)",
+              }}
+            >
+              Hi — I'm Marco. Ask me about my work, my process, or anything else.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {DEFAULT_CHIPS.map((label) => (
+                <ChipPrompt
+                  key={label}
+                  label={label}
+                  onSelect={(text) => {
+                    send(text);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {turns.map((turn, i) => (
+              <ChatMessage key={i} turn={turn} onClose={onClose} />
+            ))}
+            {pending && (
+              <div
+                aria-live="polite"
+                style={{
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "11px",
+                  color: "var(--color-fg-tertiary)",
+                }}
+              >
+                …
+              </div>
+            )}
+            {errorLine && (
+              <div
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "13px",
+                  color: "var(--color-fg-tertiary)",
+                  fontStyle: "italic",
+                }}
+              >
+                {errorLine}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Input row */}
+      <div
+        className="flex items-center gap-2 px-3 py-2"
+        style={{ borderTop: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)" }}
+      >
+        <span aria-hidden style={{ color: "var(--color-fg-tertiary)", paddingLeft: 4 }}>
+          <SendIcon size={14} />
+        </span>
+        <textarea
+          ref={inputRef}
+          value={value}
+          onChange={(e) => setValue(e.target.value.slice(0, MAX_INPUT_CHARS))}
+          onKeyDown={onKeyDown}
+          placeholder="Ask me anything…"
+          rows={1}
+          className="flex-1 resize-none bg-transparent border-0 outline-none focus:outline-none focus:ring-0 placeholder:text-(--color-fg-tertiary)"
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "16px",
+            lineHeight: "22px",
+            color: "var(--color-fg)",
+            padding: "6px 0",
+            maxHeight: "120px",
+            // Hard-override the browser focus outline. Tailwind's
+            // `outline-none` utility was being beaten by the UA stylesheet
+            // on this platform, so we kill it inline (highest specificity).
+            outline: "none",
+            boxShadow: "none",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        />
+        {showSubmit && (
+          <button
+            type="button"
+            onClick={() => send(value)}
+            disabled={pending}
+            aria-label="Send message"
+            className="rounded-full p-1.5 transition-colors hover:bg-(--color-muted) disabled:opacity-50 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+            style={{ color: "var(--color-accent)", cursor: pending ? "not-allowed" : "pointer" }}
+          >
+            <SendIcon size={14} />
+          </button>
+        )}
+      </div>
+
+      {/* Privacy footnote */}
+      <p
+        className="px-4 pb-2"
+        style={{
+          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+          fontSize: "10px",
+          color: "var(--color-fg-tertiary)",
+          textAlign: "center",
+          opacity: 0.7,
+        }}
+      >
+        Powered by Claude · Conversations aren't stored.
+      </p>
+    </div>
+  );
+}

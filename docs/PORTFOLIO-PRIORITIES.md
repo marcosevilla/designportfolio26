@@ -7,6 +7,12 @@ A prioritization framework for completing Marco's portfolio before job applicati
 
 ---
 
+## Recently Shipped or In Flight
+
+- **Chat bar** (in flight, deploys with feature/chat-bar branch): "Ask me anything" AI chat in HeroToolbar — Claude Sonnet 4.6, $25/mo cap, per-IP rate-limit. Spec: `docs/superpowers/specs/2026-05-01-chat-bar-design.md`.
+
+---
+
 ## Current State Assessment
 
 ### What's Strong

@@ -593,3 +593,33 @@ mark.bio-highlight {
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 }
+
+/* Spotlight-flavored translucent surface for the chat bar (both pill and
+   panel states). Heavy backdrop blur + faint hairline border + soft elevated
+   shadow. Theme-aware via existing CSS vars. Border-radius generous enough
+   to read as fully-rounded in pill state. */
+.chat-surface {
+  background-color: color-mix(in srgb, var(--color-surface) 30%, transparent);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  border-radius: 18px;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dark .chat-surface {
+  background-color: color-mix(in srgb, var(--color-surface-raised) 50%, transparent);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.32);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Defensive — no animation property is set on .chat-surface, but disable
+     transitions just in case. */
+  .chat-surface {
+    transition: none;
+  }
+}
