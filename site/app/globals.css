@@ -638,7 +638,7 @@ mark.bio-highlight {
   top: 0;
   left: 0;
   right: 0;
-  height: 36px;
+  height: 40px;
   z-index: 40;
   background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
   backdrop-filter: blur(20px) saturate(160%);

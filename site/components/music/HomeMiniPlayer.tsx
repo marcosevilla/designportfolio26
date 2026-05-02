@@ -3,28 +3,38 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
-import { SCENES, type VisualizerScene } from "@/lib/visualizer-scenes";
 import {
   PlayIcon,
   PauseIcon,
   SkipBackIcon,
   SkipForwardIcon,
-  WaveformSceneIcon,
-  ChladniSceneIcon,
-  FeedbackSceneIcon,
-  LissajousSceneIcon,
 } from "@/components/Icons";
 import SeekBar from "./SeekBar";
 
-const SCENE_ICONS: Record<VisualizerScene, (props: { size?: number }) => React.ReactElement> = {
-  waveform: WaveformSceneIcon,
-  chladni: ChladniSceneIcon,
-  feedback: FeedbackSceneIcon,
-  lissajous: LissajousSceneIcon,
-};
-
 const PLAYER_HOVER_SPRING = { type: "spring" as const, stiffness: 500, damping: 38 };
+
+/** Small spinning vinyl disc — sits left of the title in the inline music
+ *  slot as a "music is playing" cue. Was previously inside HeroToolbar's
+ *  NowPlayingStatus before the swap-zone refactor; reintroduced here so
+ *  the music slot has the same visual identity. */
+function SpinningDiscIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none">
+      <circle cx="6" cy="6" r="5.6" fill="currentColor" />
+      <path
+        d="M2.6 3.7 A 5 5 0 0 1 8.6 1.7"
+        stroke="white"
+        strokeOpacity="0.7"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <circle cx="3.5" cy="8.2" r="0.45" fill="white" fillOpacity="0.45" />
+      <circle cx="6" cy="6" r="2" fill="var(--color-bg)" />
+      <circle cx="6" cy="6" r="0.55" fill="currentColor" />
+    </svg>
+  );
+}
 
 const SWAP_EASE = [0.22, 1, 0.36, 1] as const;
 const SWAP_TRAVEL = 24; // px — title exits up, scrubber enters from below
@@ -130,14 +140,17 @@ export function MiniPlayerRow() {
         className="flex items-center shrink-0"
         onMouseLeave={() => setTransportHover(null)}
       >
+        {/* Skip buttons sit a touch smaller than the play/pause to give the
+            primary transport visual emphasis. */}
         <PlayerIconButton
           label="Previous track"
           onClick={prev}
           hovered={transportHover === 0}
           onHover={() => setTransportHover(0)}
           layoutId="player-row-transport-hover"
+          size={26}
         >
-          <SkipBackIcon size={16} />
+          <SkipBackIcon size={13} />
         </PlayerIconButton>
         <PlayerIconButton
           label={isPlaying ? "Pause" : "Play"}
@@ -145,8 +158,9 @@ export function MiniPlayerRow() {
           hovered={transportHover === 1}
           onHover={() => setTransportHover(1)}
           layoutId="player-row-transport-hover"
+          size={32}
         >
-          {isPlaying ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+          {isPlaying ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
         </PlayerIconButton>
         <PlayerIconButton
           label="Next track"
@@ -154,8 +168,9 @@ export function MiniPlayerRow() {
           hovered={transportHover === 2}
           onHover={() => setTransportHover(2)}
           layoutId="player-row-transport-hover"
+          size={26}
         >
-          <SkipForwardIcon size={16} />
+          <SkipForwardIcon size={13} />
         </PlayerIconButton>
       </div>
 
@@ -226,8 +241,17 @@ export function MiniPlayerRow() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -SWAP_TRAVEL, opacity: 0 }}
               transition={{ duration: 0.24, ease: SWAP_EASE }}
-              className="absolute inset-0 flex items-center"
+              className="absolute inset-0 flex items-center gap-1.5"
             >
+              <motion.span
+                aria-hidden
+                className="inline-flex shrink-0"
+                style={{ color: "var(--color-accent)" }}
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+              >
+                <SpinningDiscIcon size={14} />
+              </motion.span>
               <p
                 className="truncate"
                 style={{
@@ -249,36 +273,3 @@ export function MiniPlayerRow() {
   );
 }
 
-/**
- * Inline-row visualizer scene toggles. Five scenes, each toggles independently.
- * Slots into the HeroToolbar's left swap zone behind the new Visuals button.
- */
-export function VisualsRow() {
-  const { activeScenes, toggleScene } = useVisualizerScene();
-  const [sceneHover, setSceneHover] = useState<number | null>(null);
-
-  return (
-    <div
-      className="flex items-center gap-2 w-full h-full"
-      onMouseLeave={() => setSceneHover(null)}
-    >
-      {SCENES.map((s, i) => {
-        const active = activeScenes.has(s.id);
-        const Icon = SCENE_ICONS[s.id];
-        return (
-          <PlayerIconButton
-            key={s.id}
-            label={`Toggle ${s.label} scene`}
-            onClick={() => toggleScene(s.id)}
-            active={active}
-            hovered={sceneHover === i}
-            onHover={() => setSceneHover(i)}
-            layoutId="visuals-row-hover"
-          >
-            <Icon size={16} />
-          </PlayerIconButton>
-        );
-      })}
-    </div>
-  );
-}

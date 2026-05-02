@@ -210,18 +210,18 @@ export default function ChatBar() {
       }}
       layoutId="chat-surface"
       transition={MORPH_SPRING}
-      aria-label="Open chat — Ask me anything"
+      aria-label="Open chat — Ask Marco"
       className="chat-cta fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
-        height: 44,
-        padding: "0 18px",
+        height: 40,
+        padding: "0 14px",
         cursor: "pointer",
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
         border: 0,
-        /* Round-rectangle: smaller radius than full pill (which would be 22)
-           so the corner reads as a CTA button rather than a floating tab. */
-        borderRadius: 14,
+        /* Round-rectangle: smaller radius reads as a CTA button rather
+           than a floating tab. */
+        borderRadius: 10,
         boxShadow:
           "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)",
         overflow: "hidden",
@@ -252,7 +252,7 @@ export default function ChatBar() {
             letterSpacing: "-0.005em",
           }}
         >
-          Ask me anything
+          Ask Marco
         </span>
       </motion.span>
       {/* Shimmer overlay — soft white sweep across the button surface on
@@ -295,14 +295,14 @@ export default function ChatBar() {
                     hides .chat-overlay at lg+ since the persistent side panel
                     leaves the page interactive. */}
                 <ChatOverlay onClose={close} />
-                {/* Panel slot — fixed to the right edge. Top:48 clears the
-                    36px system-chrome toolbar with a 12px gap; bottom 12,
+                {/* Panel slot — fixed to the right edge. Top:52 clears the
+                    40px system-chrome toolbar with a 12px gap; bottom 12,
                     right 12. Width: near-full at <lg (drawer), fixed 360px
                     at lg+ (side panel). The morph pill→panel is handled by
                     framer-motion interpolating layoutId rects. */}
                 <div
                   className="chat-panel-slot fixed bottom-3 right-3 z-[160] pointer-events-none flex flex-col"
-                  style={{ top: 48, width: "min(calc(100vw - 24px), 360px)" }}
+                  style={{ top: 52, width: "min(calc(100vw - 24px), 360px)" }}
                 >
                   <motion.div
                     key="chat-panel-wrap"

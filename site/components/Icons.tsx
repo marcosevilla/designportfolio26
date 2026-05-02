@@ -181,23 +181,25 @@ export function PaletteIcon({ size = 18, className }: IconProps) {
 
 export function SunIcon({ size = 16, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" />
-      <path d="M12 20v2" />
-      <path d="M4.93 4.93l1.41 1.41" />
-      <path d="M17.66 17.66l1.41 1.41" />
-      <path d="M2 12h2" />
-      <path d="M20 12h2" />
-      <path d="M4.93 19.07l1.41-1.41" />
-      <path d="M17.66 6.34l1.41-1.41" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
+      <circle cx="12" cy="12" r="5" />
+      {/* Eight ray-dots around the central disc — reads as a solid sun glyph
+          at small sizes without the wiry feel of stroked rays. */}
+      <circle cx="12" cy="3" r="1.2" />
+      <circle cx="12" cy="21" r="1.2" />
+      <circle cx="3" cy="12" r="1.2" />
+      <circle cx="21" cy="12" r="1.2" />
+      <circle cx="5.5" cy="5.5" r="1.2" />
+      <circle cx="18.5" cy="5.5" r="1.2" />
+      <circle cx="5.5" cy="18.5" r="1.2" />
+      <circle cx="18.5" cy="18.5" r="1.2" />
     </svg>
   );
 }
 
 export function MoonIcon({ size = 16, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} style={style}>
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   );
