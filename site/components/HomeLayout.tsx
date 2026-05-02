@@ -7,7 +7,9 @@ import Hero from "./Hero";
 import HomeNav from "./HomeNav";
 import HeroToolbar from "./HeroToolbar";
 import LedMatrix from "./LedMatrix";
-import LedMatrixUI from "./music/LedMatrixUI";
+import LedMatrixUI, { SceneToggles } from "./music/LedMatrixUI";
+import { AnimatePresence } from "framer-motion";
+import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
 
@@ -16,10 +18,24 @@ const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 /* The page-level visualizer. Single instance — the previous sticky-toolbar
    variant rendered a second LED inside its chrome; that variant is gone. */
 function MatrixArea() {
+  const { isPlaying } = useAudioPlayer();
   return (
-    <div className="relative">
-      <LedMatrix />
-      <LedMatrixUI />
+    <div className="flex flex-col items-stretch">
+      <div className="relative">
+        <LedMatrix />
+        <LedMatrixUI />
+      </div>
+      {/* Scene toggles sit below the matrix when playing. Lifted out of
+          LedMatrixUI so they're always visible on mobile (no hover) and
+          render against the toolbar bg instead of the dot field (light
+          mode legibility). */}
+      <AnimatePresence initial={false}>
+        {isPlaying && (
+          <div className="mt-2">
+            <SceneToggles />
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -23,23 +23,21 @@ const SCENE_ICONS: Record<
   lissajous: LissajousSceneIcon,
 };
 
-/** Bottom-left scene toggles overlaid on the LED matrix. Each scene is an
- *  independent toggle. Visible only on hover (gated by `revealed`) so the
- *  matrix reads as clean visuals at rest and surfaces controls when the
- *  user moves into it. Same fade as the play/pause glyph. */
-function SceneToggles({ revealed }: { revealed: boolean }) {
+/** Scene toggle row. Sits *outside* the LED matrix so it's always visible
+ *  while music plays — the previous in-matrix-on-hover variant was invisible
+ *  on light mode (icons against busy dot background) and unreachable on
+ *  mobile (no hover). Mounted by the parent only when `isPlaying` is true,
+ *  so the resting state stays clean. Exported for use in MatrixArea. */
+export function SceneToggles() {
   const { activeScenes, toggleScene } = useVisualizerScene();
   return (
     <motion.div
-      className="absolute bottom-2 left-2 z-10 flex items-center gap-0.5"
+      className="flex items-center justify-center gap-1"
       onClick={(e) => e.stopPropagation()}
-      initial={false}
-      animate={{
-        opacity: revealed ? 1 : 0,
-        filter: revealed ? "blur(0px)" : "blur(2px)",
-      }}
-      transition={{ duration: revealed ? 0.25 : 0.2, ease: [0.22, 1, 0.36, 1] }}
-      style={{ pointerEvents: revealed ? "auto" : "none" }}
+      initial={{ opacity: 0, y: -4, filter: "blur(4px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0, y: -4, filter: "blur(4px)" }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
     >
       {SCENES.map((s) => {
         const Icon = SCENE_ICONS[s.id];
@@ -51,12 +49,18 @@ function SceneToggles({ revealed }: { revealed: boolean }) {
             onClick={() => toggleScene(s.id)}
             aria-label={`Toggle ${s.label} scene`}
             aria-pressed={active}
-            className="flex items-center justify-center w-7 h-7 rounded-md transition-colors focus:outline-none cursor-pointer"
+            className="flex items-center justify-center w-10 h-10 rounded-md transition-colors focus:outline-none cursor-pointer active:scale-[0.96] [transition-property:color,background-color,transform] duration-150 ease-out"
             style={{
-              color: active ? "var(--color-accent)" : "rgba(255,255,255,0.55)",
+              color: active ? "var(--color-accent)" : "var(--color-fg-tertiary)",
               backgroundColor: active
-                ? "color-mix(in srgb, var(--color-accent) 18%, transparent)"
+                ? "color-mix(in srgb, var(--color-accent) 12%, transparent)"
                 : "transparent",
+            }}
+            onMouseEnter={(e) => {
+              if (!active) e.currentTarget.style.color = "var(--color-fg-secondary)";
+            }}
+            onMouseLeave={(e) => {
+              if (!active) e.currentTarget.style.color = "var(--color-fg-tertiary)";
             }}
           >
             <Icon size={14} />
@@ -254,10 +258,11 @@ export default function LedMatrixUI({ onPlay }: { onPlay?: () => void } = {}) {
         transition={{ duration: revealed ? 0.25 : 0.2, ease: [0.22, 1, 0.36, 1] }}
       />
 
-      {/* Scene toggles — bottom-left of the matrix, visible only on hover
-          (mirrors the play/pause glyph reveal). Mounted only when audio is
-          playing; scenes are irrelevant when the matrix is idle. */}
-      {isPlaying && <SceneToggles revealed={revealed} />}
+      {/* Scene toggles used to live here as a hover-revealed bottom-left
+          overlay on the matrix; they were inaccessible on mobile and
+          invisible on light mode (icons disappeared into the dot field).
+          Now exported as <SceneToggles /> and rendered by MatrixArea
+          *outside* the matrix when audio is playing. */}
     </div>
   );
 }
