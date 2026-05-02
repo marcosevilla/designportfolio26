@@ -338,9 +338,11 @@ function SectionLinkButton({
   const className =
     "group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)";
   const style: React.CSSProperties = {
-    fontFamily: "var(--font-sans)",
-    fontSize: "14px",
+    fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+    fontSize: "12px",
     fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
     lineHeight: 1.4,
     color: icon === "lock" ? "var(--color-fg-tertiary)" : "var(--color-fg)",
     background: "none",
@@ -349,7 +351,7 @@ function SectionLinkButton({
   };
   const inner = (
     <>
-      <span className="underline underline-offset-4 decoration-1">{children}</span>
+      <span>{children}</span>
       {icon === "lock" ? (
         <span aria-hidden className="inline-flex items-center">
           <LockIcon size={12} />

@@ -163,9 +163,11 @@ export default function HomeNav({
             transition={{ duration: 0.32, ease: BLUR_EASE }}
             className="group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent) self-start"
             style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "15px",
-              fontWeight: 600,
+              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "12px",
+              fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
               // line-height 1 keeps the cap-top at the box-top so the
               // button visually top-aligns with the About-me h1, which
               // also uses line-height 1.
@@ -229,10 +231,12 @@ export default function HomeNav({
                 onClick={(e) => handleClick(e, item.id)}
                 className="block transition-colors"
                 style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "15px",
-                  fontWeight: 600,
+                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: "12px",
+                  fontWeight: 500,
                   lineHeight: "20px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
                 }}
                 onMouseEnter={() => setHoveredIndex(index)}
               >

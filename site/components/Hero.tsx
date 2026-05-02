@@ -25,9 +25,11 @@ function LearnMoreCVButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="group mt-6 inline-flex items-center gap-1.5 cursor-pointer focus:outline-none"
       style={{
-        fontFamily: "var(--font-sans)",
-        fontSize: "14px",
+        fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+        fontSize: "12px",
         fontWeight: 500,
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
         lineHeight: 1.4,
         color: "var(--color-accent)",
         background: "none",
@@ -334,7 +336,7 @@ export default function Hero({
             between the home page and the About-me / Resume page. Body has
             overflow-x: hidden so outgoing slides leave the viewport
             without horizontal scroll. */}
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="popLayout" initial={false}>
           {!aboutMeOpen ? (
             <motion.div
               key="hero-home"
