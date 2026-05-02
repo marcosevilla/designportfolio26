@@ -157,8 +157,8 @@ export default function ChatPanel({
             <p
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "14px",
-                lineHeight: 1.5,
+                fontSize: "16px",
+                lineHeight: "26px",
                 color: "var(--color-fg-secondary)",
               }}
             >
@@ -211,12 +211,9 @@ export default function ChatPanel({
 
       {/* Input row */}
       <div
-        className="flex items-center gap-2 px-3 py-2"
+        className="flex items-center gap-2 px-4 py-2"
         style={{ borderTop: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)" }}
       >
-        <span aria-hidden style={{ color: "var(--color-fg-tertiary)", paddingLeft: 4 }}>
-          <SendIcon size={14} />
-        </span>
         <textarea
           ref={inputRef}
           value={value}

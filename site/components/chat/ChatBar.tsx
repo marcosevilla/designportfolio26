@@ -241,10 +241,10 @@ export default function ChatBar() {
         animate={{ opacity: 1, filter: "blur(0px)" }}
         transition={{ duration: 0.22, delay: 0.34, ease: [0.22, 1, 0.36, 1] }}
       >
-        <SparkGlyph size={13} color="var(--color-on-accent)" />
+        <SparkGlyph size={16} color="var(--color-on-accent)" />
         <span
           style={{
-            fontFamily: "var(--font-sans)",
+            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
             fontSize: "14px",
             fontWeight: 500,
             color: "var(--color-on-accent)",

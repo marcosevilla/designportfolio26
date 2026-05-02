@@ -587,22 +587,24 @@ mark.bio-highlight {
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-  border-radius: 18px;
+  border-radius: 12px;
   /* Clip contents to the rounded rect — important during the layoutId
      morph from pill→panel, so chrome (header, X, transcript bubbles, input
      row) stays inside the morphing shape instead of spilling over the
      rounded corners. */
   overflow: hidden;
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.18),
-    0 2px 8px rgba(0, 0, 0, 0.08);
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 24px 56px rgba(0, 0, 0, 0.08);
 }
 
 .dark .chat-surface {
   background-color: color-mix(in srgb, var(--color-surface-raised) 50%, transparent);
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.5),
-    0 2px 8px rgba(0, 0, 0, 0.32);
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    0 24px 56px rgba(0, 0, 0, 0.32);
 }
 
 /* Hero toolbar host — system chrome pinned to top:0 of the viewport.
