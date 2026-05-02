@@ -40,8 +40,7 @@ export default function Playground({
               maxWidth: "560px",
             }}
           >
-            Personal experiments and gifts. Software as a love language; AI as
-            the way I get the ideas in my head out into the world.
+            Personal experiments and projects leveraging AI tooling.
           </p>
         </div>
       )}

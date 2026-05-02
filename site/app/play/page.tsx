@@ -6,11 +6,11 @@ import { typescale } from "@/lib/typography";
 export const metadata: Metadata = {
   title: "Play — Marco Sevilla",
   description:
-    "Personal experiments and gifts. Software as a love language; AI as the way I get the ideas in my head out into the world.",
+    "Personal experiments and projects leveraging AI tooling.",
   openGraph: {
     title: "Play — Marco Sevilla",
     description:
-      "Personal experiments and gifts. Software as a love language; AI as the way I get the ideas in my head out into the world.",
+      "Personal experiments and projects leveraging AI tooling.",
   },
 };
 
@@ -31,8 +31,7 @@ export default function PlayPage() {
             maxWidth: "560px",
           }}
         >
-          Personal experiments and gifts. Software as a love language; AI as the
-          way I get the ideas in my head out into the world.
+          Personal experiments and projects leveraging AI tooling.
         </p>
       </FadeIn>
 
