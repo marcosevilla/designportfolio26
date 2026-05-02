@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import CompendiumContent from "./CompendiumContent";
+import LockGate from "@/components/LockGate";
+import { isLocked } from "@/lib/locked-content";
 
 export const metadata: Metadata = {
   title: "Digital Compendium — Marco Sevilla",
@@ -14,8 +16,16 @@ export const metadata: Metadata = {
 
 export default function CompendiumPage() {
   return (
-    <div className="pb-20">
-      <CompendiumContent />
-    </div>
+    <LockGate
+      mode="page"
+      locked={isLocked("compendium")}
+      title="Hotel guest experience app"
+      subtitle="A scalable hotel CMS platform built from scratch"
+      backHref="/work"
+    >
+      <div className="pb-20">
+        <CompendiumContent />
+      </div>
+    </LockGate>
   );
 }
