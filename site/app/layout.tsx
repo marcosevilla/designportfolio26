@@ -25,6 +25,7 @@ import { ThemeStateProvider } from "@/components/ThemeToggle";
 import PlayerChip from "@/components/music/PlayerChip";
 import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
+import ChatBar from "@/components/chat/ChatBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -92,6 +93,7 @@ export default function RootLayout({
                 </InlineEditorProvider>
                 <ViewportFade />
                 <PlayerChip />
+                <ChatBar />
                 <PasswordModal />
                 {process.env.NODE_ENV === "development" && <Agentation />}
               </PasswordGateProvider>

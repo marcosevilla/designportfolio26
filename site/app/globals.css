@@ -60,6 +60,11 @@
   --color-muted: #f3f3f3;
   --color-accent: #B5651D;
   --color-glow: #B5651D;
+  /* Foreground color for use on top of --color-accent (e.g. primary CTA fills).
+     Resolves to bg, which is hand-tuned per theme for WCAG-AA contrast against
+     the accent — so pinning on-accent text to bg gets correct contrast for free
+     across all colored themes without each theme having to define a new var. */
+  --color-on-accent: var(--color-bg);
 
   --font-sans: var(--font-geist-sans, "Geist"), system-ui, sans-serif;
   --font-mono-system: ui-monospace, Menlo, Monaco, monospace;
@@ -109,6 +114,8 @@
   --color-muted: #1e1e1e;
   --color-accent: #D4915E;
   --color-glow: #F5C28A;
+  /* on-accent defined in :root resolves via var(--color-bg) at use-site, so
+     no override needed here. */
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -621,5 +628,10 @@ mark.bio-highlight {
      transitions just in case. */
   .chat-surface {
     transition: none;
+  }
+  /* Hide the floating CTA's shimmer sweep entirely under reduced-motion.
+     The button itself remains, just static. */
+  .chat-cta__shimmer {
+    display: none;
   }
 }
