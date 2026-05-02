@@ -200,7 +200,7 @@ function LockedPagePlaceholder({
           <h2
             style={{ ...typescale.h3, color: "var(--color-fg)", marginBottom: 6, textWrap: "balance" }}
           >
-            Wax on. Wax off.
+            Under construction
           </h2>
           <p
             style={{

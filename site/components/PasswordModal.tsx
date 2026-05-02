@@ -116,7 +116,7 @@ export default function PasswordModal() {
               id="password-modal-title"
               style={{ ...typescale.h3, color: "var(--color-fg)", marginBottom: 4, textWrap: "balance" }}
             >
-              Wax on. Wax off.
+              Under construction
             </h2>
             <p
               style={{
