@@ -396,8 +396,8 @@ export default function Hero({
 
               {/* Bio — paragraphs 1, 2, 4 (childhood lives on About me) */}
               <motion.div
-                className="mt-10 text-(--color-fg-secondary) leading-[28px]"
-                style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
+                className="mt-10 text-(--color-fg-secondary) leading-[26px]"
+                style={{ fontSize: "calc(16px + var(--font-size-offset))" }}
                 initial={initial}
                 animate={animate}
                 transition={tx(0.24)}
@@ -441,8 +441,8 @@ export default function Hero({
               </h1>
 
               <div
-                className="mt-16 text-(--color-fg-secondary) leading-[28px]"
-                style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
+                className="mt-16 text-(--color-fg-secondary) leading-[26px]"
+                style={{ fontSize: "calc(16px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
                 <Resume />

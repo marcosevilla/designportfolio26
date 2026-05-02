@@ -72,14 +72,14 @@ export const typescale = {
 
   /** Case study body text */
   body: {
-    fontSize: scaled("14px"),
-    lineHeight: "22px",
+    fontSize: scaled("16px"),
+    lineHeight: "26px",
   } as CSSProperties,
 
   /** Case study hero subtitle, NextProject description */
   subtitle: {
-    fontSize: scaled("14px"),
-    lineHeight: "22px",
+    fontSize: scaled("16px"),
+    lineHeight: "26px",
   } as CSSProperties,
 
   /** QuickStats value — big number */

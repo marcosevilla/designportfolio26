@@ -18,7 +18,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
 
 const COMPANY_STYLE: React.CSSProperties = {
   fontFamily: "var(--font-sans)",
-  fontSize: "14px",
+  fontSize: "16px",
   lineHeight: 1.4,
   color: "var(--color-fg)",
   fontWeight: 500,
@@ -26,7 +26,7 @@ const COMPANY_STYLE: React.CSSProperties = {
 
 const TITLE_STYLE: React.CSSProperties = {
   fontFamily: "var(--font-sans)",
-  fontSize: "14px",
+  fontSize: "16px",
   lineHeight: 1.4,
   color: "var(--color-fg-secondary)",
 };
@@ -41,8 +41,8 @@ const META_STYLE: React.CSSProperties = {
 
 const BULLET_STYLE: React.CSSProperties = {
   fontFamily: "var(--font-sans)",
-  fontSize: "14px",
-  lineHeight: 1.6,
+  fontSize: "16px",
+  lineHeight: "26px",
   color: "var(--color-fg-secondary)",
 };
 
