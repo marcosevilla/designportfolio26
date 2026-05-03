@@ -113,22 +113,34 @@ export default function ChatPanel({
         filter: CONTENT_TRANSITION,
       }}
     >
-      {/* Header strip — close button right-aligned with a bottom divider so
-          the transcript scrolls *under* this band instead of intersecting
-          the X button. paddingTop carries the iOS notch clearance on the
-          mobile sheet. */}
+      {/* Header strip — "Chat" label flush-left, close button right-aligned,
+          1px bottom divider so the transcript scrolls *under* this band
+          instead of intersecting the X button. paddingTop carries the iOS
+          notch clearance on the mobile sheet. */}
       <div
-        className="shrink-0 flex items-center justify-end px-2 pb-2"
+        className="shrink-0 flex items-center justify-between pl-4 pr-2"
         style={{
-          paddingTop: "max(env(safe-area-inset-top, 0px), 8px)",
+          paddingTop: "max(env(safe-area-inset-top, 0px), 4px)",
+          paddingBottom: 4,
           borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
         }}
       >
+        <span
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "13px",
+            fontWeight: 500,
+            color: "var(--color-fg)",
+            lineHeight: 1,
+          }}
+        >
+          Chat
+        </span>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close chat"
-          className="rounded-full w-10 h-10 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+          className="rounded-full w-9 h-9 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
           style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
         >
           <CloseIcon size={12} />
@@ -198,24 +210,27 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Input row — gutter wrapper provides the 4px breathing room
-          requested on each side (and safe-area-inset-bottom on the
-          mobile sheet so the inner field clears the iOS home
-          indicator). The inner container is the actual input field:
-          inset look, 1px stroke, 8px corners, no shadow. */}
+      {/* Input row — gutter wrapper provides 8px breathing room on every
+          side (and safe-area-inset-bottom on the mobile sheet so the inner
+          field clears the iOS home indicator). The inner container is the
+          actual input field: inset look, 1px stroke at 40% border opacity,
+          8px corners, no shadow, bg a touch lighter than the panel chrome. */}
       <div
         className="shrink-0"
         style={{
-          padding: 4,
-          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
+          padding: 8,
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
         }}
       >
         <div
           className="flex items-center gap-2 px-3"
           style={{
-            border: "1px solid var(--color-border)",
+            border: "1px solid color-mix(in srgb, var(--color-border) 40%, transparent)",
             borderRadius: 8,
-            backgroundColor: "var(--color-bg)",
+            // 70% bg + 30% surface — slightly lighter than the chat-surface
+            // chrome, so the input reads as a related-but-distinct surface
+            // sitting *inside* the panel.
+            backgroundColor: "color-mix(in srgb, var(--color-bg) 70%, var(--color-surface) 30%)",
           }}
         >
           <textarea
@@ -225,10 +240,11 @@ export default function ChatPanel({
             onKeyDown={onKeyDown}
             placeholder="Ask me anything…"
             rows={1}
-            className="flex-1 resize-none bg-transparent border-0 outline-none focus:outline-none focus:ring-0 placeholder:text-(--color-fg-tertiary)"
+            // 16px on the mobile sheet (prevents iOS Safari's auto-zoom on
+            // focus), 14px on desktop (Marco's spec).
+            className="flex-1 resize-none bg-transparent border-0 outline-none focus:outline-none focus:ring-0 placeholder:text-(--color-fg-tertiary) text-[16px] lg:text-[14px]"
             style={{
               fontFamily: "var(--font-sans)",
-              fontSize: "16px",
               lineHeight: "22px",
               color: "var(--color-fg)",
               padding: "10px 0",
