@@ -97,7 +97,10 @@ export default function ChatMessage({
     return (
       <motion.div {...FADE_IN} className="flex justify-end">
         <div
-          className="max-w-[80%] rounded-2xl px-3 py-2"
+          // w-fit makes the bubble shrink-to-content so a short user
+          // message doesn't reserve the full 80% column. max-w-[80%]
+          // still caps the long-message case.
+          className="w-fit max-w-[80%] rounded-2xl px-3 py-2"
           style={{
             backgroundColor: "color-mix(in srgb, var(--color-accent) 14%, transparent)",
             color: "var(--color-fg)",
