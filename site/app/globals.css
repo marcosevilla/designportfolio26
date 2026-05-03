@@ -682,6 +682,13 @@ img[class*="rounded-"] {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+  /* Lock the body when the chat sheet is open on mobile — the sheet
+     covers the full viewport, so any background scroll is invisible
+     anyway, but it's disorienting when the user closes the sheet and
+     finds the page in a different scroll position than expected. */
+  [data-chat-open="true"] body {
+    overflow: hidden;
+  }
 }
 
 /* Desktop side panel — restore the original geometry (top:52 to clear the

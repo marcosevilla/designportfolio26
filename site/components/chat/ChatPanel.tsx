@@ -66,6 +66,7 @@ export default function ChatPanel({
   onClose: () => void;
 }) {
   const [value, setValue] = useState("");
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -83,6 +84,27 @@ export default function ChatPanel({
   // Focus input on mount so visitors can start typing immediately.
   useEffect(() => {
     inputRef.current?.focus();
+  }, []);
+
+  // Scroll isolation. `overscroll-contain` on the transcript already
+  // prevents chaining once the transcript hits its scroll limits, but
+  // wheel events that land on the panel's *non-scrollable* areas
+  // (header, input field) still chain to the page body. On the desktop
+  // side panel that means hovering the cursor over the X button and
+  // scrolling moves the page underneath. This handler swallows wheel
+  // events that don't originate inside the transcript so the body stays
+  // put. React's onWheel runs as a passive listener and can't
+  // preventDefault, so this is attached natively.
+  useEffect(() => {
+    const surface = surfaceRef.current;
+    if (!surface) return;
+    const onWheel = (e: WheelEvent) => {
+      const transcript = transcriptRef.current;
+      if (transcript && transcript.contains(e.target as Node)) return;
+      e.preventDefault();
+    };
+    surface.addEventListener("wheel", onWheel, { passive: false });
+    return () => surface.removeEventListener("wheel", onWheel);
   }, []);
 
   const send = (text: string) => {
@@ -104,6 +126,7 @@ export default function ChatPanel({
 
   return (
     <motion.div
+      ref={surfaceRef}
       onClick={(e) => e.stopPropagation()}
       className="chat-surface relative flex flex-col h-full w-full"
       initial={{ opacity: 0, filter: "blur(8px)" }}
@@ -147,8 +170,10 @@ export default function ChatPanel({
         </button>
       </div>
 
-      {/* Transcript / empty state */}
-      <div ref={transcriptRef} className="flex-1 overflow-y-auto px-4 py-4">
+      {/* Transcript / empty state — overscroll-contain stops the wheel
+          (or touch) from chaining to the page body once the transcript
+          hits its top or bottom scroll limit. */}
+      <div ref={transcriptRef} className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">
         {isEmpty ? (
           // h-full + mt-auto on the chips group pushes the suggested
           // prompts to the bottom of the panel (just above the input row),
