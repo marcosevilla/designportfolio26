@@ -272,9 +272,10 @@ export default function ChatBar() {
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
         border: 0,
-        /* Round-rectangle: smaller radius reads as a CTA button rather
-           than a floating tab. */
-        borderRadius: 10,
+        /* Fully rounded — pill shape matches the floating bottom-toolbar
+           pills' shape language on mobile and reads as a softer, more
+           approachable affordance than the prior 10px round-rect. */
+        borderRadius: 9999,
         boxShadow:
           "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)",
         overflow: "hidden",

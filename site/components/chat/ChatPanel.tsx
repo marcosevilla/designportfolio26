@@ -34,14 +34,6 @@ const DEFAULT_CHIPS = [
   "What got you into design?",
 ];
 
-function SparkIcon({ size = 14 }: { size?: number }) {
-  return (
-    <span aria-hidden style={{ fontSize: size, lineHeight: 1, color: "var(--color-accent)" }}>
-      ✸
-    </span>
-  );
-}
-
 function CloseIcon({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
@@ -113,7 +105,7 @@ export default function ChatPanel({
   return (
     <motion.div
       onClick={(e) => e.stopPropagation()}
-      className="chat-surface flex flex-col h-full w-full"
+      className="chat-surface relative flex flex-col h-full w-full"
       initial={{ opacity: 0, filter: "blur(8px)" }}
       animate={{ opacity: 1, filter: "blur(0px)" }}
       transition={{
@@ -121,38 +113,27 @@ export default function ChatPanel({
         filter: CONTENT_TRANSITION,
       }}
     >
-      {/* Header — pt accounts for the iOS notch when this is a full-screen
-          sheet (<lg). Desktop side-panel just uses pt-3. */}
-      <div
-        className="flex items-center gap-2 px-4 pb-2"
+      {/* Floating close button — replaces the previous header strip
+          (sparkle + "Ask me anything" label + close button + bottom
+          divider). The label and sparkle were redundant chrome; with
+          them gone, a divider serving only the close button felt
+          arbitrary, so the close goes top-right and the transcript
+          starts higher.
+          On mobile (<lg) we add safe-area-inset-top so the button
+          doesn't sit under the iOS notch. */}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close chat"
+        className="absolute right-2 z-10 rounded-full w-10 h-10 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
         style={{
-          paddingTop: "max(env(safe-area-inset-top, 0px), 12px)",
-          borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
+          top: "max(env(safe-area-inset-top, 0px), 8px)",
+          color: "var(--color-fg-secondary)",
+          cursor: "pointer",
         }}
       >
-        <SparkIcon size={14} />
-        <span
-          className="flex-1"
-          style={{
-            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-            fontSize: "11px",
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            color: "var(--color-fg-tertiary)",
-          }}
-        >
-          Ask me anything
-        </span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close chat"
-          className="rounded-full w-10 h-10 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
-          style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
-        >
-          <CloseIcon size={12} />
-        </button>
-      </div>
+        <CloseIcon size={12} />
+      </button>
 
       {/* Transcript / empty state */}
       <div ref={transcriptRef} className="flex-1 overflow-y-auto px-4 py-4">
@@ -213,10 +194,16 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Input row */}
+      {/* Input row — paddingBottom carries the iOS home indicator
+          clearance that previously lived on the privacy footnote (now
+          removed). Min 8px on desktop, env(safe-area-inset-bottom) on
+          notched mobile. */}
       <div
-        className="flex items-center gap-2 px-4 py-2"
-        style={{ borderTop: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)" }}
+        className="flex items-center gap-2 px-4 pt-2"
+        style={{
+          borderTop: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
+        }}
       >
         <textarea
           ref={inputRef}
@@ -255,21 +242,6 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Privacy footnote — pb accounts for the iOS home indicator when this
-          is a full-screen sheet (<lg). Desktop side-panel uses pb-2. */}
-      <p
-        className="px-4"
-        style={{
-          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-          fontSize: "10px",
-          color: "var(--color-fg-tertiary)",
-          textAlign: "center",
-          opacity: 0.7,
-          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
-        }}
-      >
-        Powered by Claude · Conversations aren't stored.
-      </p>
     </motion.div>
   );
 }
