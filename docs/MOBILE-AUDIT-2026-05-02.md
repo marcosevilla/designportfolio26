@@ -42,7 +42,21 @@ with `[P0]` / `[P1]` / `[P2]` so we can sort later.
 
 Findings:
 
--
+- **[P2] "Music photography" link underline is always visible.** Should be
+  hover-only (or focus-visible). Underline at rest reads as cluttered against
+  the bio prose.
+
+### About me
+
+- About me view (toolbar Phase 4 lifted bio text into a dedicated About me
+  surface — not a separate route, but a distinct view)
+
+Findings:
+
+- **[P1] Resume text spacing.** Element separation feels cramped — items run
+  into each other without enough vertical rhythm.
+- **[P0] Return / back affordance is missing or inaccessible.** No clear way
+  to exit the About me view on mobile.
 
 ### Case studies (full)
 
@@ -132,7 +146,44 @@ Test each on at least one route:
 
 Findings:
 
--
+- **[P0] Unified toolbar buttons are untappable on mobile.** `ToolbarIconButton`
+  is `w-7 h-7` = 28×28 (HeroToolbar.tsx:50); `PaletteButton` and the music slot
+  toggle are `h-7` = 28px tall (HeroToolbar.tsx:111, :200). 16×16 palette
+  swatches inside the popover (PaletteSwatches.tsx). All well below 40×40
+  minimum. Apple HIG = 44pt; Material = 48dp.
+  → **Fix direction: Option B with a floating pill** — keep desktop dense; below
+  `lg` collapse toolbar to a hamburger trigger + a *floating* bottom action bar
+  for primary actions. **Not flush** to the screen edge — Safari's URL bar
+  (which collapses on scroll) and the iOS home indicator make flush bottom
+  bars feel buggy and cheap. Pattern: rounded-pill / rounded-2xl, centered
+  horizontally, ~16px margin from bottom edge plus `safe-area-inset-bottom`,
+  backdrop-blur, soft shadow for elevation. Reference: iOS Notes, Linear
+  mobile, Apple Music. Buttons inside meet 40×40.
+- **[P1] Hamburger nav sidebar buttons are small on mobile.** When the
+  hamburger menu opens its sidebar, the nav items (links) have insufficient
+  tap targets. Below 40×40.
+  → Bump nav-item line height + vertical padding to ≥44px on mobile;
+  full-width hit areas across the sheet.
+- **[P0] Chat panel is unusable on mobile.** Right-side panel layout doesn't
+  fit a phone viewport; tapping the textarea triggers iOS auto-zoom (because
+  textarea font-size is <16px); keyboard then occupies most of the screen and
+  the top of the panel scrolls out of reach.
+  → **Fix direction:** below `lg`, render chat as a full-screen bottom sheet
+  (Claude-mobile pattern). Title pinned to top, messages scroll, composer
+  pinned above keyboard via `safe-area-inset-bottom + visualViewport` listener.
+  Bump textarea font to 16px to kill auto-zoom.
+- **[P1] PasswordModal "Got a code?" divider + error message are too small to
+  read on mobile.** Mono 11px / label-size error text doesn't meet readable-
+  body threshold on phone screens.
+  → Bump mobile sizes for the divider label and the inline error to ≥12-13px,
+  and verify color contrast for the error state.
+- **[P0] LED matrix viz-scene buttons inaccessible on mobile.** Buttons appear
+  on hover only and are overlaid on the dot matrix; on phones (no hover) they
+  can't be revealed at all, and on light mode they're invisible against the
+  matrix background even when shown.
+  → **Fix direction:** when music is playing, render the scene-toggle buttons
+  *outside* the matrix as part of the player surface (always visible, no
+  hover dependency). Solid contrast against toolbar bg, not against the dots.
 
 ## Performance / observational notes
 
