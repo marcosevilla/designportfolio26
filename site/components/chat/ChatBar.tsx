@@ -24,10 +24,12 @@ import { parseSseStream } from "./parseStream";
 import type { ChatTurn } from "./ChatMessage";
 
 const STORAGE_KEY = "chat-transcript";
-// Damping ratio ≈ 0.85 (damping / (2·√stiffness)). Reads as a soft physical
-// settle without any visible overshoot — there's still a feel of inertia
-// near the target, just no bounce-back. Lower damping read as cartoony.
-const MORPH_SPRING = { type: "spring" as const, stiffness: 380, damping: 33 };
+// Damping ratio ≈ 1.03 (38 / (2·√340)). Slightly *over*-critically damped
+// → settles into the target with zero perceptible overshoot, which makes
+// the close-morph (panel→pill) read as composed instead of springy. Open
+// uses the same spring; the open is short and the underlying enter
+// animations (content blur-in) mask any residual "settle" feel.
+const MORPH_SPRING = { type: "spring" as const, stiffness: 340, damping: 38 };
 
 function readStored(): ChatTurn[] {
   if (typeof window === "undefined") return [];
@@ -293,7 +295,10 @@ export default function ChatBar() {
         className="inline-flex items-center gap-2"
         initial={hasOpenedRef.current ? { opacity: 0, filter: "blur(6px)" } : false}
         animate={{ opacity: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.22, delay: 0.34, ease: [0.22, 1, 0.36, 1] }}
+        // Delay 0.26 lines the contents up to come in *as* the morph
+        // arrives at pill size — the previous 0.34 left a perceptible
+        // beat where the morph had finished but the pill was still empty.
+        transition={{ duration: 0.22, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}
       >
         <SparkGlyph size={14} color="var(--color-on-accent)" />
         <span
@@ -373,18 +378,31 @@ export default function ChatBar() {
                     // the panel just renders with its own enter animation.
                     layoutId={isMobile ? undefined : "chat-surface"}
                     /* Desktop: layoutId morph from the pill handles the
-                       open animation; this opacity fade just keeps chrome
-                       and contents in sync on close. Mobile: no morph
-                       source, so slide up from the bottom with a soft fade. */
+                       open animation; the exit fade+blur keeps chrome and
+                       content visually dissolving as the morph collapses
+                       (instead of flicking out at the start and leaving
+                       an empty rect mid-morph). Mobile: no morph source,
+                       so slide up from the bottom with a soft fade. */
                     initial={isMobile ? { opacity: 0, y: 24 } : { opacity: 1 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={isMobile ? { opacity: 0, y: 24 } : { opacity: 0 }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={
+                      isMobile
+                        ? { opacity: 0, y: 24 }
+                        : { opacity: 0, filter: "blur(12px)" }
+                    }
                     transition={{
                       layout: MORPH_SPRING,
                       default: isMobile
                         ? { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }
                         : MORPH_SPRING,
-                      opacity: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
+                      // Ease-in (slow → fast) so panel content stays
+                      // visible while the morph is still large, then
+                      // disappears decisively as the rect closes in on
+                      // pill size. Duration 0.26 ≈ 70% of the morph
+                      // settling time — content is fully gone right as
+                      // the morph completes, with no empty rect.
+                      opacity: { duration: 0.26, ease: [0.4, 0, 0.6, 1] },
+                      filter: { duration: 0.26, ease: [0.4, 0, 0.6, 1] },
                     }}
                     className="pointer-events-auto h-full w-full"
                   >
