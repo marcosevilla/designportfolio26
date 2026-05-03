@@ -26,7 +26,10 @@ function hexHue(hex: string): number {
  * Renders content only (no wrapper, no animation) — meant to be slotted into
  * the HeroToolbar's left swap zone where the parent owns the slide animation.
  */
-export function PaletteRow() {
+export function PaletteRow({
+  swatchSize = 16,
+  wrap = false,
+}: { swatchSize?: number; wrap?: boolean } = {}) {
   const themeState = useThemeState();
 
   if (!themeState.mounted) return null;
@@ -47,8 +50,10 @@ export function PaletteRow() {
   return (
     // 4px horizontal inset gives the active swatch's outer ring (3.5px
     // box-shadow) room to render — without it the swap zone's
-    // overflow:hidden clips the leftmost selection state.
-    <div className="flex items-center gap-2 whitespace-nowrap px-1">
+    // overflow:hidden clips the leftmost selection state. `wrap` lets the
+    // mobile popover lay out in 2 rows so 12 large swatches fit in a
+    // phone-width container without horizontal scroll.
+    <div className={`flex items-center gap-2 ${wrap ? "flex-wrap" : "whitespace-nowrap"} px-1`}>
       {swatches.map((s) => {
         const active = isActiveColor(s.id);
         return (
@@ -60,8 +65,8 @@ export function PaletteRow() {
             aria-pressed={active}
             className="rounded-full inline-block cursor-pointer shrink-0"
             style={{
-              width: "16px",
-              height: "16px",
+              width: `${swatchSize}px`,
+              height: `${swatchSize}px`,
               backgroundColor: s.accent,
               boxShadow: active
                 ? "0 0 0 2px var(--color-bg), 0 0 0 3.5px var(--color-accent)"

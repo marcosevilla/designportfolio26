@@ -496,6 +496,17 @@ mark.bio-highlight {
   }
 }
 
+/* Hide the native scrollbar on horizontal scroll containers (the mobile
+   pill carousel) — overflow stays scrollable, but the visible track/thumb
+   would clutter a row of floating pills. */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/legacy Edge */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Subtle 1px outline for raster images / video thumbnails so the edge
    reads cleanly against any surface. Pure black in light / pure white in
    dark — see --color-image-outline (never tinted neutrals). */

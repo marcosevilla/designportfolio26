@@ -85,6 +85,11 @@ export default function ChatBar() {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [pending, setPending] = useState(false);
   const [errorLine, setErrorLine] = useState<string | null>(null);
+  // Below lg, the chat pill lives inside MobileToolbar's floating carousel
+  // and the panel becomes a full-screen sheet. We need this in JS (not just
+  // CSS) so the layoutId morph isn't paired against a display:none source —
+  // that produces a 0×0 origin → tiny→fullscreen warp on open.
+  const [isMobile, setIsMobile] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   // True once the user has opened the panel at least once. Drives whether
   // the pill's contents fade-blur in on mount: skip on first page load (the
@@ -95,6 +100,18 @@ export default function ChatBar() {
   useEffect(() => setMounted(true), []);
   useEffect(() => setTurns(readStored()), []);
   useEffect(() => writeStored(turns), [turns]);
+
+  // Track mobile vs desktop. Below lg the pill is hidden + layoutId stripped
+  // off the panel so it animates in normally instead of morphing from a
+  // measureless source.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsMobile(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   // Publish open state to <html> so the global CSS rule in globals.css can
   // push <main> at lg+ when the persistent side panel is open. Using a data
@@ -129,6 +146,19 @@ export default function ChatBar() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
+
+  // External open trigger — used by MobileToolbar's chat pill (which is a
+  // sibling component, not a child, and shouldn't share state via prop
+  // drilling). A window CustomEvent keeps the API trivially small without
+  // pulling in a context provider just for one boolean.
+  useEffect(() => {
+    const onOpen = () => {
+      hasOpenedRef.current = true;
+      setOpen(true);
+    };
+    window.addEventListener("chat:open", onOpen);
+    return () => window.removeEventListener("chat:open", onOpen);
+  }, []);
 
   // Keyboard avoidance on mobile. iOS Safari does NOT shrink innerHeight or
   // 100dvh when the virtual keyboard appears — but visualViewport.height does
@@ -304,10 +334,12 @@ export default function ChatBar() {
 
   return (
     <>
-      {/* Pill is always rendered in the global layout when closed. When open,
-          the morph target is the panel rendered via portal — the pill itself
-          is unmounted so the layoutId animation has a single destination. */}
-      {!open && pill}
+      {/* Desktop only — below lg the chat trigger lives inside the
+          MobileToolbar carousel as one of its pills (it dispatches the
+          'chat:open' event listened above). Conditional render (not a
+          display:none) so framer-motion's layoutId pairing isn't fed a
+          0×0 source rect on mobile. */}
+      {!open && !isMobile && pill}
 
       {mounted &&
         createPortal(
@@ -333,17 +365,23 @@ export default function ChatBar() {
                 >
                   <motion.div
                     key="chat-panel-wrap"
-                    layoutId="chat-surface"
-                    /* Add a quick opacity fade on exit so the panel chrome
-                       and contents disappear in sync with the morph reversing
-                       back to the pill, instead of staying full-opacity until
-                       the rect snaps to pill size. */
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    // Below lg the source pill isn't rendered, so leaving
+                    // layoutId here would make framer-motion try to morph
+                    // from nothing → fullscreen warp. Strip it on mobile so
+                    // the panel just renders with its own enter animation.
+                    layoutId={isMobile ? undefined : "chat-surface"}
+                    /* Desktop: layoutId morph from the pill handles the
+                       open animation; this opacity fade just keeps chrome
+                       and contents in sync on close. Mobile: no morph
+                       source, so slide up from the bottom with a soft fade. */
+                    initial={isMobile ? { opacity: 0, y: 24 } : { opacity: 1 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={isMobile ? { opacity: 0, y: 24 } : { opacity: 0 }}
                     transition={{
                       layout: MORPH_SPRING,
-                      default: MORPH_SPRING,
+                      default: isMobile
+                        ? { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }
+                        : MORPH_SPRING,
                       opacity: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
                     }}
                     className="pointer-events-auto h-full w-full"
