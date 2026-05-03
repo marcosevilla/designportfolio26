@@ -477,54 +477,21 @@ export default function Hero({
                 style={{ fontSize: "calc(16px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
+                {/* Hairline divider between the bio prose and the resume
+                    so the eye lands on the section break before the
+                    role/company list begins. */}
+                <hr
+                  style={{
+                    border: 0,
+                    borderTop: "1px solid var(--color-border)",
+                    marginTop: 40,
+                    marginBottom: 0,
+                  }}
+                />
                 <Resume />
-                {/* Greeting note — these were the cycling-greeting phrases
-                    that used to type out in the toolbar's swap zone (since
-                    deleted along with the toolbar refactor). Kept here as
-                    a plain-text closing flourish on the About me page. */}
-                <section className="mt-10">
-                  <p
-                    style={{
-                      fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                      fontSize: "11px",
-                      fontWeight: 500,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      color: "var(--color-fg-tertiary)",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    Hello, friend
-                  </p>
-                  <p
-                    style={{
-                      fontFamily: "var(--font-sans)",
-                      fontSize: "14px",
-                      lineHeight: 1.6,
-                      color: "var(--color-fg-secondary)",
-                    }}
-                  >
-                    Welcome to my portfolio. Made with{" "}
-                    <span aria-label="love" style={{ color: "var(--color-accent)" }}>
-                      ♥
-                    </span>{" "}
-                    and a few cans of Celsius in SF. Hope you&apos;re having a
-                    wonderful day.
-                  </p>
-                  <p
-                    aria-hidden
-                    style={{
-                      fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                      fontSize: "12px",
-                      lineHeight: 1.6,
-                      color: "var(--color-fg-tertiary)",
-                      marginTop: "12px",
-                      letterSpacing: "0.02em",
-                    }}
-                  >
-                    Hello · Hola · Bonjour · Ciao · Hallo · Olá · Привет · 你好 · こんにちは · नमस्ते
-                  </p>
-                </section>
+                {/* "Hello, friend" greeting note hidden for now — was a
+                    closing flourish carried over from the deleted toolbar
+                    cycling greetings; can be restored later from git. */}
               </div>
             </motion.div>
           )}

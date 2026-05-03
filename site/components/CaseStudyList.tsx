@@ -428,11 +428,12 @@ function GalleryCard({
       <div className="flex items-baseline justify-between gap-4 mb-3">
         <span
           style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "16px",
+            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+            fontSize: "13px",
             fontWeight: 500,
             color: "var(--color-fg)",
-            letterSpacing: "-0.01em",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
           }}
         >
           {study.title}
