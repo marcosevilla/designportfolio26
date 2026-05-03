@@ -128,7 +128,7 @@ export default function ChatPanel({
         <span
           style={{
             fontFamily: "var(--font-sans)",
-            fontSize: "13px",
+            fontSize: "15px",
             fontWeight: 500,
             color: "var(--color-fg)",
             lineHeight: 1,
@@ -163,7 +163,7 @@ export default function ChatPanel({
                 color: "var(--color-fg-secondary)",
               }}
             >
-              Hi — I'm Marco. Ask me about my work, my process, or anything else.
+              Hi, I'm Marco. Ask me about my work, my process, or anything else you're curious about.
             </p>
             <div className="mt-auto flex flex-wrap gap-2">
               {DEFAULT_CHIPS.map((label) => (
