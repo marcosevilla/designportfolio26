@@ -23,7 +23,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/lib/SidebarContext";
 import { HOME_NAV_ITEMS } from "./HomeNav";
-import { BackChevronIcon } from "./Icons";
+import { BackChevronIcon, CloseIcon } from "./Icons";
 
 const PANEL_SPRING = { type: "spring" as const, stiffness: 380, damping: 33 };
 const BACKDROP_EASE = [0.22, 1, 0.36, 1] as const;
@@ -64,8 +64,20 @@ export default function HamburgerMenu({
   const { tocItems, activeTocId, setActiveTocIdAndLock, backHref } = useSidebar();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Mobile gets a full-page takeover sheet (large nav, X close, slides in
+  // from the left). Desktop keeps the existing 360px chat-surface drawer.
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsMobile(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   // ESC closes the panel.
   useEffect(() => {
@@ -116,7 +128,8 @@ export default function HamburgerMenu({
               <>
                 {/* Click-outside catcher. Transparent — content stays clearly
                     visible behind the panel; the user closes by clicking
-                    anywhere outside the panel surface. */}
+                    anywhere outside the panel surface. Mobile takeover is
+                    opaque, so the catcher is harmless underneath. */}
                 <motion.div
                   onClick={() => setOpen(false)}
                   className="fixed inset-0 z-[150]"
@@ -127,8 +140,96 @@ export default function HamburgerMenu({
                   style={{ backgroundColor: "transparent" }}
                   aria-hidden
                 />
-                {/* Panel — left edge, mirrors chat panel: 12px gutters, 360px,
-                    .chat-surface chrome (border, shadow, rounded). */}
+                {isMobile ? (
+                  /* Mobile: full-page takeover. Slides in from the left,
+                     opaque page bg, large nav controls, X close at top. */
+                  <motion.div
+                    key="hamburger-panel-mobile"
+                    className="fixed inset-0 z-[160] flex flex-col"
+                    style={{
+                      backgroundColor: "var(--color-bg)",
+                      paddingTop: "max(env(safe-area-inset-top, 0px), 16px)",
+                      paddingBottom: "max(env(safe-area-inset-bottom, 0px), 16px)",
+                    }}
+                    initial={{ x: "-100%" }}
+                    animate={{ x: 0 }}
+                    exit={{ x: "-100%" }}
+                    transition={PANEL_SPRING}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Navigation menu"
+                  >
+                    {/* Top bar — small mono label on the left, X on the right. */}
+                    <div className="flex items-center justify-between px-6 pb-4 pt-2">
+                      <span
+                        style={{
+                          ...NAV_LABEL_STYLE,
+                          color: "var(--color-fg-tertiary)",
+                        }}
+                      >
+                        {isCaseStudy ? "Contents" : "Menu"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setOpen(false)}
+                        aria-label="Close menu"
+                        className="rounded-full w-11 h-11 inline-flex items-center justify-center transition-colors hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent) active:scale-[0.96]"
+                        style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
+                      >
+                        <CloseIcon size={16} />
+                      </button>
+                    </div>
+
+                    {/* Body — Back link first (case study), then big nav items. */}
+                    <div className="flex-1 overflow-y-auto px-6 pt-4">
+                      {isCaseStudy && (
+                        <Link
+                          href={backHref ?? "/#projects"}
+                          onClick={() => setOpen(false)}
+                          className="inline-flex items-center gap-2 mb-8 transition-colors hover:text-(--color-accent)"
+                          style={{
+                            ...NAV_LABEL_STYLE,
+                            color: "var(--color-fg-secondary)",
+                          }}
+                        >
+                          <BackChevronIcon size={14} />
+                          Back
+                        </Link>
+                      )}
+                      <ul className="flex flex-col gap-1">
+                        {items.map((item) => {
+                          const active = isCaseStudy && item.id === activeTocId;
+                          return (
+                            <li key={item.id}>
+                              <a
+                                href={`#${item.id}`}
+                                onClick={(e) =>
+                                  isCaseStudy
+                                    ? handleTocClick(e, item.id)
+                                    : handleHomeAnchorClick(e, item.id)
+                                }
+                                className="block py-3 transition-colors hover:text-(--color-accent)"
+                                style={{
+                                  fontFamily: "var(--font-sans)",
+                                  fontSize: "32px",
+                                  fontWeight: 500,
+                                  letterSpacing: "-0.02em",
+                                  lineHeight: 1.15,
+                                  color: active
+                                    ? "var(--color-accent)"
+                                    : "var(--color-fg)",
+                                }}
+                              >
+                                {item.label}
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </motion.div>
+                ) : (
+                /* Desktop: 360px left-edge drawer with chat-surface chrome. */
                 <motion.div
                   key="hamburger-panel"
                   className="chat-surface fixed top-3 bottom-3 left-3 z-[160] flex flex-col"
@@ -215,6 +316,7 @@ export default function HamburgerMenu({
                     </ul>
                   </div>
                 </motion.div>
+                )}
               </>
             )}
           </AnimatePresence>,

@@ -21,7 +21,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import HamburgerMenu from "./HamburgerMenu";
 import { PaletteRow } from "./PaletteSwatches";
 import { MiniPlayerRow } from "./music/HomeMiniPlayer";
@@ -38,14 +38,20 @@ const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
 const MUSIC_WIDTH_SPRING = { type: "spring" as const, stiffness: 320, damping: 36 };
 
 const PILL_HEIGHT = 42;
+// Lightened from 0.18/0.12 + 32px blur — the original spread was casting
+// 4 overlapping shadows downward, which combined into a visible darker
+// band beneath the carousel. This softer shadow still elevates each pill
+// individually without pooling.
 const PILL_SHADOW =
-  "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)";
+  "0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06)";
 // Chat pill (accent CTA) shadow runs a touch heavier so it reads as
-// elevated against the copper bg the way the frosted pills do against
-// the page. Same character, slightly more weight.
+// elevated against the copper bg. Same character, more weight.
 const CHAT_PILL_SHADOW =
-  "0 14px 36px rgba(0, 0, 0, 0.24), 0 3px 8px rgba(0, 0, 0, 0.18)";
-const PILL_BG_FROSTED = "color-mix(in srgb, var(--color-surface) 65%, transparent)";
+  "0 6px 18px rgba(0, 0, 0, 0.18), 0 1px 4px rgba(0, 0, 0, 0.12)";
+const PILL_BG_FROSTED = "color-mix(in srgb, var(--color-surface) 70%, transparent)";
+// saturate dropped 180→130; 180% was bumping the cream/copper page bg
+// noticeably orange where the pills sat, which read as a halo.
+const PILL_BACKDROP = "blur(18px) saturate(130%)";
 const PILL_BORDER = "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)";
 
 /** Shared shell for the frosted pills (everything except chat, which uses
@@ -66,8 +72,8 @@ function FrostedPill({
       style={{
         height: PILL_HEIGHT,
         background: PILL_BG_FROSTED,
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        backdropFilter: PILL_BACKDROP,
+        WebkitBackdropFilter: PILL_BACKDROP,
         border: PILL_BORDER,
         boxShadow: PILL_SHADOW,
         ...style,
@@ -169,7 +175,7 @@ function ThemeModeButton() {
       label={isLight ? "Switch to dark mode" : "Switch to light mode"}
       onClick={() => (isLight ? t.selectDark() : t.selectLight())}
     >
-      {isLight ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+      {isLight ? <MoonIcon size={20} /> : <SunIcon size={20} />}
     </PillIconButton>
   );
 }
@@ -185,7 +191,7 @@ function PalettePillButton({ open, onToggle }: { open: boolean; onToggle: () => 
       aria-label="Theme palette"
       aria-pressed={open}
       aria-expanded={open}
-      className="relative flex items-center justify-center gap-1 px-2 h-10 rounded-full focus:outline-none cursor-pointer text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
+      className="relative flex items-center justify-center gap-1.5 px-3 h-10 rounded-full focus:outline-none cursor-pointer text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
     >
       {open && (
         <span
@@ -224,7 +230,9 @@ function ThemePill({
   onTogglePalette: () => void;
 }) {
   return (
-    <FrostedPill className="px-1">
+    // px-2 + gap-1 inside gives noticeable breathing between the two
+    // controls (was px-1 with 0 gap, which read as a cramped strip).
+    <FrostedPill className="px-2 gap-1">
       <ThemeModeButton />
       <PalettePillButton open={paletteOpen} onToggle={onTogglePalette} />
     </FrostedPill>
@@ -245,8 +253,8 @@ function MusicPill() {
       style={{
         height: PILL_HEIGHT,
         background: PILL_BG_FROSTED,
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        backdropFilter: PILL_BACKDROP,
+        WebkitBackdropFilter: PILL_BACKDROP,
         border: PILL_BORDER,
         boxShadow: PILL_SHADOW,
       }}
@@ -287,9 +295,29 @@ function MusicPill() {
 export default function MobileToolbar() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Hide-on-scroll-down state: animate the wrapper off-screen when the user
+  // is scrolling down past the threshold; reveal when scrolling up or at top.
+  const [hidden, setHidden] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll();
 
   useEffect(() => setMounted(true), []);
+
+  // Hide-on-scroll-down. Threshold 80px so a tiny intentional flick at the
+  // top doesn't hide the controls before there's anything to read.
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const prev = scrollY.getPrevious() ?? 0;
+    const delta = latest - prev;
+    // Hide while the user is genuinely scrolling down past threshold.
+    if (delta > 4 && latest > 80) {
+      setHidden(true);
+      // Close the palette while the bar is hiding so users don't see the
+      // popover hovering above an off-screen anchor.
+      setPaletteOpen(false);
+    } else if (delta < -4 || latest < 40) {
+      setHidden(false);
+    }
+  });
 
   // Close palette on Escape + pointer-down outside the popover.
   useEffect(() => {
@@ -317,13 +345,23 @@ export default function MobileToolbar() {
     };
   }, [paletteOpen]);
 
+  // y offset that hides the entire bar below the viewport when scrolling
+  // down. Includes the pill row + safe-area-inset + the bottom gutter so
+  // there's no faint sliver peeking up.
+  const HIDE_OFFSET = PILL_HEIGHT + 24;
+
   return (
-    <div
+    <motion.div
       // lg:hidden — desktop uses the top-anchored HeroToolbar instead.
       // pointer-events-none on the wrapper so the page below is clickable
       // outside the pills; pointer-events-auto on the inner row + popover.
       className="lg:hidden fixed left-0 right-0 z-40 pointer-events-none"
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+      // Sit nearly flush to the safe-area edge — `+ 4px` gives just enough
+      // breathing room from the home indicator without leaving a visible
+      // floating gap.
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 4px)" }}
+      animate={{ y: hidden ? HIDE_OFFSET : 0 }}
+      transition={{ type: "spring", stiffness: 400, damping: 38 }}
     >
       {/* Palette popover — portaled to <body> so it sits in its own
           stacking context above any parent transforms/backdrop-filters
@@ -372,6 +410,6 @@ export default function MobileToolbar() {
         <ThemePill paletteOpen={paletteOpen} onTogglePalette={() => setPaletteOpen((v) => !v)} />
         <MusicPill />
       </div>
-    </div>
+    </motion.div>
   );
 }
