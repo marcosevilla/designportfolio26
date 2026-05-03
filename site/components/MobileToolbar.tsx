@@ -20,6 +20,7 @@
 // HeroToolbar at top-of-viewport handles all of this.
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import HamburgerMenu from "./HamburgerMenu";
 import { PaletteRow } from "./PaletteSwatches";
@@ -36,9 +37,14 @@ const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
 // (HeroToolbar.tsx) so the mobile expansion reads as the same motion family.
 const MUSIC_WIDTH_SPRING = { type: "spring" as const, stiffness: 320, damping: 36 };
 
-const PILL_HEIGHT = 48;
+const PILL_HEIGHT = 42;
 const PILL_SHADOW =
   "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)";
+// Chat pill (accent CTA) shadow runs a touch heavier so it reads as
+// elevated against the copper bg the way the frosted pills do against
+// the page. Same character, slightly more weight.
+const CHAT_PILL_SHADOW =
+  "0 14px 36px rgba(0, 0, 0, 0.24), 0 3px 8px rgba(0, 0, 0, 0.18)";
 const PILL_BG_FROSTED = "color-mix(in srgb, var(--color-surface) 65%, transparent)";
 const PILL_BORDER = "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)";
 
@@ -130,12 +136,12 @@ function ChatPill() {
       className="shrink-0 inline-flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) active:scale-[0.96] transition-transform duration-150 ease-out"
       style={{
         height: PILL_HEIGHT,
-        padding: "0 18px",
+        padding: "0 16px",
         borderRadius: 9999,
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
         border: 0,
-        boxShadow: PILL_SHADOW,
+        boxShadow: CHAT_PILL_SHADOW,
       }}
     >
       <span aria-hidden style={{ fontSize: 16, lineHeight: 1 }}>✸</span>
@@ -192,15 +198,15 @@ function PalettePillButton({ open, onToggle }: { open: boolean; onToggle: () => 
         <span
           aria-hidden
           style={{
-            width: 14,
-            height: 14,
+            width: 16,
+            height: 16,
             borderRadius: "50%",
             backgroundColor: "var(--color-accent)",
             display: "inline-block",
             boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-fg) 12%, transparent)",
           }}
         />
-        <ChevronDownIcon size={10} />
+        <ChevronDownIcon size={12} />
       </span>
     </button>
   );
@@ -256,7 +262,7 @@ function MusicPill() {
         className="absolute inset-0 flex items-center justify-center"
       >
         <PillIconButton label="Play music" onClick={togglePlay}>
-          <PlayIcon size={16} />
+          <PlayIcon size={20} />
         </PillIconButton>
       </motion.div>
       {/* Expanded transport row — slides in from the play button's origin. */}
@@ -280,7 +286,10 @@ function MusicPill() {
 
 export default function MobileToolbar() {
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => setMounted(true), []);
 
   // Close palette on Escape + pointer-down outside the popover.
   useEffect(() => {
@@ -316,37 +325,41 @@ export default function MobileToolbar() {
       className="lg:hidden fixed left-0 right-0 z-40 pointer-events-none"
       style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
     >
-      {/* Palette popover — viewport-fixed, sits ABOVE the pill row with
-          12px gutters from each edge. Anchored to the viewport (not the
-          trigger button) because the trigger's screen-x position drifts
-          as the carousel scrolls; popping the popover relative to it
-          overflows the right edge on small phones. */}
-      <AnimatePresence>
-        {paletteOpen && (
-          <motion.div
-            ref={popoverRef}
-            key="mobile-palette-popover"
-            initial={{ opacity: 0, y: 8, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: 8, filter: "blur(6px)" }}
-            transition={{ duration: 0.22, ease: POPOVER_EASE }}
-            className="chat-surface pointer-events-auto fixed"
-            style={{
-              // safe-area-bottom + carousel bottom gap + pill row height +
-              // 12px gap above the pill row
-              bottom: `calc(env(safe-area-inset-bottom, 0px) + 12px + ${PILL_HEIGHT}px + 12px)`,
-              left: 12,
-              right: 12,
-              padding: "12px",
-              borderRadius: 16,
-            }}
-          >
-            {/* Bigger swatches (28×28) on mobile so they're properly
-                tappable; wrap into 2 rows so 12 colors fit on a phone. */}
-            <PaletteRow swatchSize={28} wrap />
-          </motion.div>
+      {/* Palette popover — portaled to <body> so it sits in its own
+          stacking context above any parent transforms/backdrop-filters
+          that might have been clipping it inside the carousel wrapper.
+          Viewport-fixed, sits ABOVE the pill row with 12px gutters from
+          each edge. */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {paletteOpen && (
+              <motion.div
+                ref={popoverRef}
+                key="mobile-palette-popover"
+                initial={{ opacity: 0, y: 8, filter: "blur(6px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: 8, filter: "blur(6px)" }}
+                transition={{ duration: 0.22, ease: POPOVER_EASE }}
+                className="chat-surface fixed z-[120]"
+                style={{
+                  // safe-area-bottom + carousel bottom gap + pill row height +
+                  // 12px gap above the pill row
+                  bottom: `calc(env(safe-area-inset-bottom, 0px) + 12px + ${PILL_HEIGHT}px + 12px)`,
+                  left: 12,
+                  right: 12,
+                  padding: "12px",
+                  borderRadius: 16,
+                }}
+              >
+                {/* Bigger swatches (28×28) on mobile so they're properly
+                    tappable; wrap into 2 rows so 12 colors fit on a phone. */}
+                <PaletteRow swatchSize={28} wrap />
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
 
       {/* Horizontal scroll row. `scrollbar-hide` defined in globals.css.
           touch-pan-x makes the iOS swipe land on this layer, not the body. */}
