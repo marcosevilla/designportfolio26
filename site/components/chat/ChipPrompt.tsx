@@ -25,13 +25,13 @@ export default function ChipPrompt({
       className="text-left rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
       style={{
         fontFamily: "var(--font-sans)",
-        fontSize: "13px",
+        fontSize: "12px",
         lineHeight: 1.3,
         fontWeight: 500,
         color: "var(--color-fg-secondary)",
         backgroundColor: "color-mix(in srgb, var(--color-surface) 60%, transparent)",
         border: "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)",
-        padding: "8px 14px",
+        padding: "7px 12px",
         cursor: "pointer",
       }}
     >

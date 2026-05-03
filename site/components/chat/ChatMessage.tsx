@@ -102,8 +102,8 @@ export default function ChatMessage({
             backgroundColor: "color-mix(in srgb, var(--color-accent) 14%, transparent)",
             color: "var(--color-fg)",
             fontFamily: "var(--font-sans)",
-            fontSize: "16px",
-            lineHeight: "26px",
+            fontSize: "14px",
+            lineHeight: "22px",
             whiteSpace: "pre-wrap",
           }}
         >
@@ -120,8 +120,8 @@ export default function ChatMessage({
       <div
         style={{
           fontFamily: "var(--font-sans)",
-          fontSize: "16px",
-          lineHeight: "26px",
+          fontSize: "14px",
+          lineHeight: "22px",
           color: "var(--color-fg)",
           whiteSpace: "pre-wrap",
         }}

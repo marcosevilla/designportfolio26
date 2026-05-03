@@ -100,7 +100,7 @@ export default function ChatPanel({
   };
 
   const isEmpty = turns.length === 0;
-  const showSubmit = value.trim().length > 0;
+  const canSend = value.trim().length > 0 && !pending;
 
   return (
     <motion.div
@@ -138,18 +138,22 @@ export default function ChatPanel({
       {/* Transcript / empty state */}
       <div ref={transcriptRef} className="flex-1 overflow-y-auto px-4 py-4">
         {isEmpty ? (
-          <div className="flex flex-col gap-4">
+          // h-full + mt-auto on the chips group pushes the suggested
+          // prompts to the bottom of the panel (just above the input row),
+          // so the greeting reads at the top and the chips are right where
+          // the user's thumb already is.
+          <div className="flex flex-col h-full">
             <p
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "16px",
-                lineHeight: "26px",
+                fontSize: "14px",
+                lineHeight: "22px",
                 color: "var(--color-fg-secondary)",
               }}
             >
               Hi — I'm Marco. Ask me about my work, my process, or anything else.
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="mt-auto flex flex-wrap gap-2">
               {DEFAULT_CHIPS.map((label) => (
                 <ChipPrompt
                   key={label}
@@ -228,18 +232,20 @@ export default function ChatPanel({
             WebkitTapHighlightColor: "transparent",
           }}
         />
-        {showSubmit && (
-          <button
-            type="button"
-            onClick={() => send(value)}
-            disabled={pending}
-            aria-label="Send message"
-            className="rounded-full w-10 h-10 inline-flex items-center justify-center enabled:active:scale-[0.96] transition-[background-color,color,transform,opacity] duration-150 ease-out hover:bg-(--color-muted) disabled:opacity-50 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
-            style={{ color: "var(--color-accent)", cursor: pending ? "not-allowed" : "pointer" }}
-          >
-            <SendIcon size={14} />
-          </button>
-        )}
+        {/* Always rendered (used to be conditional on `value.trim().length > 0`)
+            so the send affordance is visible from the moment the panel opens —
+            disabled state communicates "type to send" without making the button
+            appear and disappear as the user types and clears. */}
+        <button
+          type="button"
+          onClick={() => send(value)}
+          disabled={!canSend}
+          aria-label="Send message"
+          className="rounded-full w-10 h-10 inline-flex items-center justify-center enabled:active:scale-[0.96] transition-[background-color,color,transform,opacity] duration-150 ease-out hover:bg-(--color-muted) disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+          style={{ color: "var(--color-accent)", cursor: canSend ? "pointer" : "not-allowed" }}
+        >
+          <SendIcon size={18} />
+        </button>
       </div>
 
     </motion.div>
