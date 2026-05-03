@@ -24,12 +24,16 @@ import { parseSseStream } from "./parseStream";
 import type { ChatTurn } from "./ChatMessage";
 
 const STORAGE_KEY = "chat-transcript";
-// Damping ratio ≈ 1.03 (38 / (2·√340)). Slightly *over*-critically damped
-// → settles into the target with zero perceptible overshoot, which makes
-// the close-morph (panel→pill) read as composed instead of springy. Open
-// uses the same spring; the open is short and the underlying enter
-// animations (content blur-in) mask any residual "settle" feel.
+// Open morph (pill → panel). Slightly over-critically damped (ratio ≈
+// 1.03), settling time ~0.4s. Calm enough that the panel feels deliberate
+// when it appears.
 const MORPH_SPRING = { type: "spring" as const, stiffness: 340, damping: 38 };
+// Close morph (panel → pill). Stiffer + still critically damped — settles
+// in ~0.18s. Used as the *pill's* transition because shared layout uses
+// the entering element's transition, and pill is the one entering on
+// close. The fast close keeps the user from waiting on the morph to play
+// out before the page is interactive again.
+const CLOSE_SPRING = { type: "spring" as const, stiffness: 620, damping: 50 };
 
 function readStored(): ChatTurn[] {
   if (typeof window === "undefined") return [];
@@ -264,7 +268,10 @@ export default function ChatBar() {
         setOpen(true);
       }}
       layoutId="chat-surface"
-      transition={MORPH_SPRING}
+      // Pill is the entering element on close → its transition controls
+      // the close morph. CLOSE_SPRING is much faster than the open's
+      // MORPH_SPRING, so the panel snaps shut.
+      transition={CLOSE_SPRING}
       aria-label="Open chat — Ask Marco"
       className="chat-cta fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
@@ -295,10 +302,11 @@ export default function ChatBar() {
         className="inline-flex items-center gap-2"
         initial={hasOpenedRef.current ? { opacity: 0, filter: "blur(6px)" } : false}
         animate={{ opacity: 1, filter: "blur(0px)" }}
-        // Delay 0.26 lines the contents up to come in *as* the morph
-        // arrives at pill size — the previous 0.34 left a perceptible
-        // beat where the morph had finished but the pill was still empty.
-        transition={{ duration: 0.22, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}
+        // Delay 0.16 + duration 0.18 lines the contents up to land just
+        // as the close morph (CLOSE_SPRING, ~0.18s) settles into pill
+        // size. Was 0.26+0.22 — too slow now that the morph itself is
+        // ~0.18s instead of ~0.4s.
+        transition={{ duration: 0.18, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
       >
         <SparkGlyph size={14} color="var(--color-on-accent)" />
         <span
@@ -391,18 +399,17 @@ export default function ChatBar() {
                         : { opacity: 0, filter: "blur(12px)" }
                     }
                     transition={{
+                      // Open morph uses the calm spring; close morph
+                      // is driven by the pill's CLOSE_SPRING above.
                       layout: MORPH_SPRING,
                       default: isMobile
                         ? { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }
                         : MORPH_SPRING,
-                      // Ease-in (slow → fast) so panel content stays
-                      // visible while the morph is still large, then
-                      // disappears decisively as the rect closes in on
-                      // pill size. Duration 0.26 ≈ 70% of the morph
-                      // settling time — content is fully gone right as
-                      // the morph completes, with no empty rect.
-                      opacity: { duration: 0.26, ease: [0.4, 0, 0.6, 1] },
-                      filter: { duration: 0.26, ease: [0.4, 0, 0.6, 1] },
+                      // Tightened from 0.26 → 0.16 to track the faster
+                      // close spring. Ease-in keeps content visible
+                      // until the morph is mostly done.
+                      opacity: { duration: 0.16, ease: [0.4, 0, 0.6, 1] },
+                      filter: { duration: 0.16, ease: [0.4, 0, 0.6, 1] },
                     }}
                     className="pointer-events-auto h-full w-full"
                   >

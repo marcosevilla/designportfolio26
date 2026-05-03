@@ -673,9 +673,14 @@ img[class*="rounded-"] {
 /* Mobile sheet: drop the rounded corners and floating border so the surface
    reads as a full-bleed sheet, not a panel-stuck-to-the-edge. Also drop
    the frosted-glass treatment — on a full-screen mobile modal the
-   transparency reads as unfinished; native iOS modals use a solid bg. */
+   transparency reads as unfinished; native iOS modals use a solid bg.
+   The .dark variant is explicitly listed because `.dark .chat-surface`
+   below has equal specificity and lives later in the file — without it
+   dark-mode mobile picks up the translucent surface-raised mix and reads
+   as see-through. */
 @media (max-width: 1023px) {
-  .chat-panel-slot .chat-surface {
+  .chat-panel-slot .chat-surface,
+  .dark .chat-panel-slot .chat-surface {
     border-radius: 0;
     border: 0;
     background-color: var(--color-bg);
