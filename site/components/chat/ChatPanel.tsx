@@ -223,15 +223,14 @@ export default function ChatPanel({
         }}
       >
         <div
-          className="flex items-center gap-2 px-3"
-          style={{
-            border: "1px solid color-mix(in srgb, var(--color-border) 40%, transparent)",
-            borderRadius: 8,
-            // 70% bg + 30% surface — slightly lighter than the chat-surface
-            // chrome, so the input reads as a related-but-distinct surface
-            // sitting *inside* the panel.
-            backgroundColor: "color-mix(in srgb, var(--color-bg) 70%, var(--color-surface) 30%)",
-          }}
+          // Visual styling (border, bg, focus-within ring, subtle drop
+          // shadow) lives in globals.css under .chat-input-field so the
+          // focus state can override border-color without !important
+          // shenanigans.
+          // pl-3 / pr-2 = button sits a touch closer to the right edge
+          // than the textarea does to the left edge, since the button is
+          // a discrete glyph that benefits from being visually anchored.
+          className="chat-input-field flex items-center gap-2 pl-3 pr-2"
         >
           <textarea
             ref={inputRef}
