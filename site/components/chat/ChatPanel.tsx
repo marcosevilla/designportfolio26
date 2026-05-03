@@ -113,27 +113,27 @@ export default function ChatPanel({
         filter: CONTENT_TRANSITION,
       }}
     >
-      {/* Floating close button — replaces the previous header strip
-          (sparkle + "Ask me anything" label + close button + bottom
-          divider). The label and sparkle were redundant chrome; with
-          them gone, a divider serving only the close button felt
-          arbitrary, so the close goes top-right and the transcript
-          starts higher.
-          On mobile (<lg) we add safe-area-inset-top so the button
-          doesn't sit under the iOS notch. */}
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close chat"
-        className="absolute right-2 z-10 rounded-full w-10 h-10 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+      {/* Header strip — close button right-aligned with a bottom divider so
+          the transcript scrolls *under* this band instead of intersecting
+          the X button. paddingTop carries the iOS notch clearance on the
+          mobile sheet. */}
+      <div
+        className="shrink-0 flex items-center justify-end px-2 pb-2"
         style={{
-          top: "max(env(safe-area-inset-top, 0px), 8px)",
-          color: "var(--color-fg-secondary)",
-          cursor: "pointer",
+          paddingTop: "max(env(safe-area-inset-top, 0px), 8px)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
         }}
       >
-        <CloseIcon size={12} />
-      </button>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close chat"
+          className="rounded-full w-10 h-10 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+          style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
+        >
+          <CloseIcon size={12} />
+        </button>
+      </div>
 
       {/* Transcript / empty state */}
       <div ref={transcriptRef} className="flex-1 overflow-y-auto px-4 py-4">
@@ -198,54 +198,64 @@ export default function ChatPanel({
         )}
       </div>
 
-      {/* Input row — paddingBottom carries the iOS home indicator
-          clearance that previously lived on the privacy footnote (now
-          removed). Min 8px on desktop, env(safe-area-inset-bottom) on
-          notched mobile. */}
+      {/* Input row — gutter wrapper provides the 4px breathing room
+          requested on each side (and safe-area-inset-bottom on the
+          mobile sheet so the inner field clears the iOS home
+          indicator). The inner container is the actual input field:
+          inset look, 1px stroke, 8px corners, no shadow. */}
       <div
-        className="flex items-center gap-2 px-4 pt-2"
+        className="shrink-0"
         style={{
-          borderTop: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
-          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)",
+          padding: 4,
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 4px)",
         }}
       >
-        <textarea
-          ref={inputRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value.slice(0, MAX_INPUT_CHARS))}
-          onKeyDown={onKeyDown}
-          placeholder="Ask me anything…"
-          rows={1}
-          className="flex-1 resize-none bg-transparent border-0 outline-none focus:outline-none focus:ring-0 placeholder:text-(--color-fg-tertiary)"
+        <div
+          className="flex items-center gap-2 px-3"
           style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "16px",
-            lineHeight: "22px",
-            color: "var(--color-fg)",
-            padding: "6px 0",
-            maxHeight: "120px",
-            // Hard-override the browser focus outline. Tailwind's
-            // `outline-none` utility was being beaten by the UA stylesheet
-            // on this platform, so we kill it inline (highest specificity).
-            outline: "none",
-            boxShadow: "none",
-            WebkitTapHighlightColor: "transparent",
+            border: "1px solid var(--color-border)",
+            borderRadius: 8,
+            backgroundColor: "var(--color-bg)",
           }}
-        />
-        {/* Always rendered (used to be conditional on `value.trim().length > 0`)
-            so the send affordance is visible from the moment the panel opens —
-            disabled state communicates "type to send" without making the button
-            appear and disappear as the user types and clears. */}
-        <button
-          type="button"
-          onClick={() => send(value)}
-          disabled={!canSend}
-          aria-label="Send message"
-          className="rounded-full w-10 h-10 inline-flex items-center justify-center enabled:active:scale-[0.96] transition-[background-color,color,transform,opacity] duration-150 ease-out hover:bg-(--color-muted) disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
-          style={{ color: "var(--color-accent)", cursor: canSend ? "pointer" : "not-allowed" }}
         >
-          <SendIcon size={18} />
-        </button>
+          <textarea
+            ref={inputRef}
+            value={value}
+            onChange={(e) => setValue(e.target.value.slice(0, MAX_INPUT_CHARS))}
+            onKeyDown={onKeyDown}
+            placeholder="Ask me anything…"
+            rows={1}
+            className="flex-1 resize-none bg-transparent border-0 outline-none focus:outline-none focus:ring-0 placeholder:text-(--color-fg-tertiary)"
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "16px",
+              lineHeight: "22px",
+              color: "var(--color-fg)",
+              padding: "10px 0",
+              maxHeight: "120px",
+              // Hard-override the browser focus outline. Tailwind's
+              // `outline-none` utility was being beaten by the UA stylesheet
+              // on this platform, so we kill it inline (highest specificity).
+              outline: "none",
+              boxShadow: "none",
+              WebkitTapHighlightColor: "transparent",
+            }}
+          />
+          {/* Always rendered (used to be conditional on `value.trim().length > 0`)
+              so the send affordance is visible from the moment the panel opens —
+              disabled state communicates "type to send" without making the button
+              appear and disappear as the user types and clears. */}
+          <button
+            type="button"
+            onClick={() => send(value)}
+            disabled={!canSend}
+            aria-label="Send message"
+            className="shrink-0 rounded-full w-9 h-9 inline-flex items-center justify-center enabled:active:scale-[0.96] transition-[background-color,color,transform,opacity] duration-150 ease-out hover:bg-(--color-muted) disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+            style={{ color: "var(--color-accent)", cursor: canSend ? "pointer" : "not-allowed" }}
+          >
+            <SendIcon size={18} />
+          </button>
+        </div>
       </div>
 
     </motion.div>
