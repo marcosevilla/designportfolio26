@@ -58,8 +58,8 @@
   --color-surface-raised: #f5f4f9;
   --color-border: #e6e6e6;
   --color-muted: #f3f3f3;
-  --color-accent: #B5651D;
-  --color-glow: #B5651D;
+  --color-accent: var(--color-fg);
+  --color-glow: var(--color-fg);
   /* 1px low-opacity outline for raster images / video thumbnails.
      Pure black in light, pure white in dark — never tinted, since a tinted
      outline picks up the surface underneath and reads as dirt on the edge. */
@@ -116,8 +116,8 @@
   --color-surface-raised: #1a1a1a;
   --color-border: #2a2a2a;
   --color-muted: #1e1e1e;
-  --color-accent: #D4915E;
-  --color-glow: #F5C28A;
+  --color-accent: var(--color-fg);
+  --color-glow: var(--color-fg);
   --color-image-outline: rgba(255, 255, 255, 0.1);
   /* on-accent defined in :root resolves via var(--color-bg) at use-site, so
      no override needed here. */
