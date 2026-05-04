@@ -54,8 +54,11 @@ Written case study content lives in `case-studies/`. Each `.md` file contains th
 
 ## Obsidian Vault Boundary
 Case study critiques and career strategy context live in Obsidian — **do not duplicate here.**
-- **Vault:** `~/Documents/marcowits/Canary/portfolio/critiques/` — per-study design critiques (reflective)
-- Read critiques for context when refining case study content, but don't copy them into this project.
+- **Vault root:** `~/Obsidian/marcowits/`
+- **Portfolio meta-docs:** `~/Obsidian/marcowits/work/general/portfolio/` — voice/style references, templates, bio (symlinked to repo), `CASE-STUDY-INTERVIEW.md` (symlinked to repo)
+- **Per-study critiques:** `~/Obsidian/marcowits/work/canary/critiques/` — reflective design critiques per case study
+- **Per-project drafts:** `~/Obsidian/marcowits/work/canary/projects/[slug]/case-study-draft.md`
+- Read critiques and meta-docs for context when refining case study content, but don't copy them into this project.
 
 ## Project Overview
 A Next.js 14 portfolio site for a product designer, featuring case studies with rich interactive components.
@@ -122,7 +125,7 @@ components/
 ├── CaseStudyListRow.tsx        # List view row (year | title | company·role | metric)
 ├── BackgroundTexture.tsx       # Perlin noise dot wave animation (SENSITIVE - commit before editing)
 ├── Hero.tsx                    # 5-phase intro animation with streaming text
-├── DesktopSidebar.tsx          # Homepage-only sidebar (lg+), nav links with ✸ star
+├── DesktopSidebar.tsx          # Homepage-only sidebar (lg+), nav links with * (Geist 500) marker
 ├── MobileNav.tsx               # Sticky top bar (<lg only), nav links or ← Back
 ├── StickyFooter.tsx            # Fixed bottom bar — email, LinkedIn, palette, marquee (all pages)
 ├── HomeLayout.tsx              # BackgroundTexture + DesktopSidebar wrapper
@@ -251,7 +254,7 @@ All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by 
 | `--color-surface-raised` | `#f5f4f9` |
 | `--color-border` | `#e6e6e6` |
 | `--color-muted` | `#f3f3f3` |
-| `--color-accent` | `#B5651D` (copper) |
+| `--color-accent` | `var(--color-fg)` (neutral — `mono` theme is default; colored themes override at runtime) |
 
 ### Colors — Dark Mode (`.dark`)
 | Variable | Value |
@@ -264,10 +267,20 @@ All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by 
 | `--color-surface-raised` | `#1a1a1a` |
 | `--color-border` | `#2a2a2a` |
 | `--color-muted` | `#1e1e1e` |
-| `--color-accent` | `#D4915E` (copper) |
+| `--color-accent` | `var(--color-fg)` (neutral — `mono` theme is default; colored themes override at runtime) |
 
-### Colored Themes
-10 WCAG AA–compliant palettes: ocean, forest, wine, slate, ember (bold); lavender, mint, rose, butter, sky (soft). Each overrides all CSS variables. Persists via `theme-mode` + `colored-theme-name` in localStorage.
+### Themes
+**11 themes total.** Default is `mono` (pure neutral B&W — accent + glow aliased to `--color-fg`). 10 colored opt-ins: ocean, forest, wine, slate, ember (bold); lavender, mint, rose, butter, sky (soft). Each colored theme overrides all CSS variables at runtime via `applyColoredTheme()` in `ThemeToggle.tsx`. Mono swatch in the palette renders as a 50/50 black/white split circle so its "neutral" identity is legible against any bg. Persists via `theme-mode` + `theme-family` in localStorage.
+
+### Brand mark (May 2026)
+**`*` (Geist Sans, weight 500)** replaces the previous `✸` heavy 8-pointed star and the `✦` six-pointed marquee separator everywhere. Geist's `*` sits high in its em-box, so most surfaces apply `transform: translateY(15%)` to optically center it next to adjacent text. Surfaces:
+- Hero rest star: 0.62em inner span, slot Y offset `0.08em`
+- Hero loader (LoadingOverlay): 0.42em inner span (kept smaller — slot is 108-168px so absolute size is huge)
+- HomeNav active marker: 18px, `translateY(15%)`, split outer/inner span so `y: starY` motion value doesn't fight the static centering transform
+- ChatBar SparkGlyph: default 22px + `translateY(15%)`; "Ask Marco" pill uses size 22
+- ChatMessage streaming cursor: 1.7em with `verticalAlign: middle`, `lineHeight: 0`
+- MobileToolbar pill: 22px + `translateY(15%)`
+- InlineTOC marker, SeekBar thumb, Marquee separator: same pattern, smaller
 
 ## Typography
 
@@ -317,7 +330,7 @@ Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No 
 - **Scope:** Rendered inside HomeLayout.tsx, only visible on homepage at lg+
 - **Nav mode:** Home, Work, Writing (disabled), Play (disabled) links
 - **Font:** 16px weight 500 (nav links)
-- **Active state:** Copper ✸ star + text springs 18px right
+- **Active state:** Geist `*` (18px, weight 500, translateY(15%) for optical centering) + text springs 18px right
 - **Nav star:** spring stiffness 350, damping 28, y = activeIndex × 36
 - **Hover:** Accent color + 8px right slide (spring 400/25)
 - **Mobile (MobileNav.tsx):** Horizontal top bar, sticky, backdrop-blur, 14px font, lg:hidden
@@ -360,7 +373,7 @@ Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No 
 - **Spacing:** `mt-28` (112px) between bio section and work section
 
 ### Hero Intro Sequence
-- **5 phases:** star1 (✸ blink 1800ms) → heading streams word-by-word → star2 (1800ms) → bio paragraph streams → done
+- **5 phases:** star1 (`*` blink 1800ms, Geist weight 500) → heading streams word-by-word → star2 (1800ms) → bio paragraph streams → done
 - **Word streaming:** 40ms/word, 250ms opacity fade per word
 - **6-level progressive disclosure:** Each "+" click shows next bio paragraph with loading star (1200ms) + stream
 - **Question prompts:** "What else have you worked on?" / "How'd you get into design?" / "What drives your work?" / "What do you do outside of work?" / "How can I reach you?"
