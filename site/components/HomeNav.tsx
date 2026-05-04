@@ -207,11 +207,7 @@ export default function HomeNav({
           <motion.span
             className="absolute left-0 pointer-events-none flex items-center"
             style={{
-              color: "var(--color-accent)",
-              fontSize: "18px",
               height: "20px",
-              lineHeight: 1,
-              fontWeight: 500,
               y: starY,
             }}
             initial={{ opacity: 0 }}
@@ -219,7 +215,20 @@ export default function HomeNav({
             transition={{ duration: 0.15 }}
             aria-hidden
           >
-            *
+            {/* Inner span owns the static optical-center translate so the
+                outer motion.span's transform (y: starY) is left untouched. */}
+            <span
+              style={{
+                color: "var(--color-accent)",
+                fontSize: "18px",
+                lineHeight: 1,
+                fontWeight: 500,
+                display: "inline-block",
+                transform: "translateY(15%)",
+              }}
+            >
+              *
+            </span>
           </motion.span>
         )}
         {NAV_ITEMS.map((item, index) => {

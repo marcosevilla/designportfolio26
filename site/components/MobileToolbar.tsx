@@ -153,12 +153,13 @@ function ChatPill() {
       <span
         aria-hidden
         style={{
-          fontSize: 18,
+          fontSize: 22,
           lineHeight: 1,
           fontWeight: 500,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
+          transform: "translateY(15%)",
         }}
       >
         *

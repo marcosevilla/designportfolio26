@@ -197,13 +197,14 @@ function PlaygroundStar({
       className="flex items-center justify-center shrink-0"
       style={{
         color: "var(--color-accent)",
-        // Sized in em so the star scales with the wordmark group. Translate
-        // also in em — top of star sits near the cap height, tucked tight
-        // against the final "a" of "Sevilla".
+        // Sized in em so the star scales with the wordmark group. Y offset
+        // pushes the asterisk's top down to roughly cap-height of the wordmark
+        // (Geist's * sits high in its em-box, so we can't rely on flex-center
+        // alone to look top-aligned with the M).
         width: "0.66em",
         height: "0.66em",
         fontSize: "var(--wordmark-fontsize, 48px)",
-        transform: "translate(-0.12em, -0.05em)",
+        transform: "translate(-0.12em, 0.08em)",
       }}
     >
       {!hideForLoader && (
