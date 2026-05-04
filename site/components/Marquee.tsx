@@ -48,10 +48,10 @@ function QuoteSet() {
           </span>
           <span
             className="mx-6"
-            style={{ color: "var(--color-accent)", fontSize: "14px" }}
+            style={{ color: "var(--color-accent)", fontSize: "14px", fontWeight: 500 }}
             aria-hidden
           >
-            ✦
+            *
           </span>
         </span>
       ))}
