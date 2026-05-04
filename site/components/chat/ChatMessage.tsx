@@ -135,11 +135,11 @@ export default function ChatMessage({
             aria-hidden
             className="chat-typing-cursor"
             style={{
-              fontSize: "1.25em",
+              fontSize: "1.7em",
               fontWeight: 500,
               lineHeight: 0,
               verticalAlign: "middle",
-              marginLeft: "0.05em",
+              marginLeft: "0.08em",
             }}
           >
             *
