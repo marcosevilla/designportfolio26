@@ -112,7 +112,7 @@ export default function SeekBar({
             backgroundColor: "var(--color-accent)",
           }}
         />
-        {/* Thumb — uses the same ✸ blink-cursor character used elsewhere on
+        {/* Thumb — uses the same * blink-cursor character used elsewhere on
             the homepage (intro, loading state) for a consistent motif. */}
         <span
           aria-hidden="true"
@@ -125,9 +125,10 @@ export default function SeekBar({
             transform: "translate(-50%, -50%)",
             opacity: showThumb ? 1 : 0,
             color: "var(--color-accent)",
+            fontWeight: 500,
           }}
         >
-          ✸
+          *
         </span>
       </div>
     </div>
