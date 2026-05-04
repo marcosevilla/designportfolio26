@@ -20,13 +20,16 @@ interface GalleryLayers {
 interface GallerySlot {
   study: CaseStudyMeta;
   /** Single-image source. Null for empty placeholder slides; ignored when
-   *  `layers` is set. */
+   *  `layers` or `video` is set. */
   image: string | null;
   fit: "contain" | "cover";
   objectPosition: string;
   /** When set, this slide renders a layered composition (background +
    *  parallaxed UI mock) instead of a single image. */
   layers: GalleryLayers | null;
+  /** When set, this slide renders an autoplay loop muted video. */
+  video: string | null;
+  videoPoster: string | null;
 }
 
 // Flatten studies into one slide per image. Studies with zero configured
@@ -35,20 +38,21 @@ interface GallerySlot {
 function buildSlots(studies: CaseStudyMeta[]): GallerySlot[] {
   return studies.flatMap<GallerySlot>((study) => {
     const items = galleryContent[study.slug] ?? [];
+    const empty: GallerySlot = {
+      study, image: null, fit: "contain", objectPosition: "center", layers: null, video: null, videoPoster: null,
+    };
     if (items.length === 0) {
-      return [{ study, image: null, fit: "contain", objectPosition: "center", layers: null }];
+      return [empty];
     }
-    return items.map((item) => {
+    return items.map<GallerySlot>((item) => {
       if (typeof item === "string") {
-        return { study, image: item, fit: "contain", objectPosition: "center", layers: null };
+        return { ...empty, image: item };
       }
       if ("layers" in item) {
         const hasHeight = item.layers.uiHeight != null;
         return {
-          study,
-          image: null,
+          ...empty,
           fit: "cover",
-          objectPosition: "center",
           layers: {
             bg: item.layers.bg,
             ui: item.layers.ui,
@@ -62,12 +66,14 @@ function buildSlots(studies: CaseStudyMeta[]): GallerySlot[] {
           },
         };
       }
+      if ("video" in item) {
+        return { ...empty, video: item.video, videoPoster: item.poster ?? null, fit: "cover" };
+      }
       return {
-        study,
+        ...empty,
         image: item.src,
         fit: item.fit ?? "contain",
         objectPosition: item.objectPosition ?? "center",
-        layers: null,
       };
     });
   });

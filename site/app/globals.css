@@ -56,6 +56,11 @@
   --color-fg-tertiary: rgba(17, 17, 17, 0.35);
   --color-surface: #fbfbfb;
   --color-surface-raised: #f5f4f9;
+  /* Project card frame fill — used on the homepage gallery cards in
+     CaseStudyList. Slightly off-white in light, neutral charcoal in
+     dark; defined separately from --color-surface-raised so we can tune
+     the cards without disturbing other surface treatments. */
+  --color-card-bg: #fafafa;
   --color-border: #e6e6e6;
   --color-muted: #f3f3f3;
   --color-accent: var(--color-fg);
@@ -114,6 +119,7 @@
   --color-fg-tertiary: rgba(237, 237, 237, 0.35);
   --color-surface: #141414;
   --color-surface-raised: #1a1a1a;
+  --color-card-bg: #141414;
   --color-border: #2a2a2a;
   --color-muted: #1e1e1e;
   --color-accent: var(--color-fg);
@@ -696,16 +702,18 @@ img[class*="rounded-"] {
   }
 }
 
-/* Desktop side panel — restore the original geometry (top:52 to clear the
-   40px system-chrome toolbar, 12px gutters, fixed 360px). */
+/* Desktop side panel — pinned to the bottom-right corner (the chat pill's
+   natural anchor). 12px gutters on bottom + right; height capped so it
+   doesn't stretch into a dead column on 24"+ monitors but always leaves
+   80px of clearance for the toolbar at top + breathing room. */
 @media (min-width: 1024px) {
   .chat-panel-slot {
-    top: 52px;
+    top: auto;
     bottom: 12px;
     right: 12px;
     left: auto;
     width: 360px;
-    height: auto;
+    height: min(640px, calc(100vh - 80px));
   }
 }
 

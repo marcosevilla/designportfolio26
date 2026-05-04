@@ -281,11 +281,18 @@ export default function ChatBar() {
         hasOpenedRef.current = true;
         setOpen(true);
       }}
-      layoutId="chat-surface"
-      // Pill is the entering element on close → its transition controls
-      // the close morph. CLOSE_SPRING is much faster than the open's
-      // MORPH_SPRING, so the panel snaps shut.
-      transition={CLOSE_SPRING}
+      // Pill fades + scales out when the panel opens. Previously this used
+      // shared layoutId="chat-surface" with the panel wrapper to morph
+      // between the two, but with pill + panel both anchored bottom-right,
+      // framer-motion's auto-interpolated border-radius produced a lens
+      // halo mid-morph. A simple opacity + scale crossfade (paired with the
+      // panel's own scale-from-bottom-right open below) keeps the
+      // pill→panel transition tight without that artifact.
+      animate={{
+        opacity: open ? 0 : 1,
+        scale: open ? 0.85 : 1,
+      }}
+      transition={open ? { duration: 0.16, ease: [0.4, 0, 0.6, 1] } : CLOSE_SPRING}
       aria-label="Open chat — Ask Marco"
       className="chat-cta fixed bottom-3 right-3 z-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
@@ -303,6 +310,10 @@ export default function ChatBar() {
           "0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)",
         overflow: "hidden",
         position: "fixed",
+        // Block clicks while the panel owns the surface, so the
+        // collapsing pill underneath can't be triggered accidentally.
+        pointerEvents: open ? "none" : "auto",
+        transformOrigin: "bottom right",
       }}
     >
       {/* Pill contents — wrapped so we can fade-blur them in *after* the
@@ -394,37 +405,42 @@ export default function ChatBar() {
                 >
                   <motion.div
                     key="chat-panel-wrap"
-                    // Below lg the source pill isn't rendered, so leaving
-                    // layoutId here would make framer-motion try to morph
-                    // from nothing → fullscreen warp. Strip it on mobile so
-                    // the panel just renders with its own enter animation.
-                    layoutId={isMobile ? undefined : "chat-surface"}
-                    /* Desktop: layoutId morph from the pill handles the
-                       open animation; the exit fade+blur keeps chrome and
-                       content visually dissolving as the morph collapses
-                       (instead of flicking out at the start and leaving
-                       an empty rect mid-morph). Mobile: no morph source,
-                       so slide up from the bottom with a soft fade. */
-                    initial={isMobile ? { opacity: 0, y: 24 } : { opacity: 1 }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={
+                    /* Desktop: scale-and-fade from the bottom-right corner
+                       so the panel reads as growing out of the pill it
+                       just replaced. Mobile: slide up from the bottom
+                       with a soft fade. The previous shared-layoutId
+                       pill→panel morph was removed because framer-motion's
+                       auto-interpolated border-radius created a lens halo
+                       artifact when both elements anchor bottom-right. */
+                    initial={
                       isMobile
                         ? { opacity: 0, y: 24 }
-                        : { opacity: 0, filter: "blur(12px)" }
+                        : { opacity: 0, scale: 0.92, y: 8 }
                     }
-                    transition={{
-                      // Open morph uses the calm spring; close morph
-                      // is driven by the pill's CLOSE_SPRING above.
-                      layout: MORPH_SPRING,
-                      default: isMobile
+                    animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                    exit={
+                      isMobile
+                        ? {
+                            opacity: 0,
+                            y: 24,
+                            transition: { duration: 0.22, ease: [0.4, 0, 0.6, 1] },
+                          }
+                        : {
+                            opacity: 0,
+                            scale: 0.94,
+                            y: 8,
+                            filter: "blur(8px)",
+                            // Snappier than the open spring so the panel
+                            // doesn't feel like it's lingering on close.
+                            transition: CLOSE_SPRING,
+                          }
+                    }
+                    transition={
+                      isMobile
                         ? { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }
-                        : MORPH_SPRING,
-                      // Tightened from 0.26 → 0.16 to track the faster
-                      // close spring. Ease-in keeps content visible
-                      // until the morph is mostly done.
-                      opacity: { duration: 0.16, ease: [0.4, 0, 0.6, 1] },
-                      filter: { duration: 0.16, ease: [0.4, 0, 0.6, 1] },
-                    }}
+                        : MORPH_SPRING
+                    }
+                    style={{ transformOrigin: "bottom right" }}
                     className="pointer-events-auto h-full w-full"
                   >
                     <ChatPanel

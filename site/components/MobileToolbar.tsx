@@ -257,11 +257,37 @@ function ThemePill({
  *  transport row with width spring. Mirrors desktop MusicSlot's interaction.
  *  MiniPlayerRow's hover-revealed scrubber doesn't fire on touch — that's a
  *  desktop-only nicety; mobile shows the title and the transport buttons. */
+// Fixed-width chrome inside the expanded music pill: transport buttons
+// (26 + 32 + 26 = 84) + gap-2 to swap zone (8) + spinning disc (14) +
+// gap-1.5 to title (6) + pill px-2 padding (8 each side = 16) + a small
+// breathing buffer (8). Add the measured title width to this to get the
+// pill's auto-fit width.
+const PILL_FIXED_WIDTH = 84 + 8 + 14 + 6 + 16 + 8;
+
 function MusicPill() {
-  const { isPlaying, togglePlay } = useAudioPlayer();
+  const { isPlaying, togglePlay, currentTrack } = useAudioPlayer();
+  const titleMeasureRef = useRef<HTMLSpanElement>(null);
+  const [pillWidth, setPillWidth] = useState(280);
+
+  // The expanded pill's width is content-aware — measure the current
+  // title's natural width using a hidden span styled identically to the
+  // visible title in MiniPlayerRow, then size the pill to fit. Re-runs
+  // when the track changes so longer titles get a wider pill.
+  useEffect(() => {
+    const el = titleMeasureRef.current;
+    if (!el) return;
+    const update = () => {
+      setPillWidth(PILL_FIXED_WIDTH + el.offsetWidth);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [currentTrack?.title, currentTrack?.artist]);
+
   return (
     <motion.div
-      animate={{ width: isPlaying ? 280 : 48 }}
+      animate={{ width: isPlaying ? pillWidth : 48 }}
       transition={MUSIC_WIDTH_SPRING}
       className="shrink-0 rounded-full relative overflow-hidden"
       style={{
@@ -273,6 +299,27 @@ function MusicPill() {
         boxShadow: PILL_SHADOW,
       }}
     >
+      {/* Hidden width measurer for the current title's natural width.
+          Mirrors the font styles of the visible title <p> in
+          MiniPlayerRow so the measurement matches what gets rendered. */}
+      <span
+        ref={titleMeasureRef}
+        aria-hidden
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          whiteSpace: "nowrap",
+          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+          fontSize: "11px",
+          letterSpacing: "-0.02em",
+          fontWeight: 400,
+          top: 0,
+          left: 0,
+          pointerEvents: "none",
+        }}
+      >
+        {currentTrack ? `${currentTrack.title} · ${currentTrack.artist}` : ""}
+      </span>
       {/* Collapsed play button — fades out when expanded takes over. */}
       <motion.div
         animate={{

@@ -53,12 +53,12 @@ Reference docs live in `docs/`. Read the relevant ones based on the task — don
 Written case study content lives in `case-studies/`. Each `.md` file contains the narrative draft for a case study. Read the relevant one when working on a specific case study page.
 
 ## Obsidian Vault Boundary
-Case study critiques and career strategy context live in Obsidian — **do not duplicate here.**
+Case study critiques, project research, and career strategy context live in Obsidian — **do not duplicate here.**
 - **Vault root:** `~/Obsidian/marcowits/`
-- **Portfolio meta-docs:** `~/Obsidian/marcowits/work/general/portfolio/` — voice/style references, templates, bio (symlinked to repo), `CASE-STUDY-INTERVIEW.md` (symlinked to repo)
-- **Per-study critiques:** `~/Obsidian/marcowits/work/canary/critiques/` — reflective design critiques per case study
-- **Per-project drafts:** `~/Obsidian/marcowits/work/canary/projects/[slug]/case-study-draft.md`
-- Read critiques and meta-docs for context when refining case study content, but don't copy them into this project.
+- **Portfolio meta-docs:** `~/Obsidian/marcowits/portfolio/` — voice/style references, templates, per-study critiques, `bio.md` (symlinked to repo), `case-study-interview.md` (symlinked to repo)
+- **Per-study critiques:** `~/Obsidian/marcowits/portfolio/case-study-critiques/` — reflective design critiques per case study
+- **Per-project drafts + retrospectives:** `~/Obsidian/marcowits/work/canary/projects/[slug]/` — typically contains `case-study-draft.md` and `retrospective-2026-04-30.md`
+- Read critiques, drafts, and retrospectives for context when refining case study content, but don't copy them into this project.
 
 ## Project Overview
 A Next.js 14 portfolio site for a product designer, featuring case studies with rich interactive components.
@@ -74,11 +74,13 @@ A Next.js 14 portfolio site for a product designer, featuring case studies with 
 
 ```
 app/
-├── page.tsx                    # Homepage (conditionally renders Teaser or full site)
+├── page.tsx                    # Homepage (renders HomeLayout w/ work as RSC slot)
+├── layout.tsx                  # Root layout — mounts PasswordModal, MarqueeProvider
+├── template.tsx                # Page transitions (framer-motion fade-in on route change)
+├── api/
+│   └── chat/                   # Chat-bar server route (Node runtime)
 ├── work/
 │   ├── [slug]/                 # Dynamic route for MDX-based case studies
-│   │   ├── page.tsx
-│   │   └── CaseStudyPage.tsx
 │   ├── fb-ordering/            # Dedicated custom case study
 │   ├── compendium/             # Dedicated custom case study
 │   ├── upsells/                # Dedicated custom case study
@@ -88,86 +90,97 @@ app/
 │   ├── ai-workflow/            # Dedicated "How I Work with AI" page
 │   ├── page.tsx                # Work collection page
 │   └── WorkContent.tsx
-├── dev/
-│   └── type-lab/              # Dev-only typography composition tool
-│       └── page.tsx
-├── play/                       # Play/experiments section
+├── play/                       # Playground index + 3 subpages
+│   ├── page.tsx                # Index — title + reused <Playground hideHeader />
+│   ├── six-degrees/
+│   ├── pajamagrams/
+│   └── custom-wrapped/
 ├── writing/                    # Blog/writing section
-├── template.tsx                # Page transitions (framer-motion fade-in on route change)
-└── layout.tsx
+└── dev/
+    └── type-lab/               # Dev-only typography composition tool
 
 components/
-├── case-study/                 # Reusable case study components
-│   ├── CaseStudyHero.tsx
-│   ├── QuickStats.tsx
-│   ├── ExpandableSection.tsx
-│   ├── ImagePlaceholder.tsx
-│   ├── PullQuote.tsx
-│   ├── NextProject.tsx
-│   ├── ProgressBar.tsx
-│   ├── FadeIn.tsx
-│   ├── TwoCol.tsx              # Two-column editorial layout (TwoCol, TwoCol.Left, TwoCol.Right)
-│   ├── SectionHeading.tsx      # Reusable H2 section heading with mono font + divider
-│   ├── SidebarTOCBridge.tsx    # Pushes TOC items into SidebarContext for sidebar display
-│   └── TOCObserver.tsx         # IntersectionObserver that tracks active TOC section
+├── case-study/                 # Reusable case study components (TwoCol, CaseStudyHero,
+│                               # CaseStudyShell, QuickStats, ExpandableSection, PullQuote,
+│                               # NextProject, ProgressBar, ImagePlaceholder, FadeIn,
+│                               # SectionHeading, SidebarTOCBridge, TOCObserver)
+├── chat/                       # Chat bar UI (ChatBar, ChatPanel, ChatOverlay,
+│                               # ChatMessage, ChatMessageActions, ChipPrompt,
+│                               # CaseStudyCardUnfurl, parseChatMarkup, parseStream)
+├── music/                      # Audio player surfaces (HomeMiniPlayer, PlayerChip,
+│                               # SeekBar, LedMatrixUI — scene toggles)
+├── fb-showcase/                # F&B interactive components (BrowserMockup, FBCardPreview,
+│                               # MobileShowcase, RoadmapEvolution, SystemArchitecture,
+│                               # DesignPrinciples)
 ├── type-tuner/                 # Dev typography composition tool (Type Lab)
-│   ├── TypeTuner.tsx           # Main component — canvas + panel layout
-│   ├── TunerPanel.tsx          # Controls: font, size, weight, spacing, color, offset
-│   ├── TunerCanvas.tsx         # Live preview with selectable/editable text layers
-│   └── types.ts                # TypeLayer interface, font options, code generator
-├── dev/                         # Dev-only inline content editor
-│   ├── EditableOverlay.tsx      # DOM traversal, contentEditable, hover outlines
-│   ├── FloatingToolbar.tsx      # Toggle, save/revert, Cmd+E/S, placeholder count
-│   └── SectionReorder.tsx       # Section reorder panel with up/down buttons
-├── dynamic-bio/                # Grid-based bio display mode
+├── dev/                        # Dev-only inline content editor (EditableOverlay,
+│                               # FloatingToolbar, SectionReorder)
+├── ui/                         # Primitives (button, slider, tooltip)
+│
+├── HomeLayout.tsx              # Homepage shell — Hero, HomeNav, HeroToolbar/MobileToolbar,
+│                               # LedMatrix, work slot, Playground
+├── Hero.tsx                    # Multi-phase intro animation with streaming text + chat bar
+├── HomeNav.tsx                 # Homepage anchor nav (Home / Work / Playground), * marker
+├── HeroToolbar.tsx             # Unified fixed-top toolbar (desktop) — palette popover,
+│                               # music expand, LED matrix scenes, time/weather right cluster
+├── MobileToolbar.tsx           # Mobile variant of the unified toolbar
+├── HamburgerMenu.tsx           # Toolbar overflow menu
+├── MobileNav.tsx               # Case-study-only top bar (single Back link via SidebarContext)
+├── LedMatrix.tsx               # LED matrix audio visualizer (homepage)
+├── BackgroundTexture.tsx       # Perlin noise dot wave (SENSITIVE - commit before editing)
+├── LockGate.tsx                # WIP-courtesy gate — `card` (hover overlay) / `page` modes
+├── PasswordModal.tsx           # Global unlock modal (mounted in layout.tsx)
+├── PaletteSwatches.tsx         # Theme swatch row (used inside HeroToolbar palette popover)
+├── ThemeToggle.tsx             # Theme state hook + applyColoredTheme runtime overrides
+├── HighlightableBio.tsx        # Bio surface with highlightable phrases
+├── HighlighterContext.tsx      # Highlight state provider
+├── ConnectLinks.tsx            # Email / LinkedIn / Resume CTA cluster
+├── Resume.tsx                  # Resume content surface
+├── GalleryMode.tsx             # Gallery view component
+├── PhotoStack.tsx              # Photo stack visual
+├── LocalStatus.tsx             # Time / weather / location strip (toolbar right cluster)
+├── LoadingOverlay.tsx          # Hero loader (Geist * inside large slot)
 ├── CaseStudyCard.tsx           # Homepage project cards (frosted glass, sharp edges)
-├── CaseStudyList.tsx           # Card/list toggle, localStorage persistence, blur transition
+├── CaseStudyList.tsx           # Card/list toggle, localStorage persistence
 ├── CaseStudyListRow.tsx        # List view row (year | title | company·role | metric)
-├── BackgroundTexture.tsx       # Perlin noise dot wave animation (SENSITIVE - commit before editing)
-├── Hero.tsx                    # 5-phase intro animation with streaming text
-├── DesktopSidebar.tsx          # Homepage-only sidebar (lg+), nav links with * (Geist 500) marker
-├── MobileNav.tsx               # Sticky top bar (<lg only), nav links or ← Back
-├── StickyFooter.tsx            # Fixed bottom bar — email, LinkedIn, palette, marquee (all pages)
-├── HomeLayout.tsx              # BackgroundTexture + DesktopSidebar wrapper
+├── CaseStudyCarousel.tsx       # Carousel view (in-flight, see feature/carousel-view)
 ├── Marquee.tsx                 # Scrolling quotes/testimonials
 ├── MarqueeContext.tsx          # Marquee visibility state
 ├── StreamingText.tsx           # Character-by-character text animation
-├── ThemePalette.tsx            # Theme customization sidebar
-├── ThemeToggle.tsx
-├── TwoCol.tsx                  # Two-column editorial layout (shared: homepage + case studies)
-├── Icons.tsx                   # Shared icon components (Grid, List, Filter, Close)
+├── Playground.tsx              # Playground roster + cards (homepage section + /play index)
+├── TwoCol.tsx                  # Shared two-column editorial layout
+├── Icons.tsx                   # Shared icon components
 ├── ViewportFade.tsx            # Footer gradient overlay
-├── InlineExpandButton.tsx
-├── Teaser.tsx                  # Coming-soon page with @paper-design/shaders-react Dithering + DialKit controls
-├── FadeIn.tsx                  # Scroll-triggered fade animation (global)
-└── fb-showcase/                # F&B interactive components
-    ├── BrowserMockup.tsx       # Browser chrome frame (traffic lights + URL bar)
-    ├── FBCardPreview.tsx       # Card hover: crossfade screenshots + mesh gradient + phone mock
-    ├── MobileShowcase.tsx      # 4 overlapping phone mocks (landing, menu, detail, cart)
-    ├── RoadmapEvolution.tsx    # Vertical animated timeline (16 nodes, SVG arrows, hover popovers)
-    ├── SystemArchitecture.tsx  # System architecture diagram
-    └── DesignPrinciples.tsx    # Design approach principles
+└── FadeIn.tsx                  # Scroll-triggered fade animation (global)
 
 lib/
+├── locked-content.ts           # Single source of truth for locked slugs (LOCKED_SLUGS Set)
+├── PasswordGateContext.tsx     # Unlocked-state provider (env-hash + multi-tab sync)
+├── SidebarContext.tsx          # Case-study sidebar state + backHref
+├── playground-cards.ts         # Playground roster (homepage + /play index share this)
+├── chat/                       # Chat data + prompt + rate-limit + study-metadata
+├── AudioPlayerContext.tsx      # Audio player state
+├── VisualizerSceneContext.tsx  # LED matrix scene selection
+├── visualizer-scenes.ts        # Scene definitions for LED matrix
+├── audio-analysis.ts           # FFT / audio analysis for visualizer
+├── playlist.ts                 # Audio track list
+├── carousel-transition.ts      # Carousel transition timing
+├── bio-content.ts              # Bio paragraph content (used by HighlightableBio)
+├── content.ts                  # Shared content helpers
+├── gallery-content.ts          # Gallery items
+├── resume-content.ts           # Resume data
+├── editor-types.ts + InlineEditorContext.tsx  # Dev inline editor
+├── dot-font.ts                 # Pixel font for LED matrix
 ├── springs.ts                  # Shared spring configs (SPRING_HEAVY, SPRING_SNAP)
-├── study-tags.ts               # Tag filtering logic for case study list
-└── typography.ts               # Typescale tokens
+├── study-tags.ts               # Tag filtering for case study list
+├── typography.ts               # Typescale tokens
+├── types.ts + utils.ts         # Shared types + helpers
 
-content/                        # MDX case study metadata
-├── fb-ordering.mdx
-├── checkin.mdx
-├── general-task.mdx
-├── design-system.mdx
-├── compendium.mdx
-└── upsells.mdx
+content/                        # MDX case study metadata (fb-ordering, checkin, general-task,
+                                # design-system, compendium, upsells)
 
-public/images/
-├── checkin/                    # Check-in case study images
-├── general-task/               # General Task images
-├── design-system/              # Design System images
-└── fb-ordering/
-    ├── fb-ordering-table.png   # Dashboard table view (default state)
-    └── fb-ordering-dashboard.png # Dashboard with side sheet (hover state)
+public/images/                  # Per-case-study image folders (checkin/, general-task/,
+                                # design-system/, fb-ordering/, compendium/, upsells/)
 ```
 
 ## Case Studies
@@ -241,6 +254,23 @@ All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by 
 - **Sections**: Scroll-triggered fade animations via FadeIn component
 - **Progress**: Reading progress bar at top of case studies
 
+### Locked Content Gating (shipped 2026-05-02)
+WIP-courtesy gate on a subset of case studies + Playground subpages. Spec/plan: `docs/superpowers/specs/2026-05-02-locked-content-gating-design.md` + `docs/superpowers/plans/2026-05-02-locked-content-gating.md`.
+- **Single source of truth:** `lib/locked-content.ts` (`LOCKED_SLUGS` Set). Removing a slug from this Set permanently unlocks that page.
+- **Wrapper:** `components/LockGate.tsx` — `card` mode (hover overlay + click intercept on homepage cards, accepts `cardRadius`) and `page` mode (full-screen placeholder with staggered motion + email / LinkedIn / "I have a code" CTAs).
+- **Provider:** `lib/PasswordGateContext.tsx` — env-hash check + multi-tab sync via storage events.
+- **Modal:** `components/PasswordModal.tsx` — global, mounted in `app/layout.tsx`.
+- **Env var:** `NEXT_PUBLIC_UNLOCK_CODE_HASH` in Vercel for a non-default code (default hash accepts `miyagi`). Generator: `npm run hash:code -- <code>`.
+
+### Unified Toolbar (shipped 2026-05-02)
+Replaces the prior split chrome (HeroActions, sticky footer, separate palette button). Single fixed-top bar across the homepage.
+- **Desktop:** `components/HeroToolbar.tsx` — left cluster (HamburgerMenu, palette popover, music expand, LED matrix scene toggles) + right cluster (`LocalStatus` time/weather). Music player surfaces in `components/music/`.
+- **Mobile:** `components/MobileToolbar.tsx` — same content, vertical layout.
+- **Palette popover:** Triggers ThemePalette content; uses `ToolbarIconButton` chrome (hover/active tint via `color-mix(in srgb, var(--color-accent) ...)`, focus ring).
+- **LED matrix:** `components/LedMatrix.tsx` (canvas) + `components/music/LedMatrixUI.tsx` (scene toggles, lifted out of the matrix so they're visible on mobile and against the toolbar bg).
+- **No greeting cycle:** The earlier rotating-greeting variant in the right cluster was removed; right cluster now only carries time/weather/location.
+- **No StickyFooter:** That component is deleted — palette/marquee/email/LinkedIn moved into this bar (or into ConnectLinks where appropriate).
+
 ## Design Tokens (CSS Variables)
 
 ### Colors — Light Mode (`:root`)
@@ -273,7 +303,7 @@ All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by 
 **11 themes total.** Default is `mono` (pure neutral B&W — accent + glow aliased to `--color-fg`). 10 colored opt-ins: ocean, forest, wine, slate, ember (bold); lavender, mint, rose, butter, sky (soft). Each colored theme overrides all CSS variables at runtime via `applyColoredTheme()` in `ThemeToggle.tsx`. Mono swatch in the palette renders as a 50/50 black/white split circle so its "neutral" identity is legible against any bg. Persists via `theme-mode` + `theme-family` in localStorage.
 
 ### Brand mark (May 2026)
-**`*` (Geist Sans, weight 500)** replaces the previous `✸` heavy 8-pointed star and the `✦` six-pointed marquee separator everywhere. Geist's `*` sits high in its em-box, so most surfaces apply `transform: translateY(15%)` to optically center it next to adjacent text. Surfaces:
+**`*` (Geist Sans, weight 500)** replaces the previous `✸` heavy 8-pointed star and the `✦` six-pointed marquee separator everywhere. Geist's `*` sits high in its em-box, so most surfaces apply `transform: translateY(15%)` to optically center it next to adjacent text. In-flight visual rebrand spec/plan: `docs/superpowers/specs/2026-05-03-visual-rebrand-bw-asterisk-design.md` + `docs/superpowers/plans/2026-05-03-visual-rebrand-bw-asterisk.md`. Surfaces:
 - Hero rest star: 0.62em inner span, slot Y offset `0.08em`
 - Hero loader (LoadingOverlay): 0.42em inner span (kept smaller — slot is 108-168px so absolute size is huge)
 - HomeNav active marker: 18px, `translateY(15%)`, split outer/inner span so `y: starY` motion value doesn't fight the static centering transform
@@ -326,15 +356,15 @@ Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No 
 
 ## Component & Interaction Specs
 
-### Nav Sidebar (DesktopSidebar.tsx — homepage only)
+### Homepage Nav (HomeNav.tsx)
 - **Scope:** Rendered inside HomeLayout.tsx, only visible on homepage at lg+
-- **Nav mode:** Home, Work, Writing (disabled), Play (disabled) links
-- **Font:** 16px weight 500 (nav links)
-- **Active state:** Geist `*` (18px, weight 500, translateY(15%) for optical centering) + text springs 18px right
-- **Nav star:** spring stiffness 350, damping 28, y = activeIndex × 36
+- **Items:** `HOME_NAV_ITEMS` = Home (`#home`), Work (`#projects`), Playground (`#playground`) — all in-page anchors, no global routes
+- **Font:** 16px weight 500
+- **Active state:** Geist `*` (18px, weight 500, translateY(15%) for optical centering) + text springs 18px right. Active section tracked via IntersectionObserver with a scroll-lock window after click navigation (`SCROLL_LOCK_MS = 900`).
+- **Nav star:** spring stiffness 350, damping 28, y = activeIndex × ROW_HEIGHT
 - **Hover:** Accent color + 8px right slide (spring 400/25)
-- **Mobile (MobileNav.tsx):** Horizontal top bar, sticky, backdrop-blur, 14px font, lg:hidden
-- **StickyFooter.tsx:** Fixed bottom bar on all pages — Email, LinkedIn, Theme Palette, Marquee toggle icons, horizontally centered, frosted glass
+- **Mobile (MobileNav.tsx):** Case-study-only top bar — single ← Back link driven by `SidebarContext.backHref`. Not used on homepage. Homepage mobile chrome lives in MobileToolbar.tsx.
+- **No StickyFooter:** The fixed bottom bar was removed in the 2026-05-02 toolbar redesign — email/LinkedIn/palette/marquee moved into the unified top toolbar (see "Unified Toolbar" below).
 
 ### Bento Cards (CaseStudyCard)
 - **Hover scale:** `1.01x`, 350ms ease-out in / 400ms ease out (CSS, not Framer Motion)
@@ -368,9 +398,9 @@ Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No 
 
 ### Homepage Scroll
 - **Single continuous scroll** — SectionSnap deleted, replaced by normal document flow
-- **Sidebar active state:** IntersectionObserver on `#work` section (threshold 0.05) calls `setActivePanel("work"/"bio")`
+- **Active section tracking:** IntersectionObserver in `HomeNav.useActiveSection()` watches `#home`, `#projects`, `#playground`. Click navigation locks the active section for `SCROLL_LOCK_MS` (900ms) so smooth-scroll doesn't fight the chosen target.
 - **Mobile sticky heading:** `sticky top-14 z-40` with frosted glass bg, releases when parent section scrolls out
-- **Spacing:** `mt-28` (112px) between bio section and work section
+- **Spacing:** `mt-28` (112px) between sections
 
 ### Hero Intro Sequence
 - **5 phases:** star1 (`*` blink 1800ms, Geist weight 500) → heading streams word-by-word → star2 (1800ms) → bio paragraph streams → done
@@ -380,10 +410,9 @@ Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No 
 - **SessionStorage skip:** `portfolio-intro-seen` — same-session revisits skip to `done`
 
 ### Theme Palette Picker
-- **Desktop:** 200px fixed panel, scale 0.85→1 from top-left (spring 500/32)
-- **Mobile:** Full-width bottom sheet, slides up (spring 350/32)
-- **Sections:** Color swatches (6-col grid of 12 circles), font cards (3 "Aa" squares), action buttons (-/reset/+)
-- **Persistence keys:** `theme-mode`, `colored-theme-name`, `font-pairing`, `font-size-offset`
+- **Surface:** Popover from the unified toolbar's palette button (desktop) / bottom sheet (mobile)
+- **Sections:** Color swatches only (10 colored themes + mono + light/dark) and font-size ±/reset action buttons. Font-pairing picker was removed April 2026.
+- **Persistence keys:** `theme-mode`, `theme-family`, `colored-theme-name`, `font-size-offset`
 
 ### Background Texture (BackgroundTexture.tsx)
 - **Config:** `GRID_SPACING: 8`, `DOT_SIZE: 0.5`, `DOT_OPACITY: 0.03`, `HOVER_RADIUS: 200`
@@ -419,34 +448,13 @@ Before ending any session:
 3. If any features are partially complete, describe what's left
 
 ## Current State
-_Updated by Claude at end of each session_
-- **Last worked on (2026-05-02):** Shipped the locked-content gating + the unified toolbar redesign to production. PRs #6, #8, #9 merged. Vercel deployed. Production now has: WIP-courtesy lock on case studies + Playground (env-hashed code, default `miyagi`), polished LockGate / PasswordModal motion + hitboxes, AND the 4-phase unified fixed-top toolbar (single bar, left cluster + right time/weather, palette popover, music expands from origin, LED matrix viz scenes, no greeting cycle).
-- **Branch tangle resolved:** `feature/chat-side-panel` carried 4 toolbar phases (`e1da6e7`, `f877862`, `d41dd67`, `566e7a0`) that were branched before the lock work hit main, so a direct merge would have wiped the lock files. Cherry-picked the 4 phases onto a fresh branch off main as `feature/toolbar-redesign` → PR #9 → merged. Backup tag `backup/chat-side-panel-2026-05-02` anchors `566e7a0` (original Phase 4 tip) for recovery.
-- **Locked content architecture:** `lib/locked-content.ts` is the single source of truth (9 slugs in `LOCKED_SLUGS` Set). `components/LockGate.tsx` is the wrapper (modes: `card` for hover overlay + click intercept with `cardRadius` prop, `page` for full-screen placeholder with staggered motion + email/LinkedIn/code CTAs). `lib/PasswordGateContext.tsx` is the unlocked-state provider (env-hash + multi-tab sync). `components/PasswordModal.tsx` is the global modal (mounted in `app/layout.tsx`) with active:scale press feedback + 40×40 close hitbox.
-- **Vercel env var still required:** `NEXT_PUBLIC_UNLOCK_CODE_HASH` should be set in Vercel for a non-default unlock code. Without it, the default hash in code accepts `miyagi`.
+_Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
-- **Previous session: Playground case studies** — interview, write, ship subpages, build reusable interview methodology
-- **Completed this session:**
-  - **Playground card copy refreshed** in `Playground.tsx` — three new descriptions in voice (b) crafted/quietly self-assured + flashes of (a) playful/confident; new section subtitle ("Personal experiments and gifts. Software as a love language; AI as the way I get the ideas in my head out into the world."); cards now `<Link>` into subpages with title-color hover.
-  - **Three Playground subpages** at `/play/{six-degrees,pajamagrams,custom-wrapped}` built on `CaseStudyShell` pattern (matching `ai-workflow` style — no gradient hero, autoplay video as visual anchor). Each: header + autoplay video + 4–5 sections in TwoCol.Left + ImagePlaceholders + NextProject cycling through the trio.
-  - **`/play` is now a real index page** — replaced "Coming soon" with page title + subtitle + reused `<Playground hideHeader />`.
-  - **Shared roster** extracted to `lib/playground-cards.ts` (single source of truth for homepage Playground component + `/play` index).
-  - **`backHref` threaded through `CaseStudyShell`** — Playground subpages route mobile "Back" to `/play` instead of `/#projects`.
-  - **6 source docs** under `case-studies/playground/` — `{slug}-outline.md` (raw context: stack, architecture, decisions, hard parts) + `{slug}.md` (polished short case study) for each project.
-  - **`docs/CASE-STUDY-INTERVIEW.md`** — reusable interview methodology + 12 question banks (A–F universal battle-tested; G–K work/corporate proposed; L synthesis). Paste into future case study sessions to repeat the rhythm.
-- **Methodology insight worth keeping:** parallel research (read repo + ask questions simultaneously) + one Q at a time + brief "Logged: X" reframes + propose voice options with recommendation + propose drafts before writing files. Documented in `CASE-STUDY-INTERVIEW.md`.
-- **PR #4 merged** via rebase into `origin/main` (`cee72df`). Local main reset to match origin (history previously diverged because PR #3 chat-bar merge landed in parallel — content was identical, SHAs differed). Vercel deploy succeeded.
-- **In progress:**
-  - Per-study illustration/imagery to swap into the ImagePlaceholders on the new Playground subpages (Marco can author at own pace by editing each `[Name]Content.tsx`)
-  - 42 ImagePlaceholders still remain in main work case studies (F&B 10, Compendium 15, Upsells 17)
-  - Carousel view (`feature/carousel-view` worktree) still unmerged — separate workstream
-- **Known issues:** none from this session.
-- **Nav model clarification (CLAUDE.md was stale):** `DesktopSidebar.tsx` no longer exists — homepage uses `HomeNav.tsx` with anchor-only nav (Home / Work / Playground, all in-page anchors). No global route nav with "enable Play" toggle to flip; Playground is already discoverable via the `#playground` anchor. `MobileNav.tsx` only shows on case study subpages with a single "Back" link driven by `SidebarContext.backHref`.
-- **Key files added/modified this session:**
-  - `site/components/Playground.tsx` — refreshed copy, subtitle, clickable Link wrapper, accepts `hideHeader` prop, imports from shared roster
-  - `site/components/case-study/CaseStudyShell.tsx` — added `backHref` prop pass-through
-  - `site/lib/playground-cards.ts` — new (shared roster + helpers)
-  - `site/app/play/page.tsx` — rewritten as real index
-  - `site/app/play/{six-degrees,pajamagrams,custom-wrapped}/page.tsx` + `[Name]Content.tsx` — new (6 files)
-  - `case-studies/playground/{six-degrees,pajamagrams,custom-wrapped}{-outline,}.md` — new (6 files)
-  - `docs/CASE-STUDY-INTERVIEW.md` — new reusable interview method
+- **Last worked on (2026-05-04):** CLAUDE.md cleanup pass — reconciled stale nav model (DesktopSidebar → HomeNav), rebuilt Project Structure tree, added Locked Content Gating + Unified Toolbar to Key Patterns, removed StickyFooter references, removed font-pairing-picker from Theme Palette description, linked the in-flight visual rebrand spec.
+- **In flight (visual rebrand):** Spec `docs/superpowers/specs/2026-05-03-visual-rebrand-bw-asterisk-design.md` + plan `docs/superpowers/plans/2026-05-03-visual-rebrand-bw-asterisk.md`. Recent commits ship the mono palette as default + Geist `*` brand mark across surfaces (asterisk optical centering, streaming cursor sizing, palette swatch B&W split for mono).
+- **Open loops:**
+  - 42 ImagePlaceholders still in main case studies (F&B 10, Compendium 15, Upsells 17) — Tier 0/1 in `docs/PORTFOLIO-PRIORITIES.md`.
+  - Per-study imagery for Playground subpages (`/play/{six-degrees,pajamagrams,custom-wrapped}`) — Marco edits each `[Name]Content.tsx` at own pace.
+  - Carousel view (`feature/carousel-view` worktree, `components/CaseStudyCarousel.tsx`) unmerged — separate workstream.
+  - Untracked: `docs/fb-gallery/` (purpose unclear — confirm before committing or ignoring).
+- **Vercel env var:** `NEXT_PUBLIC_UNLOCK_CODE_HASH` should be set for a non-default unlock code. Default hash in code accepts `miyagi`.

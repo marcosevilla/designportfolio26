@@ -187,12 +187,18 @@ export default function HomeLayout({
           below lg; MobileToolbar's own `lg:hidden` keeps it off desktop. */}
       <MobileToolbar />
 
-      {/* Hero column: paddingTop = toolbar height (36) + breathing room. */}
+      {/* Hero column: paddingTop = toolbar height (36) + breathing room.
+          minHeight is sized to fill the viewport minus a ~120px peek of
+          the next section, so on initial load the user sees only the very
+          top edge of the first project card — and that card is at scale 1
+          (it hasn't begun its scroll-driven scale-up yet). The 1400px cap
+          stops absurdly tall windows from leaving a giant whitespace
+          column. */}
       <div
         className="max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
         style={{
           paddingTop: "clamp(96px, 12vh, 144px)",
-          minHeight: "clamp(560px, 78vh, 880px)",
+          minHeight: "clamp(560px, calc(100vh - 120px), 1400px)",
         }}
       >
         <Hero
@@ -208,7 +214,7 @@ export default function HomeLayout({
       </div>
       <section
         id="projects"
-        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-32"
+        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-0"
         style={aboutMeOpen ? { display: "none" } : undefined}
       >
         {/* Work content participates in the cascade — last in the

@@ -19,31 +19,33 @@ const CV_ENTRIES = [
 
 function LearnMoreCVButton({ onClick }: { onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group mt-6 inline-flex items-center gap-1.5 cursor-pointer focus:outline-none"
-      style={{
-        fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-        fontSize: "12px",
-        fontWeight: 500,
-        textTransform: "uppercase",
-        letterSpacing: "0.08em",
-        lineHeight: 1.4,
-        color: "var(--color-accent)",
-        background: "none",
-        border: 0,
-        padding: 0,
-      }}
-    >
-      <span>Learn more</span>
-      <span
-        aria-hidden
-        className="inline-flex items-center transition-transform duration-200 ease-out group-hover:translate-x-1"
+    <div className="mt-6 flex justify-end">
+      <button
+        type="button"
+        onClick={onClick}
+        className="group inline-flex items-center gap-1.5 cursor-pointer focus:outline-none"
+        style={{
+          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+          fontSize: "12px",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          lineHeight: 1.4,
+          color: "var(--color-accent)",
+          background: "none",
+          border: 0,
+          padding: 0,
+        }}
       >
-        <ArrowRightIcon size={14} />
-      </span>
-    </button>
+        <span>Learn more</span>
+        <span
+          aria-hidden
+          className="inline-flex items-center transition-transform duration-200 ease-out group-hover:translate-x-1"
+        >
+          <ArrowRightIcon size={14} />
+        </span>
+      </button>
+    </div>
   );
 }
 

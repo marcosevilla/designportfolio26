@@ -65,10 +65,11 @@ export default function LockGate(props: LockGateProps) {
 // ── Card mode ──
 
 // Wraps the existing card markup in a relative container and overlays a
-// click-trapping button on hover. The original card still renders its
-// resting state at full opacity so the page reads the same when no
-// pointer is over the card. On hover, the overlay's backdrop-blur + dim
-// covers the card and reveals the lock icon + micro-copy.
+// transparent click-trap covering the entire card so clicks anywhere
+// route to the unlock modal. The visible blur + lock label is rendered
+// separately by `LockedFrameBadge` (placed inside the card's image/video
+// frame by the consuming component) so only the media area dims — title
+// and description stay legible.
 function LockedCardWrapper({
   children,
   onClick,
@@ -80,36 +81,50 @@ function LockedCardWrapper({
 }) {
   return (
     <div className="relative group">
-      {/* Original card — unmodified. The overlay sits above it and
-          intercepts pointer events when locked, so the underlying
-          card's hover effects (bento glow, scale) never fire. */}
+      {/* Original card — unmodified. The transparent button below sits
+          above it and intercepts pointer events when locked, so the
+          underlying card's hover effects (bento glow, scale) never fire
+          and clicks anywhere route to the unlock modal. */}
       <div className="relative">{children}</div>
 
       <button
         type="button"
         onClick={onClick}
         aria-label="Locked — click to view unlock options"
-        className={`absolute inset-0 flex flex-col items-center justify-center gap-2 cursor-pointer ${cardRadius} opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none transition-opacity duration-200 ease-out`}
+        className={`absolute inset-0 cursor-pointer ${cardRadius} outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
+      />
+    </div>
+  );
+}
+
+// Visible lock affordance — placed inside a card's image/video frame so
+// only the media dims on hover. The parent must apply `group` to the
+// outer card link/button (already done by both GalleryCard and
+// PlaygroundCardItem) so the hover state propagates through.
+export function LockedFrameBadge({ locked }: { locked: boolean }) {
+  if (!locked) return null;
+  return (
+    <div
+      className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-out pointer-events-none"
+      style={{
+        background: "color-mix(in oklab, var(--color-bg) 50%, transparent)",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
+      }}
+    >
+      <LockIcon size={24} style={{ color: "var(--color-fg-secondary)" }} />
+      <span
         style={{
-          background: "color-mix(in oklab, var(--color-bg) 50%, transparent)",
-          backdropFilter: "blur(2px)",
-          WebkitBackdropFilter: "blur(2px)",
+          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+          fontSize: "11px",
+          fontWeight: 500,
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+          color: "var(--color-fg-tertiary)",
         }}
       >
-        <LockIcon size={24} style={{ color: "var(--color-fg-secondary)" }} />
-        <span
-          style={{
-            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-            fontSize: "11px",
-            fontWeight: 500,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            color: "var(--color-fg-tertiary)",
-          }}
-        >
-          In progress — click for details
-        </span>
-      </button>
+        In progress — click for details
+      </span>
     </div>
   );
 }

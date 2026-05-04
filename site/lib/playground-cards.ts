@@ -9,8 +9,8 @@ export type PlaygroundCard = {
   title: string;
   year: string;
   description?: string;
-  /** Path under /public — e.g. "/videos/playground/six-degrees.mp4". When
-   *  set, the card renders an autoplay loop muted video. */
+  /** Path under /public — e.g. "/videos/six-degrees.mp4". When set, the
+   *  card renders an autoplay loop muted video. */
   video?: string;
   /** Static frame shown before the video plays and as the reduced-motion
    *  fallback. JPG at the same aspect ratio as the video. */
@@ -29,7 +29,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     year: "Feb 2026 →",
     description:
       "A movie-graph puzzle: connect two actors through their shared films, six-degrees-of-separation style. Started as a roadtrip car game with friends — I designed and built the version we play now.",
-    video: "/videos/playground/six-degrees.mp4",
+    video: "/videos/six-degrees.mp4",
     aspect: "1756 / 1080",
   },
   {
@@ -38,7 +38,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     year: "Jan 2026",
     description:
       "A mobile-first word puzzle inspired by Bananagrams — drag tiles into place across clue-based rounds.",
-    video: "/videos/playground/pajamagrams.mp4",
+    video: "/videos/pajamagrams.mp4",
     aspect: "628 / 1080",
   },
   {
@@ -47,7 +47,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     year: "Nov 2025",
     description:
       "A personal year-in-review styled like Spotify Wrapped — vertical swipes through milestones pulled from my calendar, Letterboxd, and other vaults.",
-    video: "/videos/playground/custom-wrapped.mp4",
+    video: "/videos/custom-wrapped.mp4",
     aspect: "648 / 1080",
   },
 ];

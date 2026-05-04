@@ -13,6 +13,133 @@ import { motion } from "framer-motion";
 import ChatMessage, { type ChatTurn } from "./ChatMessage";
 import ChipPrompt from "./ChipPrompt";
 
+const GREETING_TEXT =
+  "Hi, I'm Marco. Ask me about my work, my process, or anything else you're curious about.";
+
+// Empty-state intro — the brand asterisk acts as a typewriter cursor.
+// Phase 1 ("blink"): the cursor blinks alone for ~1.5s.
+// Phase 2 ("stream"): words appear one at a time with jagged cadence
+// (random 30–90ms per word); the cursor trails the latest word, jumping
+// to its new position each time with a quick scale-pop so the movement
+// reads as mechanical / typewriter-like, not smooth. After the last word
+// lands, the cursor disappears.
+// Replays on every fresh panel mount (AnimatePresence handles unmount).
+function AnimatedGreeting() {
+  const [phase, setPhase] = useState<"blink" | "stream" | "done">("blink");
+  const [wordIdx, setWordIdx] = useState(0);
+  const words = GREETING_TEXT.split(" ");
+
+  useEffect(() => {
+    if (phase !== "blink") return;
+    const t = window.setTimeout(() => setPhase("stream"), 1500);
+    return () => window.clearTimeout(t);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "stream") return;
+    if (wordIdx >= words.length) {
+      // Brief pause on the last word so the cursor reads as "done typing"
+      // before disappearing.
+      const t = window.setTimeout(() => setPhase("done"), 320);
+      return () => window.clearTimeout(t);
+    }
+    // Naturalistic cadence:
+    //   - Base: 55–115ms per word (random spread).
+    //   - +60–100ms after a comma — momentary breath.
+    //   - +180–260ms after a period — full sentence break.
+    //   - 10% chance of a small "stutter" pause anywhere, so the rhythm
+    //     doesn't feel like a metronome.
+    const lastChar = wordIdx > 0 ? words[wordIdx - 1].slice(-1) : "";
+    let delay = 55 + Math.random() * 60;
+    if (lastChar === ",") delay += 60 + Math.random() * 40;
+    if (lastChar === "." || lastChar === "!" || lastChar === "?") {
+      delay += 180 + Math.random() * 80;
+    }
+    if (Math.random() < 0.1) delay += 70 + Math.random() * 50;
+    const t = window.setTimeout(() => setWordIdx((i) => i + 1), delay);
+    return () => window.clearTimeout(t);
+  }, [phase, wordIdx, words.length]);
+
+  const visibleWords = phase === "blink" ? 0 : wordIdx;
+  const showCursor = phase !== "done";
+
+  return (
+    <p
+      style={{
+        fontFamily: "var(--font-sans)",
+        fontSize: "14px",
+        // Bumped from 22 so the larger trailing asterisk doesn't blow out
+        // the line height when it lands on a fresh line.
+        lineHeight: "26px",
+        color: "var(--color-fg-secondary)",
+      }}
+    >
+      {words.slice(0, visibleWords).map((w, i) => (
+        // Words appear instantly — no per-word fade. The cursor's
+        // jagged scale-pop on each remount is what carries the typing
+        // motion; fading the words too made the animation feel mushy.
+        <span key={i}>
+          {i > 0 ? " " : ""}
+          {w}
+        </span>
+      ))}
+      {showCursor && (
+        <motion.span
+          aria-hidden
+          // key bumps each word land → triggers the jitter initial→animate,
+          // which gives the cursor its jagged typewriter-jump feel as it
+          // advances. Size stays constant (no scale change) so it doesn't
+          // visually pulse with each word — just position-jitters.
+          key={`cursor-${visibleWords}`}
+          style={{
+            color: "var(--color-accent)",
+            fontWeight: 500,
+            // Bigger than body type so the cursor reads as a glyph, not
+            // punctuation. line-height:0 + verticalAlign sit it on the
+            // text's optical middle of every wrapped line.
+            fontSize: "30px",
+            lineHeight: 0,
+            display: "inline-block",
+            marginLeft: visibleWords > 0 ? "0.25em" : 0,
+            // Negative em offset on verticalAlign drops the asterisk's
+            // anchor below the parent text's baseline, then translateY
+            // nudges the high-sitting Geist glyph down to the body
+            // text's optical center. Pure translateY at 15% wasn't
+            // enough at this font-size; combined here, the * sits
+            // alongside the words instead of reading as superscript.
+            verticalAlign: "-0.18em",
+            transform: "translateY(0.18em)",
+          }}
+          initial={
+            // First mount during blink: just appear. After that (stream
+            // phase remounts on every word), nudge in with a small x
+            // jitter so the landing reads as a jagged typewriter step.
+            visibleWords === 0
+              ? { opacity: 1, x: 0 }
+              : {
+                  opacity: 0.55,
+                  // ±2px random horizontal jitter
+                  x: Math.random() * 4 - 2,
+                }
+          }
+          animate={
+            phase === "blink"
+              ? { opacity: [1, 0.15, 1] }
+              : { opacity: 1, x: 0 }
+          }
+          transition={
+            phase === "blink"
+              ? { duration: 0.7, repeat: Infinity, ease: "easeInOut" }
+              : { type: "spring", stiffness: 800, damping: 18, mass: 0.4 }
+          }
+        >
+          *
+        </motion.span>
+      )}
+    </p>
+  );
+}
+
 // Contents emit from the panel's origin: opacity 0 + slight blur on enter,
 // so when the layoutId morph from the pill begins, the panel chrome (rect
 // + border + shadow) is the only thing visible at first — header, transcript
@@ -148,16 +275,31 @@ export default function ChatPanel({
           borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
         }}
       >
-        <span
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "15px",
-            fontWeight: 500,
-            color: "var(--color-fg)",
-            lineHeight: 1,
-          }}
-        >
-          Chat
+        <span className="inline-flex items-center gap-2">
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "15px",
+              fontWeight: 500,
+              color: "var(--color-fg)",
+              lineHeight: 1,
+            }}
+          >
+            Chat
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "10px",
+              fontWeight: 500,
+              color: "var(--color-fg-tertiary)",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              lineHeight: 1,
+            }}
+          >
+            Beta feature
+          </span>
         </span>
         <button
           type="button"
@@ -180,16 +322,7 @@ export default function ChatPanel({
           // so the greeting reads at the top and the chips are right where
           // the user's thumb already is.
           <div className="flex flex-col h-full">
-            <p
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "14px",
-                lineHeight: "22px",
-                color: "var(--color-fg-secondary)",
-              }}
-            >
-              Hi, I'm Marco. Ask me about my work, my process, or anything else you're curious about.
-            </p>
+            <AnimatedGreeting />
             <div className="mt-auto flex flex-wrap gap-2">
               {DEFAULT_CHIPS.map((label) => (
                 <ChipPrompt

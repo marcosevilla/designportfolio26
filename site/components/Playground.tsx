@@ -9,7 +9,7 @@ import {
   type PlaygroundCard,
   isWide,
 } from "@/lib/playground-cards";
-import LockGate from "./LockGate";
+import LockGate, { LockedFrameBadge } from "./LockGate";
 import { isLocked } from "@/lib/locked-content";
 
 export default function Playground({
@@ -50,22 +50,25 @@ export default function Playground({
           span one column each, so two phones sit side-by-side instead of
           taking over the page vertically. Mobile collapses to one column. */}
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-20">
-        {PLAYGROUND_CARDS.map((card) => (
-          <div
-            key={card.slug}
-            className={isWide(card) ? "sm:col-span-2" : "sm:col-span-1"}
-          >
-            <LockGate mode="card" locked={isLocked(card.slug)}>
-              <PlaygroundCardItem card={card} />
-            </LockGate>
-          </div>
-        ))}
+        {PLAYGROUND_CARDS.map((card) => {
+          const locked = isLocked(card.slug);
+          return (
+            <div
+              key={card.slug}
+              className={isWide(card) ? "sm:col-span-2" : "sm:col-span-1"}
+            >
+              <LockGate mode="card" locked={locked}>
+                <PlaygroundCardItem card={card} locked={locked} />
+              </LockGate>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
 }
 
-function PlaygroundCardItem({ card }: { card: PlaygroundCard }) {
+function PlaygroundCardItem({ card, locked = false }: { card: PlaygroundCard; locked?: boolean }) {
   return (
     <Link
       href={`/play/${card.slug}`}
@@ -97,7 +100,7 @@ function PlaygroundCardItem({ card }: { card: PlaygroundCard }) {
         </span>
       </div>
 
-      <CardFrame card={card} />
+      <CardFrame card={card} locked={locked} />
 
       {card.description && (
         <p
@@ -115,7 +118,7 @@ function PlaygroundCardItem({ card }: { card: PlaygroundCard }) {
   );
 }
 
-function CardFrame({ card }: { card: PlaygroundCard }) {
+function CardFrame({ card, locked = false }: { card: PlaygroundCard; locked?: boolean }) {
   return (
     <div
       className="w-full rounded-2xl overflow-hidden relative"
@@ -141,6 +144,7 @@ function CardFrame({ card }: { card: PlaygroundCard }) {
           Coming soon
         </div>
       )}
+      <LockedFrameBadge locked={locked} />
     </div>
   );
 }
