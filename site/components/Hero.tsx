@@ -215,11 +215,11 @@ function PlaygroundStar({
               centered position into the wordmark slot. */}
           <motion.span
             layoutId="hero-star"
-            style={{ display: "inline-block" }}
+            style={{ display: "inline-block", fontWeight: 500 }}
             transition={{ type: "spring", stiffness: 220, damping: 26 }}
             onLayoutAnimationComplete={handleLayoutAnimationComplete}
           >
-            ✸
+            *
           </motion.span>
           {!reducedMotion && (
             <motion.span
@@ -240,7 +240,7 @@ function PlaygroundStar({
               animate={streakKeyframes}
               transition={streakTransition}
             >
-              ✸
+              *
             </motion.span>
           )}
         </span>
