@@ -131,7 +131,17 @@ export default function ChatMessage({
       >
         <RenderSegments raw={turn.content} onClose={onClose} />
         {streaming && (
-          <span aria-hidden className="chat-typing-cursor" style={{ fontSize: "0.85em", fontWeight: 500 }}>
+          <span
+            aria-hidden
+            className="chat-typing-cursor"
+            style={{
+              fontSize: "1.25em",
+              fontWeight: 500,
+              lineHeight: 0,
+              verticalAlign: "middle",
+              marginLeft: "0.05em",
+            }}
+          >
             *
           </span>
         )}

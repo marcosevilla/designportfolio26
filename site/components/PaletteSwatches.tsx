@@ -56,6 +56,9 @@ export function PaletteRow({
     <div className={`flex items-center gap-2 ${wrap ? "flex-wrap" : "whitespace-nowrap"} px-1`}>
       {swatches.map((s) => {
         const active = isActiveColor(s.id);
+        // Mono is a special swatch — render as a black/white split so the
+        // "neutral / both modes" identity is legible against any background.
+        const isMono = s.id === "mono";
         return (
           <button
             key={s.id}
@@ -67,7 +70,10 @@ export function PaletteRow({
             style={{
               width: `${swatchSize}px`,
               height: `${swatchSize}px`,
-              backgroundColor: s.accent,
+              backgroundColor: isMono ? undefined : s.accent,
+              backgroundImage: isMono
+                ? "linear-gradient(135deg, #1a1a1a 0%, #1a1a1a 50%, #ededed 50%, #ededed 100%)"
+                : undefined,
               boxShadow: active
                 ? "0 0 0 2px var(--color-bg), 0 0 0 3.5px var(--color-accent)"
                 : "0 0 0 1px var(--color-border)",

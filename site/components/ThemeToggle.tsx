@@ -29,6 +29,21 @@ export type ColoredTheme = {
 
 export const coloredThemes: ColoredTheme[] = [
   {
+    name: "mono",
+    light: {
+      bg: "#ffffff", fg: "#1a1a1a",
+      fgSecondary: "rgba(17,17,17,0.6)", fgTertiary: "rgba(17,17,17,0.35)",
+      surface: "#fbfbfb", surfaceRaised: "#f5f4f9", border: "#e6e6e6", muted: "#f3f3f3",
+      accent: "#1a1a1a", glow: "#1a1a1a",
+    },
+    dark: {
+      bg: "#0a0a0a", fg: "#ededed",
+      fgSecondary: "rgba(237,237,237,0.5)", fgTertiary: "rgba(237,237,237,0.35)",
+      surface: "#141414", surfaceRaised: "#1a1a1a", border: "#2a2a2a", muted: "#1e1e1e",
+      accent: "#ededed", glow: "#ededed",
+    },
+  },
+  {
     name: "ocean",
     light: {
       bg: "#ecf4f8", fg: "#0c2a3a",
@@ -184,10 +199,10 @@ export type Mode = "light" | "dark";
 // Legacy alias kept so existing imports of ThemeMode don't break.
 export type ThemeMode = Mode;
 
-// A hue family is always active — there's no neutral fallback. `ember` is
-// the default because its accent (#d48a5b dark / #b85a1c light) is closest
-// to the original copper/orange identity the site shipped with.
-export const DEFAULT_THEME_FAMILY = "ember";
+// A hue family is always active. `mono` is the default — pure neutral B&W
+// with --color-accent and --color-glow aliased to fg. Colored families
+// (ember, ocean, etc.) remain available as user-pickable opt-ins.
+export const DEFAULT_THEME_FAMILY = "mono";
 const LEGACY_NATURALLY_DARK = new Set(["ocean", "forest", "wine", "slate", "ember"]);
 
 export function applyColoredTheme(theme: ColoredTheme, mode: Mode) {
