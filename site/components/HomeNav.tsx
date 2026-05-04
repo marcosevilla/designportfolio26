@@ -210,6 +210,7 @@ export default function HomeNav({
               color: "var(--color-accent)",
               fontSize: "12px",
               lineHeight: "20px",
+              fontWeight: 500,
               y: starY,
             }}
             initial={{ opacity: 0 }}
@@ -217,7 +218,7 @@ export default function HomeNav({
             transition={{ duration: 0.15 }}
             aria-hidden
           >
-            ✸
+            *
           </motion.span>
         )}
         {NAV_ITEMS.map((item, index) => {
