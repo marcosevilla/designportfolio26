@@ -208,7 +208,7 @@ function PlaygroundStar({
     >
       {!hideForLoader && (
         <span
-          style={{ position: "relative", display: "inline-block", fontSize: "0.42em", lineHeight: 1 }}
+          style={{ position: "relative", display: "inline-block", fontSize: "0.62em", lineHeight: 1 }}
         >
           {/* layoutId pairs with the loading-overlay's star, so when the
               loader unmounts its star this element morphs from the large

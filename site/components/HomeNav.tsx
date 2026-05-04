@@ -205,11 +205,12 @@ export default function HomeNav({
       >
         {activeIndex >= 0 && (
           <motion.span
-            className="absolute left-0 pointer-events-none"
+            className="absolute left-0 pointer-events-none flex items-center"
             style={{
               color: "var(--color-accent)",
-              fontSize: "12px",
-              lineHeight: "20px",
+              fontSize: "18px",
+              height: "20px",
+              lineHeight: 1,
               fontWeight: 500,
               y: starY,
             }}
