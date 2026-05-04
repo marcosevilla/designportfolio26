@@ -63,7 +63,7 @@ function writeStored(turns: ChatTurn[]) {
   }
 }
 
-function SparkGlyph({ size = 18, color = "var(--color-accent)" }: { size?: number; color?: string }) {
+function SparkGlyph({ size = 22, color = "var(--color-accent)" }: { size?: number; color?: string }) {
   return (
     <span
       aria-hidden
@@ -75,6 +75,9 @@ function SparkGlyph({ size = 18, color = "var(--color-accent)" }: { size?: numbe
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
+        // Geist's * sits high in its em-box; translateY pushes the visible
+        // mark down so its optical center matches adjacent text.
+        transform: "translateY(15%)",
       }}
     >
       *
@@ -319,7 +322,7 @@ export default function ChatBar() {
         // ~0.18s instead of ~0.4s.
         transition={{ duration: 0.18, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
       >
-        <SparkGlyph size={18} color="var(--color-on-accent)" />
+        <SparkGlyph size={22} color="var(--color-on-accent)" />
         <span
           style={{
             fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
