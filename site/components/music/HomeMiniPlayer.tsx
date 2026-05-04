@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import {
@@ -134,6 +134,20 @@ export function MiniPlayerRow() {
   // the cursor briefly leaves the row mid-drag.
   const showScrubber = rowHover || scrubbing;
 
+  // Mobile: condense the scrubber into a stacked layout (timestamps
+  // sit above the bar, on the far left + far right) so the bar can
+  // span the full available width inside the unified pill's swap zone
+  // instead of competing with inline timestamp labels.
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 1023px)");
+    setIsMobile(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
   return (
     <div className="relative w-full h-full flex items-center gap-2">
       <div
@@ -192,47 +206,88 @@ export function MiniPlayerRow() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: SWAP_TRAVEL, opacity: 0 }}
               transition={{ duration: 0.24, ease: SWAP_EASE }}
-              className="absolute inset-0 flex items-center gap-2"
+              // Mobile: stack — timestamps sit on a row above the bar
+              // (justify-between for hard-left / hard-right placement),
+              // and the bar fills the swap zone's full width below.
+              // Desktop: inline — timestamps flank the bar horizontally.
+              className={
+                isMobile
+                  ? "absolute inset-0 flex flex-col justify-center gap-0.5"
+                  : "absolute inset-0 flex items-center gap-2"
+              }
             >
-              <span
-                className="shrink-0 tabular-nums"
-                style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "11px",
-                  color: "var(--color-fg-tertiary)",
-                  fontVariantNumeric: "tabular-nums",
-                  minWidth: "30px",
-                }}
-              >
-                {formatTime(displayTime)}
-              </span>
-              <div className="flex-1 min-w-0">
-                <SeekBar
-                  variant="default"
-                  value={Math.min(displayTime, duration || displayTime)}
-                  max={duration}
-                  onChange={(t) => {
-                    setScrubbing(true);
-                    setScrubValue(t);
-                    seek(t);
-                  }}
-                  onCommit={() => {
-                    requestAnimationFrame(() => setScrubbing(false));
-                  }}
-                />
-              </div>
-              <span
-                className="shrink-0 tabular-nums text-right"
-                style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "11px",
-                  color: "var(--color-fg-tertiary)",
-                  fontVariantNumeric: "tabular-nums",
-                  minWidth: "30px",
-                }}
-              >
-                {formatTime(duration)}
-              </span>
+              {isMobile ? (
+                <>
+                  <div
+                    className="flex items-center justify-between"
+                    style={{
+                      fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                      fontSize: "10px",
+                      color: "var(--color-fg-tertiary)",
+                      fontVariantNumeric: "tabular-nums",
+                      lineHeight: 1,
+                    }}
+                  >
+                    <span className="tabular-nums">{formatTime(displayTime)}</span>
+                    <span className="tabular-nums">{formatTime(duration)}</span>
+                  </div>
+                  <SeekBar
+                    variant="default"
+                    value={Math.min(displayTime, duration || displayTime)}
+                    max={duration}
+                    onChange={(t) => {
+                      setScrubbing(true);
+                      setScrubValue(t);
+                      seek(t);
+                    }}
+                    onCommit={() => {
+                      requestAnimationFrame(() => setScrubbing(false));
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <span
+                    className="shrink-0 tabular-nums"
+                    style={{
+                      fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                      fontSize: "11px",
+                      color: "var(--color-fg-tertiary)",
+                      fontVariantNumeric: "tabular-nums",
+                      minWidth: "30px",
+                    }}
+                  >
+                    {formatTime(displayTime)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <SeekBar
+                      variant="default"
+                      value={Math.min(displayTime, duration || displayTime)}
+                      max={duration}
+                      onChange={(t) => {
+                        setScrubbing(true);
+                        setScrubValue(t);
+                        seek(t);
+                      }}
+                      onCommit={() => {
+                        requestAnimationFrame(() => setScrubbing(false));
+                      }}
+                    />
+                  </div>
+                  <span
+                    className="shrink-0 tabular-nums text-right"
+                    style={{
+                      fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                      fontSize: "11px",
+                      color: "var(--color-fg-tertiary)",
+                      fontVariantNumeric: "tabular-nums",
+                      minWidth: "30px",
+                    }}
+                  >
+                    {formatTime(duration)}
+                  </span>
+                </>
+              )}
             </motion.div>
           ) : (
             <motion.div

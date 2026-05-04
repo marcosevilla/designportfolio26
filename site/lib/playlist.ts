@@ -79,32 +79,6 @@ export const PLAYLIST: Track[] = [
     mood: "energetic",
   },
   {
-    src: "/audio/track-3.mp3",
-    title: "Jump",
-    artist: "BLACKPINK",
-    // High-contrast — emerald kicks, magenta snares, gold highs, blush air
-    palette: {
-      bass: "#059669",   // emerald-600
-      mids: "#EC4899",   // pink-500
-      highs: "#FACC15",  // yellow-400
-      air: "#FBCFE8",    // pink-200
-    },
-    mood: "energetic",
-  },
-  {
-    src: "/audio/track-4.mp3",
-    title: "Gameboy",
-    artist: "BLACKPINK",
-    // Dreampop — violet kicks, fuchsia mids, pink highs, blush air
-    palette: {
-      bass: "#8B5CF6",   // violet-500
-      mids: "#D946EF",   // fuchsia-500
-      highs: "#F472B6",  // pink-400
-      air: "#FCE7F3",    // pink-100
-    },
-    mood: "warm",
-  },
-  {
     src: "/audio/track-5.mp3",
     title: "Lite Spots",
     artist: "KAYTRANADA",

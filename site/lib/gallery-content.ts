@@ -77,21 +77,12 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
     },
   ],
   compendium: [
+    // Replaced the previous layered composite (lifestyle bg + mobile
+    // mock) with a high-quality dashboard video. Source 1716x1080 @
+    // 4.9 Mbps, stream-copied with +faststart for web streaming.
     {
-      layers: {
-        bg: "/images/gallery/compendium/guest-experience-app.png",
-        ui: "/images/gallery/compendium/guest-experience-mobile.png",
-        uiHeight: "92%",
-        parallax: "bottom",
-        uiBorderRadius: "16px",
-        // Soft 3-stop drop-shadow (contact + mid + deep ambient) that
-        // lifts the composite off the card fill. Shared verbatim with
-        // the check-in card so the two layered cards share one shadow
-        // language. Uses filter: drop-shadow so the shadow traces the
-        // PNG's alpha shape, not its rectangular bounding box.
-        uiShadow:
-          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05)) drop-shadow(0 12px 28px rgba(0, 0, 0, 0.08)) drop-shadow(0 32px 56px rgba(0, 0, 0, 0.06))",
-      },
+      video: "/videos/guest-experience-dash.mp4",
+      aspect: "16 / 10",
     },
   ],
   upsells: [

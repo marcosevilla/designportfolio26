@@ -81,14 +81,17 @@ export default function SeekBar({
 
   return (
     <div
-      ref={trackRef}
       role="slider"
       aria-label={ariaLabel}
       aria-valuemin={0}
       aria-valuemax={max || 0}
       aria-valuenow={value}
       tabIndex={0}
-      className={`relative w-full select-none touch-none cursor-pointer ${wrapperPaddingClass} ${className ?? ""}`}
+      // 6px horizontal inset matches half the expanded thumb width
+      // (12 / 2) so the thumb stays fully inside the wrapper at pct 0
+      // / pct 100 instead of overhanging the parent's bounds (which
+      // would get clipped by the swap zone's overflow:hidden).
+      className={`relative w-full select-none touch-none cursor-pointer px-1.5 ${wrapperPaddingClass} ${className ?? ""}`}
       onPointerDown={handleDown}
       onPointerMove={handleMove}
       onPointerUp={handleUp}
@@ -96,8 +99,11 @@ export default function SeekBar({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Track */}
+      {/* Track — trackRef sits here (not on the outer wrapper) so the
+          clientX-to-ratio math runs against the visible track bounds,
+          not the click-padded wrapper. */}
       <div
+        ref={trackRef}
         className="relative rounded-full transition-[height]"
         style={{
           height: expanded ? 4 : 2,
@@ -112,24 +118,25 @@ export default function SeekBar({
             backgroundColor: "var(--color-accent)",
           }}
         />
-        {/* Thumb — uses the same * blink-cursor character used elsewhere on
-            the homepage (intro, loading state) for a consistent motif. */}
+        {/* Thumb — solid accent dot. Was a `*` glyph (matching the
+            homepage cursor motif) but the typographic mark read too
+            heavy against the thin track; a circle reads as a proper
+            scrubber handle. Grows from 8 → 12 px when expanded
+            (hover/drag) for affordance. */}
         <span
           aria-hidden="true"
-          className="absolute pointer-events-none select-none transition-[font-size,opacity]"
+          className="absolute pointer-events-none select-none transition-[width,height,opacity]"
           style={{
             left: `${pct}%`,
             top: "50%",
-            fontSize: expanded ? 20 : 16,
-            lineHeight: 1,
+            width: expanded ? 12 : 8,
+            height: expanded ? 12 : 8,
             transform: "translate(-50%, -50%)",
             opacity: showThumb ? 1 : 0,
-            color: "var(--color-accent)",
-            fontWeight: 500,
+            backgroundColor: "var(--color-accent)",
+            borderRadius: "50%",
           }}
-        >
-          *
-        </span>
+        />
       </div>
     </div>
   );

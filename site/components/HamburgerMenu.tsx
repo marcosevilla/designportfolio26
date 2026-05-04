@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/lib/SidebarContext";
 import { HOME_NAV_ITEMS } from "./HomeNav";
 import { BackChevronIcon, CloseIcon } from "./Icons";
+import ConnectLinks from "./ConnectLinks";
 
 const PANEL_SPRING = { type: "spring" as const, stiffness: 380, damping: 33 };
 const BACKDROP_EASE = [0.22, 1, 0.36, 1] as const;
@@ -174,7 +175,11 @@ export default function HamburgerMenu({
                         onClick={() => setOpen(false)}
                         aria-label="Close menu"
                         className="rounded-full w-11 h-11 inline-flex items-center justify-center transition-colors hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent) active:scale-[0.96]"
-                        style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
+                        // Solid fg (not the 60%-alpha fg-secondary) so the
+                        // two strokes of the X don't double-paint at their
+                        // crossing point — the alpha overlap was reading as
+                        // a darker pixel in the middle of the glyph.
+                        style={{ color: "var(--color-fg)", cursor: "pointer" }}
                       >
                         <CloseIcon size={16} />
                       </button>
@@ -226,6 +231,22 @@ export default function HamburgerMenu({
                           );
                         })}
                       </ul>
+                      {/* Social links (X / LinkedIn / email) — surface
+                          them inside the mobile menu since the
+                          desktop-only HomeNav left rail isn't visible
+                          here. ConnectLinks already renders the right
+                          icon set and hover treatment. */}
+                      <div className="mt-10 pt-6" style={{ borderTop: "1px solid var(--color-border)" }}>
+                        <span
+                          style={{
+                            ...NAV_LABEL_STYLE,
+                            color: "var(--color-fg-tertiary)",
+                          }}
+                        >
+                          Connect
+                        </span>
+                        <ConnectLinks />
+                      </div>
                     </div>
                   </motion.div>
                 ) : (

@@ -93,22 +93,25 @@ function AnimatedGreeting() {
           key={`cursor-${visibleWords}`}
           style={{
             color: "var(--color-accent)",
+            fontFamily: "var(--font-sans)",
+            // Render at the body text's font-size so the asterisk
+            // shares the surrounding words' baseline / x-height — the
+            // earlier "30px asterisk + line-height: 0 + verticalAlign
+            // tricks" approach kept reading as superscript because the
+            // glyph's bounding box was decoupled from the line metrics.
+            // We then visually pump the size with transform: scale,
+            // which leaves the layout box at 1em so the line-break
+            // math is unchanged. translateY(0.5em) compensates for
+            // Geist's `*` sitting high inside its em-box — without it
+            // the scaled glyph would still center above the body
+            // text's optical middle.
+            fontSize: "1em",
             fontWeight: 500,
-            // Bigger than body type so the cursor reads as a glyph, not
-            // punctuation. line-height:0 + verticalAlign sit it on the
-            // text's optical middle of every wrapped line.
-            fontSize: "30px",
-            lineHeight: 0,
+            lineHeight: "inherit",
             display: "inline-block",
-            marginLeft: visibleWords > 0 ? "0.25em" : 0,
-            // Negative em offset on verticalAlign drops the asterisk's
-            // anchor below the parent text's baseline, then translateY
-            // nudges the high-sitting Geist glyph down to the body
-            // text's optical center. Pure translateY at 15% wasn't
-            // enough at this font-size; combined here, the * sits
-            // alongside the words instead of reading as superscript.
-            verticalAlign: "-0.18em",
-            transform: "translateY(0.18em)",
+            marginLeft: visibleWords > 0 ? "0.5em" : 0,
+            transform: "translateY(0.5em) scale(2.1)",
+            transformOrigin: "center center",
           }}
           initial={
             // First mount during blink: just appear. After that (stream

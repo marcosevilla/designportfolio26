@@ -28,7 +28,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     title: "Six Degrees",
     year: "Feb 2026 →",
     description:
-      "A movie-graph puzzle: connect two actors through their shared films, six-degrees-of-separation style. Started as a roadtrip car game with friends — I designed and built the version we play now.",
+      "I designed and developed one of my favorite roadtrip games into a digital experience with the help of Claude Code: Connect randomly paired actors through a chain co-stars and their shared films.",
     video: "/videos/six-degrees.mp4",
     aspect: "1756 / 1080",
   },

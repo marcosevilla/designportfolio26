@@ -112,8 +112,26 @@ export default function HomeNav({
     setAndLock(id);
     const section = document.getElementById(id);
     if (!section) return;
-    // Align the clicked nav link's top with the section's primary heading
-    // so the two columns share a baseline. Falls back to section start.
+
+    // "Work" — center the first project card in the viewport so the
+    // landing point is the visual focus (the imagery itself), not the
+    // section's empty top edge. The "Work" h2 was removed earlier in
+    // favor of card-only chrome, so the heading-alignment branch below
+    // would otherwise fall through to scrollIntoView block:start and
+    // park the card mid-scale at the top of the screen.
+    if (id === "projects") {
+      const firstCard = section.querySelector(
+        "button[aria-label^='Open project gallery']"
+      ) as HTMLElement | null;
+      if (firstCard) {
+        firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+    }
+
+    // Default: align the clicked nav link's top with the section's
+    // primary heading so the two columns share a baseline. Falls back
+    // to section start.
     const heading = section.querySelector("h1, h2") as HTMLElement | null;
     const link = e.currentTarget;
     if (heading && link) {

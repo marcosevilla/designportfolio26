@@ -188,17 +188,17 @@ export default function HomeLayout({
       <MobileToolbar />
 
       {/* Hero column: paddingTop = toolbar height (36) + breathing room.
-          minHeight is sized to fill the viewport minus a ~120px peek of
-          the next section, so on initial load the user sees only the very
-          top edge of the first project card — and that card is at scale 1
-          (it hasn't begun its scroll-driven scale-up yet). The 1400px cap
-          stops absurdly tall windows from leaving a giant whitespace
-          column. */}
+          minHeight is sized so the bio breathes out below the LED matrix
+          / Learn-more button before the first project card begins. The
+          `+ 60px` actually pushes the card a touch BELOW the fold on
+          initial load — it's revealed by scrolling, not previewed at
+          rest. The 1500px cap keeps absurdly tall windows from leaving
+          a giant whitespace column. */}
       <div
         className="max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
         style={{
           paddingTop: "clamp(96px, 12vh, 144px)",
-          minHeight: "clamp(560px, calc(100vh - 120px), 1400px)",
+          minHeight: "clamp(640px, calc(100vh + 60px), 1500px)",
         }}
       >
         <Hero

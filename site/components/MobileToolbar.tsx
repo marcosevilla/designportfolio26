@@ -122,32 +122,35 @@ function PillIconButton({
 }
 
 // ── Pills ──
+// (Buttons here are "naked" — no individual glass chrome. The whole
+// toolbar is wrapped in ONE unified frosted pill in MobileToolbar
+// below, so the buttons all sit on a single shared glass surface.)
 
-function HamburgerPill() {
+function HamburgerInline() {
   return (
-    <FrostedPill className="px-1">
-      {/* Override .chat-cmp-show display:none + .bio-toolbar-btn hardcoded
-          32×32 sizing so the trigger is always visible at 40×40 here. */}
-      <HamburgerMenu className="!flex !w-10 !h-10 items-center justify-center rounded-full text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out" />
-    </FrostedPill>
+    /* Override .chat-cmp-show display:none + .bio-toolbar-btn hardcoded
+       32×32 sizing so the trigger is always visible at 40×40 inside
+       the unified pill. */
+    <HamburgerMenu className="shrink-0 !flex !w-10 !h-10 items-center justify-center rounded-full text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out" />
   );
 }
 
-function ChatPill() {
+/** Ask Marco — accent-text button on the shared glass (no separate
+ *  accent fill, since the visual unification of the toolbar is more
+ *  important than CTA emphasis on this surface). The asterisk +
+ *  uppercase mono label still mark it as the primary action by type
+ *  treatment alone. */
+function AskMarcoInline() {
   return (
     <button
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent("chat:open"))}
       aria-label="Open chat — Ask Marco"
-      className="shrink-0 inline-flex items-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) active:scale-[0.96] transition-transform duration-150 ease-out"
+      className="shrink-0 inline-flex items-center gap-2 px-3 h-10 rounded-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) active:scale-[0.96] transition-[background-color,transform] duration-150 ease-out hover:bg-(--color-muted)"
       style={{
-        height: PILL_HEIGHT,
-        padding: "0 16px",
-        borderRadius: 9999,
-        background: "var(--color-accent)",
-        color: "var(--color-on-accent)",
+        background: "transparent",
+        color: "var(--color-accent)",
         border: 0,
-        boxShadow: CHAT_PILL_SHADOW,
       }}
     >
       <span
@@ -236,7 +239,7 @@ function PalettePillButton({ open, onToggle }: { open: boolean; onToggle: () => 
  *  popover render are lifted to MobileToolbar so the popover can position
  *  itself against the viewport (full-width above the pill row) instead of
  *  the palette button — the latter overflows the screen edge on phones. */
-function ThemePill({
+function ThemeInline({
   paletteOpen,
   onTogglePalette,
 }: {
@@ -244,12 +247,11 @@ function ThemePill({
   onTogglePalette: () => void;
 }) {
   return (
-    // px-2 + gap-1 inside gives noticeable breathing between the two
-    // controls (was px-1 with 0 gap, which read as a cramped strip).
-    <FrostedPill className="px-2 gap-1">
+    /* Two naked buttons inside the unified pill — no own chrome. */
+    <>
       <ThemeModeButton />
       <PalettePillButton open={paletteOpen} onToggle={onTogglePalette} />
-    </FrostedPill>
+    </>
   );
 }
 
@@ -257,22 +259,24 @@ function ThemePill({
  *  transport row with width spring. Mirrors desktop MusicSlot's interaction.
  *  MiniPlayerRow's hover-revealed scrubber doesn't fire on touch — that's a
  *  desktop-only nicety; mobile shows the title and the transport buttons. */
-// Fixed-width chrome inside the expanded music pill: transport buttons
-// (26 + 32 + 26 = 84) + gap-2 to swap zone (8) + spinning disc (14) +
-// gap-1.5 to title (6) + pill px-2 padding (8 each side = 16) + a small
-// breathing buffer (8). Add the measured title width to this to get the
-// pill's auto-fit width.
-const PILL_FIXED_WIDTH = 84 + 8 + 14 + 6 + 16 + 8;
+// Fixed-width chrome inside the expanded music section: transport
+// buttons (26 + 32 + 26 = 84) + gap-2 to swap zone (8) + spinning
+// disc (14) + gap-1.5 to title (6) + a small breathing buffer (8).
+// (No px-2 anymore — the music section sits flush on the shared
+// toolbar glass instead of inside its own padded chrome.) Add the
+// measured title width to this to get the pill's auto-fit width.
+const PILL_FIXED_WIDTH = 84 + 8 + 14 + 6 + 8;
 
-function MusicPill() {
+function MusicInline() {
   const { isPlaying, togglePlay, currentTrack } = useAudioPlayer();
   const titleMeasureRef = useRef<HTMLSpanElement>(null);
   const [pillWidth, setPillWidth] = useState(280);
 
-  // The expanded pill's width is content-aware — measure the current
-  // title's natural width using a hidden span styled identically to the
-  // visible title in MiniPlayerRow, then size the pill to fit. Re-runs
-  // when the track changes so longer titles get a wider pill.
+  // The expanded music section's width is content-aware — measure the
+  // current title's natural width using a hidden span styled
+  // identically to the visible title in MiniPlayerRow, then size the
+  // section to fit. Re-runs when the track changes so longer titles
+  // get a wider section.
   useEffect(() => {
     const el = titleMeasureRef.current;
     if (!el) return;
@@ -287,17 +291,14 @@ function MusicPill() {
 
   return (
     <motion.div
-      animate={{ width: isPlaying ? pillWidth : 48 }}
+      animate={{ width: isPlaying ? pillWidth : 40 }}
       transition={MUSIC_WIDTH_SPRING}
+      // Naked: no own bg / border / shadow — sits on the shared glass
+      // of the unified toolbar pill. Keeps `relative overflow-hidden`
+      // because the inner play / transport states use absolute
+      // positioning inside this box.
       className="shrink-0 rounded-full relative overflow-hidden"
-      style={{
-        height: PILL_HEIGHT,
-        background: PILL_BG_FROSTED,
-        backdropFilter: PILL_BACKDROP,
-        WebkitBackdropFilter: PILL_BACKDROP,
-        border: PILL_BORDER,
-        boxShadow: PILL_SHADOW,
-      }}
+      style={{ height: 40 }}
     >
       {/* Hidden width measurer for the current title's natural width.
           Mirrors the font styles of the visible title <p> in
@@ -334,7 +335,13 @@ function MusicPill() {
           <PlayIcon size={20} />
         </PillIconButton>
       </motion.div>
-      {/* Expanded transport row — slides in from the play button's origin. */}
+      {/* Expanded transport row — slides in from the play button's
+          origin. No internal px padding now: the music section sits on
+          the shared toolbar glass, so adding 8px on each side of
+          MiniPlayerRow stacked on top of the toolbar's gap-1 made the
+          gap from the theme buttons to the transport buttons read as
+          ~12px while every other gap was 4px. Without it, the toolbar
+          gap rhythm runs cleanly across the whole row. */}
       <motion.div
         animate={{
           opacity: isPlaying ? 1 : 0,
@@ -343,7 +350,7 @@ function MusicPill() {
         }}
         transition={{ duration: 0.3, delay: isPlaying ? 0.1 : 0 }}
         style={{ pointerEvents: isPlaying ? "auto" : "none" }}
-        className="absolute inset-0 px-2"
+        className="absolute inset-0"
       >
         <MiniPlayerRow />
       </motion.div>
@@ -356,27 +363,28 @@ function MusicPill() {
 export default function MobileToolbar() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  // Hide-on-scroll-down state: animate the wrapper off-screen when the user
-  // is scrolling down past the threshold; reveal when scrolling up or at top.
-  const [hidden, setHidden] = useState(false);
+  // Compact-on-scroll-down state: instead of hiding the bar, scale the
+  // pill row down to a smaller "compact" version while scrolling down,
+  // and expand back when the user scrolls up or hits the top. The bar
+  // is always visible — just smaller when out of focus.
+  const [compact, setCompact] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
 
   useEffect(() => setMounted(true), []);
 
-  // Hide-on-scroll-down. Threshold 80px so a tiny intentional flick at the
-  // top doesn't hide the controls before there's anything to read.
+  // Compact threshold 80px so a tiny intentional flick at the top
+  // doesn't shrink the controls before there's anything to read.
   useMotionValueEvent(scrollY, "change", (latest) => {
     const prev = scrollY.getPrevious() ?? 0;
     const delta = latest - prev;
-    // Hide while the user is genuinely scrolling down past threshold.
     if (delta > 4 && latest > 80) {
-      setHidden(true);
-      // Close the palette while the bar is hiding so users don't see the
-      // popover hovering above an off-screen anchor.
+      setCompact(true);
+      // Close the palette while the bar shrinks so the popover doesn't
+      // float disconnected from a smaller anchor.
       setPaletteOpen(false);
     } else if (delta < -4 || latest < 40) {
-      setHidden(false);
+      setCompact(false);
     }
   });
 
@@ -406,28 +414,29 @@ export default function MobileToolbar() {
     };
   }, [paletteOpen]);
 
-  // y offset that hides the entire bar below the viewport when scrolling
-  // down. Includes the pill row + safe-area-inset + the bottom gutter so
-  // there's no faint sliver peeking up.
-  const HIDE_OFFSET = PILL_HEIGHT + 24;
+  // Compact scale — uniform shrink so all pills (including the
+  // text-bearing ChatPill) collapse together as one row. 0.78 keeps
+  // the pills readable + tap-target-sized while reading clearly as
+  // "out of focus chrome".
+  const COMPACT_SCALE = 0.78;
 
   return (
     <motion.div
-      // lg:hidden — desktop uses the top-anchored HeroToolbar instead.
-      // pointer-events-none on the wrapper so the page below is clickable
-      // outside the pills; pointer-events-auto on the inner row + popover.
+      // lg:hidden — desktop uses the same top-anchored slot via
+      // HeroToolbar. pointer-events-none on the wrapper so the page
+      // below is tappable outside the pills; pointer-events-auto on
+      // the inner row + popover.
       className="lg:hidden fixed left-0 right-0 z-40 pointer-events-none"
-      // Sit nearly flush to the safe-area edge — `+ 4px` gives just enough
-      // breathing room from the home indicator without leaving a visible
-      // floating gap.
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 4px)" }}
-      animate={{ y: hidden ? HIDE_OFFSET : 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 38 }}
+      // Anchored to the top of the viewport (+ safe-area-inset-top for
+      // notched devices). Was bottom-anchored — moved up so the toolbar
+      // reads as a proper sticky chrome strip instead of a floating
+      // bottom dock that competed with the chat pill.
+      style={{ top: "calc(env(safe-area-inset-top, 0px) + 4px)" }}
     >
       {/* Palette popover — portaled to <body> so it sits in its own
           stacking context above any parent transforms/backdrop-filters
           that might have been clipping it inside the carousel wrapper.
-          Viewport-fixed, sits ABOVE the pill row with 12px gutters from
+          Viewport-fixed, sits BELOW the pill row with 12px gutters from
           each edge. */}
       {mounted &&
         createPortal(
@@ -436,15 +445,15 @@ export default function MobileToolbar() {
               <motion.div
                 ref={popoverRef}
                 key="mobile-palette-popover"
-                initial={{ opacity: 0, y: 8, filter: "blur(6px)" }}
+                initial={{ opacity: 0, y: -8, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: 8, filter: "blur(6px)" }}
+                exit={{ opacity: 0, y: -8, filter: "blur(6px)" }}
                 transition={{ duration: 0.22, ease: POPOVER_EASE }}
                 className="chat-surface fixed z-[120]"
                 style={{
-                  // safe-area-bottom + carousel bottom gap + pill row height +
-                  // 12px gap above the pill row
-                  bottom: `calc(env(safe-area-inset-bottom, 0px) + 12px + ${PILL_HEIGHT}px + 12px)`,
+                  // safe-area-top + toolbar top gap + pill row height +
+                  // 12px gap below the pill row
+                  top: `calc(env(safe-area-inset-top, 0px) + 4px + ${PILL_HEIGHT}px + 12px)`,
                   left: 12,
                   right: 12,
                   padding: "12px",
@@ -460,16 +469,59 @@ export default function MobileToolbar() {
           document.body,
         )}
 
-      {/* Horizontal scroll row. `scrollbar-hide` defined in globals.css.
-          touch-pan-x makes the iOS swipe land on this layer, not the body. */}
+      {/* Unified toolbar pill — ONE wide frosted surface holding all
+          the controls. The left side (hamburger / theme / music) lives
+          inside a horizontally-scrollable strip so the music section's
+          expanded width can overflow the viewport without breaking
+          layout; "Ask Marco" sits OUTSIDE that scroll region, pinned
+          to the right edge of the same pill, so it stays visible
+          regardless of how far the user has scrolled the left strip. */}
       <div
-        className="pointer-events-auto flex items-center gap-2 px-3 overflow-x-auto touch-pan-x scrollbar-hide"
-        style={{ overflowY: "visible", paddingBottom: 4, paddingTop: 4 }}
+        className="pointer-events-auto px-3"
+        style={{ paddingTop: 4, paddingBottom: 4 }}
       >
-        <HamburgerPill />
-        <ChatPill />
-        <ThemePill paletteOpen={paletteOpen} onTogglePalette={() => setPaletteOpen((v) => !v)} />
-        <MusicPill />
+        <motion.div
+          // w-full anchors the pill to its parent's (viewport-px-3)
+          // width so the inner flex math (flex-1 min-w-0 on the scroll
+          // strip) actually shrinks the strip to fit; without it the
+          // pill grew to its natural content width and pushed the
+          // expanded music section past the viewport, where the
+          // scrubber bar visually crossed under the Ask Marco button.
+          // overflow-hidden ensures nothing inside escapes the rounded
+          // shape — the inner scroll strip handles its own horizontal
+          // scrolling while this clip stops any descendant from
+          // visually leaking past the pill chrome.
+          className="rounded-full flex items-center w-full overflow-hidden"
+          style={{
+            height: PILL_HEIGHT,
+            background: PILL_BG_FROSTED,
+            backdropFilter: PILL_BACKDROP,
+            WebkitBackdropFilter: PILL_BACKDROP,
+            border: PILL_BORDER,
+            boxShadow: PILL_SHADOW,
+            transformOrigin: "top center",
+          }}
+          animate={{ scale: compact ? COMPACT_SCALE : 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 38 }}
+        >
+          {/* Scrollable left strip. min-w-0 lets flex actually shrink
+              this section so its overflow can scroll instead of pushing
+              the right-pinned Ask Marco off-screen. touch-pan-x makes
+              iOS swipes land here, not on the body; scrollbar-hide is
+              defined in globals.css. */}
+          <div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto touch-pan-x scrollbar-hide pl-1">
+            <HamburgerInline />
+            <ThemeInline
+              paletteOpen={paletteOpen}
+              onTogglePalette={() => setPaletteOpen((v) => !v)}
+            />
+            <MusicInline />
+          </div>
+          {/* Right-pinned Ask Marco — outside the scroll region so it
+              never disappears when the music section expands past the
+              available width. */}
+          <AskMarcoInline />
+        </motion.div>
       </div>
     </motion.div>
   );
