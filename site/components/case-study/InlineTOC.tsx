@@ -83,6 +83,7 @@ export default function InlineTOC() {
               color: "var(--color-accent)",
               fontSize: "12px",
               lineHeight: "20px",
+              fontWeight: 500,
               y: starY,
             }}
             initial={{ opacity: 0, scale: 0.25, filter: "blur(4px)" }}
@@ -90,7 +91,7 @@ export default function InlineTOC() {
             transition={{ type: "spring", duration: 0.3, bounce: 0 }}
             aria-hidden
           >
-            ✸
+            *
           </motion.span>
         )}
         {tocItems.map((item, index) => {
