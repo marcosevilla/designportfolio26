@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { typescale } from "@/lib/typography";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -69,15 +68,15 @@ export default function Playground({
 }
 
 function PlaygroundCardItem({ card, locked = false }: { card: PlaygroundCard; locked?: boolean }) {
+  // Cards used to <Link href={`/play/${slug}`}> to a dedicated
+  // subpage; those subpages were removed for now, so the card is
+  // rendered as a plain visual block. LockGate still wraps it for
+  // any locked items so the "click for details" affordance keeps
+  // working over the lock overlay.
   return (
-    <Link
-      href={`/play/${card.slug}`}
-      className="block w-full text-left group focus:outline-none"
-      aria-label={`${card.title} — open case study`}
-    >
+    <div className="block w-full text-left">
       <div className="flex items-baseline justify-between gap-4 mb-3">
         <span
-          className="transition-colors group-hover:text-(--color-accent)"
           style={{
             fontFamily: "var(--font-sans)",
             fontSize: "16px",
@@ -114,7 +113,7 @@ function PlaygroundCardItem({ card, locked = false }: { card: PlaygroundCard; lo
           {card.description}
         </p>
       )}
-    </Link>
+    </div>
   );
 }
 

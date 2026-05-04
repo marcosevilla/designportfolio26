@@ -1,18 +1,25 @@
-import { getCaseStudies } from "@/lib/content";
-import WorkContent from "./WorkContent";
+"use client";
 
-export const metadata = {
-  title: "Work — Marco Sevilla",
-  description:
-    "Case studies in hospitality technology, productivity tools, and design systems. Product design work from Canary Technologies and General Task.",
-};
+// The dedicated /work routes (the index here + each per-study
+// subpage) were removed for now; the homepage is the single source
+// of truth for project surfacing. This page exists only so any
+// inbound link to /work lands somewhere — it client-side redirects
+// to the home page's projects section.
 
-export default function WorkPage() {
-  const studies = getCaseStudies();
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
+export default function WorkRedirect() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/#projects");
+  }, [router]);
   return (
-    <div className="max-w-content-lg mx-auto px-4 sm:px-8">
-      <WorkContent studies={studies} />
-    </div>
+    <noscript>
+      <p style={{ padding: "2rem", fontFamily: "var(--font-sans)" }}>
+        The Work page has moved. <Link href="/#projects">Return to home</Link>.
+      </p>
+    </noscript>
   );
 }
