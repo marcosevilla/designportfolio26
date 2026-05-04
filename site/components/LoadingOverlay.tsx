@@ -215,7 +215,7 @@ export default function LoadingOverlay({
                 >
                   <motion.span
                     layoutId="hero-star"
-                    style={{ display: "inline-block" }}
+                    style={{ display: "inline-block", fontWeight: 500 }}
                     // Instant layout updates so the star snaps along with
                     // each typed/backspaced character, anchored to the
                     // text rather than gliding behind it. The morph into
@@ -225,7 +225,7 @@ export default function LoadingOverlay({
                     // element's transition.
                     transition={{ layout: { duration: 0 } }}
                   >
-                    ✸
+                    *
                   </motion.span>
                 </span>
               </span>
