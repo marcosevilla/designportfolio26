@@ -150,7 +150,7 @@ function ChatPill() {
         boxShadow: CHAT_PILL_SHADOW,
       }}
     >
-      <span aria-hidden style={{ fontSize: 14, lineHeight: 1 }}>✸</span>
+      <span aria-hidden style={{ fontSize: 14, lineHeight: 1, fontWeight: 500 }}>*</span>
       <span
         style={{
           fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
