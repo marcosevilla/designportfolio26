@@ -88,7 +88,7 @@ export default function ChatMessage({
   turn: ChatTurn;
   onClose: () => void;
   /** True only for the assistant turn currently receiving stream chunks.
-   *  Renders a trailing ✸ cursor at the end of the text, blinking via the
+   *  Renders a trailing * cursor at the end of the text, blinking via the
    *  .chat-typing-cursor CSS class. Hides the copy/feedback actions until
    *  the stream completes. */
   streaming?: boolean;
@@ -131,8 +131,8 @@ export default function ChatMessage({
       >
         <RenderSegments raw={turn.content} onClose={onClose} />
         {streaming && (
-          <span aria-hidden className="chat-typing-cursor" style={{ fontSize: "0.85em" }}>
-            ✸
+          <span aria-hidden className="chat-typing-cursor" style={{ fontSize: "0.85em", fontWeight: 500 }}>
+            *
           </span>
         )}
       </div>
