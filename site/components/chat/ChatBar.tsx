@@ -65,8 +65,8 @@ function writeStored(turns: ChatTurn[]) {
 
 function SparkGlyph({ size = 13, color = "var(--color-accent)" }: { size?: number; color?: string }) {
   return (
-    <span aria-hidden style={{ fontSize: size, lineHeight: 1, color }}>
-      ✸
+    <span aria-hidden style={{ fontSize: size, lineHeight: 1, color, fontWeight: 500 }}>
+      *
     </span>
   );
 }
