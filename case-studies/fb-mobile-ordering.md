@@ -54,7 +54,7 @@ Team             1 Designer, 3 Engineers (Joanne Chevalier, Andrea Bradshaw, Luc
 
 Hotels lose significant F&B revenue when guests have to call the front desk to order room service — a process that ties up understaffed front desks, leads to misheard orders, and creates enough friction that many guests just open DoorDash instead. One hotel we spoke to described their breakfast system using door hangers — guests would forget to hang them, staff would miss pickups, and complaints piled up. Physical menus required sanitization, were expensive to print, and costly to update when items changed.
 
-Canary's initiative was to increase average revenue per room per month from $5.10 to $10, and in-room dining was one of the biggest untapped levers. The competitive landscape was real — Toast offered mobile ordering at $7/month, and dedicated hospitality platforms like Iris had locked in relationships with major brands like Marriott. Iris reported 20–40% more ancillary revenue from mobile ordering, and individual properties showed dramatic results: W Barcelona saw a 60% increase in average check size, JW Marriott Phoenix 40%, and Mandarin Oriental Munich 20% YoY F&B revenue growth. Without a native ordering experience embedded in the guest journey, hotels were leaving money on the table and losing orders to third-party delivery apps.
+Canary's initiative was to increase average revenue per room per month from $5.10 to $10, and in-room dining was one of the biggest untapped levers. <!-- chat:exclude -->The competitive landscape was real — Toast offered mobile ordering at $7/month, and dedicated hospitality platforms like Iris had locked in relationships with major brands like Marriott. Iris reported 20–40% more ancillary revenue from mobile ordering, and individual properties showed dramatic results: W Barcelona saw a 60% increase in average check size, JW Marriott Phoenix 40%, and Mandarin Oriental Munich 20% YoY F&B revenue growth.<!-- /chat:exclude --> Without a native ordering experience embedded in the guest journey, hotels were leaving money on the table and losing orders to third-party delivery apps.
 
 ---
 
@@ -95,7 +95,7 @@ I designed a mobile-first ordering flow embedded directly in Canary's Digital Co
 **Research methods used:**
 - Customer interviews with hotel F&B staff (The Pines Resort, COMO Hotels, Eurostar, Embassy Suites Times Square, Chateau Avalon, Malibu Beach Inn)
 - Prototype usability testing with hotel staff (POS connection flow, menu management) and guests (ordering flow)
-- Competitive analysis of hotel ordering solutions (Aigens, Duve, Toast Mobile, Lightspeed, Iris/Marriott)
+<!-- chat:exclude -->- Competitive analysis of hotel ordering solutions (Aigens, Duve, Toast Mobile, Lightspeed, Iris/Marriott)<!-- /chat:exclude -->
 - Design jams with engineering team to validate technical feasibility and data model decisions
 - Live pilot feedback from HOMA Cherngtalay (Thailand) and Omni Hotels
 
@@ -104,7 +104,7 @@ I designed a mobile-first ordering flow embedded directly in Canary's Digital Co
 2. Most hotels don't have POS integrations and won't for a while — requiring POS would block 80%+ of potential customers. When a sales rep asked "F&B ordering works for any hotel right? No integrations needed?" that validated the no-POS-required approach. → I designed the full ordering flow to work without any POS, using manual menu management and email/SMS notifications to staff.
 3. Guests expect the speed and simplicity of consumer apps like DoorDash — anything that feels "hotel software" will kill adoption. A job candidate told our VP of Product that he experienced Canary's F&B ordering poolside at a COMO hotel in Thailand: "I didn't have to walk 100 meters to place an order — I could do everything from my phone and have food sent straight to my spot." → I designed the guest experience as a mobile-optimized web flow (no app download) with familiar patterns: tap to add, cart summary, one-tap submit.
 4. Hotels need to test the ordering experience before going live with guests. → I designed a dedicated test mode so staff can walk through the full guest flow without it being visible to actual guests.
-5. Menu availability timing matters — hotels serve different menus at different times of day, and competitors like the Stay app just dump all menus regardless of time. → I designed time-aware menu availability, taking direct inspiration from how Uber Eats handles this, with a menu selector dropdown that clearly indicates which menus are currently available for ordering.
+5. Menu availability timing matters — hotels serve different menus at different times of day<!-- chat:exclude -->, and competitors like the Stay app just dump all menus regardless of time<!-- /chat:exclude -->. → I designed time-aware menu availability, taking direct inspiration from how Uber Eats handles this, with a menu selector dropdown that clearly indicates which menus are currently available for ordering.
 
 **Research artifact:**
 I built a fully interactive prototype (Next.js + React, deployed to Vercel) that evolved over several weeks — starting with order management screens (Nov 5), expanding to menu management (Nov 11), then a full functional demo with 50+ pre-loaded items and real cart persistence (Nov 17), then AI-powered menu parsing using Claude's API (Dec 2), and finally the modifier system (Dec 23). This wasn't a throwaway prototype — it became the primary demo tool for sales calls, GTM enablement, and stakeholder reviews. Marketing used it for sales slides, and the PM used it on live customer calls that led to our first verbal commitments.
@@ -158,7 +158,7 @@ I built a fully interactive prototype (Next.js + React, deployed to Vercel) that
 - Hotel staff in HOMA Cherngtalay (Thailand pilot) provided constructive feedback on item remarks discoverability and notification workflows — validated the design was being actively used in a real hotel environment
 - Chateau Avalon owner saw "significant value in the bundle, estimating over $2,000/year savings from eliminating physical menus and reducing errors" and planned to present to ownership the following week
 - Crown Resorts (Australia) requested a dedicated demo, signaling enterprise interest in the APAC market
-- Multiple APAC properties (Royal Garden Kowloon East, The Fullerton Ocean Park) expressing interest with combined potential ARR of $25K+
+<!-- chat:exclude -->- Multiple APAC properties (Royal Garden Kowloon East, The Fullerton Ocean Park) expressing interest with combined potential ARR of $25K+<!-- /chat:exclude -->
 - Our PM noted the core differentiator: "Customers value a lot having mobile ordering as part of Canary because it enhances visibility for F&B as part of Compendium, makes it easier to engage with the customer via Messaging, and bundles products into one provider"
 - [TODO: Guest satisfaction scores, NPS data if available]
 
@@ -169,7 +169,7 @@ I built a fully interactive prototype (Next.js + React, deployed to Vercel) that
 - Dedicated #mobile-food-ordering Slack channel created for cross-functional GTM coordination across Product, Sales, CS, and Marketing
 
 **Expansion pipeline (post-MVP):**
-- POS integration: Oracle Simphony (Q1 2026), Toast and Lightspeed to follow
+<!-- chat:exclude -->- POS integration: Oracle Simphony (Q1 2026), Toast and Lightspeed to follow<!-- /chat:exclude -->
 - Alternative location ordering: poolside, rooftop, lobby (designed, in engineering)
 - Modifiers and allergen support for menu items
 - AI Messaging integration — guests can request menus and place orders via text

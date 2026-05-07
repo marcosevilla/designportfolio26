@@ -21,7 +21,7 @@ export const RESUME_EXPERIENCE: ResumeJob[] = [
       "Led design and discovery for the Knowledge Base powering Canary's AI Messaging product — unified three overlapping content surfaces (Property Info, Knowledge Base, Digital Compendium) into one AI-ready data model. The same model now powers HubOS, Messaging Channels, and Canary's AI Voice Concierge.",
       "Designed Compendium (Hotel guest hub, $1M+ CARR) — Canary's first guest-facing platform layer, built on the unified content model above.",
       "Spearheaded the Check-in redesign, driving 80% adoption growth across 4,500+ hotels and 54M guest stays.",
-      "Scaled the product design team from 4 to 14 during Series C; partnered with leadership to define design principles and review cadence.",
+      "<!-- chat:exclude -->Scaled the product design team from 4 to 14 during Series C; partnered with leadership to define design principles and review cadence.<!-- /chat:exclude -->",
     ],
   },
   {

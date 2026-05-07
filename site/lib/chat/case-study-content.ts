@@ -24,11 +24,28 @@ const FILENAME_BY_SLUG: Record<StudySlug, string | null> = {
   "ai-workflow": null, // no markdown draft yet — metadata block only
 };
 
+// Strips chat:exclude fenced regions so sensitive content in drafts
+// (competitor analysis, deal intel) never reaches the model. Originals stay
+// intact on disk — only the chat injection sees the filtered view.
+const CHAT_EXCLUDE_RE = /<!-- chat:exclude -->[\s\S]*?<!-- \/chat:exclude -->/g;
+const ORPHAN_FENCE_RE = /<!-- \/?chat:exclude -->/;
+
+function stripChatExcluded(md: string, source: string): string {
+  const stripped = md.replace(CHAT_EXCLUDE_RE, "").replace(/\n{3,}/g, "\n\n");
+  if (ORPHAN_FENCE_RE.test(stripped)) {
+    console.warn(
+      `[chat] orphan chat:exclude fence in ${source} — content may not be filtered as intended`
+    );
+  }
+  return stripped;
+}
+
 function readStudy(slug: StudySlug): string {
   const filename = FILENAME_BY_SLUG[slug];
   if (!filename) return "";
   try {
-    return readFileSync(join(CASE_STUDIES_DIR, `${filename}.md`), "utf-8");
+    const raw = readFileSync(join(CASE_STUDIES_DIR, `${filename}.md`), "utf-8");
+    return stripChatExcluded(raw, `${filename}.md`);
   } catch {
     // Missing markdown is non-fatal — the model still has the metadata block
     // for that study. Log so we notice in Vercel logs but don't crash.

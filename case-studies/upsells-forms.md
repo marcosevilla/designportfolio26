@@ -55,7 +55,7 @@ Team             1 Designer, 3 Engineers, 1 PM (Becca Aleynik), Tech Lead (Adil 
 
 When a guest requests a snowmobile expedition, airport shuttle, or spa treatment through Canary's upsells, the hotel has to follow up manually — via messaging or phone — to collect the details needed to actually fulfill the request. Flight number? Preferred time? Number of guests? Dietary restrictions? All of this creates back-and-forth that delays confirmation, frustrates guests, and creates operational overhead for already-busy concierge teams.
 
-One hotel we tested with, Hotel Jackson in Wyoming, manages 30+ different tour experiences. Their tours coordinator described the current workflow: "I see the guest is interested, I message them, I wait for a response — it could take 5 minutes or 5 days." Competitors like Duve had already built form-based data collection into their upsells, and CS teams were regularly fielding requests from properties that wanted to collect mandatory information like flight numbers or wine preferences at the time of purchase.
+One hotel we tested with, Hotel Jackson in Wyoming, manages 30+ different tour experiences. Their tours coordinator described the current workflow: "I see the guest is interested, I message them, I wait for a response — it could take 5 minutes or 5 days."<!-- chat:exclude --> Competitors like Duve had already built form-based data collection into their upsells, and<!-- /chat:exclude --> CS teams were regularly fielding requests from properties that wanted to collect mandatory information like flight numbers or wine preferences at the time of purchase.
 
 ---
 
@@ -98,7 +98,7 @@ I designed a form system that plugs into Canary's existing upsells product — h
 - User testing with Guldsmeden Hotels (Copenhagen) — boutique hotel testing form creation flow
 - User testing with The Ozarker Lodge — resort experience upsells
 - Prototype iteration based on feedback from Cortiina hotel
-- Competitive analysis — Duve's form-based data collection, Oaky's upsell approach
+<!-- chat:exclude -->- Competitive analysis — Duve's form-based data collection, Oaky's upsell approach<!-- /chat:exclude -->
 - Design hand-off session with engineering (recorded, transcribed) — validated field types, localization approach, question limits
 - Eng design review with Tommy Slater — schema decisions for form questions, reusability of dynamic forms pattern
 - Design jams with Miguel (Senior Designer) and Wenjun (Staff Designer) on live preview component unification across Compendium, Upsells, and branding page
@@ -152,7 +152,7 @@ I built a functional prototype on Vercel (v0-upsell-forms.vercel.app) that evolv
 - Upsells Forms launched September 2025 — status: "Launched (Available to All Customers)"
 - Target: 10% adoption of Upsell Forms for customers onboarded after release
 - Internal beta with key accounts: Hotel Jackson, The Ozarker Lodge, Verdelago
-- Marriott Upsells RFP leveraged forms designs — dedicated design reviews and presentation materials created for the enterprise sales opportunity
+<!-- chat:exclude -->- Marriott Upsells RFP leveraged forms designs — dedicated design reviews and presentation materials created for the enterprise sales opportunity<!-- /chat:exclude -->
 - Price modifiers for custom questions (e.g., dropdown with per-option pricing) designed and ready for eng, extending forms into a revenue-impacting feature
 - [TODO: Post-launch adoption metrics — % of properties using forms, reduction in messaging follow-ups]
 

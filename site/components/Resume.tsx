@@ -85,7 +85,9 @@ export default function Resume() {
               <ul className="mt-3 flex flex-col gap-2 list-disc pl-4 marker:text-(--color-fg-tertiary)">
                 {job.bullets.map((bullet, i) => (
                   <li key={i} style={BULLET_STYLE}>
-                    {bullet}
+                    {bullet
+                      .replace(/<!-- chat:exclude -->/g, "")
+                      .replace(/<!-- \/chat:exclude -->/g, "")}
                   </li>
                 ))}
               </ul>

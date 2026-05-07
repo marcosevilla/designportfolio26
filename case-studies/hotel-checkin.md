@@ -53,7 +53,7 @@ Team             Product Designer, PM, Engineering
 
 ### Overview
 
-Canary is on a mission to completely revamp hotel software through a comprehensive set of tools optimized for hoteliers. Our products have streamlined staff operations, increased revenue, and enhanced guest experiences for hotel chains including Marriott, Best Western, IHG, and Wyndham.
+Canary is on a mission to completely revamp hotel software through a comprehensive set of tools optimized for hoteliers. Our products have streamlined staff operations, increased revenue, and enhanced guest experiences for major hotel chains.<!-- chat:exclude --> (Specifically: Marriott, Best Western, IHG, and Wyndham.)<!-- /chat:exclude -->
 
 I design across Canary's full suite of products including Mobile Check-in, Checkout, Canary AI, Compendium, Authorizations, Digital Tipping, Upsells, and Guest Messaging.
 
