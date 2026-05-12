@@ -12,15 +12,22 @@ const STAR_SPRING = { type: "spring" as const, stiffness: 300, damping: 34 };
 const LINK_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
 const ROW_HEIGHT = 28;
 
-// In-page anchors only — every nav target lives on the homepage. Exported
-// so HamburgerMenu (compressed-mode replacement when the chat panel pushes
-// the layout below xl) can render the same set of links.
-export const HOME_NAV_ITEMS = [
+type NavItem = { id: string; label: string; kind?: "section" | "page" };
+
+// In-page anchors — every entry with kind "section" (the default) is a real
+// homepage section observed by IntersectionObserver. The "about" entry has
+// kind "page" because it switches Hero into its About-me view rather than
+// scrolling to a section. Exported subset (sections only) is what
+// HamburgerMenu renders in compressed mode.
+export const HOME_NAV_ITEMS: NavItem[] = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Work" },
   { id: "playground", label: "Playground" },
 ];
-const NAV_ITEMS = HOME_NAV_ITEMS;
+const NAV_ITEMS: NavItem[] = [
+  ...HOME_NAV_ITEMS,
+  { id: "about", label: "About", kind: "page" },
+];
 
 const SCROLL_LOCK_MS = 900;
 
@@ -30,6 +37,7 @@ function useActiveSection() {
 
   useEffect(() => {
     const sections = NAV_ITEMS
+      .filter((item) => item.kind !== "page")
       .map((item) => document.getElementById(item.id))
       .filter((el): el is HTMLElement => el !== null);
 
@@ -73,11 +81,13 @@ function useActiveSection() {
 
 export default function HomeNav({
   aboutMeOpen = false,
+  onAboutMeOpen,
   onAboutMeClose,
   navRef,
   ready = true,
 }: {
   aboutMeOpen?: boolean;
+  onAboutMeOpen?: () => void;
   onAboutMeClose?: () => void;
   navRef?: React.Ref<HTMLElement>;
   /** Gates the nav's blur-in. Hooked to HomeLayout's `heroReady` so it
@@ -107,8 +117,13 @@ export default function HomeNav({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex]);
 
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
     e.preventDefault();
+    if (item.kind === "page" && item.id === "about") {
+      onAboutMeOpen?.();
+      return;
+    }
+    const id = item.id;
     setAndLock(id);
     const section = document.getElementById(id);
     if (!section) return;
@@ -214,10 +229,13 @@ export default function HomeNav({
         )}
       </AnimatePresence>
 
-      {/* Nav links with moving star — hidden while the About-me page owns
-          the column; only the Return link should remain visible. */}
+      {/* Nav links with hanging star — hidden while the About-me page owns
+          the column; only the Return link should remain visible. The ul has
+          left padding so labels start at NAV_LABEL_INDENT; the absolute star
+          sits at left-0 and "hangs" into the padding lane. */}
       <ul
         className={`flex flex-col gap-2 relative${aboutMeOpen ? " hidden" : ""}`}
+        style={{ paddingLeft: "24px" }}
         onMouseLeave={() => setHoveredIndex(null)}
         aria-hidden={aboutMeOpen || undefined}
       >
@@ -260,8 +278,8 @@ export default function HomeNav({
           return (
             <li key={item.id}>
               <a
-                href={`#${item.id}`}
-                onClick={(e) => handleClick(e, item.id)}
+                href={item.kind === "page" ? "#" : `#${item.id}`}
+                onClick={(e) => handleClick(e, item)}
                 className="block transition-colors"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
@@ -275,7 +293,7 @@ export default function HomeNav({
               >
                 <motion.span
                   className="inline-block"
-                  animate={{ x: active || isPassing ? 18 : isHovered ? 8 : 0 }}
+                  animate={{ x: isHovered || isPassing ? 4 : 0 }}
                   transition={LINK_SPRING}
                   style={{ color: textColor }}
                 >

@@ -7,7 +7,6 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
 import { HighlighterProvider } from "./HighlighterContext";
-import Resume from "./Resume";
 import { ArrowRightIcon } from "./Icons";
 
 const CV_ENTRIES = [
@@ -480,18 +479,30 @@ export default function Hero({
                 style={{ fontSize: "calc(16px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
-                {/* Hairline divider between the bio prose and the resume
-                    so the eye lands on the section break before the
-                    role/company list begins. */}
-                <hr
+                {/* Source PDF lives in ~/Developer/job-hunt/ — re-copy
+                    Marco-Sevilla-Senior-Product-Designer.pdf into public/
+                    when it changes. */}
+                <a
+                  href="/Marco-Sevilla-Senior-Product-Designer.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mt-10 inline-flex items-center gap-2 rounded-full border border-(--color-border) px-4 py-2 transition-[background-color,color,border-color] duration-150 ease-out hover:border-(--color-fg-secondary) hover:text-(--color-fg) focus-visible:border-(--color-fg-secondary) focus-visible:outline-none"
                   style={{
-                    border: 0,
-                    borderTop: "1px solid var(--color-border)",
-                    marginTop: 40,
-                    marginBottom: 0,
+                    fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    letterSpacing: "0.04em",
+                    color: "var(--color-fg-secondary)",
                   }}
-                />
-                <Resume />
+                >
+                  <span>View Resume / CV</span>
+                  <span
+                    aria-hidden
+                    className="inline-flex items-center transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                  >
+                    <ArrowRightIcon size={14} />
+                  </span>
+                </a>
                 {/* "Hello, friend" greeting note hidden for now — was a
                     closing flourish carried over from the deleted toolbar
                     cycling greetings; can be restored later from git. */}

@@ -161,6 +161,7 @@ export default function HomeLayout({
       <HomeNav
         navRef={navRef}
         aboutMeOpen={aboutMeOpen}
+        onAboutMeOpen={() => setAboutMeOpen(true)}
         onAboutMeClose={() => setAboutMeOpen(false)}
         ready={heroReady}
       />

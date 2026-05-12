@@ -74,6 +74,7 @@ export default function InlineTOC() {
       </Link>
       <ul
         className="flex flex-col gap-2 relative"
+        style={{ paddingLeft: "24px" }}
         onMouseLeave={() => setHoveredIndex(null)}
       >
         {activeIndex >= 0 && (
@@ -123,7 +124,7 @@ export default function InlineTOC() {
               >
                 <motion.span
                   className="inline-block"
-                  animate={{ x: active || isPassing ? 18 : isHovered ? 8 : 0 }}
+                  animate={{ x: isHovered || isPassing ? 4 : 0 }}
                   transition={LINK_SPRING}
                   style={{ color: textColor }}
                 >
