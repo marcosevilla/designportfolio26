@@ -344,9 +344,15 @@ function GalleryCardList({
     <div className="mt-8 flex flex-col gap-24">
       {studies.map((study) => {
         const locked = isLocked(study.slug);
+        const href = STUDY_ROUTES[study.slug];
         return (
           <LockGate key={study.slug} mode="card" locked={locked}>
-            <GalleryCard study={study} onOpen={() => onOpen(study.slug)} locked={locked} />
+            <GalleryCard
+              study={study}
+              onOpen={() => onOpen(study.slug)}
+              href={href}
+              locked={locked}
+            />
           </LockGate>
         );
       })}
@@ -365,6 +371,13 @@ const CARD_BG = "var(--color-card-bg)";
 // ready to show). Removing a slug from this set re-enables the card
 // without touching anywhere else.
 const HIDDEN_SLUGS = new Set<string>(["upsells"]);
+
+// Slugs that route to a dedicated case study page instead of opening
+// the homepage gallery overlay. Cards in this map render as <Link>;
+// every other card falls back to the gallery-open button behavior.
+const STUDY_ROUTES: Record<string, string> = {
+  "fb-ordering": "/work/fb-ordering",
+};
 
 // Per-card accent tint, blended at low opacity over CARD_BG so each
 // card reads as branded without overwhelming the imagery. The Canary
@@ -389,10 +402,12 @@ const CARD_TINT_AMOUNT = 10;
 function GalleryCard({
   study,
   onOpen,
+  href,
   locked = false,
 }: {
   study: CaseStudyMeta;
   onOpen: () => void;
+  href?: string;
   locked?: boolean;
 }) {
   const items = galleryContent[study.slug] ?? [];
@@ -425,7 +440,7 @@ function GalleryCard({
   // peakScale is viewport-aware — a gentle 1.15× on desktop (subtle
   // breathing on scroll, not a wow-zoom), dialed back to 1.06× on narrow
   // viewports so the scaled image doesn't overflow past a phone screen.
-  const cardRef = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: cardRef,
     offset: ["start end", "end start"],
@@ -456,14 +471,11 @@ function GalleryCard({
   );
   const textOpacity = useTransform(scrollYProgress, [0.3, 0.55, 1], [0, 1, 1]);
 
-  return (
-    <button
-      ref={cardRef}
-      type="button"
-      onClick={onOpen}
-      aria-label={`Open project gallery — ${study.title}`}
-      className="block w-full cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) rounded-lg"
-    >
+  const sharedClassName =
+    "block w-full cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) rounded-lg";
+
+  const cardInner = (
+    <>
       {/* Card group — frame + caption scale together via imageScale,
           so the title/year row stays pinned to the bottom of the card
           and rides the same scroll-driven scale as the imagery.
@@ -610,6 +622,31 @@ function GalleryCard({
           the description copy still lives on `study.description` (sourced
           from the case-study MDX frontmatter / studies metadata) so we
           can re-introduce it later without rewriting any data. */}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        ref={cardRef as React.RefObject<HTMLAnchorElement>}
+        href={href}
+        aria-label={`Open case study — ${study.title}`}
+        className={sharedClassName}
+      >
+        {cardInner}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      ref={cardRef as React.RefObject<HTMLButtonElement>}
+      type="button"
+      onClick={onOpen}
+      aria-label={`Open project gallery — ${study.title}`}
+      className={sharedClassName}
+    >
+      {cardInner}
     </button>
   );
 }
