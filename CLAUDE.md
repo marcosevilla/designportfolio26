@@ -450,11 +450,27 @@ Before ending any session:
 ## Current State
 _Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
-- **Last worked on (2026-05-04):** CLAUDE.md cleanup pass — reconciled stale nav model (DesktopSidebar → HomeNav), rebuilt Project Structure tree, added Locked Content Gating + Unified Toolbar to Key Patterns, removed StickyFooter references, removed font-pairing-picker from Theme Palette description, linked the in-flight visual rebrand spec.
-- **In flight (visual rebrand):** Spec `docs/superpowers/specs/2026-05-03-visual-rebrand-bw-asterisk-design.md` + plan `docs/superpowers/plans/2026-05-03-visual-rebrand-bw-asterisk.md`. Recent commits ship the mono palette as default + Geist `*` brand mark across surfaces (asterisk optical centering, streaming cursor sizing, palette swatch B&W split for mono).
-- **Open loops:**
-  - 42 ImagePlaceholders still in main case studies (F&B 10, Compendium 15, Upsells 17) — Tier 0/1 in `docs/PORTFOLIO-PRIORITIES.md`.
-  - Per-study imagery for Playground subpages (`/play/{six-degrees,pajamagrams,custom-wrapped}`) — Marco edits each `[Name]Content.tsx` at own pace.
-  - Carousel view (`feature/carousel-view` worktree, `components/CaseStudyCarousel.tsx`) unmerged — separate workstream.
-  - Untracked: `docs/fb-gallery/` (purpose unclear — confirm before committing or ignoring).
+- **Last worked on (2026-05-06):** Removed all dedicated `/work/<slug>` + `/play/<slug>` subpages. Homepage is now the single source of truth — `app/work/page.tsx` + `app/play/page.tsx` are client-side redirects to `/#projects` / `/#playground`; chat unfurl + study links also point to `/#projects`. Build went from 18 routes → 7. Shipped on commit `7bfb4ff`. Stale parts of CLAUDE.md (Dedicated Routes section, DEDICATED_ROUTES pattern, Case Study Content Component Pattern, Two-Column Editorial Layout) are now historical — left in place but the files they reference are gone.
+- **Completed this session (across 3 commits — May 4 → May 6):**
+  - Homepage card overhaul (`CaseStudyList.tsx`): per-slug brand tints over neutral `#fafafa` / `#141414` (Canary trio split into blue / teal / amber), scroll-driven scale dialed to subtle 1.15× desktop / 1.06× mobile with flat zones, Geist sans 16/500 caption row pinned inside the scaling wrapper, no border / no box-shadow, soft 3-stop drop-shadow on layered composites via `filter: drop-shadow`. `HIDDEN_SLUGS = new Set(["upsells"])` gates Upsells until ready.
+  - Hero peek (`HomeLayout.tsx`): hero column min-height bumped to `clamp(640px, calc(100vh + 60px), 1500px)` so the first card sits below the fold on initial load.
+  - Work nav anchor (`HomeNav.tsx`): clicking "Work" now `scrollIntoView({ block: "center" })` on the first project card so the landing point is the imagery centered, not the section's top edge.
+  - Chat (`ChatBar.tsx` + `ChatPanel.tsx`): dropped the shared-`layoutId` pill→panel morph (was producing a lens halo because of border-radius interpolation when both anchored bottom-right). Replaced with scale-from-bottom-right enter + snappier `CLOSE_SPRING` exit. Empty-state greeting cursor renders at `1em` body size + `transform: scale(2.1) translateY(0.5em)` so the asterisk sits on the line metrics. "Beta feature" mono label next to "Chat" header.
+  - Mobile toolbar (`MobileToolbar.tsx`): four floating pills consolidated into one wide unified glass pill. Sticky-top instead of bottom-floating; scroll-down compacts via uniform `scale(0.78)`. Inner left strip is `flex-1 min-w-0 overflow-x-auto touch-pan-x`; "Ask Marco" pinned outside the scroll region with accent-text styling (no solid CTA fill). Pill is `w-full overflow-hidden` to bound everything to the viewport.
+  - Mobile menu (`HamburgerMenu.tsx`): added `ConnectLinks` (X / LinkedIn / email) below nav items; close X uses solid `var(--color-fg)` instead of 60%-alpha `fg-secondary`.
+  - Music player: `SeekBar` thumb is a solid accent dot (8 → 12 px on hover/drag); track inset 6 px each side so the thumb stays inside its parent. `MiniPlayerRow` scrubber stacks on mobile (timestamps far-left/right above the bar). `MusicInline` lost its 8 px internal `px-2` so toolbar gap rhythm runs cleanly. Transport icons (play/pause/skip-back/skip-forward) flipped from stroked to filled. `playlist.ts` trimmed: dropped both BLACKPINK tracks.
+  - PhotoStack (`PhotoStack.tsx`): mobile renders an upright 3×2 grid centered top-of-viewport (no fan); trigger word stays in place at full opacity (cloned label skipped on mobile to avoid stale-rect / address-bar-resize jitter). Desktop label gets an exit fade so it doesn't double-paint with the trigger.
+  - Hero "Learn more" button: flush right, weight 600.
+  - Imagery: `fb-mobile.mp4` re-encoded from 173 Kbps → 3.5 Mbps (1440×1080); `guest-experience-dash.mp4` added (1716×1080 @ 4.9 Mbps) and replaces the compendium layered composite; `general-task.png` composite added at 98% width.
+  - Six Degrees playground card description rewritten.
+- **In flight:** None. Last session ended on a clean merge to `main`.
 - **Vercel env var:** `NEXT_PUBLIC_UNLOCK_CODE_HASH` should be set for a non-default unlock code. Default hash in code accepts `miyagi`.
+- **Known issues / quirks:**
+  - Old subpage URLs (`/work/fb-ordering`, `/play/six-degrees`, etc.) will 404 — accepted for the "for now" temporary state. If we want to preserve those URLs, add a `[slug]` catch-all under work/ + play/ with `generateStaticParams` listing the previously-existing slugs.
+  - `CaseStudyCard.tsx` / `CaseStudyListRow.tsx` are deprecated (not rendered anywhere on the homepage — `GalleryCard` inside `CaseStudyList.tsx` is the active card) but still contain stale `/work/${slug}` hrefs. Harmless until cleaned up; tagging here so a future cleanup pass remembers.
+  - `lib/carousel-transition.ts` still references `/work/${slug}` — lives in the `feature/carousel-view` worktree, separate workstream.
+  - Stale CLAUDE.md sections (Dedicated Routes / DEDICATED_ROUTES / Case Study Content Component Pattern / Two-Column Editorial Layout / CaseStudyHero gradient table) describe routes that were just deleted. Left as-is for now since they're harmless reference; clean pass next session if useful.
+- **Open loops:**
+  - 42 ImagePlaceholders still living inside the deleted dedicated-route content components — currently unrendered, so not visible. If the dedicated routes are ever restored, those placeholders re-emerge.
+  - Carousel view (`feature/carousel-view` worktree, `components/CaseStudyCarousel.tsx`) unmerged — separate workstream.
+  - Untracked: `docs/fb-gallery/`, `case-studies/fb-mobile-ordering-benji.md` (purpose unclear — confirm before committing or ignoring).

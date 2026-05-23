@@ -11,7 +11,8 @@
     "hash:code": "node scripts/hash-code.mjs",
     "build:bio": "node scripts/build-bio.mjs",
     "predev": "node scripts/build-bio.mjs",
-    "prebuild": "node scripts/build-bio.mjs"
+    "prebuild": "node scripts/build-bio.mjs",
+    "print:resume": "node scripts/print-resume.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",

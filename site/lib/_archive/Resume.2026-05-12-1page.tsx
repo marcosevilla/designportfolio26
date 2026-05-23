@@ -120,7 +120,19 @@ export default function Resume() {
           color-scheme: light;
         }
         @media print {
-          @page { size: letter; margin: 0.5in; }
+          @page { size: letter; margin: 0.4in; }
+          /* Compact print sizing — fits the resume to a single letter page
+             while preserving the generous on-screen reading layout. */
+          [data-resume-root] h1 { font-size: 26px !important; line-height: 1.1 !important; }
+          [data-resume-root] section { margin-top: 12px !important; }
+          [data-resume-root] section > p:first-child { margin-bottom: 6px !important; }
+          [data-resume-root] ul[class*="gap-10"] { gap: 10px !important; }
+          [data-resume-root] ul[class*="gap-3"],
+          [data-resume-root] ul[class*="gap-2"] { gap: 3px !important; }
+          [data-resume-root] p, [data-resume-root] li { font-size: 12px !important; line-height: 16px !important; }
+          [data-resume-root] header p { font-size: 11.5px !important; }
+          [data-resume-root] [data-resume-meta] { font-size: 9.5px !important; }
+          [data-resume-root] [data-resume-label] { font-size: 9.5px !important; }
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
