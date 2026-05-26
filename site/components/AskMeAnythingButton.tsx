@@ -31,10 +31,10 @@ export default function AskMeAnythingButton() {
       type="button"
       onClick={() => setChatOpen(true)}
       aria-label="Open chat — ask me anything"
-      className="inline-flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer hover:text-(--color-accent) hover:border-(--color-accent)"
+      className="outlined-cta inline-flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer"
       style={{
-        height: 36,
-        padding: "0 10px",
+        height: 32,
+        padding: "0 8px",
         background: "transparent",
         color: "var(--color-fg-secondary)",
         border: "0.5px solid var(--color-border)",
@@ -49,7 +49,7 @@ export default function AskMeAnythingButton() {
           fontWeight: 500,
           lineHeight: 1,
           textTransform: "uppercase",
-          letterSpacing: "0.08em",
+          letterSpacing: "0.04em",
           whiteSpace: "nowrap",
         }}
       >

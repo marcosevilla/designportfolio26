@@ -115,8 +115,8 @@ export default function SiteHeader() {
         </button>
 
         {/* Content-aligned row — same max-w and centering as the page
-            body, so the wordmark sits at the body's left edge and
-            LocalStatus at its right edge. */}
+            body, so the wordmark sits at the body's left edge and the
+            LocalStatus + HeaderToolbar cluster sits at its right edge. */}
         <div className="h-full mx-auto max-w-[800px] px-4 flex items-center justify-between">
           <Link
             href="/"
@@ -135,12 +135,10 @@ export default function SiteHeader() {
           >
             {HERO_NAME}
           </Link>
-          <LocalStatus />
-        </div>
-
-        {/* Toolbar — flush right of viewport. */}
-        <div className="absolute top-1/2 -translate-y-1/2 right-3">
-          <HeaderToolbar />
+          <div className="flex items-center gap-3">
+            <LocalStatus />
+            <HeaderToolbar />
+          </div>
         </div>
       </div>
     </motion.header>

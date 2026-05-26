@@ -644,6 +644,21 @@ img[class*="rounded-"] {
     0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
+/* Shared outlined CTA hover state — used by AskMeAnythingButton and the
+   SocialLinks cluster so the four buttons read as a single button family. */
+.outlined-cta {
+  transition:
+    color 150ms ease-out,
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.outlined-cta:hover,
+.outlined-cta:focus-visible {
+  color: var(--color-accent);
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
 .chat-surface {
   background-color: color-mix(in srgb, var(--color-surface) 30%, transparent);
   backdrop-filter: blur(40px) saturate(180%);
