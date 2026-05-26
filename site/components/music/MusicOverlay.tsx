@@ -62,7 +62,7 @@ function TransportButton({
   children: React.ReactNode;
   emphasized?: boolean;
 }) {
-  const size = emphasized ? 64 : 44;
+  const size = emphasized ? 44 : 32;
   return (
     <button
       type="button"
@@ -304,13 +304,13 @@ export default function MusicOverlay() {
                 with a soft border + drop shadow so it reads as a single
                 grouped surface against the overlay background. */}
             <div
-              className="flex items-center gap-5 mt-8 px-5 py-2"
+              className="flex items-center gap-4 mt-8 px-3 py-1.5"
               style={{
                 backgroundColor: "var(--color-bg)",
-                border: "1px solid var(--color-border)",
-                // Single soft, far-falloff shadow — large blur radius, low
-                // opacity. Reads as elevation without an obvious cast.
-                boxShadow: "0 28px 56px -28px rgba(0,0,0,0.12)",
+                border: "0.5px solid var(--color-border)",
+                borderRadius: 4,
+                // Tighter halo: smaller offset + blur, hugs the card.
+                boxShadow: "0 6px 18px -8px rgba(0,0,0,0.10)",
               }}
             >
               {/* Left — track title + artist, flush-left. Slides + blurs
@@ -375,21 +375,21 @@ export default function MusicOverlay() {
               <div className="flex flex-col items-center shrink-0 grow-[2] basis-0 min-w-0">
                 <div className="flex items-center gap-1">
                   <TransportButton label="Previous track" onClick={handlePrev}>
-                    <SkipBackIcon size={18} />
+                    <SkipBackIcon size={15} />
                   </TransportButton>
                   <TransportButton
                     label={isPlaying ? "Pause" : "Play"}
                     onClick={togglePlay}
                     emphasized
                   >
-                    {isPlaying ? <PauseIcon size={28} /> : <PlayIcon size={28} />}
+                    {isPlaying ? <PauseIcon size={22} /> : <PlayIcon size={22} />}
                   </TransportButton>
                   <TransportButton label="Next track" onClick={handleNext}>
-                    <SkipForwardIcon size={18} />
+                    <SkipForwardIcon size={15} />
                   </TransportButton>
                 </div>
                 <div
-                  className="w-full flex items-center gap-3 -mt-3"
+                  className="w-full flex items-center gap-3 -mt-2"
                   style={{
                     fontFamily:
                       "var(--font-geist-mono), ui-monospace, Menlo, monospace",
