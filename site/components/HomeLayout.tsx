@@ -220,7 +220,7 @@ export default function HomeLayout({
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}
             <motion.div
-              className="text-(--color-fg-secondary) leading-[26px] mb-8 flex flex-col gap-4"
+              className="text-(--color-fg) leading-[26px] mb-8 flex flex-col gap-4"
               style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
@@ -230,14 +230,10 @@ export default function HomeLayout({
               transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
             >
               <p>
-                Senior product designer based in San Francisco.
-                <br />
-                Currently at Canary Technologies.
-              </p>
-              <p>
-                I&apos;m fascinated by the interplay of human behavior,
-                culture, and the tools we use that augment the way we work
-                and create.
+                Senior product designer based in San Francisco. Currently
+                at Canary Technologies. I&apos;m fascinated by the
+                interplay of human behavior, culture, and the tools we
+                use that augment the way we work and create.
               </p>
               <p>
                 Outside of work, you&apos;ll find me shooting concert
