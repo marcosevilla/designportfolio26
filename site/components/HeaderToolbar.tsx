@@ -15,9 +15,6 @@ const POPOVER_EASE = [0.22, 1, 0.36, 1] as const;
 const TINT_HOVER = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
 const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
 
-const PILL_SHADOW =
-  "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.18)";
-
 function ThemeModeSegment() {
   const themeState = useThemeState();
   if (!themeState.mounted) return null;
@@ -255,14 +252,13 @@ function ChatTriggerPill() {
       aria-label="Open chat"
       className="pointer-events-auto inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
-        height: 38,
-        padding: "0 16px",
+        height: 32,
+        padding: "0 12px",
         cursor: chatOpen ? "default" : "pointer",
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
         border: 0,
         borderRadius: 0,
-        boxShadow: PILL_SHADOW,
         overflow: "hidden",
         pointerEvents: chatOpen ? "none" : "auto",
         transformOrigin: "top right",
@@ -276,7 +272,7 @@ function ChatTriggerPill() {
           color: "var(--color-on-accent)",
           lineHeight: 1,
           textTransform: "uppercase",
-          letterSpacing: "0.06em",
+          letterSpacing: "0.08em",
         }}
       >
         Chat
@@ -317,54 +313,28 @@ export default function HeaderToolbar() {
   }, []);
 
   return (
-    <div
-      className="fixed top-4 right-3 sm:right-6 z-[80] pointer-events-none"
-      aria-hidden={false}
-    >
-      <div className="flex justify-end items-center gap-2">
-        <div
-          ref={pillRef}
-          className="pointer-events-auto flex items-center gap-1 px-2 py-1.5 rounded-none"
-          style={{
-            backgroundColor:
-              "color-mix(in srgb, var(--color-bg) 80%, var(--color-surface-raised))",
-            border: "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)",
-            boxShadow: PILL_SHADOW,
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
+    <div className="flex items-center gap-2">
+      <div ref={pillRef} className="flex items-center gap-1">
+        <PaletteButton
+          open={paletteOpen}
+          onToggle={() => {
+            setPaletteOpen((v) => !v);
+            setMusicOpen(false);
           }}
-        >
-          <PaletteButton
-            open={paletteOpen}
-            onToggle={() => {
-              setPaletteOpen((v) => !v);
-              setMusicOpen(false);
-            }}
-          />
-          <MusicButton
-            open={musicOpen}
-            onToggle={() => {
-              setMusicOpen((v) => !v);
-              setPaletteOpen(false);
-            }}
-          />
-
-          <span
-            aria-hidden
-            className="mx-1 self-stretch"
-            style={{
-              width: 1,
-              backgroundColor: "color-mix(in srgb, var(--color-border) 70%, transparent)",
-            }}
-          />
-
-          <div className="shrink-0 flex items-center pr-1">
-            <LocalStatus />
-          </div>
+        />
+        <MusicButton
+          open={musicOpen}
+          onToggle={() => {
+            setMusicOpen((v) => !v);
+            setPaletteOpen(false);
+          }}
+        />
+        <div className="shrink-0 flex items-center pl-1">
+          <LocalStatus />
         </div>
-
-        <ChatTriggerPill />
       </div>
+
+      <ChatTriggerPill />
     </div>
   );
 }

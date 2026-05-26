@@ -245,7 +245,7 @@ export default function HomeLayout({
             independent of the fixed left nav. At lg it inherits its
             slot from the parent grid. */}
         {!aboutMeOpen && (
-          <div className="flex flex-col xl:max-w-[1000px] xl:mx-auto xl:px-4 xl:w-full">
+          <div className="flex flex-col xl:max-w-[900px] xl:mx-auto xl:px-4 xl:w-full">
             {/* Bio block — sits at the top of the right column, above the first
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}
