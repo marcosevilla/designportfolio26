@@ -203,6 +203,19 @@ export default function MusicOverlay() {
   const [scrubValue, setScrubValue] = useState(0);
   const displayTime = scrubbing ? scrubValue : currentTime;
 
+  // Direction of the most recent track skip, used to drive the
+  // slide-in/out animation on the title+artist block. Updated by the
+  // prev/next handlers below.
+  const [skipDir, setSkipDir] = useState<"forward" | "backward">("forward");
+  const handleNext = () => {
+    setSkipDir("forward");
+    next();
+  };
+  const handlePrev = () => {
+    setSkipDir("backward");
+    prev();
+  };
+
   useEffect(() => setMounted(true), []);
 
   // Lock body scroll while overlay is open.
@@ -290,41 +303,68 @@ export default function MusicOverlay() {
                 + shrink-to-mini-widget button. mt-8 gives breathing room
                 between the visualizer and the player chrome. */}
             <div className="flex items-center gap-4 mt-8">
-              {/* Left — track title + artist, flush-left. */}
-              <div className="flex flex-col min-w-0 shrink basis-0 grow">
-                <p
-                  className="truncate"
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: "var(--color-fg)",
-                    letterSpacing: "-0.01em",
-                    lineHeight: 1.25,
-                  }}
-                >
-                  {currentTrack.title}
-                </p>
-                <p
-                  className="truncate"
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: 12,
-                    fontWeight: 400,
-                    color: "var(--color-fg-tertiary)",
-                    letterSpacing: "-0.005em",
-                    lineHeight: 1.25,
-                  }}
-                >
-                  {currentTrack.artist}
-                </p>
+              {/* Left — track title + artist, flush-left. Slides + blurs
+                  between tracks: leaving track exits in the skip direction,
+                  incoming track enters from the opposite side. */}
+              <div className="relative flex flex-col min-w-0 shrink basis-0 grow overflow-hidden">
+                <AnimatePresence mode="wait" initial={false} custom={skipDir}>
+                  <motion.div
+                    key={`${currentTrack.title}-${currentTrack.artist}`}
+                    custom={skipDir}
+                    variants={{
+                      enter: (dir: "forward" | "backward") => ({
+                        x: dir === "forward" ? 24 : -24,
+                        opacity: 0,
+                        filter: "blur(8px)",
+                      }),
+                      center: { x: 0, opacity: 1, filter: "blur(0px)" },
+                      exit: (dir: "forward" | "backward") => ({
+                        x: dir === "forward" ? -24 : 24,
+                        opacity: 0,
+                        filter: "blur(8px)",
+                      }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex flex-col min-w-0"
+                  >
+                    <p
+                      className="truncate"
+                      style={{
+                        fontFamily: "var(--font-sans)",
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: "var(--color-fg)",
+                        letterSpacing: "-0.01em",
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {currentTrack.title}
+                    </p>
+                    <p
+                      className="truncate"
+                      style={{
+                        fontFamily: "var(--font-sans)",
+                        fontSize: 12,
+                        fontWeight: 400,
+                        color: "var(--color-fg-tertiary)",
+                        letterSpacing: "-0.005em",
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {currentTrack.artist}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
               </div>
 
               {/* Center — controls stacked over a scrubber that spans
                   the center column's full width. */}
-              <div className="flex flex-col items-center gap-2 shrink-0 grow-[2] basis-0 min-w-0">
+              <div className="flex flex-col items-center shrink-0 grow-[2] basis-0 min-w-0">
                 <div className="flex items-center gap-1">
-                  <TransportButton label="Previous track" onClick={prev}>
+                  <TransportButton label="Previous track" onClick={handlePrev}>
                     <SkipBackIcon size={18} />
                   </TransportButton>
                   <TransportButton
@@ -334,7 +374,7 @@ export default function MusicOverlay() {
                   >
                     {isPlaying ? <PauseIcon size={28} /> : <PlayIcon size={28} />}
                   </TransportButton>
-                  <TransportButton label="Next track" onClick={next}>
+                  <TransportButton label="Next track" onClick={handleNext}>
                     <SkipForwardIcon size={18} />
                   </TransportButton>
                 </div>
