@@ -9,6 +9,7 @@ import LocalStatus from "./LocalStatus";
 import { HERO_NAME } from "@/lib/bio-content";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useNavOverlay } from "@/lib/NavOverlayContext";
+import { useChatOverlay } from "@/lib/ChatOverlayContext";
 
 /** Hamburger / close glyph. Two stacked lines when closed, rotated
  *  cross when open — single SVG so the swap can animate cleanly. */
@@ -67,6 +68,8 @@ export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const { overlayOpen } = useAudioPlayer();
   const { navOpen, toggleNav } = useNavOverlay();
+  const { chatOpen } = useChatOverlay();
+  const headerHidden = overlayOpen || chatOpen;
   const pathname = usePathname();
 
   useEffect(() => {
@@ -89,7 +92,7 @@ export default function SiteHeader() {
 
   return (
     <AnimatePresence>
-      {!overlayOpen && (
+      {!headerHidden && (
     <motion.header
       key="site-header"
       initial={{ opacity: 0, y: -4 }}

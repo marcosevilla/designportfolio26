@@ -2,6 +2,7 @@
 
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useNavOverlay } from "@/lib/NavOverlayContext";
+import { useChatOverlay } from "@/lib/ChatOverlayContext";
 
 /** Wraps the page's <main> content so it can blur out while any overlay
  *  surface owns the screen (music player overlay, hamburger nav). Only
@@ -13,7 +14,8 @@ import { useNavOverlay } from "@/lib/NavOverlayContext";
 export default function MainBlurLayer({ children }: { children: React.ReactNode }) {
   const { overlayOpen } = useAudioPlayer();
   const { navOpen } = useNavOverlay();
-  const blurred = overlayOpen || navOpen;
+  const { chatOpen } = useChatOverlay();
+  const blurred = overlayOpen || navOpen || chatOpen;
   return (
     <div
       style={{

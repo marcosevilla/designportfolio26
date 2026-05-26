@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaletteRow } from "./PaletteSwatches";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { useChatOverlay } from "@/lib/ChatOverlayContext";
 import { MoonIcon, MusicNoteIcon, SettingsIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
 
@@ -236,22 +237,12 @@ function ChatBubbleIcon({ size = 14 }: { size?: number }) {
 }
 
 function ChatTriggerPill() {
-  const [chatOpen, setChatOpen] = useState(false);
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const root = document.documentElement;
-    const sync = () => setChatOpen(root.getAttribute("data-chat-open") === "true");
-    sync();
-    const mo = new MutationObserver(sync);
-    mo.observe(root, { attributes: true, attributeFilter: ["data-chat-open"] });
-    return () => mo.disconnect();
-  }, []);
+  const { chatOpen, setChatOpen } = useChatOverlay();
 
   return (
     <motion.button
       type="button"
-      onClick={() => window.dispatchEvent(new CustomEvent("chat:open"))}
+      onClick={() => setChatOpen(true)}
       animate={{ opacity: chatOpen ? 0 : 1, scale: chatOpen ? 0.92 : 1 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
       aria-label="Open chat — ask me anything"

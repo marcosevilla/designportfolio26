@@ -186,6 +186,7 @@ export default function ChatPanel({
   errorLine,
   onSubmit,
   onClose,
+  headless = false,
 }: {
   turns: ChatTurn[];
   /** True while a streaming response is in flight; disables submit. */
@@ -194,6 +195,10 @@ export default function ChatPanel({
   errorLine: string | null;
   onSubmit: (text: string) => void;
   onClose: () => void;
+  /** When true, skip the panel's own header strip and any container
+   *  chrome — caller (e.g. the fullscreen overlay) supplies its own
+   *  Return affordance and background. */
+  headless?: boolean;
 }) {
   const [value, setValue] = useState("");
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -258,7 +263,7 @@ export default function ChatPanel({
     <motion.div
       ref={surfaceRef}
       onClick={(e) => e.stopPropagation()}
-      className="chat-surface relative flex flex-col h-full w-full"
+      className={`relative flex flex-col h-full w-full ${headless ? "" : "chat-surface"}`}
       initial={{ opacity: 0, filter: "blur(8px)" }}
       animate={{ opacity: 1, filter: "blur(0px)" }}
       transition={{
@@ -269,51 +274,54 @@ export default function ChatPanel({
       {/* Header strip — "Chat" label flush-left, close button right-aligned,
           1px bottom divider so the transcript scrolls *under* this band
           instead of intersecting the X button. paddingTop carries the iOS
-          notch clearance on the mobile sheet. */}
-      <div
-        className="shrink-0 flex items-center justify-between pl-4 pr-2"
-        style={{
-          paddingTop: "max(env(safe-area-inset-top, 0px), 4px)",
-          paddingBottom: 4,
-          borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
-        }}
-      >
-        <span className="inline-flex items-center gap-2">
-          <span
-            style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "15px",
-              fontWeight: 500,
-              color: "var(--color-fg)",
-              lineHeight: 1,
-            }}
-          >
-            Chat
-          </span>
-          <span
-            style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "10px",
-              fontWeight: 500,
-              color: "var(--color-fg-tertiary)",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              lineHeight: 1,
-            }}
-          >
-            Beta feature
-          </span>
-        </span>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close chat"
-          className="rounded-full w-9 h-9 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
-          style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
+          notch clearance on the mobile sheet. Suppressed in headless mode
+          (overlay caller supplies its own Return affordance). */}
+      {!headless && (
+        <div
+          className="shrink-0 flex items-center justify-between pl-4 pr-2"
+          style={{
+            paddingTop: "max(env(safe-area-inset-top, 0px), 4px)",
+            paddingBottom: 4,
+            borderBottom: "1px solid color-mix(in srgb, var(--color-border) 30%, transparent)",
+          }}
         >
-          <CloseIcon size={12} />
-        </button>
-      </div>
+          <span className="inline-flex items-center gap-2">
+            <span
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: "15px",
+                fontWeight: 500,
+                color: "var(--color-fg)",
+                lineHeight: 1,
+              }}
+            >
+              Chat
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: "10px",
+                fontWeight: 500,
+                color: "var(--color-fg-tertiary)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                lineHeight: 1,
+              }}
+            >
+              Beta feature
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close chat"
+            className="rounded-full w-9 h-9 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+            style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
+          >
+            <CloseIcon size={12} />
+          </button>
+        </div>
+      )}
 
       {/* Transcript / empty state — overscroll-contain stops the wheel
           (or touch) from chaining to the page body once the transcript

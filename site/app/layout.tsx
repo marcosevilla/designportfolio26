@@ -31,6 +31,7 @@ import MusicOverlay from "@/components/music/MusicOverlay";
 import MainBlurLayer from "@/components/MainBlurLayer";
 import NavOverlay from "@/components/NavOverlay";
 import { NavOverlayProvider } from "@/lib/NavOverlayContext";
+import { ChatOverlayProvider } from "@/lib/ChatOverlayContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -78,6 +79,7 @@ export default function RootLayout({
             <SidebarProvider>
               <PasswordGateProvider>
                 <NavOverlayProvider>
+                <ChatOverlayProvider>
                 <a href="#main" className="skip-to-content">
                   Skip to content
                 </a>
@@ -105,6 +107,7 @@ export default function RootLayout({
                 <MusicOverlay />
                 <PasswordModal />
                 {process.env.NODE_ENV === "development" && <Agentation />}
+                </ChatOverlayProvider>
                 </NavOverlayProvider>
               </PasswordGateProvider>
             </SidebarProvider>

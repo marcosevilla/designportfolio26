@@ -19,9 +19,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatPanel from "./ChatPanel";
-import ChatOverlay from "./ChatOverlay";
 import { parseSseStream } from "./parseStream";
 import type { ChatTurn } from "./ChatMessage";
+import { useChatOverlay } from "@/lib/ChatOverlayContext";
+import { ArrowRightIcon } from "@/components/Icons";
 
 const STORAGE_KEY = "chat-transcript";
 // Open morph (pill → panel). Slightly over-critically damped (ratio ≈
@@ -100,7 +101,7 @@ const SHIMMER_TRANSITION = {
 };
 
 export default function ChatBar() {
-  const [open, setOpen] = useState(false);
+  const { chatOpen: open, setChatOpen } = useChatOverlay();
   const [mounted, setMounted] = useState(false);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [pending, setPending] = useState(false);
@@ -153,32 +154,14 @@ export default function ChatBar() {
   const close = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
-    setOpen(false);
+    setChatOpen(false);
     setPending(false);
-  }, []);
+  }, [setChatOpen]);
 
-  // ESC closes.
+  // Track first open for any local animation gating.
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, close]);
-
-  // External open trigger — used by MobileToolbar's chat pill (which is a
-  // sibling component, not a child, and shouldn't share state via prop
-  // drilling). A window CustomEvent keeps the API trivially small without
-  // pulling in a context provider just for one boolean.
-  useEffect(() => {
-    const onOpen = () => {
-      hasOpenedRef.current = true;
-      setOpen(true);
-    };
-    window.addEventListener("chat:open", onOpen);
-    return () => window.removeEventListener("chat:open", onOpen);
-  }, []);
+    if (open) hasOpenedRef.current = true;
+  }, [open]);
 
   // Keyboard avoidance on mobile. iOS Safari does NOT shrink innerHeight or
   // 100dvh when the virtual keyboard appears — but visualViewport.height does
@@ -279,7 +262,7 @@ export default function ChatBar() {
       type="button"
       onClick={() => {
         hasOpenedRef.current = true;
-        setOpen(true);
+        setChatOpen(true);
       }}
       // Pill fades + scales out when the panel opens. Previously this used
       // shared layoutId="chat-surface" with the panel wrapper to morph
@@ -372,88 +355,88 @@ export default function ChatBar() {
     </motion.button>
   );
 
+  // Suppress the unused `pill` warning — kept above as a reference for
+  // restoring the standalone CTA if HeaderToolbar is ever removed.
+  void pill;
+
   return (
     <>
-      {/* Chat-trigger pill is owned by HeaderToolbar (rendered globally
-          inside SiteHeader, top-right). We keep the `pill` definition
-          above as a reference but no longer render it here —
-          HeaderToolbar's ChatTriggerPill dispatches the same chat:open
-          event listened above. If HeaderToolbar is ever removed from a
-          surface, restore this render to provide the trigger there. */}
-      {false && !open && !isMobile && pill}
-
       {mounted &&
         createPortal(
           <AnimatePresence>
             {open && (
-              <>
-                {/* Backdrop — only shown <lg (the drawer variant). globals.css
-                    hides .chat-overlay at lg+ since the persistent side panel
-                    leaves the page interactive. */}
-                <ChatOverlay onClose={close} />
-                {/* Panel slot — geometry handled in globals.css under
-                    `.chat-panel-slot` so we can swap layouts at the lg
-                    breakpoint cleanly:
-                      - <lg: full-screen sheet sized to visualViewport
-                        (via --chat-vh) so the keyboard doesn't cover the
-                        composer.
-                      - lg+: 360px-wide side panel, top:52 clears the
-                        toolbar, 12px gutters bottom/right.
-                    The morph pill→panel/sheet is handled by framer-motion
-                    interpolating layoutId rects. */}
-                <div
-                  className="chat-panel-slot fixed z-[160] pointer-events-none flex flex-col"
+              <motion.div
+                key="chat-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-10"
+                // Solid page-bg so underlying content is fully hidden —
+                // matches the music overlay's treatment.
+                style={{ backgroundColor: "var(--color-bg)" }}
+                aria-modal="true"
+                role="dialog"
+                aria-label="Chat with Marco"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 16, filter: "blur(12px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: 16, filter: "blur(12px)" }}
+                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                  className="w-full max-w-[700px] h-[82vh] max-h-[820px] flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <motion.div
-                    key="chat-panel-wrap"
-                    /* Desktop: scale-and-fade from the bottom-right corner
-                       so the panel reads as growing out of the pill it
-                       just replaced. Mobile: slide up from the bottom
-                       with a soft fade. The previous shared-layoutId
-                       pill→panel morph was removed because framer-motion's
-                       auto-interpolated border-radius created a lens halo
-                       artifact when both elements anchor bottom-right. */
-                    initial={
-                      isMobile
-                        ? { opacity: 0, y: 24 }
-                        : { opacity: 0, scale: 0.92, y: 8 }
-                    }
-                    animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-                    exit={
-                      isMobile
-                        ? {
-                            opacity: 0,
-                            y: 24,
-                            transition: { duration: 0.22, ease: [0.4, 0, 0.6, 1] },
-                          }
-                        : {
-                            opacity: 0,
-                            scale: 0.94,
-                            y: 8,
-                            filter: "blur(8px)",
-                            // Snappier than the open spring so the panel
-                            // doesn't feel like it's lingering on close.
-                            transition: CLOSE_SPRING,
-                          }
-                    }
-                    transition={
-                      isMobile
-                        ? { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const }
-                        : MORPH_SPRING
-                    }
-                    style={{ transformOrigin: "bottom right" }}
-                    className="pointer-events-auto h-full w-full"
-                  >
-                    <ChatPanel
-                      turns={turns}
-                      pending={pending}
-                      errorLine={errorLine}
-                      onSubmit={submit}
-                      onClose={close}
-                    />
-                  </motion.div>
-                </div>
-              </>
+                  {/* Return button — same treatment as the music overlay's,
+                      sits inside the column at the top with breathing room
+                      before the transcript. */}
+                  <div className="flex mb-6">
+                    <button
+                      type="button"
+                      onClick={close}
+                      aria-label="Return to page"
+                      className="group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)"
+                      style={{
+                        fontFamily:
+                          "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                        fontSize: 12,
+                        fontWeight: 500,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        lineHeight: 1,
+                        color: "var(--color-fg-secondary)",
+                        background: "none",
+                        border: 0,
+                        padding: 0,
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        className="inline-flex items-center transition-transform duration-200 ease-out group-hover:-translate-x-1"
+                      >
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            transform: "scaleX(-1)",
+                          }}
+                        >
+                          <ArrowRightIcon size={14} />
+                        </span>
+                      </span>
+                      <span>Return</span>
+                    </button>
+                  </div>
+
+                  <ChatPanel
+                    turns={turns}
+                    pending={pending}
+                    errorLine={errorLine}
+                    onSubmit={submit}
+                    onClose={close}
+                    headless
+                  />
+                </motion.div>
+              </motion.div>
             )}
           </AnimatePresence>,
           document.body
