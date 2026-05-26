@@ -300,9 +300,18 @@ export default function MusicOverlay() {
 
             {/* Spotify-style player row. Left: track info. Center:
                 transport controls + scrubber. Right: visualizer toggles
-                + shrink-to-mini-widget button. mt-8 gives breathing room
-                between the visualizer and the player chrome. */}
-            <div className="flex items-center gap-4 mt-8">
+                + shrink-to-mini-widget button. Wrapped in a tinted card
+                with a soft border + drop shadow so it reads as a single
+                grouped surface against the overlay background. */}
+            <div
+              className="flex items-center gap-5 mt-8 px-5 py-3"
+              style={{
+                backgroundColor: "var(--color-surface-raised)",
+                border: "1px solid var(--color-border)",
+                boxShadow:
+                  "0 1px 2px rgba(0,0,0,0.04), 0 16px 36px -16px rgba(0,0,0,0.22)",
+              }}
+            >
               {/* Left — track title + artist, flush-left. Slides + blurs
                   between tracks: leaving track exits in the skip direction,
                   incoming track enters from the opposite side. */}
