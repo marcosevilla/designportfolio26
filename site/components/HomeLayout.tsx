@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
+import AskMeAnythingButton from "./AskMeAnythingButton";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -161,7 +162,7 @@ export default function HomeLayout({
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}
             <motion.div
-              className="text-(--color-fg) leading-[26px] mb-24 flex flex-col gap-4"
+              className="text-(--color-fg) leading-[26px] mb-8 flex flex-col gap-4"
               style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
@@ -182,6 +183,22 @@ export default function HomeLayout({
                 various other creative side projects.
               </p>
             </motion.div>
+
+            {/* Outlined chat-overlay trigger. Lives between the bio and
+                the projects section so it reads as a low-key invitation
+                tied to the welcome copy above. */}
+            <motion.div
+              className="mb-24"
+              initial={{ opacity: 0, filter: "blur(12px)" }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                filter: heroReady ? "blur(0px)" : "blur(12px)",
+              }}
+              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.28 }}
+            >
+              <AskMeAnythingButton />
+            </motion.div>
+
             <section id="projects" className="pt-0">
               {/* Work content participates in the cascade — last in the
                   chain so the eye lands on Hero first, then sweeps down. */}
