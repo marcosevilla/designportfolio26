@@ -13,7 +13,7 @@ export default function SiteHeader() {
       {/* Wordmark — fixed top-left, identity label across every page. */}
       <Link
         href="/"
-        className="hidden lg:inline-flex fixed top-4 left-4 sm:left-6 z-[80] items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
+        className="inline-flex fixed top-4 left-4 sm:left-6 z-[80] items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
         aria-label="Marco Sevilla — home"
         style={{
           fontFamily: "var(--font-sans)",

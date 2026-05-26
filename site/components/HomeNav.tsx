@@ -24,14 +24,16 @@ export const HOME_NAV_ITEMS: NavItem[] = [
   { id: "projects", label: "Work" },
   { id: "playground", label: "Playground" },
 ];
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   ...HOME_NAV_ITEMS,
   { id: "about", label: "About", kind: "page" },
 ];
 
+export type { NavItem };
+
 const SCROLL_LOCK_MS = 900;
 
-function useActiveSection() {
+export function useActiveSection() {
   const [activeId, setActiveId] = useState<string>(NAV_ITEMS[0].id);
   const lockUntilRef = useRef(0);
 

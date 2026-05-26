@@ -318,7 +318,7 @@ export default function HeaderToolbar() {
 
   return (
     <div
-      className="hidden lg:block fixed top-4 right-4 sm:right-6 z-[80] pointer-events-none"
+      className="fixed top-4 right-3 sm:right-6 z-[80] pointer-events-none"
       aria-hidden={false}
     >
       <div className="flex justify-end items-center gap-2">

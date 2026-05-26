@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
+import MobileSectionNav from "./MobileSectionNav";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI, { SceneToggles } from "./music/LedMatrixUI";
 import { AnimatePresence } from "framer-motion";
@@ -159,6 +160,14 @@ export default function HomeLayout({
       {/* Toolbar + wordmark now live in the global SiteHeader (top-left
           name, top-right controls) — mounted in app/layout.tsx so they
           appear on every route, including this one. */}
+
+      {/* Mobile-only bottom section nav. Hidden at lg+ where the desktop
+          HomeNav in the left column takes over. */}
+      <MobileSectionNav
+        aboutMeOpen={aboutMeOpen}
+        onAboutMeOpen={() => setAboutMeOpen(true)}
+        onAboutMeClose={() => setAboutMeOpen(false)}
+      />
 
       {/* Two-column home layout.
           - <lg: stacked.
