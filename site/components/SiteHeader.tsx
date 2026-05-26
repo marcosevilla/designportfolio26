@@ -115,10 +115,11 @@ export default function SiteHeader() {
           "0.5px solid color-mix(in srgb, var(--color-border) 80%, transparent)",
       }}
     >
-      {/* Content-aligned bar — everything lives inside the centered
-          800px column so left/right edges match the body content. */}
+      {/* Full-width bar — left cluster flush to the viewport's left
+          edge, right cluster flush to its right edge, no body-content
+          alignment constraint. */}
       <div className="relative h-14">
-        <div className="h-full mx-auto max-w-[750px] px-4 flex items-center">
+        <div className="h-full px-3 sm:px-4 flex items-center">
           {/* Left cluster — hamburger sits at the content's left edge;
               the wordmark appears to its right once the user has scrolled
               past the bio. */}
