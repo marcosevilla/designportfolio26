@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
@@ -65,19 +64,11 @@ function HamburgerCloseIcon({ open, size = 16 }: { open: boolean; size?: number 
  *  boundary against content is legible. Mounted in app/layout.tsx so it
  *  appears on every route. */
 export default function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
   const { overlayOpen } = useAudioPlayer();
   const { navOpen, toggleNav } = useNavOverlay();
   const { chatOpen } = useChatOverlay();
   const headerHidden = overlayOpen || chatOpen;
   const pathname = usePathname();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const handleWordmarkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === "/") {
@@ -102,11 +93,8 @@ export default function SiteHeader() {
       className="fixed top-0 left-0 right-0 z-[80]"
       style={{
         backgroundColor: "var(--color-bg)",
-        borderBottom: "1px solid",
-        borderBottomColor: scrolled
-          ? "color-mix(in srgb, var(--color-border) 80%, transparent)"
-          : "transparent",
-        transition: "border-color 200ms ease-out",
+        borderBottom:
+          "0.5px solid color-mix(in srgb, var(--color-border) 80%, transparent)",
       }}
     >
       {/* Header bar is laid out in three layers so the wordmark and
@@ -120,7 +108,7 @@ export default function SiteHeader() {
           onClick={toggleNav}
           aria-label={navOpen ? "Close navigation" : "Open navigation"}
           aria-expanded={navOpen}
-          className="absolute top-1/2 -translate-y-1/2 left-4 sm:left-6 inline-flex items-center justify-center w-8 h-8 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer text-(--color-fg) hover:text-(--color-accent)"
+          className="absolute top-1/2 -translate-y-1/2 left-3 inline-flex items-center justify-center w-8 h-8 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer text-(--color-fg) hover:text-(--color-accent)"
           style={{ borderRadius: 4 }}
         >
           <HamburgerCloseIcon open={navOpen} size={16} />
@@ -151,7 +139,7 @@ export default function SiteHeader() {
         </div>
 
         {/* Toolbar — flush right of viewport. */}
-        <div className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-6">
+        <div className="absolute top-1/2 -translate-y-1/2 right-3">
           <HeaderToolbar />
         </div>
       </div>
