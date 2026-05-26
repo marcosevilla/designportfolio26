@@ -135,13 +135,20 @@ function BorderScrubber({
         )}
       </AnimatePresence>
 
-      {/* Track — 1px at rest (reads as a hairline border), 2px on hover. */}
+      {/* Track — thick enough at rest to read as a clear timeline (not
+          just a hairline border). Clipped at the bottom corners so it
+          follows the card's 4px radius cleanly. The thumb lives in a
+          separate sibling below so it can extend outside this clipped
+          container without being sliced. */}
       <div
         ref={trackRef}
         className="relative w-full"
         style={{
-          height: expanded ? 2 : 1,
+          height: expanded ? 5 : 3,
           backgroundColor: "var(--color-border)",
+          overflow: "hidden",
+          borderBottomLeftRadius: 4,
+          borderBottomRightRadius: 4,
           transition: "height 150ms ease-out",
         }}
       >
@@ -156,25 +163,28 @@ function BorderScrubber({
             backgroundColor: "var(--color-accent)",
           }}
         />
-        {/* Thumb — invisible at rest, expands on hover/drag. */}
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: `${pct}%`,
-            top: "50%",
-            width: expanded ? 12 : 0,
-            height: expanded ? 12 : 0,
-            transform: "translate(-50%, -50%)",
-            opacity: expanded ? 1 : 0,
-            backgroundColor: "var(--color-accent)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-            transition:
-              "width 150ms ease-out, height 150ms ease-out, opacity 150ms ease-out",
-          }}
-        />
       </div>
+
+      {/* Thumb — sibling of the track so the clipped track doesn't slice
+          it into a half-circle. Centered vertically on the track and
+          half-overflowing the card's bottom edge. */}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          left: `${pct}%`,
+          bottom: expanded ? 2.5 : 1.5,
+          width: expanded ? 12 : 0,
+          height: expanded ? 12 : 0,
+          transform: "translate(-50%, 50%)",
+          opacity: expanded ? 1 : 0,
+          backgroundColor: "var(--color-accent)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+          transition:
+            "width 150ms ease-out, height 150ms ease-out, opacity 150ms ease-out, bottom 150ms ease-out",
+        }}
+      />
     </div>
   );
 }
