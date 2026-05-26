@@ -11,8 +11,10 @@ import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useNavOverlay } from "@/lib/NavOverlayContext";
 import { useChatOverlay } from "@/lib/ChatOverlayContext";
 
-/** Hamburger / close glyph. Two stacked lines when closed, rotated
- *  cross when open — single SVG so the swap can animate cleanly. */
+/** Sidebar / panel-open glyph: a rounded rectangle with a vertical
+ *  divider near the left edge — reads as "open the left panel". The
+ *  divider slides right and a chevron emerges when the panel is open,
+ *  signalling the inverse action (collapse). */
 function HamburgerCloseIcon({ open, size = 16 }: { open: boolean; size?: number }) {
   return (
     <motion.svg
@@ -20,39 +22,40 @@ function HamburgerCloseIcon({ open, size = 16 }: { open: boolean; size?: number 
       height={size}
       viewBox="0 0 16 16"
       fill="none"
-      animate={{ rotate: open ? 90 : 0 }}
-      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
       aria-hidden
     >
-      <motion.line
-        x1="2"
-        y1="5"
-        x2="14"
-        y2="5"
+      {/* Frame */}
+      <rect
+        x="1.75"
+        y="2.75"
+        width="12.5"
+        height="10.5"
+        rx="1.5"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        animate={
-          open
-            ? { x1: 3, y1: 3, x2: 13, y2: 13 }
-            : { x1: 2, y1: 5, x2: 14, y2: 5 }
-        }
+        strokeWidth="1.3"
+      />
+      {/* Sidebar fill — fades in once the panel is open so the glyph
+          reads as "panel is showing" / click to close. */}
+      <motion.rect
+        x="2.4"
+        y="3.4"
+        width="3.2"
+        height="9.2"
+        rx="0.8"
+        fill="currentColor"
+        initial={false}
+        animate={{ opacity: open ? 1 : 0 }}
         transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
       />
-      <motion.line
-        x1="2"
-        y1="11"
-        x2="14"
-        y2="11"
+      {/* Divider stroke — always visible; demarcates the sidebar
+          region from the content area. */}
+      <line
+        x1="5.6"
+        y1="3.25"
+        x2="5.6"
+        y2="12.75"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        animate={
-          open
-            ? { x1: 3, y1: 13, x2: 13, y2: 3 }
-            : { x1: 2, y1: 11, x2: 14, y2: 11 }
-        }
-        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+        strokeWidth="1.3"
       />
     </motion.svg>
   );

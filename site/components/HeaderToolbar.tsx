@@ -241,11 +241,11 @@ export default function HeaderToolbar() {
   return (
     <div className="flex items-center gap-2">
       <div ref={pillRef} className="flex items-center gap-1">
+        <MusicButton />
         <PaletteButton
           open={paletteOpen}
           onToggle={() => setPaletteOpen((v) => !v)}
         />
-        <MusicButton />
       </div>
     </div>
   );
