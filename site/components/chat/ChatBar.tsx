@@ -374,12 +374,13 @@ export default function ChatBar() {
 
   return (
     <>
-      {/* Desktop only — below lg the chat trigger lives inside the
-          MobileToolbar carousel as one of its pills (it dispatches the
-          'chat:open' event listened above). Conditional render (not a
-          display:none) so framer-motion's layoutId pairing isn't fed a
-          0×0 source rect on mobile. */}
-      {!open && !isMobile && pill}
+      {/* Chat-trigger pill is owned by BottomToolbar on the home page
+          (sibling pill next to the controls cluster). We keep the `pill`
+          definition above as a reference but no longer render it here —
+          BottomToolbar's ChatTriggerPill dispatches the same chat:open
+          event listened above. If BottomToolbar is ever removed from a
+          surface, restore this render to provide the trigger there. */}
+      {false && !open && !isMobile && pill}
 
       {mounted &&
         createPortal(
