@@ -136,17 +136,18 @@ export default function HomeLayout({
             slot from the parent grid. */}
         {!aboutMeOpen && (
           <div className="flex flex-col max-w-[800px] mx-auto w-full xl:px-4">
-            {/* "Welcome" section header — same typographic treatment as
-                the SiteHeader wordmark so the bio reads as a labelled
-                opening block. */}
-            <motion.h2
-              className="mb-4"
+            {/* Page heading — Marco's name as the bio block's opening
+                title. Larger than the body to read as a primary heading,
+                kept tight on tracking so it still feels close to the
+                wordmark family. */}
+            <motion.h1
+              className="mb-2"
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: 16,
-                fontWeight: 500,
-                letterSpacing: "-0.01em",
-                lineHeight: 1,
+                fontSize: 28,
+                fontWeight: 600,
+                letterSpacing: "-0.02em",
+                lineHeight: 1.05,
                 color: "var(--color-fg)",
               }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
@@ -156,8 +157,25 @@ export default function HomeLayout({
               }}
               transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.1 }}
             >
-              Welcome
-            </motion.h2>
+              Marco Sevilla
+            </motion.h1>
+
+            {/* Tagline — same size as bio body, secondary color, sits on
+                its own line right below the heading. Extracted from the
+                original first sentence so the main bio focuses on what
+                drives the work rather than the location lead-in. */}
+            <motion.p
+              className="text-(--color-fg-secondary) leading-[26px] mb-6"
+              style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
+              initial={{ opacity: 0, filter: "blur(12px)" }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                filter: heroReady ? "blur(0px)" : "blur(12px)",
+              }}
+              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.15 }}
+            >
+              Senior product designer based in San Francisco.
+            </motion.p>
 
             {/* Bio block — sits at the top of the right column, above the first
                 project card. Multi-paragraph intro that doubles as a
@@ -173,8 +191,7 @@ export default function HomeLayout({
               transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
             >
               <p>
-                Senior product designer based in San Francisco. Currently
-                at Canary Technologies. I&apos;m fascinated by the
+                Currently at Canary Technologies. I&apos;m fascinated by the
                 interplay of human behavior, culture, and the tools we
                 use that augment the way we work and create.
               </p>

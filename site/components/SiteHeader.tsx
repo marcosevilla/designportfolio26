@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
@@ -70,6 +71,23 @@ export default function SiteHeader() {
   const headerHidden = overlayOpen || chatOpen;
   const pathname = usePathname();
 
+  // On the home page the wordmark is suppressed until the user has
+  // scrolled past the bio (Marco's name + tagline + bio paragraphs are
+  // already on screen, so the wordmark would duplicate the page heading).
+  // Other routes show it immediately.
+  const [showWordmark, setShowWordmark] = useState(pathname !== "/");
+  useEffect(() => {
+    if (pathname !== "/") {
+      setShowWordmark(true);
+      return;
+    }
+    const THRESHOLD = 280;
+    const onScroll = () => setShowWordmark(window.scrollY > THRESHOLD);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [pathname]);
+
   const handleWordmarkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === "/") {
       e.preventDefault();
@@ -118,23 +136,35 @@ export default function SiteHeader() {
             body, so the wordmark sits at the body's left edge and the
             LocalStatus + HeaderToolbar cluster sits at its right edge. */}
         <div className="h-full mx-auto max-w-[800px] px-4 flex items-center justify-between">
-          <Link
-            href="/"
-            onClick={handleWordmarkClick}
-            aria-label="Marco Sevilla — home"
-            className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
-            style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: 16,
-              fontWeight: 500,
-              letterSpacing: "-0.01em",
-              lineHeight: 1,
-              color: "var(--color-fg)",
-              textDecoration: "none",
-            }}
-          >
-            {HERO_NAME}
-          </Link>
+          <AnimatePresence initial={false}>
+            {showWordmark && (
+              <motion.div
+                key="wordmark"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Link
+                  href="/"
+                  onClick={handleWordmarkClick}
+                  aria-label="Marco Sevilla — home"
+                  className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 16,
+                    fontWeight: 500,
+                    letterSpacing: "-0.01em",
+                    lineHeight: 1,
+                    color: "var(--color-fg)",
+                    textDecoration: "none",
+                  }}
+                >
+                  {HERO_NAME}
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="flex items-center gap-3">
             <LocalStatus />
             <HeaderToolbar />
