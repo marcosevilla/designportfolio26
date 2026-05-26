@@ -115,57 +115,58 @@ export default function SiteHeader() {
           "0.5px solid color-mix(in srgb, var(--color-border) 80%, transparent)",
       }}
     >
-      {/* Header bar is laid out in three layers so the wordmark and
-          LocalStatus can align with the centered 800px body content
-          while the hamburger and toolbar stay flush to the viewport
-          edges. */}
+      {/* Content-aligned bar — everything lives inside the centered
+          800px column so left/right edges match the body content. */}
       <div className="relative h-14">
-        {/* Hamburger — flush left of viewport. */}
-        <button
-          type="button"
-          onClick={toggleNav}
-          aria-label={navOpen ? "Close navigation" : "Open navigation"}
-          aria-expanded={navOpen}
-          className="absolute top-1/2 -translate-y-1/2 left-3 inline-flex items-center justify-center w-8 h-8 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer text-(--color-fg) hover:text-(--color-accent)"
-          style={{ borderRadius: 4 }}
-        >
-          <HamburgerCloseIcon open={navOpen} size={16} />
-        </button>
+        <div className="h-full mx-auto max-w-[800px] px-4 flex items-center">
+          {/* Left cluster — hamburger sits at the content's left edge;
+              the wordmark appears to its right once the user has scrolled
+              past the bio. */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleNav}
+              aria-label={navOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={navOpen}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent)"
+            >
+              <HamburgerCloseIcon open={navOpen} size={15} />
+            </button>
 
-        {/* Content-aligned row — same max-w and centering as the page
-            body, so the wordmark sits at the body's left edge and the
-            LocalStatus + HeaderToolbar cluster sits at its right edge. */}
-        <div className="h-full mx-auto max-w-[800px] px-4 flex items-center justify-between">
-          <AnimatePresence initial={false}>
-            {showWordmark && (
-              <motion.div
-                key="wordmark"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <Link
-                  href="/"
-                  onClick={handleWordmarkClick}
-                  aria-label="Marco Sevilla — home"
-                  className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: 16,
-                    fontWeight: 500,
-                    letterSpacing: "-0.01em",
-                    lineHeight: 1,
-                    color: "var(--color-fg)",
-                    textDecoration: "none",
-                  }}
+            <AnimatePresence initial={false}>
+              {showWordmark && (
+                <motion.div
+                  key="wordmark"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  {HERO_NAME}
-                </Link>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div className="flex items-center gap-3">
+                  <Link
+                    href="/"
+                    onClick={handleWordmarkClick}
+                    aria-label="Marco Sevilla — home"
+                    className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 16,
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      lineHeight: 1,
+                      color: "var(--color-fg)",
+                      textDecoration: "none",
+                    }}
+                  >
+                    {HERO_NAME}
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Right cluster — ml-auto keeps it flush-right against the
+              content edge whether or not the wordmark is rendered. */}
+          <div className="ml-auto flex items-center gap-3">
             <LocalStatus />
             <HeaderToolbar />
           </div>

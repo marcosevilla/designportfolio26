@@ -193,12 +193,10 @@ export default function HomeLayout({
               <p>
                 Currently at Canary Technologies. I&apos;m fascinated by the
                 interplay of human behavior, culture, and the tools we
-                use that augment the way we work and create.
-              </p>
-              <p>
-                Outside of work, you&apos;ll find me shooting concert
-                photography, discussing music and movie, or exploring
-                various other creative side projects.
+                use that augment the way we work and create. Outside of
+                work, you&apos;ll find me shooting concert photography,
+                discussing music and movie, or exploring various other
+                creative side projects.
               </p>
             </motion.div>
 
