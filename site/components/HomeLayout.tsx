@@ -4,8 +4,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
-import HomeNav from "./HomeNav";
-import MobileSectionNav from "./MobileSectionNav";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
 
@@ -28,13 +26,6 @@ export default function HomeLayout({
   const [loaderOwnsStar, setLoaderOwnsStar] = useState(true);
   const wordmarkElRef = useRef<HTMLDivElement | null>(null);
   const aboutMeHeaderElRef = useRef<HTMLHeadingElement | null>(null);
-  const navRef = useRef<HTMLElement>(null);
-  const aboutMeOpenRef = useRef(aboutMeOpen);
-  // Keep a ref-mirror of state so the callback ref handlers can read the
-  // latest value without being recreated on every render.
-  useEffect(() => {
-    aboutMeOpenRef.current = aboutMeOpen;
-  }, [aboutMeOpen]);
 
   // Consume `?about=1` whenever it appears in the URL — chat-bar
   // [About me](about) links route here via router.push, so we have to
@@ -52,61 +43,32 @@ export default function HomeLayout({
     }
   }, [searchParams]);
 
-  // Update the side-nav's top to align with the current visual anchor —
-  // the wordmark on the home page, or the "About me" h1 when the About-me
-  // page is open. Stable so callback refs can call it on element changes.
-  const updateNavTop = useCallback(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    const target = aboutMeOpenRef.current
-      ? aboutMeHeaderElRef.current
-      : wordmarkElRef.current;
-    if (!target || !document.body.contains(target)) return;
-    const top = target.getBoundingClientRect().top + window.scrollY;
-    nav.style.top = `${top}px`;
-    nav.style.transform = "none";
-  }, []);
-
-  // Callback refs for nav anchors — fire on mount/unmount so we can
-  // re-align the nav when AnimatePresence swaps the page.
+  // Callback refs Hero still consumes — kept as no-ops now that the
+  // side-nav alignment logic is gone.
   const setWordmarkRef = useCallback((el: HTMLDivElement | null) => {
     wordmarkElRef.current = el;
-    updateNavTop();
-  }, [updateNavTop]);
+  }, []);
 
   const setAboutMeHeaderRef = useCallback((el: HTMLHeadingElement | null) => {
     aboutMeHeaderElRef.current = el;
-    updateNavTop();
-  }, [updateNavTop]);
-
-  // Re-align nav when state flips (catches the "about-me header about to
-  // mount" case where the callback ref hasn't fired yet).
-  useLayoutEffect(() => {
-    updateNavTop();
-  }, [aboutMeOpen, updateNavTop]);
-
-  // Resize / font-load triggers.
-  useLayoutEffect(() => {
-    const ro = new ResizeObserver(updateNavTop);
-    if (wordmarkElRef.current) ro.observe(wordmarkElRef.current);
-    if (aboutMeHeaderElRef.current) ro.observe(aboutMeHeaderElRef.current);
-    ro.observe(document.body);
-    window.addEventListener("resize", updateNavTop);
-    if (typeof document !== "undefined" && (document as Document & { fonts?: FontFaceSet }).fonts) {
-      (document as Document & { fonts: FontFaceSet }).fonts.ready.then(updateNavTop).catch(() => {});
-    }
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", updateNavTop);
-    };
-  }, [updateNavTop, aboutMeOpen]);
+  }, []);
 
   // Reset scroll position when navigating between home and About-me so
-  // each page starts at the top, and so HeroToolbar's intersection-based
-  // sticky variant doesn't latch active because of leftover scroll.
+  // each page starts at the top.
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
   }, [aboutMeOpen]);
+
+  // Wordmark click in SiteHeader dispatches `home:return` — close About
+  // and scroll to the top, regardless of section state.
+  useEffect(() => {
+    const handler = () => {
+      setAboutMeOpen(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    window.addEventListener("home:return", handler);
+    return () => window.removeEventListener("home:return", handler);
+  }, []);
 
 
   return (
@@ -132,36 +94,19 @@ export default function HomeLayout({
           name, top-right controls) — mounted in app/layout.tsx so they
           appear on every route, including this one. */}
 
-      {/* Mobile-only bottom section nav. Hidden at lg+ where the desktop
-          HomeNav in the left column takes over. */}
-      <MobileSectionNav
-        aboutMeOpen={aboutMeOpen}
-        onAboutMeOpen={() => setAboutMeOpen(true)}
-        onAboutMeClose={() => setAboutMeOpen(false)}
-      />
+      {/* Section nav is no longer always-visible. It now lives behind
+          the hamburger button in SiteHeader, revealed via NavOverlay. */}
 
-      {/* Two-column home layout.
-          - <lg: stacked.
-          - lg (1024-1279): two-col grid where the left col pushes the
-            right col rightward (today's behavior).
-          - xl+ (1280+): the wrapper breaks out of <main>'s 960px width
-            so the right column can center in the viewport at max-w 1000px,
-            and the left nav becomes position:fixed flush-left of the
-            viewport.
-          About mode reverts to a single 650px column so the bio reads
-          full-width.
+      {/* Single centered column layout. At xl+ the wrapper escapes
+          <main>'s 960px constraint so the column can sit at 800px
+          centered in the viewport. About mode reverts to a single
+          650px column for the bio read.
           paddingTop = SiteHeader height (~38) + breathing room. */}
       <div
         className={
           aboutMeOpen
             ? "max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
             : "max-w-[1400px] mx-auto px-4 sm:px-8 " +
-              "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-x-16 " +
-              // Escape <main>'s 960px constraint at xl+ via a margin-only
-              // trick (no `transform`). A transformed ancestor would
-              // become the containing block for any fixed-position
-              // descendants — which would re-anchor the fixed nav to the
-              // scrolling wrapper and break sticky behavior.
               "xl:block xl:max-w-none xl:w-screen " +
               "xl:mx-[calc(50%-50vw)] xl:px-0"
         }
@@ -169,23 +114,8 @@ export default function HomeLayout({
           paddingTop: "clamp(96px, 12vh, 144px)",
         }}
       >
-        <div
-          className={
-            aboutMeOpen
-              ? ""
-              : "lg:sticky lg:top-32 lg:self-start " +
-                // At xl+ the nav is fixed-position flush-left of the
-                // viewport (no longer in the grid flow). Top matches
-                // the wrapper's paddingTop so the nav's first link
-                // top-aligns with the bio's first text line.
-                "xl:fixed xl:top-[clamp(96px,12vh,144px)] xl:left-6 " +
-                "xl:self-auto xl:z-[40]"
-          }
-        >
-          {/* About mode renders the full Hero (back button + about copy +
-              resume button + LED matrix). Home mode skips Hero entirely —
-              the wordmark moved to the right column header row. */}
-          {aboutMeOpen && (
+        {aboutMeOpen && (
+          <div>
             <Hero
               aboutMeOpen={aboutMeOpen}
               onAboutMeChange={setAboutMeOpen}
@@ -195,27 +125,15 @@ export default function HomeLayout({
               hideStarForLoader={loaderOwnsStar}
               onStarMorphComplete={() => setHeroReady(true)}
             />
-          )}
-          {/* Primary section nav lives in the left sticky column on home.
-              Hidden in About mode — the back-button inside the About view
-              owns the navigation there. */}
-          {!aboutMeOpen && (
-            <HomeNav
-              navRef={navRef}
-              aboutMeOpen={aboutMeOpen}
-              onAboutMeOpen={() => setAboutMeOpen(true)}
-              onAboutMeClose={() => setAboutMeOpen(false)}
-              ready={heroReady}
-            />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Right column — only renders in home mode.
             At xl+ this column centers in the viewport at max-w 1000px,
             independent of the fixed left nav. At lg it inherits its
             slot from the parent grid. */}
         {!aboutMeOpen && (
-          <div className="flex flex-col xl:max-w-[800px] xl:mx-auto xl:px-4 xl:w-full">
+          <div className="flex flex-col max-w-[800px] mx-auto w-full xl:px-4">
             {/* "Welcome" section header — same typographic treatment as
                 the SiteHeader wordmark so the bio reads as a labelled
                 opening block. */}
