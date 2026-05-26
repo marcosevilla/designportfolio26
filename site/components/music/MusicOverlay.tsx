@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
+import { SCENES } from "@/lib/visualizer-scenes";
 import LedMatrix from "@/components/LedMatrix";
-import { SceneToggles } from "@/components/music/LedMatrixUI";
 import SeekBar from "@/components/music/SeekBar";
 import {
   PlayIcon,
@@ -59,6 +60,86 @@ function TransportButton({
     >
       {children}
     </button>
+  );
+}
+
+/** Numbered visualizer toggles — replaces the icon-based SceneToggles for
+ *  the overlay. Each scene is represented by its position (1-N); hovering
+ *  reveals the scene's label as an immediate tooltip directly above the
+ *  button. Multiple scenes can be active simultaneously (the underlying
+ *  context supports it), so the active state is a tinted fill rather than
+ *  a radio. */
+function NumberedSceneToggles() {
+  const { activeScenes, toggleScene } = useVisualizerScene();
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+
+  return (
+    <div className="relative flex items-center justify-center gap-1.5">
+      {SCENES.map((s, idx) => {
+        const active = activeScenes.has(s.id);
+        const hovered = hoveredIdx === idx;
+        return (
+          <div key={s.id} className="relative">
+            <AnimatePresence>
+              {hovered && (
+                <motion.span
+                  initial={{ opacity: 0, y: 2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 2 }}
+                  transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute left-1/2 -translate-x-1/2 -top-7 whitespace-nowrap pointer-events-none"
+                  style={{
+                    fontFamily:
+                      "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    lineHeight: 1,
+                    color: "var(--color-fg-secondary)",
+                    padding: "4px 6px",
+                    backgroundColor: "var(--color-bg)",
+                    border: "1px solid var(--color-border)",
+                  }}
+                >
+                  {s.label}
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <button
+              type="button"
+              onClick={() => toggleScene(s.id)}
+              onMouseEnter={() => setHoveredIdx(idx)}
+              onMouseLeave={() =>
+                setHoveredIdx((cur) => (cur === idx ? null : cur))
+              }
+              onFocus={() => setHoveredIdx(idx)}
+              onBlur={() =>
+                setHoveredIdx((cur) => (cur === idx ? null : cur))
+              }
+              aria-label={`Toggle ${s.label} scene`}
+              aria-pressed={active}
+              className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none cursor-pointer active:scale-[0.96] [transition-property:color,background-color,transform] duration-150 ease-out"
+              style={{
+                fontFamily:
+                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: 11,
+                fontWeight: 500,
+                lineHeight: 1,
+                color: active
+                  ? "var(--color-accent)"
+                  : "var(--color-fg-tertiary)",
+                backgroundColor: active
+                  ? "color-mix(in srgb, var(--color-accent) 12%, transparent)"
+                  : "transparent",
+              }}
+            >
+              {idx + 1}
+            </button>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -135,43 +216,6 @@ export default function MusicOverlay() {
           role="dialog"
           aria-label="Music player"
         >
-          {/* Return button — fixed top-left, replaces the left-column
-              nav while the overlay owns the screen. Click closes the
-              overlay; audio playback is unaffected. */}
-          <motion.button
-            type="button"
-            onClick={close}
-            initial={{ opacity: 0, x: -4, filter: "blur(6px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, x: -4, filter: "blur(6px)" }}
-            transition={{ duration: 0.32, ease: BLUR_EASE }}
-            aria-label="Return to page"
-            className="group fixed top-5 left-4 sm:left-6 z-[130] inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)"
-            style={{
-              fontFamily:
-                "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: 12,
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              lineHeight: 1,
-              color: "var(--color-fg-secondary)",
-              background: "none",
-              border: 0,
-              padding: 0,
-            }}
-          >
-            <span
-              aria-hidden
-              className="inline-flex items-center transition-transform duration-200 ease-out group-hover:-translate-x-1"
-            >
-              <span style={{ display: "inline-flex", transform: "scaleX(-1)" }}>
-                <ArrowRightIcon size={14} />
-              </span>
-            </span>
-            <span>Return</span>
-          </motion.button>
-
           <motion.div
             initial={{ opacity: 0, y: 16, filter: "blur(12px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -180,9 +224,40 @@ export default function MusicOverlay() {
             className="w-full max-w-[620px] flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Scene toggles — flush right, above the LED matrix. */}
-            <div className="flex justify-end">
-              <SceneToggles />
+            {/* Return button — sits inside the music player column,
+                flush-left at the top. Click closes the overlay; audio
+                playback is unaffected. mb-6 gives breathing room before
+                the visualizer below. */}
+            <div className="flex mb-6">
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Return to page"
+                className="group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  lineHeight: 1,
+                  color: "var(--color-fg-secondary)",
+                  background: "none",
+                  border: 0,
+                  padding: 0,
+                }}
+              >
+                <span
+                  aria-hidden
+                  className="inline-flex items-center transition-transform duration-200 ease-out group-hover:-translate-x-1"
+                >
+                  <span style={{ display: "inline-flex", transform: "scaleX(-1)" }}>
+                    <ArrowRightIcon size={14} />
+                  </span>
+                </span>
+                <span>Return</span>
+              </button>
             </div>
 
             {/* LED matrix — sized via its default height (200px). Width
@@ -264,6 +339,13 @@ export default function MusicOverlay() {
               >
                 {currentTrack.artist}
               </p>
+            </div>
+
+            {/* Visualizer scene toggles — numbered buttons with on-hover
+                tooltips revealing each scene's label. Centered beneath
+                the track info. */}
+            <div className="flex justify-center mt-5">
+              <NumberedSceneToggles />
             </div>
           </motion.div>
         </motion.div>
