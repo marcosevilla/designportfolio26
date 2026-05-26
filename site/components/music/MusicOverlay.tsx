@@ -36,20 +36,18 @@ function TransportButton({
   children: React.ReactNode;
   emphasized?: boolean;
 }) {
-  const size = emphasized ? 56 : 44;
+  const size = emphasized ? 64 : 44;
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="inline-flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer"
+      className="inline-flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
       style={{
         width: size,
         height: size,
         color: "var(--color-fg)",
-        background: emphasized
-          ? "color-mix(in srgb, var(--color-fg) 6%, transparent)"
-          : "transparent",
+        background: "transparent",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.color = "var(--color-accent)";
@@ -203,15 +201,9 @@ export default function MusicOverlay() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.28, ease: BLUR_EASE }}
           className="fixed inset-0 z-[120] flex items-center justify-center px-4"
-          // Slightly tinted page background so the matrix reads cleanly
-          // against whatever was scrolled to. Still transparent enough
-          // that the page blur shows through subtly.
-          style={{
-            backgroundColor:
-              "color-mix(in srgb, var(--color-bg) 88%, transparent)",
-            backdropFilter: "blur(2px)",
-            WebkitBackdropFilter: "blur(2px)",
-          }}
+          // Solid page bg so content underneath isn't visible at all —
+          // the overlay fully owns the viewport while open.
+          style={{ backgroundColor: "var(--color-bg)" }}
           aria-modal="true"
           role="dialog"
           aria-label="Music player"
@@ -221,7 +213,7 @@ export default function MusicOverlay() {
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 16, filter: "blur(12px)" }}
             transition={{ duration: 0.42, ease: BLUR_EASE }}
-            className="w-full max-w-[620px] flex flex-col gap-4"
+            className="w-full max-w-[900px] flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Return button — sits inside the music player column,
@@ -306,7 +298,7 @@ export default function MusicOverlay() {
                 onClick={togglePlay}
                 emphasized
               >
-                {isPlaying ? <PauseIcon size={22} /> : <PlayIcon size={22} />}
+                {isPlaying ? <PauseIcon size={36} /> : <PlayIcon size={36} />}
               </TransportButton>
               <TransportButton label="Next track" onClick={next}>
                 <SkipForwardIcon size={18} />
