@@ -216,6 +216,29 @@ export default function HomeLayout({
             slot from the parent grid. */}
         {!aboutMeOpen && (
           <div className="flex flex-col xl:max-w-[800px] xl:mx-auto xl:px-4 xl:w-full">
+            {/* "Welcome" section header — same typographic treatment as
+                the SiteHeader wordmark so the bio reads as a labelled
+                opening block. */}
+            <motion.h2
+              className="mb-4"
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: 16,
+                fontWeight: 500,
+                letterSpacing: "-0.01em",
+                lineHeight: 1,
+                color: "var(--color-fg)",
+              }}
+              initial={{ opacity: 0, filter: "blur(12px)" }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                filter: heroReady ? "blur(0px)" : "blur(12px)",
+              }}
+              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.1 }}
+            >
+              Welcome
+            </motion.h2>
+
             {/* Bio block — sits at the top of the right column, above the first
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}

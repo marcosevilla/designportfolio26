@@ -120,6 +120,21 @@ export default function CaseStudyList({ studies: allStudies }: CaseStudyListProp
 
   return (
     <section className="relative z-10">
+      {/* "Select projects" section header — matches the SiteHeader
+          wordmark / "Welcome" bio header treatment. */}
+      <h2
+        className="mb-6"
+        style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: 16,
+          fontWeight: 500,
+          letterSpacing: "-0.01em",
+          lineHeight: 1,
+          color: "var(--color-fg)",
+        }}
+      >
+        Select projects
+      </h2>
       {/* Filter dropdown — kept for the (currently disabled) filter toggle
           above; the "Work" heading was removed so the projects section
           anchors directly to the first card. */}
