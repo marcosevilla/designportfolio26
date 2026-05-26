@@ -18,6 +18,32 @@ import {
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
+/** Picture-in-picture-style glyph: a frame with a filled rectangle in
+ *  the bottom-right corner, suggesting the music UI collapsing into the
+ *  bottom-right mini widget. */
+function MinimizeIcon({ size = 14, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <rect
+        x="1.5"
+        y="1.5"
+        width="13"
+        height="13"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <rect x="8" y="8" width="6" height="6" fill="currentColor" />
+    </svg>
+  );
+}
+
 function formatTime(sec: number): string {
   if (!isFinite(sec) || sec < 0) return "0:00";
   const m = Math.floor(sec / 60);
@@ -213,7 +239,7 @@ export default function MusicOverlay() {
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 16, filter: "blur(12px)" }}
             transition={{ duration: 0.42, ease: BLUR_EASE }}
-            className="w-full max-w-[900px] flex flex-col gap-4"
+            className="w-full max-w-[700px] flex flex-col gap-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Return button — sits inside the music player column,
@@ -253,93 +279,111 @@ export default function MusicOverlay() {
             </div>
 
             {/* LED matrix — height set proportionally to the column's
-                900px max-width so the aspect ratio holds (~3:1, matching
-                the pre-resize feel). Width fills the centered column. */}
+                700px max-width so the aspect ratio holds (~3:1). Width
+                fills the centered column. */}
             <div className="relative">
-              <LedMatrix height={290} />
+              <LedMatrix height={226} />
             </div>
 
-            {/* Scrubber — spans the full matrix width. mt-6 adds extra
-                breathing room between the visualizer and the timeline. */}
-            <div className="flex flex-col gap-1.5 mt-6">
-              <SeekBar
-                value={Math.min(displayTime, duration || displayTime)}
-                max={duration}
-                onChange={(t) => {
-                  setScrubbing(true);
-                  setScrubValue(t);
-                  seek(t);
-                }}
-                onCommit={() => {
-                  requestAnimationFrame(() => setScrubbing(false));
-                }}
-              />
-              <div
-                className="flex items-center justify-between"
-                style={{
-                  fontFamily:
-                    "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: "var(--color-fg-tertiary)",
-                  letterSpacing: "0.04em",
-                }}
-              >
-                <span className="tabular-nums">{formatTime(displayTime)}</span>
-                <span className="tabular-nums">{formatTime(duration)}</span>
+            {/* Spotify-style player row. Left: track info. Center:
+                transport controls + scrubber. Right: visualizer toggles
+                + shrink-to-mini-widget button. mt-8 gives breathing room
+                between the visualizer and the player chrome. */}
+            <div className="flex items-center gap-4 mt-8">
+              {/* Left — track title + artist, flush-left. */}
+              <div className="flex flex-col min-w-0 shrink basis-0 grow">
+                <p
+                  className="truncate"
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: "var(--color-fg)",
+                    letterSpacing: "-0.01em",
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {currentTrack.title}
+                </p>
+                <p
+                  className="truncate"
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 12,
+                    fontWeight: 400,
+                    color: "var(--color-fg-tertiary)",
+                    letterSpacing: "-0.005em",
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {currentTrack.artist}
+                </p>
               </div>
-            </div>
 
-            {/* Transport controls — always visible, centered. */}
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <TransportButton label="Previous track" onClick={prev}>
-                <SkipBackIcon size={18} />
-              </TransportButton>
-              <TransportButton
-                label={isPlaying ? "Pause" : "Play"}
-                onClick={togglePlay}
-                emphasized
-              >
-                {isPlaying ? <PauseIcon size={36} /> : <PlayIcon size={36} />}
-              </TransportButton>
-              <TransportButton label="Next track" onClick={next}>
-                <SkipForwardIcon size={18} />
-              </TransportButton>
-            </div>
+              {/* Center — controls stacked over a scrubber that spans
+                  the center column's full width. */}
+              <div className="flex flex-col items-center gap-2 shrink-0 grow-[2] basis-0 min-w-0">
+                <div className="flex items-center gap-1">
+                  <TransportButton label="Previous track" onClick={prev}>
+                    <SkipBackIcon size={18} />
+                  </TransportButton>
+                  <TransportButton
+                    label={isPlaying ? "Pause" : "Play"}
+                    onClick={togglePlay}
+                    emphasized
+                  >
+                    {isPlaying ? <PauseIcon size={28} /> : <PlayIcon size={28} />}
+                  </TransportButton>
+                  <TransportButton label="Next track" onClick={next}>
+                    <SkipForwardIcon size={18} />
+                  </TransportButton>
+                </div>
+                <div
+                  className="w-full flex items-center gap-3"
+                  style={{
+                    fontFamily:
+                      "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    color: "var(--color-fg-tertiary)",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  <span className="tabular-nums shrink-0">
+                    {formatTime(displayTime)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <SeekBar
+                      value={Math.min(displayTime, duration || displayTime)}
+                      max={duration}
+                      onChange={(t) => {
+                        setScrubbing(true);
+                        setScrubValue(t);
+                        seek(t);
+                      }}
+                      onCommit={() => {
+                        requestAnimationFrame(() => setScrubbing(false));
+                      }}
+                    />
+                  </div>
+                  <span className="tabular-nums shrink-0">
+                    {formatTime(duration)}
+                  </span>
+                </div>
+              </div>
 
-            {/* Track info — quiet, beneath the controls. */}
-            <div className="flex flex-col items-center text-center gap-1 mt-3">
-              <p
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: "var(--color-fg)",
-                  letterSpacing: "-0.01em",
-                  lineHeight: 1.2,
-                }}
-              >
-                {currentTrack.title}
-              </p>
-              <p
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 13,
-                  fontWeight: 400,
-                  color: "var(--color-fg-tertiary)",
-                  letterSpacing: "-0.005em",
-                  lineHeight: 1.2,
-                }}
-              >
-                {currentTrack.artist}
-              </p>
-            </div>
-
-            {/* Visualizer scene toggles — numbered buttons with on-hover
-                tooltips revealing each scene's label. Centered beneath
-                the track info. */}
-            <div className="flex justify-center mt-5">
-              <NumberedSceneToggles />
+              {/* Right — visualizer toggles + minimize. */}
+              <div className="flex items-center gap-2 shrink-0 basis-0 grow justify-end">
+                <NumberedSceneToggles />
+                <button
+                  type="button"
+                  onClick={close}
+                  aria-label="Shrink to mini player"
+                  className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none cursor-pointer text-(--color-fg-tertiary) hover:text-(--color-accent)"
+                >
+                  <MinimizeIcon size={14} />
+                </button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
