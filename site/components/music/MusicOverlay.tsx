@@ -17,11 +17,10 @@ import {
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
-/** Custom timeline that doubles as the card's bottom border. The track
- *  is a thin strip flush against the card edge; the filled portion grows
- *  with playback. Times + scrubber thumb only appear on hover/drag so
- *  the resting state is just a moving line. */
-function BorderScrubber({
+/** Inset timeline scrubber. Sits inside the card's bottom row with the
+ *  same horizontal padding as the content above. Thumb appears on
+ *  hover/drag; the moving filled portion is the resting-state cue. */
+function InsetScrubber({
   value,
   max,
   onChange,
@@ -55,11 +54,7 @@ function BorderScrubber({
       aria-valuemax={max || 0}
       aria-valuenow={value}
       tabIndex={0}
-      className="relative w-full cursor-pointer select-none touch-none"
-      // Tap padding above the visible strip — kept minimal so the strip
-      // sits close to the content above it. The strip itself is the
-      // bottom edge of the card.
-      style={{ paddingTop: 8 }}
+      className="relative w-full cursor-pointer select-none touch-none py-2 -my-2"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onPointerDown={(e) => {
@@ -85,75 +80,19 @@ function BorderScrubber({
         onCommit?.();
       }}
     >
-      {/* Time labels — only on hover/drag, floating above the strip. */}
-      <AnimatePresence>
-        {expanded && (
-          <>
-            <motion.span
-              key="time-current"
-              initial={{ opacity: 0, y: 2 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 2 }}
-              transition={{ duration: 0.14, ease: BLUR_EASE }}
-              className="absolute pointer-events-none tabular-nums"
-              style={{
-                bottom: 6,
-                left: 8,
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                fontSize: 10,
-                fontWeight: 500,
-                color: "var(--color-fg-tertiary)",
-                letterSpacing: "0.04em",
-                lineHeight: 1,
-              }}
-            >
-              {formatTime(value)}
-            </motion.span>
-            <motion.span
-              key="time-total"
-              initial={{ opacity: 0, y: 2 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 2 }}
-              transition={{ duration: 0.14, ease: BLUR_EASE }}
-              className="absolute pointer-events-none tabular-nums"
-              style={{
-                bottom: 6,
-                right: 8,
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                fontSize: 10,
-                fontWeight: 500,
-                color: "var(--color-fg-tertiary)",
-                letterSpacing: "0.04em",
-                lineHeight: 1,
-              }}
-            >
-              {formatTime(max)}
-            </motion.span>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Track — thick enough at rest to read as a clear timeline (not
-          just a hairline border). Clipped at the bottom corners so it
-          follows the card's 4px radius cleanly. The thumb lives in a
-          separate sibling below so it can extend outside this clipped
-          container without being sliced. */}
+      {/* Track — thinner at rest now that times are always visible to
+          provide context. */}
       <div
         ref={trackRef}
-        className="relative w-full"
+        className="relative w-full rounded-full"
         style={{
-          height: expanded ? 5 : 3,
+          height: expanded ? 3 : 1.5,
           backgroundColor: "var(--color-border)",
-          overflow: "hidden",
-          borderBottomLeftRadius: 4,
-          borderBottomRightRadius: 4,
           transition: "height 150ms ease-out",
         }}
       >
-        {/* Filled portion — accent color. */}
         <div
+          className="rounded-full"
           style={{
             position: "absolute",
             left: 0,
@@ -163,28 +102,24 @@ function BorderScrubber({
             backgroundColor: "var(--color-accent)",
           }}
         />
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: `${pct}%`,
+            top: "50%",
+            width: expanded ? 10 : 0,
+            height: expanded ? 10 : 0,
+            transform: "translate(-50%, -50%)",
+            opacity: expanded ? 1 : 0,
+            backgroundColor: "var(--color-accent)",
+            borderRadius: "50%",
+            pointerEvents: "none",
+            transition:
+              "width 150ms ease-out, height 150ms ease-out, opacity 150ms ease-out",
+          }}
+        />
       </div>
-
-      {/* Thumb — sibling of the track so the clipped track doesn't slice
-          it into a half-circle. Centered vertically on the track and
-          half-overflowing the card's bottom edge. */}
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: `${pct}%`,
-          bottom: expanded ? 2.5 : 1.5,
-          width: expanded ? 12 : 0,
-          height: expanded ? 12 : 0,
-          transform: "translate(-50%, 50%)",
-          opacity: expanded ? 1 : 0,
-          backgroundColor: "var(--color-accent)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-          transition:
-            "width 150ms ease-out, height 150ms ease-out, opacity 150ms ease-out, bottom 150ms ease-out",
-        }}
-      />
     </div>
   );
 }
@@ -475,22 +410,15 @@ export default function MusicOverlay() {
                 with a soft border + drop shadow so it reads as a single
                 grouped surface against the overlay background. */}
             <div
-              className="mt-8 flex flex-col"
+              className="mt-8 flex flex-col px-3 py-2.5 gap-2"
               style={{
                 backgroundColor: "var(--color-bg)",
-                // No border-bottom — the BorderScrubber below acts as the
-                // bottom edge, filling with accent as the song progresses.
-                // overflow:visible so the thumb dot can extend below the
-                // card's bottom edge without being clipped into a half
-                // circle while dragging.
-                borderTop: "0.5px solid var(--color-border)",
-                borderLeft: "0.5px solid var(--color-border)",
-                borderRight: "0.5px solid var(--color-border)",
+                border: "0.5px solid var(--color-border)",
                 borderRadius: 4,
                 boxShadow: "0 6px 18px -8px rgba(0,0,0,0.10)",
               }}
             >
-              <div className="flex items-center gap-4 px-3 py-1.5">
+              <div className="flex items-center gap-4">
               {/* Left — track title + artist, flush-left. Slides + blurs
                   between tracks: leaving track exits in the skip direction,
                   incoming track enters from the opposite side. */}
@@ -580,20 +508,41 @@ export default function MusicOverlay() {
               </div>
               </div>
 
-              {/* Scrubber — flush against the card's bottom edge,
-                  visually doubling as the bottom border. */}
-              <BorderScrubber
-                value={Math.min(displayTime, duration || displayTime)}
-                max={duration}
-                onChange={(t) => {
-                  setScrubbing(true);
-                  setScrubValue(t);
-                  seek(t);
+              {/* Bottom row — elapsed time, scrubber, total time. All
+                  inset by the card's own padding. */}
+              <div
+                className="flex items-center gap-3"
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: 10,
+                  fontWeight: 500,
+                  color: "var(--color-fg-tertiary)",
+                  letterSpacing: "0.04em",
+                  lineHeight: 1,
                 }}
-                onCommit={() => {
-                  requestAnimationFrame(() => setScrubbing(false));
-                }}
-              />
+              >
+                <span className="tabular-nums shrink-0">
+                  {formatTime(displayTime)}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <InsetScrubber
+                    value={Math.min(displayTime, duration || displayTime)}
+                    max={duration}
+                    onChange={(t) => {
+                      setScrubbing(true);
+                      setScrubValue(t);
+                      seek(t);
+                    }}
+                    onCommit={() => {
+                      requestAnimationFrame(() => setScrubbing(false));
+                    }}
+                  />
+                </div>
+                <span className="tabular-nums shrink-0">
+                  {formatTime(duration)}
+                </span>
+              </div>
             </div>
           </motion.div>
         </motion.div>
