@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES } from "@/lib/visualizer-scenes";
 import LedMatrix from "@/components/LedMatrix";
+import InsetScrubber from "@/components/music/InsetScrubber";
 import {
   PlayIcon,
   PauseIcon,
@@ -16,113 +17,6 @@ import {
 } from "@/components/Icons";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
-
-/** Inset timeline scrubber. Sits inside the card's bottom row with the
- *  same horizontal padding as the content above. Thumb appears on
- *  hover/drag; the moving filled portion is the resting-state cue. */
-function InsetScrubber({
-  value,
-  max,
-  onChange,
-  onCommit,
-}: {
-  value: number;
-  max: number;
-  onChange: (next: number) => void;
-  onCommit?: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  const expanded = hovered || dragging;
-  const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
-
-  const valueAtClientX = (clientX: number) => {
-    const el = trackRef.current;
-    if (!el || max <= 0) return 0;
-    const rect = el.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    return ratio * max;
-  };
-
-  return (
-    <div
-      role="slider"
-      aria-label="Seek"
-      aria-valuemin={0}
-      aria-valuemax={max || 0}
-      aria-valuenow={value}
-      tabIndex={0}
-      className="relative w-full cursor-pointer select-none touch-none py-2 -my-2"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onPointerDown={(e) => {
-        e.preventDefault();
-        e.currentTarget.setPointerCapture(e.pointerId);
-        setDragging(true);
-        onChange(valueAtClientX(e.clientX));
-      }}
-      onPointerMove={(e) => {
-        if (!dragging) return;
-        onChange(valueAtClientX(e.clientX));
-      }}
-      onPointerUp={(e) => {
-        if (!dragging) return;
-        setDragging(false);
-        e.currentTarget.releasePointerCapture(e.pointerId);
-        onCommit?.();
-      }}
-      onPointerCancel={(e) => {
-        if (!dragging) return;
-        setDragging(false);
-        e.currentTarget.releasePointerCapture(e.pointerId);
-        onCommit?.();
-      }}
-    >
-      {/* Track — thinner at rest now that times are always visible to
-          provide context. */}
-      <div
-        ref={trackRef}
-        className="relative w-full rounded-full"
-        style={{
-          height: expanded ? 3 : 1.5,
-          backgroundColor: "var(--color-border)",
-          transition: "height 150ms ease-out",
-        }}
-      >
-        <div
-          className="rounded-full"
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            height: "100%",
-            width: `${pct}%`,
-            backgroundColor: "var(--color-accent)",
-          }}
-        />
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: `${pct}%`,
-            top: "50%",
-            width: expanded ? 10 : 0,
-            height: expanded ? 10 : 0,
-            transform: "translate(-50%, -50%)",
-            opacity: expanded ? 1 : 0,
-            backgroundColor: "var(--color-accent)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-            transition:
-              "width 150ms ease-out, height 150ms ease-out, opacity 150ms ease-out",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
 
 /** Picture-in-picture-style glyph: a frame with a filled rectangle in
  *  the bottom-right corner, suggesting the music UI collapsing into the
@@ -410,7 +304,10 @@ export default function MusicOverlay() {
                 with a soft border + drop shadow so it reads as a single
                 grouped surface against the overlay background. */}
             <div
-              className="mt-8 flex flex-col px-3 py-2.5 gap-2"
+              // max-w 550 deliberately narrower than the 700px LED column
+              // above so the player card reads as a centered surface
+              // beneath a wider visualizer.
+              className="mt-8 mx-auto w-full max-w-[550px] flex flex-col px-3 py-2.5 gap-2"
               style={{
                 backgroundColor: "var(--color-bg)",
                 border: "0.5px solid var(--color-border)",
