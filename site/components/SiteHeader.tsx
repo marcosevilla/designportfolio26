@@ -118,7 +118,7 @@ export default function SiteHeader() {
       {/* Content-aligned bar — everything lives inside the centered
           800px column so left/right edges match the body content. */}
       <div className="relative h-14">
-        <div className="h-full mx-auto max-w-[800px] px-4 flex items-center">
+        <div className="h-full mx-auto max-w-[750px] px-4 flex items-center">
           {/* Left cluster — hamburger sits at the content's left edge;
               the wordmark appears to its right once the user has scrolled
               past the bio. */}

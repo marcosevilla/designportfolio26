@@ -135,7 +135,7 @@ export default function HomeLayout({
             independent of the fixed left nav. At lg it inherits its
             slot from the parent grid. */}
         {!aboutMeOpen && (
-          <div className="flex flex-col max-w-[800px] mx-auto w-full xl:px-4">
+          <div className="flex flex-col max-w-[750px] mx-auto w-full xl:px-4">
             {/* Page heading — Marco's name as the bio block's opening
                 title. Larger than the body to read as a primary heading,
                 kept tight on tracking so it still feels close to the
@@ -207,7 +207,7 @@ export default function HomeLayout({
                 affordance group; gap-1.5 inside the social cluster
                 tightens those into a single visual unit. */}
             <motion.div
-              className="mb-24 flex flex-wrap items-center gap-6"
+              className="mb-40 flex flex-wrap items-center gap-6"
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
                 opacity: heroReady ? 1 : 0,
@@ -233,7 +233,7 @@ export default function HomeLayout({
                 {work}
               </motion.div>
             </section>
-            <section id="playground" className="pt-48 pb-48">
+            <section id="playground" className="pt-60 pb-48">
               {/* Mirrors the Work section's cascade so Playground blurs in
                   alongside the rest of the page once the loader releases. */}
               <motion.div
