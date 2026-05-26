@@ -144,7 +144,7 @@ export default function HomeLayout({
               className="mb-1"
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: 600,
                 letterSpacing: "-0.01em",
                 lineHeight: 1.2,
