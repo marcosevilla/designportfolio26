@@ -444,30 +444,23 @@ export default function Hero({
                   href="/Marco-Sevilla-Senior-Product-Designer.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group mt-10 inline-flex items-center gap-2 rounded-full border border-(--color-border) px-4 py-2 transition-[background-color,color,border-color] duration-150 ease-out hover:border-(--color-fg-secondary) hover:text-(--color-fg) focus-visible:border-(--color-fg-secondary) focus-visible:outline-none"
+                  className="outlined-cta mt-10 inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
                   style={{
-                    fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                    fontSize: "12px",
+                    height: 32,
+                    padding: "0 8px",
+                    fontFamily:
+                      "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                    fontSize: 11,
                     fontWeight: 500,
+                    lineHeight: 1,
+                    textTransform: "uppercase",
                     letterSpacing: "0.04em",
-                    color: "var(--color-fg-secondary)",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  <span>View Resume / CV</span>
-                  <span
-                    aria-hidden
-                    className="inline-flex items-center transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-                  >
-                    <ArrowRightIcon size={14} />
-                  </span>
+                  View resume
                 </a>
-                {/* LED matrix — moved from the home hero. Sits below the
-                    resume button so the About page closes with the audio
-                    visualizer as a craft tail. */}
-                {matrix && <div className="mt-12">{matrix}</div>}
-                {/* "Hello, friend" greeting note hidden for now — was a
-                    closing flourish carried over from the deleted toolbar
-                    cycling greetings; can be restored later from git. */}
               </div>
             </motion.div>
           )}
