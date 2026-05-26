@@ -160,15 +160,25 @@ export default function HomeLayout({
           name, top-right controls) — mounted in app/layout.tsx so they
           appear on every route, including this one. */}
 
-      {/* Two-column home layout: hero header (left, sticky on lg+) and
-          projects + playground (right, scrolling). About mode reverts
-          to a single 650px column so the bio reads full-width.
-          paddingTop = toolbar height (36) + breathing room. */}
+      {/* Two-column home layout.
+          - <lg: stacked.
+          - lg (1024-1279): two-col grid where the left col pushes the
+            right col rightward (today's behavior).
+          - xl+ (1280+): the wrapper breaks out of <main>'s 960px width
+            so the right column can center in the viewport at max-w 1000px,
+            and the left nav becomes position:fixed flush-left of the
+            viewport.
+          About mode reverts to a single 650px column so the bio reads
+          full-width.
+          paddingTop = SiteHeader height (~38) + breathing room. */}
       <div
         className={
           aboutMeOpen
             ? "max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
-            : "max-w-[1400px] mx-auto px-4 sm:px-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-x-16"
+            : "max-w-[1400px] mx-auto px-4 sm:px-8 " +
+              "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-x-16 " +
+              "xl:block xl:max-w-none xl:w-screen xl:relative xl:left-1/2 " +
+              "xl:-translate-x-1/2 xl:px-0"
         }
         style={{
           paddingTop: "clamp(96px, 12vh, 144px)",
@@ -178,7 +188,12 @@ export default function HomeLayout({
           className={
             aboutMeOpen
               ? ""
-              : "lg:sticky lg:top-32 lg:self-start"
+              : "lg:sticky lg:top-32 lg:self-start " +
+                // At xl+ the nav is fixed-position flush-left of the
+                // viewport (no longer in the grid flow). Top is fixed
+                // so the nav stays anchored while the right column
+                // scrolls below it.
+                "xl:fixed xl:top-32 xl:left-6 xl:self-auto xl:z-[40]"
           }
         >
           {/* About mode renders the full Hero (back button + about copy +
@@ -210,9 +225,12 @@ export default function HomeLayout({
           )}
         </div>
 
-        {/* Right column — only renders in home mode. */}
+        {/* Right column — only renders in home mode.
+            At xl+ this column centers in the viewport at max-w 1000px,
+            independent of the fixed left nav. At lg it inherits its
+            slot from the parent grid. */}
         {!aboutMeOpen && (
-          <div className="flex flex-col">
+          <div className="flex flex-col xl:max-w-[1000px] xl:mx-auto xl:px-4 xl:w-full">
             {/* Bio block — sits at the top of the right column, above the first
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}
