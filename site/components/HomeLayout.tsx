@@ -5,8 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
-import HeroToolbar from "./HeroToolbar";
-import MobileToolbar from "./MobileToolbar";
+import BottomToolbar from "./BottomToolbar";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI, { SceneToggles } from "./music/LedMatrixUI";
 import { AnimatePresence } from "framer-motion";
@@ -159,15 +158,12 @@ export default function HomeLayout({
       onStarReleased={() => setLoaderOwnsStar(false)}
     />
     <div id="home">
-      {/* Hero toolbar moved inline — now lives inside the right column
-          at the top of the project list. See the right-column block
-          below for the desktop mount. */}
-
-      {/* Mobile-only floating bottom pill. Replaces HeroToolbar's
-          functionality below lg with 40×40 hit targets and a layout that
-          actually works on a phone. globals.css hides .hero-toolbar-host
-          below lg; MobileToolbar's own `lg:hidden` keeps it off desktop. */}
-      <MobileToolbar />
+      {/* Unified sticky-bottom pill. Replaces the prior desktop HeroToolbar
+          (inline in the hero right column) + mobile MobileToolbar. Single
+          surface across all viewports — collapsed by default to a cog +
+          time/weather; expands leftward to expose controls. Hidden in
+          About mode (chrome belongs to the About view there). */}
+      {!aboutMeOpen && <BottomToolbar />}
 
       {/* Two-column home layout: hero header (left, sticky on lg+) and
           projects + playground (right, scrolling). About mode reverts
@@ -222,12 +218,10 @@ export default function HomeLayout({
         {/* Right column — only renders in home mode. */}
         {!aboutMeOpen && (
           <div className="flex flex-col">
-            {/* Wordmark + toolbar row — wordmark flush left, toolbar
-                flush right via justify-between. Wordmark renders on all
-                viewports; toolbar is desktop-only (MobileToolbar handles
-                below lg). */}
+            {/* Wordmark row — toolbar moved to the unified bottom pill
+                (BottomToolbar above), so this row is just the name. */}
             <motion.div
-              className="flex items-center justify-between mb-8"
+              className="flex items-center mb-8"
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
                 opacity: heroReady ? 1 : 0,
@@ -248,9 +242,6 @@ export default function HomeLayout({
               >
                 {HERO_NAME}
               </h1>
-              <div className="hidden lg:block">
-                <HeroToolbar />
-              </div>
             </motion.div>
             {/* Bio block — sits below the wordmark row, above the first
                 project card. Multi-paragraph intro that doubles as a
