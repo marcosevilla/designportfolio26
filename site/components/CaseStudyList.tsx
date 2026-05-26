@@ -385,7 +385,7 @@ const CARD_BG = "var(--color-card-bg)";
 // Slugs hidden from the homepage gallery (in-flight content / not
 // ready to show). Removing a slug from this set re-enables the card
 // without touching anywhere else.
-const HIDDEN_SLUGS = new Set<string>(["upsells"]);
+const HIDDEN_SLUGS = new Set<string>(["upsells", "design-system"]);
 
 // Slugs that route to a dedicated case study page instead of opening
 // the homepage gallery overlay. Cards in this map render as <Link>;
