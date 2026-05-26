@@ -20,14 +20,10 @@ export default function SocialLinks() {
           href={l.href}
           target={l.external ? "_blank" : undefined}
           rel={l.external ? "noopener noreferrer" : undefined}
-          className="outlined-cta inline-flex items-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer"
+          className="outlined-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer"
           style={{
             height: 32,
             padding: "0 8px",
-            background: "transparent",
-            color: "var(--color-fg-secondary)",
-            border: "0.5px solid var(--color-border)",
-            borderRadius: 4,
             fontFamily:
               "var(--font-geist-mono), ui-monospace, Menlo, monospace",
             fontSize: 11,

@@ -31,14 +31,10 @@ export default function AskMeAnythingButton() {
       type="button"
       onClick={() => setChatOpen(true)}
       aria-label="Open chat — ask me anything"
-      className="outlined-cta inline-flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer"
+      className="outlined-cta inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer"
       style={{
         height: 32,
         padding: "0 8px",
-        background: "transparent",
-        color: "var(--color-fg-secondary)",
-        border: "0.5px solid var(--color-border)",
-        borderRadius: 4,
       }}
     >
       <ChatBubbleIcon size={14} />
