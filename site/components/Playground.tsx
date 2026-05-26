@@ -17,22 +17,21 @@ export default function Playground({
   return (
     <section className="relative z-10">
       {!hideHeader && (
-        <div className="mb-16">
+        <div className="mb-10">
           <h2
             style={{
               fontFamily: "var(--font-sans)",
-              fontSize: "calc(var(--wordmark-fontsize, 48px) * 0.7)",
-              fontWeight: 600,
-              lineHeight: 1.05,
-              letterSpacing: "-0.025em",
+              fontSize: 16,
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+              lineHeight: 1,
               color: "var(--color-fg)",
-              whiteSpace: "nowrap",
             }}
           >
             Playground
           </h2>
           <p
-            className="mt-4"
+            className="mt-3"
             style={{
               ...typescale.body,
               color: "var(--color-fg-secondary)",

@@ -215,6 +215,27 @@ function MusicButton() {
 /** Chat-trigger pill — sits to the right of the controls pill in the
  *  top-right header cluster. Dispatches chat:open which ChatBar listens
  *  to (mounted globally in app/layout.tsx). */
+/** Speech-bubble glyph used inside the chat trigger button. Outline,
+ *  matches the stroke weight of the toolbar icons. */
+function ChatBubbleIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden
+    >
+      <path
+        d="M2.5 3.5h11v7H6.5L3.5 13V10.5h-1z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function ChatTriggerPill() {
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -235,33 +256,21 @@ function ChatTriggerPill() {
       animate={{ opacity: chatOpen ? 0 : 1, scale: chatOpen ? 0.92 : 1 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
       aria-label="Open chat"
-      className="pointer-events-auto inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
+      className="pointer-events-auto inline-flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
+        width: 32,
         height: 32,
-        padding: "0 12px",
         cursor: chatOpen ? "default" : "pointer",
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
         border: 0,
-        borderRadius: 0,
+        borderRadius: 4,
         overflow: "hidden",
         pointerEvents: chatOpen ? "none" : "auto",
         transformOrigin: "top right",
       }}
     >
-      <span
-        style={{
-          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-          fontSize: 12,
-          fontWeight: 500,
-          color: "var(--color-on-accent)",
-          lineHeight: 1,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-        }}
-      >
-        Chat
-      </span>
+      <ChatBubbleIcon size={14} />
     </motion.button>
   );
 }

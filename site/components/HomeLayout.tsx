@@ -243,7 +243,7 @@ export default function HomeLayout({
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}
             <motion.div
-              className="text-(--color-fg) leading-[26px] mb-8 flex flex-col gap-4"
+              className="text-(--color-fg) leading-[26px] mb-24 flex flex-col gap-4"
               style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
@@ -278,7 +278,7 @@ export default function HomeLayout({
                 {work}
               </motion.div>
             </section>
-            <section id="playground" className="pt-32 pb-48">
+            <section id="playground" className="pt-48 pb-48">
               {/* Mirrors the Work section's cascade so Playground blurs in
                   alongside the rest of the page once the loader releases. */}
               <motion.div
