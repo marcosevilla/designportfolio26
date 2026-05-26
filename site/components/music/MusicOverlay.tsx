@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES } from "@/lib/visualizer-scenes";
 import LedMatrix from "@/components/LedMatrix";
-import SeekBar from "@/components/music/SeekBar";
 import {
   PlayIcon,
   PauseIcon,
@@ -17,6 +16,167 @@ import {
 } from "@/components/Icons";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
+
+/** Custom timeline that doubles as the card's bottom border. The track
+ *  is a thin strip flush against the card edge; the filled portion grows
+ *  with playback. Times + scrubber thumb only appear on hover/drag so
+ *  the resting state is just a moving line. */
+function BorderScrubber({
+  value,
+  max,
+  onChange,
+  onCommit,
+}: {
+  value: number;
+  max: number;
+  onChange: (next: number) => void;
+  onCommit?: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const expanded = hovered || dragging;
+  const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
+
+  const valueAtClientX = (clientX: number) => {
+    const el = trackRef.current;
+    if (!el || max <= 0) return 0;
+    const rect = el.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return ratio * max;
+  };
+
+  return (
+    <div
+      role="slider"
+      aria-label="Seek"
+      aria-valuemin={0}
+      aria-valuemax={max || 0}
+      aria-valuenow={value}
+      tabIndex={0}
+      className="relative w-full cursor-pointer select-none touch-none"
+      // Generous tap padding above the visible strip so hovers and clicks
+      // land easily; the strip itself sits at the very bottom.
+      style={{ paddingTop: 16 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setDragging(true);
+        onChange(valueAtClientX(e.clientX));
+      }}
+      onPointerMove={(e) => {
+        if (!dragging) return;
+        onChange(valueAtClientX(e.clientX));
+      }}
+      onPointerUp={(e) => {
+        if (!dragging) return;
+        setDragging(false);
+        e.currentTarget.releasePointerCapture(e.pointerId);
+        onCommit?.();
+      }}
+      onPointerCancel={(e) => {
+        if (!dragging) return;
+        setDragging(false);
+        e.currentTarget.releasePointerCapture(e.pointerId);
+        onCommit?.();
+      }}
+    >
+      {/* Time labels — only on hover/drag, floating above the strip. */}
+      <AnimatePresence>
+        {expanded && (
+          <>
+            <motion.span
+              key="time-current"
+              initial={{ opacity: 0, y: 2 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 2 }}
+              transition={{ duration: 0.14, ease: BLUR_EASE }}
+              className="absolute pointer-events-none tabular-nums"
+              style={{
+                bottom: 6,
+                left: 8,
+                fontFamily:
+                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: 10,
+                fontWeight: 500,
+                color: "var(--color-fg-tertiary)",
+                letterSpacing: "0.04em",
+                lineHeight: 1,
+              }}
+            >
+              {formatTime(value)}
+            </motion.span>
+            <motion.span
+              key="time-total"
+              initial={{ opacity: 0, y: 2 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 2 }}
+              transition={{ duration: 0.14, ease: BLUR_EASE }}
+              className="absolute pointer-events-none tabular-nums"
+              style={{
+                bottom: 6,
+                right: 8,
+                fontFamily:
+                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: 10,
+                fontWeight: 500,
+                color: "var(--color-fg-tertiary)",
+                letterSpacing: "0.04em",
+                lineHeight: 1,
+              }}
+            >
+              {formatTime(max)}
+            </motion.span>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Track — 1px at rest (reads as a hairline border), 2px on hover. */}
+      <div
+        ref={trackRef}
+        className="relative w-full"
+        style={{
+          height: expanded ? 2 : 1,
+          backgroundColor: "var(--color-border)",
+          transition: "height 150ms ease-out",
+        }}
+      >
+        {/* Filled portion — accent color. */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            height: "100%",
+            width: `${pct}%`,
+            backgroundColor: "var(--color-accent)",
+          }}
+        />
+        {/* Thumb — invisible at rest, expands on hover/drag. */}
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: `${pct}%`,
+            top: "50%",
+            width: expanded ? 12 : 0,
+            height: expanded ? 12 : 0,
+            transform: "translate(-50%, -50%)",
+            opacity: expanded ? 1 : 0,
+            backgroundColor: "var(--color-accent)",
+            borderRadius: "50%",
+            pointerEvents: "none",
+            transition:
+              "width 150ms ease-out, height 150ms ease-out, opacity 150ms ease-out",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 /** Picture-in-picture-style glyph: a frame with a filled rectangle in
  *  the bottom-right corner, suggesting the music UI collapsing into the
@@ -304,15 +464,19 @@ export default function MusicOverlay() {
                 with a soft border + drop shadow so it reads as a single
                 grouped surface against the overlay background. */}
             <div
-              className="flex items-center gap-4 mt-8 px-3 py-1.5"
+              className="mt-8 flex flex-col overflow-hidden"
               style={{
                 backgroundColor: "var(--color-bg)",
-                border: "0.5px solid var(--color-border)",
+                // No border-bottom — the BorderScrubber below acts as the
+                // bottom edge, filling with accent as the song progresses.
+                borderTop: "0.5px solid var(--color-border)",
+                borderLeft: "0.5px solid var(--color-border)",
+                borderRight: "0.5px solid var(--color-border)",
                 borderRadius: 4,
-                // Tighter halo: smaller offset + blur, hugs the card.
                 boxShadow: "0 6px 18px -8px rgba(0,0,0,0.10)",
               }}
             >
+              <div className="flex items-center gap-4 px-3 py-1.5">
               {/* Left — track title + artist, flush-left. Slides + blurs
                   between tracks: leaving track exits in the skip direction,
                   incoming track enters from the opposite side. */}
@@ -370,56 +534,22 @@ export default function MusicOverlay() {
                 </AnimatePresence>
               </div>
 
-              {/* Center — controls stacked over a scrubber that spans
-                  the center column's full width. */}
-              <div className="flex flex-col items-center shrink-0 grow-[2] basis-0 min-w-0">
-                <div className="flex items-center gap-1">
-                  <TransportButton label="Previous track" onClick={handlePrev}>
-                    <SkipBackIcon size={15} />
-                  </TransportButton>
-                  <TransportButton
-                    label={isPlaying ? "Pause" : "Play"}
-                    onClick={togglePlay}
-                    emphasized
-                  >
-                    {isPlaying ? <PauseIcon size={22} /> : <PlayIcon size={22} />}
-                  </TransportButton>
-                  <TransportButton label="Next track" onClick={handleNext}>
-                    <SkipForwardIcon size={15} />
-                  </TransportButton>
-                </div>
-                <div
-                  className="w-full flex items-center gap-3 -mt-2"
-                  style={{
-                    fontFamily:
-                      "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                    fontSize: 10,
-                    fontWeight: 500,
-                    color: "var(--color-fg-tertiary)",
-                    letterSpacing: "0.04em",
-                  }}
+              {/* Center — transport controls only. Scrubber lives at
+                  the bottom of the card as the visible bottom border. */}
+              <div className="flex items-center justify-center gap-1 shrink-0 grow-[2] basis-0 min-w-0">
+                <TransportButton label="Previous track" onClick={handlePrev}>
+                  <SkipBackIcon size={15} />
+                </TransportButton>
+                <TransportButton
+                  label={isPlaying ? "Pause" : "Play"}
+                  onClick={togglePlay}
+                  emphasized
                 >
-                  <span className="tabular-nums shrink-0">
-                    {formatTime(displayTime)}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <SeekBar
-                      value={Math.min(displayTime, duration || displayTime)}
-                      max={duration}
-                      onChange={(t) => {
-                        setScrubbing(true);
-                        setScrubValue(t);
-                        seek(t);
-                      }}
-                      onCommit={() => {
-                        requestAnimationFrame(() => setScrubbing(false));
-                      }}
-                    />
-                  </div>
-                  <span className="tabular-nums shrink-0">
-                    {formatTime(duration)}
-                  </span>
-                </div>
+                  {isPlaying ? <PauseIcon size={22} /> : <PlayIcon size={22} />}
+                </TransportButton>
+                <TransportButton label="Next track" onClick={handleNext}>
+                  <SkipForwardIcon size={15} />
+                </TransportButton>
               </div>
 
               {/* Right — visualizer toggles + minimize. */}
@@ -434,6 +564,22 @@ export default function MusicOverlay() {
                   <MinimizeIcon size={14} />
                 </button>
               </div>
+              </div>
+
+              {/* Scrubber — flush against the card's bottom edge,
+                  visually doubling as the bottom border. */}
+              <BorderScrubber
+                value={Math.min(displayTime, duration || displayTime)}
+                max={duration}
+                onChange={(t) => {
+                  setScrubbing(true);
+                  setScrubValue(t);
+                  seek(t);
+                }}
+                onCommit={() => {
+                  requestAnimationFrame(() => setScrubbing(false));
+                }}
+              />
             </div>
           </motion.div>
         </motion.div>
