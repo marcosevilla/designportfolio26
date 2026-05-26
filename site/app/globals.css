@@ -166,7 +166,7 @@ html {
 
 body {
   font-family: var(--font-sans);
-  font-size: calc(16px + var(--font-size-offset));
+  font-size: calc(14px + var(--font-size-offset));
   background-color: var(--color-bg);
   color: var(--color-fg);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -732,26 +732,10 @@ img[class*="rounded-"] {
    wired in ChatBar) so they don't overlap when chat is open.
    Hidden below lg — mobile uses the floating <MobileToolbar /> bottom pill
    instead, since the dense 28×28 desktop buttons aren't tappable on phones. */
-.hero-toolbar-host {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  z-index: 40;
-  background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-  align-items: center;
-  padding: 0 12px;
-}
-@media (min-width: 1024px) {
-  .hero-toolbar-host {
-    display: flex;
-  }
-}
+/* `.hero-toolbar-host` was previously the fixed top bar; HeroToolbar
+   now renders inline inside the right column of the home grid. The
+   class is no longer applied — kept here as a no-op for historical
+   reference. Safe to delete after a confirmation cycle. */
 
 /* Body push when the persistent side panel is open at lg+. Panel = 360px
    wide with 12px gutters (12 + 360 + 12 = 384px taken on the right).

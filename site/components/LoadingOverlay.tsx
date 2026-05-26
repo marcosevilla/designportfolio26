@@ -6,6 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 const STORAGE_KEY = "portfolio-loaded";
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
+// Temporary kill switch — skips the entire intro sequence (blink + type
+// "Welcome" + morph) and loads straight into the page. Flip to `false` to
+// restore the intro.
+const SKIP_INTRO = true;
+
 const TARGET = "Welcome";
 
 // Plain typewriter — each letter locks in directly without scramble.
@@ -68,6 +73,15 @@ export default function LoadingOverlay({
     const forcePreview =
       process.env.NODE_ENV === "development" &&
       new URLSearchParams(window.location.search).get("loader") === "1";
+
+    // Kill switch: skip the intro sequence entirely and behave like a
+    // repeat visit. The `?loader=1` override still wins so we can preview
+    // the sequence on demand.
+    if (SKIP_INTRO && !forcePreview) {
+      setPhase("done");
+      onDoneRef.current?.();
+      return;
+    }
 
     let seen: string | null = null;
     try {

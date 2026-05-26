@@ -9,9 +9,11 @@ import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import LocalStatus from "./LocalStatus";
 import {
   ChevronDownIcon,
+  CloseIcon,
   MoonIcon,
   MusicNoteIcon,
   PlayIcon,
+  SettingsIcon,
   SunIcon,
   VisualsIcon,
 } from "./Icons";
@@ -232,9 +234,91 @@ function MusicSlot() {
   );
 }
 
+/** Collapsible left cluster — renders a single cog button when closed,
+ *  expands to reveal the full set of controls with a staggered blur-in
+ *  on open (Agentation-style). Click the cog (or anywhere outside) to
+ *  collapse again. */
+function ControlsCluster({
+  paletteOpen,
+  onPaletteToggle,
+}: {
+  paletteOpen: boolean;
+  onPaletteToggle: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Click-outside / Escape to collapse.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    const onPointer = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (ref.current?.contains(target)) return;
+      setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [open]);
+
+  const controls = [
+    <HamburgerMenu key="hamburger" />,
+    <ThemeModeButton key="theme" />,
+    <PaletteButton key="palette" open={paletteOpen} onToggle={onPaletteToggle} />,
+    <VisualizerButton key="visualizer" />,
+    <MusicSlot key="music" />,
+  ];
+
+  return (
+    <div ref={ref} className="flex items-center gap-1 min-w-0">
+      <ToolbarIconButton
+        label={open ? "Close settings" : "Open settings"}
+        pressed={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {open ? <CloseIcon size={12} /> : <SettingsIcon size={16} />}
+      </ToolbarIconButton>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="controls"
+            className="flex items-center gap-1 min-w-0 overflow-hidden"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: "auto", opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.32, ease: POPOVER_EASE }}
+          >
+            {controls.map((child, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, filter: "blur(6px)", y: 2 }}
+                animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+                exit={{ opacity: 0, filter: "blur(6px)", y: 2 }}
+                transition={{
+                  duration: 0.28,
+                  ease: POPOVER_EASE,
+                  delay: 0.05 + i * 0.04,
+                }}
+              >
+                {child}
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /** Single-row system-chrome toolbar.
- *  Layout: [hamburger?] [theme] [palette+⌄] [visualizer (disabled)] [music] ...... [time/weather]
- *  - Hamburger surfaces in compressed mode via .chat-cmp-show CSS.
+ *  Layout: [cog → expands controls] ...... [time/weather]
+ *  - Cog button reveals: [hamburger] [theme] [palette+⌄] [visualizer] [music]
  *  - Palette opens a popover with 10 colored-theme swatches.
  *  - Visualizer is a placeholder (disabled); scene controls move to LED.
  *  - Music collapsed = play button only; expands inline when playing.
@@ -267,18 +351,16 @@ export default function HeroToolbar() {
   }, [paletteOpen]);
 
   return (
-    <div ref={wrapperRef} className="w-full flex items-center justify-between gap-2">
-      {/* Left cluster */}
-      <div className="flex items-center gap-1 min-w-0">
-        <HamburgerMenu />
-        <ThemeModeButton />
-        <PaletteButton
-          open={paletteOpen}
-          onToggle={() => setPaletteOpen((v) => !v)}
-        />
-        <VisualizerButton />
-        <MusicSlot />
-      </div>
+    <div
+      ref={wrapperRef}
+      className="w-full flex items-center justify-between gap-2"
+    >
+      {/* Left cluster — collapsed by default. Click the cog to reveal
+          the full controls, which fade + blur in with a stagger. */}
+      <ControlsCluster
+        paletteOpen={paletteOpen}
+        onPaletteToggle={() => setPaletteOpen((v) => !v)}
+      />
 
       {/* Right: time + weather, flush right, mono single line. */}
       <div className="shrink-0 flex items-center pl-2">

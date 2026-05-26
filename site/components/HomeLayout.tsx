@@ -13,6 +13,7 @@ import { AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
+import { HERO_NAME } from "@/lib/bio-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -158,29 +159,9 @@ export default function HomeLayout({
       onStarReleased={() => setLoaderOwnsStar(false)}
     />
     <div id="home">
-      <HomeNav
-        navRef={navRef}
-        aboutMeOpen={aboutMeOpen}
-        onAboutMeOpen={() => setAboutMeOpen(true)}
-        onAboutMeClose={() => setAboutMeOpen(false)}
-        ready={heroReady}
-      />
-      {/* Hero toolbar — system chrome pinned to top:0 of the viewport.
-          Spans full window width, frosted background, ~36px tall. CSS
-          owns position. Body content scrolls under it; bio column below
-          gets enough top padding so the wordmark sits comfortably under
-          the toolbar. */}
-      <motion.div
-        className="hero-toolbar-host"
-        initial={{ opacity: 0, filter: "blur(12px)" }}
-        animate={{
-          opacity: heroReady ? 1 : 0,
-          filter: heroReady ? "blur(0px)" : "blur(12px)",
-        }}
-        transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.08 }}
-      >
-        <HeroToolbar />
-      </motion.div>
+      {/* Hero toolbar moved inline — now lives inside the right column
+          at the top of the project list. See the right-column block
+          below for the desktop mount. */}
 
       {/* Mobile-only floating bottom pill. Replaces HeroToolbar's
           functionality below lg with 40×40 hit targets and a layout that
@@ -188,67 +169,149 @@ export default function HomeLayout({
           below lg; MobileToolbar's own `lg:hidden` keeps it off desktop. */}
       <MobileToolbar />
 
-      {/* Hero column: paddingTop = toolbar height (36) + breathing room.
-          minHeight is sized so the bio breathes out below the LED matrix
-          / Learn-more button before the first project card begins. The
-          `+ 60px` actually pushes the card a touch BELOW the fold on
-          initial load — it's revealed by scrolling, not previewed at
-          rest. The 1500px cap keeps absurdly tall windows from leaving
-          a giant whitespace column. */}
+      {/* Two-column home layout: hero header (left, sticky on lg+) and
+          projects + playground (right, scrolling). About mode reverts
+          to a single 650px column so the bio reads full-width.
+          paddingTop = toolbar height (36) + breathing room. */}
       <div
-        className="max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
+        className={
+          aboutMeOpen
+            ? "max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
+            : "max-w-[1400px] mx-auto px-4 sm:px-8 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-x-16"
+        }
         style={{
           paddingTop: "clamp(96px, 12vh, 144px)",
-          minHeight: "clamp(640px, calc(100vh + 60px), 1500px)",
         }}
       >
-        <Hero
-          matrix={<MatrixArea />}
-          aboutMeOpen={aboutMeOpen}
-          onAboutMeChange={setAboutMeOpen}
-          wordmarkRef={setWordmarkRef}
-          aboutMeHeaderRef={setAboutMeHeaderRef}
-          ready={heroReady}
-          hideStarForLoader={loaderOwnsStar}
-          onStarMorphComplete={() => setHeroReady(true)}
-        />
+        <div
+          className={
+            aboutMeOpen
+              ? ""
+              : "lg:sticky lg:top-32 lg:self-start"
+          }
+        >
+          {/* About mode renders the full Hero (back button + about copy +
+              resume button + LED matrix). Home mode skips Hero entirely —
+              the wordmark moved to the right column header row. */}
+          {aboutMeOpen && (
+            <Hero
+              matrix={<MatrixArea />}
+              aboutMeOpen={aboutMeOpen}
+              onAboutMeChange={setAboutMeOpen}
+              wordmarkRef={setWordmarkRef}
+              aboutMeHeaderRef={setAboutMeHeaderRef}
+              ready={heroReady}
+              hideStarForLoader={loaderOwnsStar}
+              onStarMorphComplete={() => setHeroReady(true)}
+            />
+          )}
+          {/* Primary section nav lives in the left sticky column on home.
+              Hidden in About mode — the back-button inside the About view
+              owns the navigation there. */}
+          {!aboutMeOpen && (
+            <HomeNav
+              navRef={navRef}
+              aboutMeOpen={aboutMeOpen}
+              onAboutMeOpen={() => setAboutMeOpen(true)}
+              onAboutMeClose={() => setAboutMeOpen(false)}
+              ready={heroReady}
+            />
+          )}
+        </div>
+
+        {/* Right column — only renders in home mode. */}
+        {!aboutMeOpen && (
+          <div className="flex flex-col">
+            {/* Wordmark + toolbar row — wordmark flush left, toolbar
+                flush right via justify-between. Wordmark renders on all
+                viewports; toolbar is desktop-only (MobileToolbar handles
+                below lg). */}
+            <motion.div
+              className="flex items-center justify-between mb-8"
+              initial={{ opacity: 0, filter: "blur(12px)" }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                filter: heroReady ? "blur(0px)" : "blur(12px)",
+              }}
+              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0 }}
+            >
+              <h1
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "28px",
+                  fontWeight: 600,
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.025em",
+                  color: "var(--color-fg)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {HERO_NAME}
+              </h1>
+              <div className="hidden lg:block">
+                <HeroToolbar />
+              </div>
+            </motion.div>
+            {/* Bio block — sits below the wordmark row, above the first
+                project card. Multi-paragraph intro that doubles as a
+                positioning statement for the work below. */}
+            <motion.div
+              className="text-(--color-fg-secondary) leading-[26px] mb-8 flex flex-col gap-4"
+              style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
+              initial={{ opacity: 0, filter: "blur(12px)" }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                filter: heroReady ? "blur(0px)" : "blur(12px)",
+              }}
+              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
+            >
+              <p>
+                Senior product designer based in San Francisco.
+                <br />
+                Currently at Canary Technologies.
+              </p>
+              <p>
+                I&apos;m fascinated by the interplay of human behavior,
+                culture, and the tools we use that augment the way we work
+                and create.
+              </p>
+              <p>
+                Outside of work, you&apos;ll find me shooting concert
+                photography, discussing music and movie, or exploring
+                various other creative side projects.
+              </p>
+            </motion.div>
+            <section id="projects" className="pt-0">
+              {/* Work content participates in the cascade — last in the
+                  chain so the eye lands on Hero first, then sweeps down. */}
+              <motion.div
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.32 }}
+              >
+                {work}
+              </motion.div>
+            </section>
+            <section id="playground" className="pt-32 pb-48">
+              {/* Mirrors the Work section's cascade so Playground blurs in
+                  alongside the rest of the page once the loader releases. */}
+              <motion.div
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+              >
+                <Playground />
+              </motion.div>
+            </section>
+          </div>
+        )}
       </div>
-      <section
-        id="projects"
-        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-0"
-        style={aboutMeOpen ? { display: "none" } : undefined}
-      >
-        {/* Work content participates in the cascade — last in the
-            chain so the eye lands on Hero first, then sweeps down. */}
-        <motion.div
-          initial={{ opacity: 0, filter: "blur(12px)" }}
-          animate={{
-            opacity: heroReady ? 1 : 0,
-            filter: heroReady ? "blur(0px)" : "blur(12px)",
-          }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.32 }}
-        >
-          {work}
-        </motion.div>
-      </section>
-      <section
-        id="playground"
-        className="max-w-[650px] mx-auto px-4 sm:px-8 min-h-screen pt-32 pb-48"
-        style={aboutMeOpen ? { display: "none" } : undefined}
-      >
-        {/* Mirrors the Work section's cascade so Playground blurs in
-            alongside the rest of the page once the loader releases. */}
-        <motion.div
-          initial={{ opacity: 0, filter: "blur(12px)" }}
-          animate={{
-            opacity: heroReady ? 1 : 0,
-            filter: heroReady ? "blur(0px)" : "blur(12px)",
-          }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
-        >
-          <Playground />
-        </motion.div>
-      </section>
     </div>
     </>
   );

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { CaseStudyMeta } from "@/lib/types";
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
@@ -341,7 +341,7 @@ function GalleryCardList({
 }) {
   if (studies.length === 0) return null;
   return (
-    <div className="mt-8 flex flex-col gap-24">
+    <div className="mt-8 flex flex-col gap-8">
       {studies.map((study) => {
         const locked = isLocked(study.slug);
         const href = STUDY_ROUTES[study.slug];
@@ -424,37 +424,10 @@ function GalleryCard({
   const objectPosition = item && typeof item === "object" && "src" in item ? (item.objectPosition ?? "center") : "center";
   const frameAspect = video?.aspect ?? "16 / 10";
 
-  // Scroll-driven reveal. progress = 0 when the card's top edge is at the
-  // viewport bottom; = 1 when the card's bottom edge has scrolled past the
-  // viewport top. Center of the card sits at progress ≈ 0.5.
-  //
-  //   - imageScale: stays at 1 across the entry zone (progress 0 → 0.18)
-  //     so a card that's only peeking at the bottom of the viewport on
-  //     initial load doesn't already start scaling up. Climbs to peakScale
-  //     by 0.5 (centered), holds peak across 0.5 → 0.6 to give the imagery
-  //     a beat at full size, then settles back to 1 by 0.82.
-  //   - textOpacity: hidden until the card is roughly 30% through its
-  //     range, fully visible by 55%, then locked at 1 so the caption reads
-  //     as "the card has arrived" instead of re-fading on scroll-past.
-  //
-  // peakScale is viewport-aware — a gentle 1.15× on desktop (subtle
-  // breathing on scroll, not a wow-zoom), dialed back to 1.06× on narrow
-  // viewports so the scaled image doesn't overflow past a phone screen.
+  // Cards render at fixed size with no scroll-driven effects. The image
+  // scale + caption fade were both removed once the title/year row was
+  // taken off these tiles.
   const cardRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ["start end", "end start"],
-  });
-  const [isDesktop, setIsDesktop] = useState(true);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mq = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  const peakScale = isDesktop ? 1.15 : 1.06;
 
   // Resolve the card's bg to either a brand tint (if the slug is in
   // CARD_TINTS) or the neutral fallback. color-mix produces the same
@@ -464,33 +437,16 @@ function GalleryCard({
   const cardBg = tint
     ? `color-mix(in srgb, ${tint} ${CARD_TINT_AMOUNT}%, ${CARD_BG})`
     : CARD_BG;
-  const imageScale = useTransform(
-    scrollYProgress,
-    [0, 0.18, 0.5, 0.6, 0.82, 1],
-    [1, 1, peakScale, peakScale, 1, 1]
-  );
-  const textOpacity = useTransform(scrollYProgress, [0.3, 0.55, 1], [0, 1, 1]);
 
   const sharedClassName =
-    "block w-full cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) rounded-lg";
+    "block w-full cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) rounded-none";
 
   const cardInner = (
     <>
-      {/* Card group — frame + caption scale together via imageScale,
-          so the title/year row stays pinned to the bottom of the card
-          and rides the same scroll-driven scale as the imagery.
-          `will-change: transform` is intentionally NOT set: forcing the
-          wrapper into its own permanent compositor layer caused the
-          browser to rasterize the imagery once at 1× DPR and then
-          bilinearly upscale on every scaled frame, which read as
-          softness on the photos / video. Letting the browser manage
-          layer promotion per-frame trades a tiny bit of scroll perf
-          for noticeably crisper imagery during the scale animation. */}
-      <motion.div
-        style={{
-          scale: imageScale,
-        }}
-      >
+      {/* Card group — frame + caption render at a fixed size. The
+          previous scroll-driven scale was removed; cards no longer
+          breathe larger as they approach viewport center. */}
+      <div>
         {/* Image frame — no border, no drop shadow. The card sits flat
             on the page bg, with the per-slug accent tint (cardBg) doing
             the visual lifting instead of a chrome shadow. The composite
@@ -498,7 +454,7 @@ function GalleryCard({
             uiShadow (see gallery-content), which is the only shadow on
             these cards now. */}
         <div
-          className="w-full rounded-lg overflow-hidden relative"
+          className="w-full rounded-none overflow-hidden relative border border-(--color-border)"
           style={{
             aspectRatio: frameAspect,
             backgroundColor: cardBg,
@@ -581,47 +537,11 @@ function GalleryCard({
           </div>
         )}
         </div>
-        {/* Caption row — sits flush below the image frame and lives
-            INSIDE the scaling wrapper above, so the title + year ride
-            the same imageScale transform as the imagery. Pinned to the
-            bottom of the card, scales 1:1 with the frame. Opacity is
-            driven independently by textOpacity so the row fades in as
-            the card reaches the middle of the viewport. */}
-        <motion.div
-          className="mt-4 flex items-baseline justify-between gap-4"
-          style={{ opacity: textOpacity }}
-        >
-          {/* Title styled to match the Playground card titles — Geist
-              sans, 16px / 500, slight negative tracking. Matching the
-              playground keeps the two homepage galleries reading as one
-              type system. */}
-          <span
-            style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "16px",
-              fontWeight: 500,
-              color: "var(--color-fg)",
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {study.title}
-          </span>
-          <span
-            style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "11px",
-              color: "var(--color-fg-tertiary)",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {study.year}
-          </span>
-        </motion.div>
-      </motion.div>
-      {/* Description rendering disabled per the caption-row redesign —
-          the description copy still lives on `study.description` (sourced
-          from the case-study MDX frontmatter / studies metadata) so we
-          can re-introduce it later without rewriting any data. */}
+      </div>
+      {/* Title + year + description intentionally removed — work cards
+          now read as image-only tiles. Copy still lives on study.title /
+          study.year / study.description and can be re-introduced later
+          without rewriting any data. */}
     </>
   );
 

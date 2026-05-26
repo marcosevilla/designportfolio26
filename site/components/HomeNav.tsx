@@ -161,19 +161,11 @@ export default function HomeNav({
   return (
     <motion.nav
       ref={navRef}
-      className="chat-cmp-hide hidden lg:flex flex-col fixed top-1/2 z-40"
-      // Pinned to the viewport's left edge with a 12px gutter. Prior version
-      // anchored to the centered 650px column ('calc(50% - 325 - 32 - 203)'),
-      // but that math doesn't account for the chat side panel pushing <body>
-      // left when open — the nav stayed put while content moved, overlapping
-      // the bio. Viewport-pinned avoids the overlap; the nav becomes a true
-      // viewport-edge rail. Below xl-with-chat-open, .chat-cmp-hide hides it
-      // and HamburgerMenu takes over.
-      style={{
-        width: "203px",
-        left: "12px",
-        transform: "translateY(-50%)",
-      }}
+      className="chat-cmp-hide hidden lg:flex flex-col mt-12"
+      // Lives inside the home page's left column, beneath the wordmark +
+      // tagline + Learn-more cluster. The column itself is sticky on lg+,
+      // so the nav rides along on scroll. Below xl-with-chat-open,
+      // .chat-cmp-hide hides it and HamburgerMenu takes over.
       aria-label="Primary"
       initial={reducedMotion ? false : { opacity: 0, filter: "blur(12px)" }}
       animate={
@@ -229,44 +221,14 @@ export default function HomeNav({
         )}
       </AnimatePresence>
 
-      {/* Nav links with hanging star — hidden while the About-me page owns
-          the column; only the Return link should remain visible. The ul has
-          left padding so labels start at NAV_LABEL_INDENT; the absolute star
-          sits at left-0 and "hangs" into the padding lane. */}
+      {/* Nav links — flush left, no hanging-star marker. Hidden while
+          the About-me page owns the column; only the Return link should
+          remain visible. */}
       <ul
         className={`flex flex-col gap-2 relative${aboutMeOpen ? " hidden" : ""}`}
-        style={{ paddingLeft: "24px" }}
         onMouseLeave={() => setHoveredIndex(null)}
         aria-hidden={aboutMeOpen || undefined}
       >
-        {activeIndex >= 0 && (
-          <motion.span
-            className="absolute left-0 pointer-events-none flex items-center"
-            style={{
-              height: "20px",
-              y: starY,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.15 }}
-            aria-hidden
-          >
-            {/* Inner span owns the static optical-center translate so the
-                outer motion.span's transform (y: starY) is left untouched. */}
-            <span
-              style={{
-                color: "var(--color-accent)",
-                fontSize: "18px",
-                lineHeight: 1,
-                fontWeight: 500,
-                display: "inline-block",
-                transform: "translateY(15%)",
-              }}
-            >
-              *
-            </span>
-          </motion.span>
-        )}
         {NAV_ITEMS.map((item, index) => {
           const active = item.id === activeId;
           const isHovered = hoveredIndex === index;

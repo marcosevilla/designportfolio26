@@ -16,37 +16,6 @@ const CV_ENTRIES = [
   { company: "Vyond", title: "Visual Designer", city: "San Mateo" },
 ];
 
-function LearnMoreCVButton({ onClick }: { onClick: () => void }) {
-  return (
-    <div className="mt-6 flex justify-end">
-      <button
-        type="button"
-        onClick={onClick}
-        className="group inline-flex items-center gap-1.5 cursor-pointer focus:outline-none"
-        style={{
-          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-          fontSize: "12px",
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          lineHeight: 1.4,
-          color: "var(--color-accent)",
-          background: "none",
-          border: 0,
-          padding: 0,
-        }}
-      >
-        <span>Learn more</span>
-        <span
-          aria-hidden
-          className="inline-flex items-center transition-transform duration-200 ease-out group-hover:translate-x-1"
-        >
-          <ArrowRightIcon size={14} />
-        </span>
-      </button>
-    </div>
-  );
-}
 
 function ExperienceList() {
   return (
@@ -160,6 +129,7 @@ function useFitWordmark(
 function PlaygroundStar({
   hideForLoader = false,
   onMorphComplete,
+  standalone = false,
 }: {
   /** When true, the wordmark slot reserves its space (no layout shift)
    *  but the star glyph + layoutId aren't rendered. While the loader
@@ -170,6 +140,10 @@ function PlaygroundStar({
    *  when the star "lands" in its final wordmark slot. Used to gate the
    *  cascading blur-in of the rest of the home page on first-time load. */
   onMorphComplete?: () => void;
+  /** Renders the star as a flush-left, enlarged block above the
+   *  wordmark instead of as an inline trailing glyph. Drops the
+   *  overlap transform and bumps the glyph's font-size. */
+  standalone?: boolean;
 }) {
   const morphFiredRef = useRef(false);
   const handleLayoutAnimationComplete = () => {
@@ -195,22 +169,31 @@ function PlaygroundStar({
   return (
     <span
       aria-hidden
-      className="flex items-center justify-center shrink-0"
+      className={
+        standalone
+          ? "flex items-center justify-start shrink-0"
+          : "flex items-center justify-center shrink-0"
+      }
       style={{
         color: "var(--color-accent)",
-        // Sized in em so the star scales with the wordmark group. Y offset
-        // pushes the asterisk's top down to roughly cap-height of the wordmark
-        // (Geist's * sits high in its em-box, so we can't rely on flex-center
-        // alone to look top-aligned with the M).
-        width: "0.66em",
-        height: "0.66em",
+        // Sized in em so the star scales with the wordmark group. In the
+        // inline (non-standalone) variant the Y offset pushes the asterisk's
+        // top down to roughly cap-height of the wordmark. In standalone it
+        // sits flush-left in its own row above the wordmark.
+        width: standalone ? "1.2em" : "0.66em",
+        height: standalone ? "1.2em" : "0.66em",
         fontSize: "var(--wordmark-fontsize, 48px)",
-        transform: "translate(-0.12em, 0.08em)",
+        transform: standalone ? "none" : "translate(-0.12em, 0.08em)",
       }}
     >
       {!hideForLoader && (
         <span
-          style={{ position: "relative", display: "inline-block", fontSize: "0.62em", lineHeight: 1 }}
+          style={{
+            position: "relative",
+            display: "inline-block",
+            fontSize: standalone ? "1em" : "0.62em",
+            lineHeight: 1,
+          }}
         >
           {/* layoutId pairs with the loading-overlay's star, so when the
               loader unmounts its star this element morphs from the large
@@ -325,10 +308,8 @@ export default function Hero({
     }
   }, [externalAboutMeHeaderRef]);
 
-  // The "Growing up..." paragraph (index 2) lives on the About me page; the
-  // main bio shows the rest in their original order.
-  const mainParagraphs = PARAGRAPHS.filter((_, i) => i !== 2);
-  const aboutMeParagraphs = PARAGRAPHS[2] ? [PARAGRAPHS[2]] : [];
+  // Full bio lives on the About me page. Home shows only the tagline below.
+  const aboutMeParagraphs = PARAGRAPHS;
 
   return (
     <>
@@ -357,9 +338,11 @@ export default function Hero({
                   Only the <h1> name participates in the cascade. */}
               <div
                 ref={setWordmarkRef}
-                className="flex items-start justify-start"
+                className="flex flex-col items-start"
                 style={{ width: "100%" }}
               >
+                {/* Standalone asterisk removed — wordmark is the single
+                    brand-mark in the left column now. */}
                 <motion.h1
                   initial={initial}
                   animate={animate}
@@ -377,36 +360,11 @@ export default function Hero({
                 >
                   {HERO_NAME}
                 </motion.h1>
-                <PlaygroundStar
-                  hideForLoader={hideStarForLoader}
-                  onMorphComplete={onStarMorphComplete}
-                />
               </div>
 
-              {/* LED matrix — equidistant 40px (mt-10) from wordmark above
-                  and bio below. */}
-              {matrix && (
-                <motion.div
-                  className="mt-10"
-                  initial={initial}
-                  animate={animate}
-                  transition={tx(0.16)}
-                >
-                  {matrix}
-                </motion.div>
-              )}
-
-              {/* Bio — paragraphs 1, 2, 4 (childhood lives on About me) */}
-              <motion.div
-                className="mt-10 text-(--color-fg-secondary) leading-[26px]"
-                style={{ fontSize: "calc(16px + var(--font-size-offset))" }}
-                initial={initial}
-                animate={animate}
-                transition={tx(0.24)}
-              >
-                <HighlightableBio paragraphs={mainParagraphs} />
-                <LearnMoreCVButton onClick={() => onAboutMeChange(true)} />
-              </motion.div>
+              {/* Learn-more button removed — About is still reachable
+                  via the ABOUT link in HomeNav below. The bio text moved
+                  into the right column (see HomeLayout). */}
             </motion.div>
           ) : (
             <motion.div
@@ -476,7 +434,7 @@ export default function Hero({
 
               <div
                 className="mt-16 text-(--color-fg-secondary) leading-[26px]"
-                style={{ fontSize: "calc(16px + var(--font-size-offset))" }}
+                style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
                 {/* Source PDF lives in ~/Developer/job-hunt/ — re-copy
@@ -503,6 +461,10 @@ export default function Hero({
                     <ArrowRightIcon size={14} />
                   </span>
                 </a>
+                {/* LED matrix — moved from the home hero. Sits below the
+                    resume button so the About page closes with the audio
+                    visualizer as a craft tail. */}
+                {matrix && <div className="mt-12">{matrix}</div>}
                 {/* "Hello, friend" greeting note hidden for now — was a
                     closing flourish carried over from the deleted toolbar
                     cycling greetings; can be restored later from git. */}
