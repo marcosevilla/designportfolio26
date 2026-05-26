@@ -163,7 +163,7 @@ export default function HomeNav({
   return (
     <motion.nav
       ref={navRef}
-      className="chat-cmp-hide hidden lg:flex flex-col mt-12"
+      className="chat-cmp-hide hidden lg:flex flex-col"
       // Lives inside the home page's left column, beneath the wordmark +
       // tagline + Learn-more cluster. The column itself is sticky on lg+,
       // so the nav rides along on scroll. Below xl-with-chat-open,

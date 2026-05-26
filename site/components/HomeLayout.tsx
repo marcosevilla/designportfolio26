@@ -186,8 +186,13 @@ export default function HomeLayout({
             ? "max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
             : "max-w-[1400px] mx-auto px-4 sm:px-8 " +
               "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)] lg:gap-x-16 " +
-              "xl:block xl:max-w-none xl:w-screen xl:relative xl:left-1/2 " +
-              "xl:-translate-x-1/2 xl:px-0"
+              // Escape <main>'s 960px constraint at xl+ via a margin-only
+              // trick (no `transform`). A transformed ancestor would
+              // become the containing block for any fixed-position
+              // descendants — which would re-anchor the fixed nav to the
+              // scrolling wrapper and break sticky behavior.
+              "xl:block xl:max-w-none xl:w-screen " +
+              "xl:mx-[calc(50%-50vw)] xl:px-0"
         }
         style={{
           paddingTop: "clamp(96px, 12vh, 144px)",
@@ -199,10 +204,11 @@ export default function HomeLayout({
               ? ""
               : "lg:sticky lg:top-32 lg:self-start " +
                 // At xl+ the nav is fixed-position flush-left of the
-                // viewport (no longer in the grid flow). Top is fixed
-                // so the nav stays anchored while the right column
-                // scrolls below it.
-                "xl:fixed xl:top-32 xl:left-6 xl:self-auto xl:z-[40]"
+                // viewport (no longer in the grid flow). Top matches
+                // the wrapper's paddingTop so the nav's first link
+                // top-aligns with the bio's first text line.
+                "xl:fixed xl:top-[clamp(96px,12vh,144px)] xl:left-6 " +
+                "xl:self-auto xl:z-[40]"
           }
         >
           {/* About mode renders the full Hero (back button + about copy +
