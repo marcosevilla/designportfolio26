@@ -304,12 +304,13 @@ export default function MusicOverlay() {
                 with a soft border + drop shadow so it reads as a single
                 grouped surface against the overlay background. */}
             <div
-              className="flex items-center gap-5 mt-8 px-5 py-3"
+              className="flex items-center gap-5 mt-8 px-5 py-2"
               style={{
-                backgroundColor: "var(--color-surface-raised)",
+                backgroundColor: "var(--color-bg)",
                 border: "1px solid var(--color-border)",
-                boxShadow:
-                  "0 1px 2px rgba(0,0,0,0.04), 0 16px 36px -16px rgba(0,0,0,0.22)",
+                // Single soft, far-falloff shadow — large blur radius, low
+                // opacity. Reads as elevation without an obvious cast.
+                boxShadow: "0 28px 56px -28px rgba(0,0,0,0.12)",
               }}
             >
               {/* Left — track title + artist, flush-left. Slides + blurs
@@ -337,7 +338,7 @@ export default function MusicOverlay() {
                     animate="center"
                     exit="exit"
                     transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex flex-col min-w-0"
+                    className="flex flex-col min-w-0 gap-1"
                   >
                     <p
                       className="truncate"
@@ -388,7 +389,7 @@ export default function MusicOverlay() {
                   </TransportButton>
                 </div>
                 <div
-                  className="w-full flex items-center gap-3"
+                  className="w-full flex items-center gap-3 -mt-3"
                   style={{
                     fontFamily:
                       "var(--font-geist-mono), ui-monospace, Menlo, monospace",
