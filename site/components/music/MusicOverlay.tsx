@@ -56,9 +56,10 @@ function BorderScrubber({
       aria-valuenow={value}
       tabIndex={0}
       className="relative w-full cursor-pointer select-none touch-none"
-      // Generous tap padding above the visible strip so hovers and clicks
-      // land easily; the strip itself sits at the very bottom.
-      style={{ paddingTop: 16 }}
+      // Tap padding above the visible strip — kept minimal so the strip
+      // sits close to the content above it. The strip itself is the
+      // bottom edge of the card.
+      style={{ paddingTop: 8 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onPointerDown={(e) => {
@@ -222,7 +223,7 @@ function TransportButton({
   children: React.ReactNode;
   emphasized?: boolean;
 }) {
-  const size = emphasized ? 44 : 32;
+  const size = emphasized ? 56 : 32;
   return (
     <button
       type="button"
@@ -464,11 +465,14 @@ export default function MusicOverlay() {
                 with a soft border + drop shadow so it reads as a single
                 grouped surface against the overlay background. */}
             <div
-              className="mt-8 flex flex-col overflow-hidden"
+              className="mt-8 flex flex-col"
               style={{
                 backgroundColor: "var(--color-bg)",
                 // No border-bottom — the BorderScrubber below acts as the
                 // bottom edge, filling with accent as the song progresses.
+                // overflow:visible so the thumb dot can extend below the
+                // card's bottom edge without being clipped into a half
+                // circle while dragging.
                 borderTop: "0.5px solid var(--color-border)",
                 borderLeft: "0.5px solid var(--color-border)",
                 borderRight: "0.5px solid var(--color-border)",
@@ -545,7 +549,7 @@ export default function MusicOverlay() {
                   onClick={togglePlay}
                   emphasized
                 >
-                  {isPlaying ? <PauseIcon size={22} /> : <PlayIcon size={22} />}
+                  {isPlaying ? <PauseIcon size={28} /> : <PlayIcon size={28} />}
                 </TransportButton>
                 <TransportButton label="Next track" onClick={handleNext}>
                   <SkipForwardIcon size={15} />
