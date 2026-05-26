@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
+import LocalStatus from "./LocalStatus";
 import { HERO_NAME } from "@/lib/bio-content";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useNavOverlay } from "@/lib/NavOverlayContext";
@@ -105,19 +106,27 @@ export default function SiteHeader() {
         transition: "border-color 200ms ease-out",
       }}
     >
-      <div className="flex items-center justify-between px-4 sm:px-6 h-14">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={toggleNav}
-            aria-label={navOpen ? "Close navigation" : "Open navigation"}
-            aria-expanded={navOpen}
-            className="inline-flex items-center justify-center w-8 h-8 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer text-(--color-fg) hover:text-(--color-accent)"
-            style={{ borderRadius: 4 }}
-          >
-            <HamburgerCloseIcon open={navOpen} size={16} />
-          </button>
+      {/* Header bar is laid out in three layers so the wordmark and
+          LocalStatus can align with the centered 800px body content
+          while the hamburger and toolbar stay flush to the viewport
+          edges. */}
+      <div className="relative h-14">
+        {/* Hamburger — flush left of viewport. */}
+        <button
+          type="button"
+          onClick={toggleNav}
+          aria-label={navOpen ? "Close navigation" : "Open navigation"}
+          aria-expanded={navOpen}
+          className="absolute top-1/2 -translate-y-1/2 left-4 sm:left-6 inline-flex items-center justify-center w-8 h-8 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer text-(--color-fg) hover:text-(--color-accent)"
+          style={{ borderRadius: 4 }}
+        >
+          <HamburgerCloseIcon open={navOpen} size={16} />
+        </button>
 
+        {/* Content-aligned row — same max-w and centering as the page
+            body, so the wordmark sits at the body's left edge and
+            LocalStatus at its right edge. */}
+        <div className="h-full mx-auto max-w-[800px] px-4 flex items-center justify-between">
           <Link
             href="/"
             onClick={handleWordmarkClick}
@@ -135,9 +144,13 @@ export default function SiteHeader() {
           >
             {HERO_NAME}
           </Link>
+          <LocalStatus />
         </div>
 
-        <HeaderToolbar />
+        {/* Toolbar — flush right of viewport. */}
+        <div className="absolute top-1/2 -translate-y-1/2 right-4 sm:right-6">
+          <HeaderToolbar />
+        </div>
       </div>
     </motion.header>
       )}

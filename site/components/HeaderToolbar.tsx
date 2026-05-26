@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaletteRow } from "./PaletteSwatches";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import LocalStatus from "./LocalStatus";
 import { MoonIcon, MusicNoteIcon, SettingsIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
 
@@ -255,11 +254,11 @@ function ChatTriggerPill() {
       onClick={() => window.dispatchEvent(new CustomEvent("chat:open"))}
       animate={{ opacity: chatOpen ? 0 : 1, scale: chatOpen ? 0.92 : 1 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-      aria-label="Open chat"
-      className="pointer-events-auto inline-flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
+      aria-label="Open chat — ask me anything"
+      className="pointer-events-auto inline-flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
-        width: 32,
         height: 32,
+        padding: "0 12px",
         cursor: chatOpen ? "default" : "pointer",
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
@@ -271,6 +270,20 @@ function ChatTriggerPill() {
       }}
     >
       <ChatBubbleIcon size={14} />
+      <span
+        style={{
+          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+          fontSize: 11,
+          fontWeight: 500,
+          color: "var(--color-on-accent)",
+          lineHeight: 1,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Ask me anything
+      </span>
     </motion.button>
   );
 }
@@ -309,9 +322,6 @@ export default function HeaderToolbar() {
           onToggle={() => setPaletteOpen((v) => !v)}
         />
         <MusicButton />
-        <div className="shrink-0 flex items-center pl-1">
-          <LocalStatus />
-        </div>
       </div>
 
       <ChatTriggerPill />
