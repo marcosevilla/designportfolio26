@@ -191,12 +191,14 @@ export default function HomeLayout({
               transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
             >
               <p>
-                Currently at Canary Technologies. I&apos;m fascinated by the
-                interplay of human behavior, culture, and the tools we
-                use that augment the way we work and create. Outside of
-                work, you&apos;ll find me shooting concert photography,
-                discussing music and movie, or exploring various other
-                creative side projects.
+                Currently at Canary Technologies, building software for
+                the world&apos;s largest hospitality brands.
+              </p>
+              <p>
+                Previously, I was the Lead Visual Designer for a suite of
+                animation tools at Vyond, made wine discovery more
+                accessible at Vivino, and was the Founding Product Designer
+                at General Task.
               </p>
             </motion.div>
 

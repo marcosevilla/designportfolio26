@@ -13,7 +13,6 @@ import {
   PauseIcon,
   SkipBackIcon,
   SkipForwardIcon,
-  ArrowRightIcon,
 } from "@/components/Icons";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
@@ -150,12 +149,15 @@ function NumberedSceneToggles() {
                 fontSize: 11,
                 fontWeight: 500,
                 lineHeight: 1,
+                borderRadius: 4,
                 color: active
                   ? "var(--color-accent)"
                   : "var(--color-fg-tertiary)",
                 backgroundColor: active
                   ? "color-mix(in srgb, var(--color-accent) 12%, transparent)"
-                  : "transparent",
+                  : hovered
+                    ? "color-mix(in srgb, var(--color-fg) 6%, transparent)"
+                    : "transparent",
               }}
             >
               {idx + 1}
@@ -252,69 +254,20 @@ export default function MusicOverlay() {
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 16, filter: "blur(12px)" }}
             transition={{ duration: 0.42, ease: BLUR_EASE }}
-            className="w-full max-w-[700px] flex flex-col gap-4"
+            className="w-full max-w-[550px] flex flex-col gap-2"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Return button — sits inside the music player column,
-                flush-left at the top. Click closes the overlay; audio
-                playback is unaffected. mb-6 gives breathing room before
-                the visualizer below. */}
-            <div className="flex mb-6">
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Return to page"
-                className="group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)"
-                style={{
-                  fontFamily:
-                    "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  lineHeight: 1,
-                  color: "var(--color-fg-secondary)",
-                  background: "none",
-                  border: 0,
-                  padding: 0,
-                }}
-              >
-                <span
-                  aria-hidden
-                  className="inline-flex items-center transition-transform duration-200 ease-out group-hover:-translate-x-1"
-                >
-                  <span style={{ display: "inline-flex", transform: "scaleX(-1)" }}>
-                    <ArrowRightIcon size={14} />
-                  </span>
-                </span>
-                <span>Return</span>
-              </button>
-            </div>
-
-            {/* LED matrix — height set proportionally to the column's
-                700px max-width so the aspect ratio holds (~3:1). Width
-                fills the centered column. */}
+            {/* LED matrix — width matches the player card column below
+                (550px). Width fills the centered column. */}
             <div className="relative">
               <LedMatrix height={226} />
             </div>
 
             {/* Spotify-style player row. Left: track info. Center:
                 transport controls + scrubber. Right: visualizer toggles
-                + shrink-to-mini-widget button. Wrapped in a tinted card
-                with a soft border + drop shadow so it reads as a single
-                grouped surface against the overlay background. */}
-            <div
-              // max-w 550 deliberately narrower than the 700px LED column
-              // above so the player card reads as a centered surface
-              // beneath a wider visualizer.
-              className="mt-8 mx-auto w-full max-w-[550px] flex flex-col px-3 py-2.5 gap-2"
-              style={{
-                backgroundColor: "var(--color-bg)",
-                border: "0.5px solid var(--color-border)",
-                borderRadius: 4,
-                boxShadow: "0 6px 18px -8px rgba(0,0,0,0.10)",
-              }}
-            >
+                + shrink-to-mini-widget button. Controls sit directly on
+                the overlay background — no card chrome. */}
+            <div className="mx-auto w-full max-w-[550px] flex flex-col gap-2">
               <div className="flex items-center gap-4">
               {/* Left — track title + artist, flush-left. Slides + blurs
                   between tracks: leaving track exits in the skip direction,

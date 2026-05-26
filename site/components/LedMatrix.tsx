@@ -151,7 +151,7 @@ function saturate(rgb: [number, number, number], factor: number): [number, numbe
 // luminance delta against a near-white bg. We enforce a minimum L distance
 // from bg with a soft cap that preserves intra-palette ordering, and
 // nudge saturation up to compensate when colors get pulled toward mid-L.
-const MIN_L_DIST = 0.35; // minimum HSL lightness distance from page bg
+const MIN_L_DIST = 0.42; // minimum HSL lightness distance from page bg
 const SOFT_CAP_OVERSHOOT = 0.12; // how far the soft cap extends beyond the hard threshold
 function softCapHi(l: number, cap: number): number {
   if (l <= cap) return l;
@@ -174,7 +174,7 @@ function tonemapForBg(rgb: [number, number, number], bgLum: number): [number, nu
     : softCapLo(l, Math.min(0.85, bgLum + MIN_L_DIST));
   // Saturation boost scales with how far we had to move the color.
   const moved = Math.abs(newL - l);
-  const newS = Math.min(1, s * (1 + moved * 0.7));
+  const newS = Math.min(1, s * (1 + moved * 1.2));
   return hslToRgb(h, newS, Math.max(0, Math.min(1, newL)));
 }
 
@@ -188,7 +188,7 @@ function tonemapForWaveform(rgb: [number, number, number], bgLum: number): [numb
     ? softCapHi(l, Math.max(0.08, bgLum - WAVEFORM_MIN_L_DIST))
     : softCapLo(l, Math.min(0.92, bgLum + WAVEFORM_MIN_L_DIST));
   const moved = Math.abs(newL - l);
-  const newS = Math.min(1, s * (1 + moved * 0.9));
+  const newS = Math.min(1, s * (1 + moved * 1.3));
   return hslToRgb(h, newS, Math.max(0, Math.min(1, newL)));
 }
 

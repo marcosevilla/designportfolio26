@@ -7,9 +7,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
 import { HERO_NAME } from "@/lib/bio-content";
-import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useNavOverlay } from "@/lib/NavOverlayContext";
 import { useChatOverlay } from "@/lib/ChatOverlayContext";
+import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 
 /** Sidebar / panel-open glyph: a rounded rectangle with a vertical
  *  divider near the left edge — reads as "open the left panel". The
@@ -68,28 +68,32 @@ function HamburgerCloseIcon({ open, size = 16 }: { open: boolean; size?: number 
  *  boundary against content is legible. Mounted in app/layout.tsx so it
  *  appears on every route. */
 export default function SiteHeader() {
-  const { overlayOpen } = useAudioPlayer();
   const { navOpen, toggleNav } = useNavOverlay();
   const { chatOpen } = useChatOverlay();
-  const headerHidden = overlayOpen || chatOpen;
+  const { overlayOpen: musicOverlayOpen } = useAudioPlayer();
+  // Music overlay deliberately keeps the header visible so the palette /
+  // theme controls in HeaderToolbar stay reachable while the player is open.
+  const headerHidden = chatOpen;
   const pathname = usePathname();
 
   // On the home page the wordmark is suppressed until the user has
   // scrolled past the bio (Marco's name + tagline + bio paragraphs are
   // already on screen, so the wordmark would duplicate the page heading).
-  // Other routes show it immediately.
-  const [showWordmark, setShowWordmark] = useState(pathname !== "/");
+  // Other routes show it immediately. The music overlay covers the bio,
+  // so the wordmark is forced on while it's open.
+  const [scrolledPast, setScrolledPast] = useState(pathname !== "/");
   useEffect(() => {
     if (pathname !== "/") {
-      setShowWordmark(true);
+      setScrolledPast(true);
       return;
     }
     const THRESHOLD = 280;
-    const onScroll = () => setShowWordmark(window.scrollY > THRESHOLD);
+    const onScroll = () => setScrolledPast(window.scrollY > THRESHOLD);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [pathname]);
+  const showWordmark = scrolledPast || musicOverlayOpen;
 
   const handleWordmarkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (pathname === "/") {
@@ -111,7 +115,7 @@ export default function SiteHeader() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -4 }}
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 right-0 z-[80]"
+      className="fixed top-0 left-0 right-0 z-[130]"
       style={{
         backgroundColor: "var(--color-bg)",
         borderBottom:
