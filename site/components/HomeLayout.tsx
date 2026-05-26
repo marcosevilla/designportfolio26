@@ -141,13 +141,13 @@ export default function HomeLayout({
                 kept tight on tracking so it still feels close to the
                 wordmark family. */}
             <motion.h1
-              className="mb-2"
+              className="mb-1"
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: 28,
+                fontSize: 14,
                 fontWeight: 600,
-                letterSpacing: "-0.02em",
-                lineHeight: 1.05,
+                letterSpacing: "-0.01em",
+                lineHeight: 1.2,
                 color: "var(--color-fg)",
               }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
