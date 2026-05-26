@@ -384,7 +384,7 @@ export default function ChatBar() {
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: 16, filter: "blur(12px)" }}
                   transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  className="w-full max-w-[700px] h-[82vh] max-h-[820px] flex flex-col"
+                  className="w-full max-w-[700px] h-[68vh] max-h-[680px] flex flex-col"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Return button — same treatment as the music overlay's,

@@ -326,7 +326,7 @@ export default function ChatPanel({
       {/* Transcript / empty state — overscroll-contain stops the wheel
           (or touch) from chaining to the page body once the transcript
           hits its top or bottom scroll limit. */}
-      <div ref={transcriptRef} className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+      <div ref={transcriptRef} className="flex-1 overflow-y-auto overscroll-contain px-2 py-4">
         {isEmpty ? (
           // h-full + mt-auto on the chips group pushes the suggested
           // prompts to the bottom of the panel (just above the input row),
