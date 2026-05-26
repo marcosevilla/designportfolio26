@@ -22,11 +22,13 @@ import { Agentation } from "agentation";
 import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
 import { VisualizerSceneProvider } from "@/lib/VisualizerSceneContext";
 import { ThemeStateProvider } from "@/components/ThemeToggle";
-import PlayerChip from "@/components/music/PlayerChip";
+import MusicMiniWidget from "@/components/music/MusicMiniWidget";
 import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
 import ChatBar from "@/components/chat/ChatBar";
 import SiteHeader from "@/components/SiteHeader";
+import MusicOverlay from "@/components/music/MusicOverlay";
+import MainBlurLayer from "@/components/MainBlurLayer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -83,7 +85,7 @@ export default function RootLayout({
                     id="main"
                     className="max-w-[960px] mx-auto px-4 sm:px-8 lg:px-6"
                   >
-                    {children}
+                    <MainBlurLayer>{children}</MainBlurLayer>
                   </main>
                   {process.env.NODE_ENV === "development" && (
                     <>
@@ -94,8 +96,9 @@ export default function RootLayout({
                   )}
                 </InlineEditorProvider>
                 <ViewportFade />
-                <PlayerChip />
+                <MusicMiniWidget />
                 <ChatBar />
+                <MusicOverlay />
                 <PasswordModal />
                 {process.env.NODE_ENV === "development" && <Agentation />}
               </PasswordGateProvider>

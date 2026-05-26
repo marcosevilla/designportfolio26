@@ -4,7 +4,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaletteRow } from "./PaletteSwatches";
-import { MiniPlayerRow } from "./music/HomeMiniPlayer";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import LocalStatus from "./LocalStatus";
 import { MoonIcon, MusicNoteIcon, SettingsIcon, SunIcon } from "./Icons";
@@ -182,48 +181,34 @@ function PaletteButton({
   );
 }
 
-function MusicButton({
-  open,
-  onToggle,
-}: {
-  open: boolean;
-  onToggle: () => void;
-}) {
-  const { isPlaying } = useAudioPlayer();
-  const triggerRef = useRef<HTMLButtonElement>(null);
+/** Music button — opens the global MusicOverlay (no longer a popover).
+ *  The matrix + transport + scrubber live inside that overlay. */
+function MusicButton() {
+  const { isPlaying, overlayOpen, setOverlayOpen } = useAudioPlayer();
   return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={onToggle}
-        aria-label={open ? "Hide player" : "Show player"}
-        aria-pressed={open}
-        aria-expanded={open}
-        className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors focus:outline-none text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) cursor-pointer"
-      >
-        {(open || isPlaying) && (
-          <span
-            aria-hidden
-            className="absolute inset-0 rounded-full"
-            style={{ backgroundColor: TINT_ACTIVE }}
-          />
-        )}
+    <button
+      type="button"
+      onClick={() => setOverlayOpen(true)}
+      aria-label="Open music player"
+      aria-pressed={overlayOpen}
+      className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors focus:outline-none text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) cursor-pointer"
+    >
+      {(overlayOpen || isPlaying) && (
         <span
           aria-hidden
-          className="absolute inset-0 rounded-full opacity-0 hover:opacity-100 transition-opacity"
-          style={{ backgroundColor: TINT_HOVER }}
+          className="absolute inset-0 rounded-full"
+          style={{ backgroundColor: TINT_ACTIVE }}
         />
-        <span className="relative inline-flex">
-          <MusicNoteIcon size={15} />
-        </span>
-      </button>
-      <PortalPopover open={open} anchorRef={triggerRef} minWidth={320}>
-        <div style={{ padding: "6px 10px" }}>
-          <MiniPlayerRow />
-        </div>
-      </PortalPopover>
-    </>
+      )}
+      <span
+        aria-hidden
+        className="absolute inset-0 rounded-full opacity-0 hover:opacity-100 transition-opacity"
+        style={{ backgroundColor: TINT_HOVER }}
+      />
+      <span className="relative inline-flex">
+        <MusicNoteIcon size={15} />
+      </span>
+    </button>
   );
 }
 
@@ -286,15 +271,11 @@ function ChatTriggerPill() {
  *  viewport's right edge; not tied to any section. */
 export default function HeaderToolbar() {
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [musicOpen, setMusicOpen] = useState(false);
   const pillRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setPaletteOpen(false);
-        setMusicOpen(false);
-      }
+      if (e.key === "Escape") setPaletteOpen(false);
     };
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Node;
@@ -302,7 +283,6 @@ export default function HeaderToolbar() {
       const inPopover = (target as Element | null)?.closest?.(".chat-surface");
       if (inPopover) return;
       setPaletteOpen(false);
-      setMusicOpen(false);
     };
     window.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer);
@@ -317,18 +297,9 @@ export default function HeaderToolbar() {
       <div ref={pillRef} className="flex items-center gap-1">
         <PaletteButton
           open={paletteOpen}
-          onToggle={() => {
-            setPaletteOpen((v) => !v);
-            setMusicOpen(false);
-          }}
+          onToggle={() => setPaletteOpen((v) => !v)}
         />
-        <MusicButton
-          open={musicOpen}
-          onToggle={() => {
-            setMusicOpen((v) => !v);
-            setPaletteOpen(false);
-          }}
-        />
+        <MusicButton />
         <div className="shrink-0 flex items-center pl-1">
           <LocalStatus />
         </div>

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
 import { HERO_NAME } from "@/lib/bio-content";
+import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 
 /** Global site header. Full-width fixed bar at the top with an opaque
  *  page-bg fill so content scrolls cleanly behind it. The wordmark sits
@@ -13,6 +15,7 @@ import { HERO_NAME } from "@/lib/bio-content";
  *  appears on every route. */
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
+  const { overlayOpen } = useAudioPlayer();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -22,7 +25,14 @@ export default function SiteHeader() {
   }, []);
 
   return (
-    <header
+    <AnimatePresence>
+      {!overlayOpen && (
+    <motion.header
+      key="site-header"
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 left-0 right-0 z-[80]"
       style={{
         backgroundColor: "var(--color-bg)",
@@ -55,6 +65,8 @@ export default function SiteHeader() {
         </Link>
         <HeaderToolbar />
       </div>
-    </header>
+    </motion.header>
+      )}
+    </AnimatePresence>
   );
 }
