@@ -454,10 +454,12 @@ function GalleryCard({
             uiShadow (see gallery-content), which is the only shadow on
             these cards now. */}
         <div
-          className="w-full rounded-none overflow-hidden relative border border-(--color-border)"
+          className="w-full overflow-hidden relative"
           style={{
             aspectRatio: frameAspect,
             backgroundColor: cardBg,
+            border: "0.5px solid var(--color-border)",
+            borderRadius: 4,
           }}
         >
         {video && (

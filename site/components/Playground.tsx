@@ -120,10 +120,11 @@ function PlaygroundCardItem({ card, locked = false }: { card: PlaygroundCard; lo
 function CardFrame({ card, locked = false }: { card: PlaygroundCard; locked?: boolean }) {
   return (
     <div
-      className="w-full rounded-2xl overflow-hidden relative"
+      className="w-full overflow-hidden relative"
       style={{
         backgroundColor: "var(--color-surface-raised)",
-        border: "1px solid var(--color-border)",
+        border: "0.5px solid var(--color-border)",
+        borderRadius: 4,
         aspectRatio: card.aspect ?? "16 / 10",
       }}
     >
