@@ -7,6 +7,7 @@ import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
 import AskMeAnythingButton from "./AskMeAnythingButton";
+import SocialLinks from "./SocialLinks";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -184,11 +185,14 @@ export default function HomeLayout({
               </p>
             </motion.div>
 
-            {/* Outlined chat-overlay trigger. Lives between the bio and
-                the projects section so it reads as a low-key invitation
-                tied to the welcome copy above. */}
+            {/* Action row. Ask-me-anything chat trigger flush-left, then
+                a tighter cluster of outlined text-only social links to
+                its right. The larger gap (gap-6) between the chat
+                trigger and the social cluster keeps each as its own
+                affordance group; gap-1.5 inside the social cluster
+                tightens those into a single visual unit. */}
             <motion.div
-              className="mb-24"
+              className="mb-24 flex flex-wrap items-center gap-6"
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
                 opacity: heroReady ? 1 : 0,
@@ -197,6 +201,7 @@ export default function HomeLayout({
               transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.28 }}
             >
               <AskMeAnythingButton />
+              <SocialLinks />
             </motion.div>
 
             <section id="projects" className="pt-0">

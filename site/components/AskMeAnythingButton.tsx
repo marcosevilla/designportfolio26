@@ -34,7 +34,7 @@ export default function AskMeAnythingButton() {
       className="inline-flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer hover:text-(--color-accent) hover:border-(--color-accent)"
       style={{
         height: 36,
-        padding: "0 14px",
+        padding: "0 10px",
         background: "transparent",
         color: "var(--color-fg-secondary)",
         border: "0.5px solid var(--color-border)",
