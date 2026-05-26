@@ -15,14 +15,9 @@ const POPOVER_EASE = [0.22, 1, 0.36, 1] as const;
 const TINT_HOVER = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
 const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
 
-/** Shared drop shadow for both pills. Defined once so the two surfaces
- *  are guaranteed to match. */
 const PILL_SHADOW =
   "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.18)";
 
-/** Light/dark mode segment — rendered inside the palette popover as a
- *  two-button segmented control so the user can pick a mode and a color
- *  family from the same surface. */
 function ThemeModeSegment() {
   const themeState = useThemeState();
   if (!themeState.mounted) return null;
@@ -69,10 +64,10 @@ function ThemeModeSegment() {
   );
 }
 
-/** Popover rendered via portal so the surrounding overflow:hidden (used
- *  for the cluster's width animation) doesn't clip it. Positioned with
- *  absolute coords computed from the trigger element's bounding rect.
- *  Re-measures on resize + scroll for resilience. */
+/** Popover rendered via portal so the toolbar's overflow doesn't clip it.
+ *  Opens *below* the trigger (top-anchored toolbar). Right-aligned to the
+ *  trigger's right edge so the popover doesn't slide off-screen at the
+ *  viewport's right edge. */
 function PortalPopover({
   open,
   anchorRef,
@@ -85,7 +80,7 @@ function PortalPopover({
   minWidth?: number;
 }) {
   const [mounted, setMounted] = useState(false);
-  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
+  const [pos, setPos] = useState<{ right: number; top: number } | null>(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -96,10 +91,10 @@ function PortalPopover({
       if (!el) return;
       const rect = el.getBoundingClientRect();
       setPos({
-        left: rect.left,
-        // Bottom anchor in viewport coords — distance from viewport bottom
-        // to the top of the trigger, plus a 10px gap.
-        bottom: window.innerHeight - rect.top + 10,
+        // Right-align to the trigger's right edge in viewport coords.
+        right: window.innerWidth - rect.right,
+        // Drop below the trigger with a 10px gap.
+        top: rect.bottom + 10,
       });
     };
     update();
@@ -117,14 +112,14 @@ function PortalPopover({
     <AnimatePresence>
       {open && pos && (
         <motion.div
-          initial={{ opacity: 0, y: 4, filter: "blur(6px)" }}
+          initial={{ opacity: 0, y: -4, filter: "blur(6px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          exit={{ opacity: 0, y: 4, filter: "blur(6px)" }}
+          exit={{ opacity: 0, y: -4, filter: "blur(6px)" }}
           transition={{ duration: 0.22, ease: POPOVER_EASE }}
           className="chat-surface fixed z-[200]"
           style={{
-            left: pos.left,
-            bottom: pos.bottom,
+            right: pos.right,
+            top: pos.top,
             padding: "6px",
             borderRadius: 12,
             minWidth,
@@ -138,8 +133,6 @@ function PortalPopover({
   );
 }
 
-/** Palette button — popover holds light/dark segment + color swatches.
- *  No chevron; the icon alone signals "open theme controls". */
 function PaletteButton({
   open,
   onToggle,
@@ -192,9 +185,6 @@ function PaletteButton({
   );
 }
 
-/** Music button — single icon toggle. Popover hosts the full player
- *  (track, transport, scrubber). No inline play/pause; everything
- *  happens inside the popover. */
 function MusicButton({
   open,
   onToggle,
@@ -240,17 +230,12 @@ function MusicButton({
   );
 }
 
-/** Standalone chat-trigger pill — sits next to the controls pill as a
- *  visually distinct sibling. Accent-filled to match the prior chat-cta.
- *  Fades out when the chat panel is open (observed via the data-chat-open
- *  attribute that ChatBar sets on <html>). Dispatches chat:open to ask
- *  ChatBar to open the panel. */
+/** Chat-trigger pill — sits to the right of the controls pill in the
+ *  top-right header cluster. Dispatches chat:open which ChatBar listens
+ *  to (mounted globally in app/layout.tsx). */
 function ChatTriggerPill() {
   const [chatOpen, setChatOpen] = useState(false);
 
-  // Mirror ChatBar's <html data-chat-open> attribute so we can fade out
-  // while the panel is mounted. Using MutationObserver keeps us decoupled
-  // from ChatBar's internal state — no prop drilling or shared context.
   useEffect(() => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
@@ -270,8 +255,8 @@ function ChatTriggerPill() {
       aria-label="Open chat"
       className="pointer-events-auto inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
       style={{
-        height: 46,
-        padding: "0 20px",
+        height: 38,
+        padding: "0 16px",
         cursor: chatOpen ? "default" : "pointer",
         background: "var(--color-accent)",
         color: "var(--color-on-accent)",
@@ -280,7 +265,7 @@ function ChatTriggerPill() {
         boxShadow: PILL_SHADOW,
         overflow: "hidden",
         pointerEvents: chatOpen ? "none" : "auto",
-        transformOrigin: "bottom right",
+        transformOrigin: "top right",
       }}
     >
       <span
@@ -300,45 +285,14 @@ function ChatTriggerPill() {
   );
 }
 
-/** Tracks the right edge (in viewport coords) of the `#projects` section
- *  so the pill's right-edge can be aligned with the rightmost project
- *  card. Falls back to a safe 32px offset before #projects mounts. */
-function useProjectsRightOffset() {
-  const [rightOffset, setRightOffset] = useState<number>(32);
-  useEffect(() => {
-    const update = () => {
-      const el = document.getElementById("projects");
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const next = Math.max(8, window.innerWidth - rect.right);
-      setRightOffset(next);
-    };
-    update();
-    const el = document.getElementById("projects");
-    let ro: ResizeObserver | null = null;
-    if (el && typeof ResizeObserver !== "undefined") {
-      ro = new ResizeObserver(update);
-      ro.observe(el);
-    }
-    window.addEventListener("resize", update);
-    return () => {
-      ro?.disconnect();
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-  return rightOffset;
-}
-
-/** Bottom-sticky toolbar. Two sibling pills sharing the same chrome and
- *  drop shadow: a controls pill on the left and a chat-trigger pill on
- *  the right. Both anchored to #projects's right edge. */
-export default function BottomToolbar() {
+/** Header toolbar — fixed top-right cluster. Two sibling pills (controls +
+ *  chat trigger) sharing chrome + drop shadow. Always anchored to the
+ *  viewport's right edge; not tied to any section. */
+export default function HeaderToolbar() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [musicOpen, setMusicOpen] = useState(false);
   const pillRef = useRef<HTMLDivElement>(null);
-  const rightOffset = useProjectsRightOffset();
 
-  // Escape + outside click close popovers.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -364,8 +318,7 @@ export default function BottomToolbar() {
 
   return (
     <div
-      className="fixed bottom-4 sm:bottom-6 z-[80] pointer-events-none"
-      style={{ right: rightOffset, left: 16 }}
+      className="hidden lg:block fixed top-4 right-4 sm:right-6 z-[80] pointer-events-none"
       aria-hidden={false}
     >
       <div className="flex justify-end items-center gap-2">
@@ -373,9 +326,6 @@ export default function BottomToolbar() {
           ref={pillRef}
           className="pointer-events-auto flex items-center gap-1 px-2 py-1.5 rounded-none"
           style={{
-            // Lighter, still themed — mix of bg (neutral white/dark) with a
-            // touch of surface-raised tint so colored themes still register
-            // without saturating the toolbar.
             backgroundColor:
               "color-mix(in srgb, var(--color-bg) 80%, var(--color-surface-raised))",
             border: "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)",
@@ -413,9 +363,6 @@ export default function BottomToolbar() {
           </div>
         </div>
 
-        {/* Sibling chat-trigger pill — visually distinct, same height +
-            drop shadow as the toolbar pill. Flush-right; toolbar pill
-            sits to its left via the parent's gap-2. */}
         <ChatTriggerPill />
       </div>
     </div>

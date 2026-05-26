@@ -374,11 +374,11 @@ export default function ChatBar() {
 
   return (
     <>
-      {/* Chat-trigger pill is owned by BottomToolbar on the home page
-          (sibling pill next to the controls cluster). We keep the `pill`
-          definition above as a reference but no longer render it here —
-          BottomToolbar's ChatTriggerPill dispatches the same chat:open
-          event listened above. If BottomToolbar is ever removed from a
+      {/* Chat-trigger pill is owned by HeaderToolbar (rendered globally
+          inside SiteHeader, top-right). We keep the `pill` definition
+          above as a reference but no longer render it here —
+          HeaderToolbar's ChatTriggerPill dispatches the same chat:open
+          event listened above. If HeaderToolbar is ever removed from a
           surface, restore this render to provide the trigger there. */}
       {false && !open && !isMobile && pill}
 

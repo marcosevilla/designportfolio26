@@ -5,14 +5,12 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
 import HomeNav from "./HomeNav";
-import BottomToolbar from "./BottomToolbar";
 import LedMatrix from "./LedMatrix";
 import LedMatrixUI, { SceneToggles } from "./music/LedMatrixUI";
 import { AnimatePresence } from "framer-motion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import LoadingOverlay from "./LoadingOverlay";
 import Playground from "./Playground";
-import { HERO_NAME } from "@/lib/bio-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -158,12 +156,9 @@ export default function HomeLayout({
       onStarReleased={() => setLoaderOwnsStar(false)}
     />
     <div id="home">
-      {/* Unified sticky-bottom pill. Replaces the prior desktop HeroToolbar
-          (inline in the hero right column) + mobile MobileToolbar. Single
-          surface across all viewports — collapsed by default to a cog +
-          time/weather; expands leftward to expose controls. Hidden in
-          About mode (chrome belongs to the About view there). */}
-      {!aboutMeOpen && <BottomToolbar />}
+      {/* Toolbar + wordmark now live in the global SiteHeader (top-left
+          name, top-right controls) — mounted in app/layout.tsx so they
+          appear on every route, including this one. */}
 
       {/* Two-column home layout: hero header (left, sticky on lg+) and
           projects + playground (right, scrolling). About mode reverts
@@ -218,32 +213,7 @@ export default function HomeLayout({
         {/* Right column — only renders in home mode. */}
         {!aboutMeOpen && (
           <div className="flex flex-col">
-            {/* Wordmark row — toolbar moved to the unified bottom pill
-                (BottomToolbar above), so this row is just the name. */}
-            <motion.div
-              className="flex items-center mb-8"
-              initial={{ opacity: 0, filter: "blur(12px)" }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(12px)",
-              }}
-              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0 }}
-            >
-              <h1
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "28px",
-                  fontWeight: 600,
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.025em",
-                  color: "var(--color-fg)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {HERO_NAME}
-              </h1>
-            </motion.div>
-            {/* Bio block — sits below the wordmark row, above the first
+            {/* Bio block — sits at the top of the right column, above the first
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}
             <motion.div

@@ -26,6 +26,7 @@ import PlayerChip from "@/components/music/PlayerChip";
 import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
 import ChatBar from "@/components/chat/ChatBar";
+import SiteHeader from "@/components/SiteHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -76,6 +77,7 @@ export default function RootLayout({
                   Skip to content
                 </a>
                 <MobileNav />
+                <SiteHeader />
                 <InlineEditorProvider>
                   <main
                     id="main"
