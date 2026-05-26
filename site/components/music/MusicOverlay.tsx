@@ -252,14 +252,16 @@ export default function MusicOverlay() {
               </button>
             </div>
 
-            {/* LED matrix — sized via its default height (200px). Width
-                fills the centered column. */}
+            {/* LED matrix — height set proportionally to the column's
+                900px max-width so the aspect ratio holds (~3:1, matching
+                the pre-resize feel). Width fills the centered column. */}
             <div className="relative">
-              <LedMatrix />
+              <LedMatrix height={290} />
             </div>
 
-            {/* Scrubber — spans the full matrix width. */}
-            <div className="flex flex-col gap-1.5">
+            {/* Scrubber — spans the full matrix width. mt-6 adds extra
+                breathing room between the visualizer and the timeline. */}
+            <div className="flex flex-col gap-1.5 mt-6">
               <SeekBar
                 value={Math.min(displayTime, duration || displayTime)}
                 max={duration}
