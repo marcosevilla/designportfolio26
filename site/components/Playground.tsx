@@ -34,6 +34,7 @@ export default function Playground({
             className="mt-3"
             style={{
               ...typescale.body,
+              fontSize: "calc(14px + var(--font-size-offset))",
               color: "var(--color-fg-secondary)",
               maxWidth: "560px",
             }}
@@ -105,6 +106,7 @@ function PlaygroundCardItem({ card, locked = false }: { card: PlaygroundCard; lo
           className="mt-4"
           style={{
             ...typescale.body,
+            fontSize: "calc(14px + var(--font-size-offset))",
             color: "var(--color-fg-secondary)",
             maxWidth: "640px",
           }}

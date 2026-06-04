@@ -1,21 +1,20 @@
 "use client";
 
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import { useNavOverlay } from "@/lib/NavOverlayContext";
 import { useChatOverlay } from "@/lib/ChatOverlayContext";
 
-/** Wraps the page's <main> content so it can blur out while any overlay
- *  surface owns the screen (music player overlay, hamburger nav). Only
- *  applies `filter` while an overlay is open — any non-`none` filter
- *  value creates a containing block for position:fixed descendants
- *  (same gotcha as transform), which would re-anchor the homepage's
- *  xl:fixed elements to this wrapper. Opacity carries the smooth
- *  transition. */
+/** Wraps the page's <main> content so it can blur out while a full-screen
+ *  overlay owns the screen (music player overlay, chat). The nav drawer
+ *  intentionally does NOT blur the content — its own backdrop provides
+ *  the dim + click-to-close. Only applies `filter` while an overlay is
+ *  open — any non-`none` filter value creates a containing block for
+ *  position:fixed descendants (same gotcha as transform), which would
+ *  re-anchor the homepage's xl:fixed elements to this wrapper. Opacity
+ *  carries the smooth transition. */
 export default function MainBlurLayer({ children }: { children: React.ReactNode }) {
   const { overlayOpen } = useAudioPlayer();
-  const { navOpen } = useNavOverlay();
   const { chatOpen } = useChatOverlay();
-  const blurred = overlayOpen || navOpen || chatOpen;
+  const blurred = overlayOpen || chatOpen;
   return (
     <div
       style={{

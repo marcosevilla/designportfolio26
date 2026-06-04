@@ -70,7 +70,8 @@ function HamburgerCloseIcon({ open, size = 16 }: { open: boolean; size?: number 
 export default function SiteHeader() {
   const { navOpen, toggleNav } = useNavOverlay();
   const { chatOpen } = useChatOverlay();
-  const { overlayOpen: musicOverlayOpen } = useAudioPlayer();
+  const { overlayOpen: musicOverlayOpen, setOverlayOpen: setMusicOverlayOpen } =
+    useAudioPlayer();
   // Music overlay deliberately keeps the header visible so the palette /
   // theme controls in HeaderToolbar stay reachable while the player is open.
   const headerHidden = chatOpen;
@@ -95,7 +96,22 @@ export default function SiteHeader() {
   }, [pathname]);
   const showWordmark = scrolledPast || musicOverlayOpen;
 
+  // Drop shadow appears the moment any content scrolls under the bar, so
+  // the header lifts off the page. Separate from `scrolledPast` (which is
+  // a much larger threshold for the wordmark) and runs on every route.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 2);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const handleWordmarkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Always dismiss any overlay covering the page so "go home" is
+    // visually honored regardless of what surface the user clicked from.
+    if (musicOverlayOpen) setMusicOverlayOpen(false);
+
     if (pathname === "/") {
       e.preventDefault();
       // Tell HomeLayout to drop About mode (if open) and scroll to top.
@@ -118,14 +134,21 @@ export default function SiteHeader() {
       className="fixed top-0 left-0 right-0 z-[130]"
       style={{
         backgroundColor: "var(--color-bg)",
+        backgroundImage: "var(--grain-image)",
+        backgroundSize: "200px 200px",
+        backgroundBlendMode: "multiply",
         borderBottom:
-          "0.5px solid color-mix(in srgb, var(--color-border) 80%, transparent)",
+          "0.5px solid color-mix(in srgb, var(--color-fg) 16%, transparent)",
+        boxShadow: scrolled
+          ? "0 3px 10px -7px color-mix(in srgb, var(--color-fg) 16%, transparent)"
+          : "0 3px 10px -7px transparent",
+        transition: "box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1)",
       }}
     >
       {/* Full-width bar — left cluster flush to the viewport's left
           edge, right cluster flush to its right edge, no body-content
           alignment constraint. */}
-      <div className="relative h-14">
+      <div className="relative h-11">
         <div className="h-full px-3 sm:px-4 flex items-center">
           {/* Left cluster — hamburger sits at the content's left edge;
               the wordmark appears to its right once the user has scrolled

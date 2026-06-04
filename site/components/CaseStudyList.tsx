@@ -4,6 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CaseStudyMeta } from "@/lib/types";
+import {
+  PLAYGROUND_CARDS,
+  type PlaygroundCard,
+} from "@/lib/playground-cards";
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
@@ -120,21 +124,9 @@ export default function CaseStudyList({ studies: allStudies }: CaseStudyListProp
 
   return (
     <section className="relative z-10">
-      {/* "Select projects" section header — matches the SiteHeader
-          wordmark / "Welcome" bio header treatment. */}
-      <h2
-        className="mb-6"
-        style={{
-          fontFamily: "var(--font-sans)",
-          fontSize: 16,
-          fontWeight: 500,
-          letterSpacing: "-0.01em",
-          lineHeight: 1,
-          color: "var(--color-fg)",
-        }}
-      >
-        Select projects
-      </h2>
+      {/* The "Select projects" heading now lives inside the grid's
+          checkered header bar (see ProjectGrid below) rather than as a
+          standalone header above the grid. */}
       {/* Filter dropdown — kept for the (currently disabled) filter toggle
           above; the "Work" heading was removed so the projects section
           anchors directly to the first card. */}
@@ -257,11 +249,13 @@ export default function CaseStudyList({ studies: allStudies }: CaseStudyListProp
         </span>
       )}
 
-      {/* Gallery card list — one card per study. Locked studies (per
-          lib/locked-content) render with the LockGate hover treatment
-          and route clicks to the unlock modal; unlocked clicks open the
-          fullscreen gallery starting at that project. */}
-      <GalleryCardList
+      {/* Linear-style project grid — case studies + playground items in
+          one bordered 2-column grid. Locked studies still wear the
+          LockGate hover treatment and route clicks to the unlock modal;
+          unlocked study clicks open the fullscreen gallery. Playground
+          cells are media-only and non-interactive (no /play subpages
+          anymore). */}
+      <ProjectGrid
         studies={filteredStudies}
         onOpen={(slug) => {
           setGalleryStartSlug(slug);
@@ -342,36 +336,266 @@ function SectionLinkButton({
   );
 }
 
-// ── Gallery card list ──
+// ── Project grid (Linear-style bordered cells) ──
 
-// Renders one card per study with the same template. Cards for studies
-// without gallery content show an empty placeholder frame. Click any card
-// to open the fullscreen gallery starting at that project.
-function GalleryCardList({
+// Unified grid that renders case studies and playground items together
+// in a 2-column bordered layout inspired by linear.app's product
+// section. Each cell has a small mono "FIG. 1.x" label at the top, a
+// centered media area, and (for case studies) a title + description
+// block at the bottom. Playground cells skip the caption to read as
+// media-only thumbnails. Hairline borders between cells; the outer
+// container carries a rounded border + overflow clip so the grid reads
+// as a single framed object.
+type GridItem =
+  | { type: "study"; key: string; study: CaseStudyMeta }
+  | { type: "playground"; key: string; card: PlaygroundCard };
+
+function ProjectGrid({
   studies,
   onOpen,
 }: {
   studies: CaseStudyMeta[];
   onOpen: (slug: string) => void;
 }) {
-  if (studies.length === 0) return null;
+  const items: GridItem[] = [
+    ...studies.map<GridItem>((s) => ({
+      type: "study",
+      key: s.slug,
+      study: s,
+    })),
+    ...PLAYGROUND_CARDS.map<GridItem>((c) => ({
+      type: "playground",
+      key: `play-${c.slug}`,
+      card: c,
+    })),
+  ];
+
+  if (items.length === 0) return null;
+
+  // Divider color used both for the outer container border and the
+  // 1px gap between cells. Painting it on the outer container's
+  // background lets a single `gap-px` on the grid render hairline
+  // dividers between every cell — and crucially, every cell stays
+  // exactly the same width, since no cell carries its own border.
+  // (The prior border-right-on-left-cells-only approach made left
+  // cells 1px narrower than right cells in 2-col rows.)
+  const gridStrokeColor =
+    "color-mix(in srgb, var(--color-fg) 8%, transparent)";
+
   return (
-    <div className="mt-8 flex flex-col gap-8">
-      {studies.map((study) => {
-        const locked = isLocked(study.slug);
-        const href = STUDY_ROUTES[study.slug];
-        return (
-          <LockGate key={study.slug} mode="card" locked={locked}>
-            <GalleryCard
-              study={study}
-              onOpen={() => onOpen(study.slug)}
-              href={href}
-              locked={locked}
+    <div
+      className="mt-6 overflow-clip"
+      style={{
+        border: `0.5px solid ${gridStrokeColor}`,
+        borderRadius: 0,
+        backgroundColor: gridStrokeColor,
+      }}
+    >
+      {/* Checkered header bar — same monochrome checkerboard as the
+          NavOverlay left rail (see NavOverlay.tsx textureStyle), here a
+          horizontal bar framing the top of the grid that also carries the
+          "Select projects" section title inline. */}
+      <div style={checkerStripStyle}>
+        <h2 style={gridHeaderTitleStyle}>Select projects</h2>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-px">
+        {items.map((item, idx) => {
+          // Cells need an opaque background so they fully cover the
+          // outer container's stroke-color fill — the 1px gap between
+          // cells is what creates the divider lines. The shared paper
+          // grain is layered + multiplied over the card shade so the
+          // cards read as the same textured material as the rest of the
+          // chrome.
+          const cellStyle: React.CSSProperties = {
+            backgroundColor: "var(--color-card-bg)",
+            backgroundImage: "var(--grain-image)",
+            backgroundSize: "200px 200px",
+            backgroundBlendMode: "multiply",
+          };
+
+          if (item.type === "study") {
+            return (
+              <StudyCell
+                key={item.key}
+                study={item.study}
+                cellStyle={cellStyle}
+                onOpen={() => onOpen(item.study.slug)}
+              />
+            );
+          }
+          return (
+            <PlaygroundCell
+              key={item.key}
+              card={item.card}
+              cellStyle={cellStyle}
             />
-          </LockGate>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
+  );
+}
+
+// Shared title + description block — same typography across case
+// studies and playground items so the grid reads as one consistent
+// composition.
+function CellCaption({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <h3
+        style={{
+          fontFamily: "var(--font-sans)",
+          fontSize: "calc(14px + var(--font-size-offset))",
+          fontWeight: 500,
+          letterSpacing: "-0.01em",
+          lineHeight: "22px",
+          color: "var(--color-fg)",
+        }}
+      >
+        {title}
+      </h3>
+      {description && (
+        <p
+          style={{
+            fontFamily: "var(--font-sans)",
+            fontSize: "calc(14px + var(--font-size-offset))",
+            fontWeight: 400,
+            letterSpacing: "-0.01em",
+            lineHeight: "22px",
+            color: "var(--color-fg-secondary)",
+            textWrap: "balance",
+          }}
+        >
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// TEMPORARY: every case study cell renders a uniform grey square
+// placeholder while the per-slug imagery is being re-cropped for the
+// new 1:1 frame. Per-slug tints, gallery content, layers/video/image
+// rendering, and the "Under construction" fallback are all bypassed
+// here — restore by reinstating the prior rendering branches below.
+function StudyMediaFrame({
+  study: _study,
+  locked,
+}: {
+  study: CaseStudyMeta;
+  locked: boolean;
+}) {
+  return (
+    <div
+      className="w-full overflow-hidden relative"
+      style={{
+        aspectRatio: "1 / 1",
+        backgroundColor: PLACEHOLDER_BG,
+        border: "0.5px solid var(--color-border)",
+        borderRadius: 4,
+      }}
+    >
+      <LockedFrameBadge locked={locked} />
+    </div>
+  );
+}
+
+function StudyCell({
+  study,
+  cellStyle,
+  onOpen,
+}: {
+  study: CaseStudyMeta;
+  cellStyle: React.CSSProperties;
+  onOpen: () => void;
+}) {
+  const locked = isLocked(study.slug);
+  const href = STUDY_ROUTES[study.slug];
+
+  const sharedClassName =
+    "flex flex-col h-full w-full p-6 sm:p-8 gap-6 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)";
+
+  const cellInner = (
+    <>
+      <div className="flex-1 flex items-center justify-center min-h-0">
+        <StudyMediaFrame study={study} locked={locked} />
+      </div>
+      <CellCaption title={study.title} description={study.description} />
+    </>
+  );
+
+  const button = href ? (
+    <Link
+      href={href}
+      aria-label={`Open case study — ${study.title}`}
+      className={sharedClassName}
+      style={cellStyle}
+    >
+      {cellInner}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Open project gallery — ${study.title}`}
+      className={sharedClassName}
+      style={cellStyle}
+    >
+      {cellInner}
+    </button>
+  );
+
+  return (
+    <LockGate mode="card" locked={locked}>
+      {button}
+    </LockGate>
+  );
+}
+
+// Playground cells share the same chrome and caption typography as
+// case study cells. Non-interactive since the dedicated /play subpages
+// were removed.
+function PlaygroundCell({
+  card,
+  cellStyle,
+}: {
+  card: PlaygroundCard;
+  cellStyle: React.CSSProperties;
+}) {
+  return (
+    <div
+      className="flex flex-col h-full w-full p-6 sm:p-8 gap-6"
+      style={cellStyle}
+    >
+      <div className="flex-1 flex items-center justify-center min-h-0">
+        <PlaygroundMediaFrame card={card} />
+      </div>
+      <CellCaption title={card.title} description={card.description} />
+    </div>
+  );
+}
+
+// TEMPORARY: playground cells also render the uniform grey square
+// placeholder (see PLACEHOLDER_BG comment + StudyMediaFrame). The
+// previous `<video>` rendering is bypassed here — restore by
+// reinstating the video / "Coming soon" branches.
+function PlaygroundMediaFrame({ card: _card }: { card: PlaygroundCard }) {
+  return (
+    <div
+      className="w-full overflow-hidden relative"
+      style={{
+        aspectRatio: "1 / 1",
+        backgroundColor: PLACEHOLDER_BG,
+        border: "0.5px solid var(--color-border)",
+        borderRadius: 4,
+      }}
+    />
   );
 }
 
@@ -381,6 +605,44 @@ function GalleryCardList({
 // `layers.ui` overlay, standalone UI screenshots, and product videos
 // still render on top of this fill.
 const CARD_BG = "var(--color-card-bg)";
+
+// TEMPORARY: uniform grey fill rendered inside every cell's media
+// frame while the per-slug imagery is re-cropped to the new 1:1
+// frame. Composites to ~#d5d5d5 in light / ~#333 in dark, distinct
+// from the near-white card surface so each cell reads as a deliberate
+// placeholder.
+const PLACEHOLDER_BG =
+  "color-mix(in srgb, var(--color-fg) 9%, var(--color-bg))";
+
+// Checkered grid header bar — mirrors the NavOverlay left rail's
+// monochrome checkerboard (NavOverlay.tsx textureStyle), oriented as a
+// horizontal bar so the grid's top edge rhymes with the rail's texture
+// instead of a plain hairline. Carries the "Select projects" title
+// inline. Checker contrast bumped to 10% so the pattern reads clearly.
+const GRID_CHECKER = "color-mix(in srgb, var(--color-fg) 10%, transparent)";
+const checkerStripStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  padding: "9px 16px",
+  backgroundColor: "var(--color-bg)",
+  backgroundImage: `linear-gradient(45deg, ${GRID_CHECKER} 25%, transparent 25%, transparent 75%, ${GRID_CHECKER} 75%), linear-gradient(45deg, ${GRID_CHECKER} 25%, transparent 25%, transparent 75%, ${GRID_CHECKER} 75%)`,
+  backgroundSize: "6px 6px",
+  backgroundPosition: "0 0, 3px 3px",
+  borderBottom:
+    "0.5px solid color-mix(in srgb, var(--color-fg) 16%, transparent)",
+};
+// "Select projects" title, now living inside the checkered header bar —
+// Geist Mono uppercase label to match the site's other mono section
+// labels (nav, section links).
+const gridHeaderTitleStyle: React.CSSProperties = {
+  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+  fontSize: 12,
+  fontWeight: 500,
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  lineHeight: 1,
+  color: "var(--color-fg)",
+};
 
 // Slugs hidden from the homepage gallery (in-flight content / not
 // ready to show). Removing a slug from this set re-enables the card
@@ -414,176 +676,3 @@ const CARD_TINTS: Record<string, string> = {
 // read as a wash, not a saturated panel.
 const CARD_TINT_AMOUNT = 10;
 
-function GalleryCard({
-  study,
-  onOpen,
-  href,
-  locked = false,
-}: {
-  study: CaseStudyMeta;
-  onOpen: () => void;
-  href?: string;
-  locked?: boolean;
-}) {
-  const items = galleryContent[study.slug] ?? [];
-  const item = items[0] ?? null;
-  const layers = item && typeof item === "object" && "layers" in item ? item.layers : null;
-  const video = item && typeof item === "object" && "video" in item ? item : null;
-  const image =
-    typeof item === "string"
-      ? item
-      : item && typeof item === "object" && "src" in item
-        ? item.src
-        : null;
-  const fit = item && typeof item === "object" && "src" in item ? (item.fit ?? "contain") : "contain";
-  const objectPosition = item && typeof item === "object" && "src" in item ? (item.objectPosition ?? "center") : "center";
-  const frameAspect = video?.aspect ?? "16 / 10";
-
-  // Cards render at fixed size with no scroll-driven effects. The image
-  // scale + caption fade were both removed once the title/year row was
-  // taken off these tiles.
-  const cardRef = useRef<HTMLElement>(null);
-
-  // Resolve the card's bg to either a brand tint (if the slug is in
-  // CARD_TINTS) or the neutral fallback. color-mix produces the same
-  // computed hue against light and dark `--color-card-bg`, so the tint
-  // adapts to the theme automatically.
-  const tint = CARD_TINTS[study.slug];
-  const cardBg = tint
-    ? `color-mix(in srgb, ${tint} ${CARD_TINT_AMOUNT}%, ${CARD_BG})`
-    : CARD_BG;
-
-  const sharedClassName =
-    "block w-full cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) rounded-none";
-
-  const cardInner = (
-    <>
-      {/* Card group — frame + caption render at a fixed size. The
-          previous scroll-driven scale was removed; cards no longer
-          breathe larger as they approach viewport center. */}
-      <div>
-        {/* Image frame — no border, no drop shadow. The card sits flat
-            on the page bg, with the per-slug accent tint (cardBg) doing
-            the visual lifting instead of a chrome shadow. The composite
-            INSIDE the frame still casts its own filter: drop-shadow via
-            uiShadow (see gallery-content), which is the only shadow on
-            these cards now. */}
-        <div
-          className="w-full overflow-hidden relative"
-          style={{
-            aspectRatio: frameAspect,
-            backgroundColor: cardBg,
-            border: "0.5px solid var(--color-border)",
-            borderRadius: 4,
-          }}
-        >
-        {video && (
-          <video
-            src={video.video}
-            poster={video.poster}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-        )}
-        {/* Hotel-imagery cards: intentionally skip the lifestyle photo
-            (layers.bg) and render only the UI mockup overlay (layers.ui)
-            on the solid card fill. The bg asset is still referenced in
-            galleryContent so we can re-enable it later by un-commenting
-            the bg <img> block.
-            Shadow uses `filter: drop-shadow(...)` instead of box-shadow
-            so it traces the composite's actual alpha shape — box-shadow
-            traces the <img>'s rectangular box (including any transparent
-            padding in the PNG), which read as a phantom fill rectangle
-            around the composite. */}
-        {layers && (
-          <img
-            src={layers.ui}
-            alt=""
-            aria-hidden
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%, -50%)",
-              width: layers.uiWidth ?? "auto",
-              height: layers.uiHeight ?? "auto",
-              borderRadius: layers.uiBorderRadius ?? undefined,
-              filter: layers.uiShadow ?? undefined,
-              display: "block",
-              pointerEvents: "none",
-            }}
-          />
-        )}
-        {!layers && image && (
-          <img
-            src={image}
-            alt=""
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: fit,
-              objectPosition,
-              display: "block",
-            }}
-          />
-        )}
-        <LockedFrameBadge locked={locked} />
-        {!layers && !image && !video && (
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--color-fg-tertiary)",
-            }}
-          >
-            Under construction
-          </div>
-        )}
-        </div>
-      </div>
-      {/* Title + year + description intentionally removed — work cards
-          now read as image-only tiles. Copy still lives on study.title /
-          study.year / study.description and can be re-introduced later
-          without rewriting any data. */}
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link
-        ref={cardRef as React.RefObject<HTMLAnchorElement>}
-        href={href}
-        aria-label={`Open case study — ${study.title}`}
-        className={sharedClassName}
-      >
-        {cardInner}
-      </Link>
-    );
-  }
-
-  return (
-    <button
-      ref={cardRef as React.RefObject<HTMLButtonElement>}
-      type="button"
-      onClick={onOpen}
-      aria-label={`Open project gallery — ${study.title}`}
-      className={sharedClassName}
-    >
-      {cardInner}
-    </button>
-  );
-}

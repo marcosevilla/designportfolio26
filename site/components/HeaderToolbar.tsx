@@ -7,6 +7,12 @@ import { PaletteRow } from "./PaletteSwatches";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { MoonIcon, MusicNoteIcon, SettingsIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const POPOVER_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -138,31 +144,24 @@ function PaletteButton({
   const triggerRef = useRef<HTMLButtonElement>(null);
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={onToggle}
-        aria-label="Theme"
-        aria-pressed={open}
-        aria-expanded={open}
-        className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors focus:outline-none text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) cursor-pointer"
-      >
-        {open && (
-          <span
-            aria-hidden
-            className="absolute inset-0 rounded-full"
-            style={{ backgroundColor: TINT_ACTIVE }}
-          />
-        )}
-        <span
-          aria-hidden
-          className="absolute inset-0 rounded-full opacity-0 hover:opacity-100 transition-opacity"
-          style={{ backgroundColor: TINT_HOVER }}
-        />
-        <span className="relative inline-flex">
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              ref={triggerRef}
+              type="button"
+              onClick={onToggle}
+              aria-label="Settings"
+              aria-pressed={open}
+              aria-expanded={open}
+              className={`bio-toolbar-btn${open ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
+            />
+          }
+        >
           <SettingsIcon size={15} />
-        </span>
-      </button>
+        </TooltipTrigger>
+        <TooltipContent>Settings</TooltipContent>
+      </Tooltip>
       <PortalPopover open={open} anchorRef={triggerRef}>
         <div className="flex flex-col gap-2">
           <ThemeModeSegment />
@@ -184,30 +183,24 @@ function PaletteButton({
  *  The matrix + transport + scrubber live inside that overlay. */
 function MusicButton() {
   const { isPlaying, overlayOpen, setOverlayOpen } = useAudioPlayer();
+  const active = overlayOpen || isPlaying;
   return (
-    <button
-      type="button"
-      onClick={() => setOverlayOpen(true)}
-      aria-label="Open music player"
-      aria-pressed={overlayOpen}
-      className="relative flex items-center justify-center w-8 h-8 rounded-full transition-colors focus:outline-none text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent) cursor-pointer"
-    >
-      {(overlayOpen || isPlaying) && (
-        <span
-          aria-hidden
-          className="absolute inset-0 rounded-full"
-          style={{ backgroundColor: TINT_ACTIVE }}
-        />
-      )}
-      <span
-        aria-hidden
-        className="absolute inset-0 rounded-full opacity-0 hover:opacity-100 transition-opacity"
-        style={{ backgroundColor: TINT_HOVER }}
-      />
-      <span className="relative inline-flex">
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={() => setOverlayOpen(!overlayOpen)}
+            aria-label="Tunes"
+            aria-pressed={overlayOpen}
+            className={`bio-toolbar-btn${active ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
+          />
+        }
+      >
         <MusicNoteIcon size={15} />
-      </span>
-    </button>
+      </TooltipTrigger>
+      <TooltipContent>Tunes</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -239,14 +232,16 @@ export default function HeaderToolbar() {
   }, []);
 
   return (
-    <div className="flex items-center gap-2">
-      <div ref={pillRef} className="flex items-center gap-1">
-        <MusicButton />
-        <PaletteButton
-          open={paletteOpen}
-          onToggle={() => setPaletteOpen((v) => !v)}
-        />
+    <TooltipProvider delay={100}>
+      <div className="flex items-center gap-2">
+        <div ref={pillRef} className="flex items-center gap-1">
+          <MusicButton />
+          <PaletteButton
+            open={paletteOpen}
+            onToggle={() => setPaletteOpen((v) => !v)}
+          />
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

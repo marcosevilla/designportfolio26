@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
-import Playground from "./Playground";
 import AskMeAnythingButton from "./AskMeAnythingButton";
 import SocialLinks from "./SocialLinks";
 
@@ -130,23 +129,27 @@ export default function HomeLayout({
           </div>
         )}
 
-        {/* Right column — only renders in home mode.
-            At xl+ this column centers in the viewport at max-w 1000px,
-            independent of the fixed left nav. At lg it inherits its
-            slot from the parent grid. */}
+        {/* Home content. Both the bio block and the project grid live
+            inside a single 1344px-wide centered wrapper so they share a
+            left edge. Inside that wrapper the bio caps at 672px — the
+            width of one column of the 2-col project grid below — so the
+            heading + tagline + paragraph + action row visually align
+            with the left grid cell. */}
         {!aboutMeOpen && (
-          <div className="flex flex-col max-w-[750px] mx-auto w-full xl:px-4">
+          <div className="max-w-[1344px] mx-auto w-full px-4 sm:px-8 pb-48">
+            <div className="max-w-[560px] mt-[clamp(48px,10vh,140px)]">
             {/* Page heading — Marco's name as the bio block's opening
-                title. Larger than the body to read as a primary heading,
-                kept tight on tracking so it still feels close to the
-                wordmark family. */}
+                title. Sized to read as a top-of-page header against the
+                14px body copy below. */}
             <motion.h1
-              className="mb-1"
+              className="mb-2"
               style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: 16,
+                fontFamily:
+                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: 32,
                 fontWeight: 600,
-                letterSpacing: "-0.01em",
+                textTransform: "uppercase",
+                letterSpacing: "0",
                 lineHeight: 1.2,
                 color: "var(--color-fg)",
               }}
@@ -166,7 +169,13 @@ export default function HomeLayout({
                 drives the work rather than the location lead-in. */}
             <motion.p
               className="text-(--color-fg-secondary) leading-[26px] mb-6"
-              style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
+              style={{
+                fontSize: "calc(14px + var(--font-size-offset))",
+                fontFamily:
+                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+              }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
                 opacity: heroReady ? 1 : 0,
@@ -174,14 +183,14 @@ export default function HomeLayout({
               }}
               transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.15 }}
             >
-              Senior product designer based in San Francisco.
+              Senior Product Designer based in San Francisco
             </motion.p>
 
             {/* Bio block — sits at the top of the right column, above the first
                 project card. Multi-paragraph intro that doubles as a
                 positioning statement for the work below. */}
             <motion.div
-              className="text-(--color-fg) leading-[26px] mb-8 flex flex-col gap-4"
+              className="text-(--color-fg) leading-[22px] mb-8 flex flex-col gap-4"
               style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
@@ -192,13 +201,10 @@ export default function HomeLayout({
             >
               <p>
                 Currently at Canary Technologies, building software for
-                the world&apos;s largest hospitality brands.
-              </p>
-              <p>
-                Previously, I was the Lead Visual Designer for a suite of
-                animation tools at Vyond, made wine discovery more
-                accessible at Vivino, and was the Founding Product Designer
-                at General Task.
+                the world&apos;s largest hospitality brands. Previously, I
+                was the Lead Visual Designer for a suite of animation tools
+                at Vyond, made wine discovery more accessible at Vivino, and
+                was the Founding Product Designer at General Task.
               </p>
             </motion.div>
 
@@ -220,10 +226,18 @@ export default function HomeLayout({
               <AskMeAnythingButton />
               <SocialLinks />
             </motion.div>
+            </div>
 
-            <section id="projects" className="pt-0">
-              {/* Work content participates in the cascade — last in the
-                  chain so the eye lands on Hero first, then sweeps down. */}
+            {/* Project grid. At xl+ it breaks out of the 1344px content
+                column to span the full viewport width, with an 18px left
+                inset so its left edge lands just past the NavOverlay
+                checkered rail (the "left column bar"); the right edge runs
+                to the viewport edge. Mirrors the w-screen breakout pattern
+                used on the outer wrapper above. */}
+            <section
+              id="projects"
+              className="xl:w-screen xl:mx-[calc(50%-50vw)] xl:pl-[18px]"
+            >
               <motion.div
                 initial={{ opacity: 0, filter: "blur(12px)" }}
                 animate={{
@@ -233,20 +247,6 @@ export default function HomeLayout({
                 transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.32 }}
               >
                 {work}
-              </motion.div>
-            </section>
-            <section id="playground" className="pt-60 pb-48">
-              {/* Mirrors the Work section's cascade so Playground blurs in
-                  alongside the rest of the page once the loader releases. */}
-              <motion.div
-                initial={{ opacity: 0, filter: "blur(12px)" }}
-                animate={{
-                  opacity: heroReady ? 1 : 0,
-                  filter: heroReady ? "blur(0px)" : "blur(12px)",
-                }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
-              >
-                <Playground />
               </motion.div>
             </section>
           </div>

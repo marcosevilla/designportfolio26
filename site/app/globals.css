@@ -57,10 +57,13 @@
   --color-surface: #fbfbfb;
   --color-surface-raised: #f5f4f9;
   /* Project card frame fill — used on the homepage gallery cards in
-     CaseStudyList. Slightly off-white in light, neutral charcoal in
-     dark; defined separately from --color-surface-raised so we can tune
-     the cards without disturbing other surface treatments. */
-  --color-card-bg: #fafafa;
+     CaseStudyList. Derived from --color-bg + a 5% --color-accent wash:
+     a subtle-but-noticeable shade off the page background so the cards
+     read as a distinct material, while still picking up the active hue
+     family in colored themes (in mono the accent is fg, so it's a
+     neutral grey shade). In light mode it lands a touch darker than the
+     page; in dark mode a touch lighter — the conventional card lift. */
+  --color-card-bg: color-mix(in srgb, var(--color-bg) 98%, var(--color-accent) 2%);
   --color-border: #e6e6e6;
   --color-muted: #f3f3f3;
   --color-accent: var(--color-fg);
@@ -119,7 +122,10 @@
   --color-fg-tertiary: rgba(237, 237, 237, 0.35);
   --color-surface: #141414;
   --color-surface-raised: #1a1a1a;
-  --color-card-bg: #141414;
+  /* --color-card-bg intentionally NOT overridden here — the :root
+     color-mix expression resolves against this scope's --color-bg +
+     --color-accent and produces the correct dark variant
+     automatically. */
   --color-border: #2a2a2a;
   --color-muted: #1e1e1e;
   --color-accent: var(--color-fg);
@@ -173,6 +179,40 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Shared paper-grain tile. Grayscale fractal noise compressed into a
+   light range (~0.74–1.0) so that when it's blended with `multiply`
+   over a surface it only ever DARKENS — never adds the light specks
+   that washed the pages out before. Referenced by the body backdrop
+   plus the header + nav surfaces (via inline background-blend-mode) so
+   the whole chrome shares one paper texture. */
+:root {
+  --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.18' intercept='0.82'/%3E%3CfeFuncG type='linear' slope='0.18' intercept='0.82'/%3E%3CfeFuncB type='linear' slope='0.18' intercept='0.82'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* Global paper grain on the page background. Fixed, full-viewport tile
+   at z-index:-1 — above the body's background color, behind all page
+   content — blended with multiply so it grounds (darkens) the surface
+   like paper grain rather than lightening it. pointer-events:none keeps
+   it inert. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--grain-image);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  mix-blend-mode: multiply;
+}
+
+/* Dark mode: multiply over a dark field is very subtle, so layer a
+   screen-blended copy too for a touch of tactile lift. */
+.dark body::before {
+  mix-blend-mode: soft-light;
+  opacity: 0.45;
 }
 
 /* Skip to content link */
@@ -389,7 +429,7 @@ body {
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 9999px;
+  border-radius: 4px;
   border: 0;
   background: transparent;
   color: var(--color-fg-secondary);
@@ -400,6 +440,29 @@ body {
 .bio-toolbar-btn:hover,
 .bio-toolbar-btn:focus-visible,
 .bio-toolbar-btn--active {
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+/* Pill variant of .bio-toolbar-btn for buttons with a text label (e.g. the
+   "Ask me anything" chat trigger). Auto-width with side padding, same
+   transparent rest / shaded hover treatment as the icon-only siblings. */
+.bio-toolbar-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.bio-toolbar-pill:hover,
+.bio-toolbar-pill:focus-visible {
   color: var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }

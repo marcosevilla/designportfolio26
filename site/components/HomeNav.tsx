@@ -22,7 +22,6 @@ type NavItem = { id: string; label: string; kind?: "section" | "page" };
 export const HOME_NAV_ITEMS: NavItem[] = [
   { id: "home", label: "Home" },
   { id: "projects", label: "Work" },
-  { id: "playground", label: "Playground" },
 ];
 export const NAV_ITEMS: NavItem[] = [
   ...HOME_NAV_ITEMS,

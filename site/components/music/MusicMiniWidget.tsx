@@ -59,7 +59,7 @@ function MiniButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="flex items-center justify-center w-6 h-6 text-(--color-fg-secondary) hover:text-(--color-accent) transition-colors cursor-pointer focus:outline-none"
+      className="bio-toolbar-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
     >
       {children}
     </button>
@@ -102,7 +102,7 @@ export default function MusicMiniWidget() {
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           exit={{ opacity: 0, y: 12, filter: "blur(8px)" }}
           transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed bottom-4 right-4 z-[60] w-[320px] flex flex-col px-3 py-2 gap-2"
+          className="fixed bottom-4 right-4 z-[60] w-[260px] flex flex-col px-3 py-3 gap-3"
           style={{
             backgroundColor: "var(--color-bg)",
             border: "0.5px solid var(--color-border)",
@@ -111,18 +111,19 @@ export default function MusicMiniWidget() {
           }}
           aria-label="Music player (mini)"
         >
-          {/* Top row — track info | transport | actions. Mirrors the
-              overlay card's structure at a compressed scale. */}
+          {/* Row 1 — track info on the left (truncated), expand + close
+              actions pinned right. Track info gets the full available
+              width now that transport has its own row below. */}
           <div className="flex items-center gap-2">
-            <div className="flex flex-col min-w-0 shrink basis-0 grow">
+            <div className="flex flex-col min-w-0 flex-1">
               <p
                 className="truncate"
                 style={{
                   fontFamily: "var(--font-sans)",
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: 500,
                   color: "var(--color-fg)",
-                  letterSpacing: "-0.005em",
+                  letterSpacing: "-0.01em",
                   lineHeight: 1.25,
                 }}
               >
@@ -132,59 +133,61 @@ export default function MusicMiniWidget() {
                 className="truncate"
                 style={{
                   fontFamily: "var(--font-sans)",
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: 400,
                   color: "var(--color-fg-tertiary)",
-                  lineHeight: 1.25,
+                  lineHeight: 1.3,
                 }}
               >
                 {currentTrack.artist}
               </p>
             </div>
 
-            <div className="flex items-center gap-0.5 shrink-0">
-              <MiniButton label="Previous track" onClick={prev}>
-                <SkipBackIcon size={11} />
-              </MiniButton>
-              <MiniButton
-                label={isPlaying ? "Pause" : "Play"}
-                onClick={togglePlay}
-              >
-                {isPlaying ? <PauseIcon size={13} /> : <PlayIcon size={13} />}
-              </MiniButton>
-              <MiniButton label="Next track" onClick={next}>
-                <SkipForwardIcon size={11} />
-              </MiniButton>
-            </div>
-
-            <div className="flex items-center gap-0.5 shrink-0 pl-1">
+            <div className="flex items-center gap-1 shrink-0">
               <MiniButton
                 label="Open full music player"
                 onClick={() => setOverlayOpen(true)}
               >
-                <ExpandIcon size={11} />
+                <ExpandIcon size={14} />
               </MiniButton>
               <MiniButton label="Close player" onClick={closeSession}>
-                <CloseIcon size={9} />
+                <CloseIcon size={12} />
               </MiniButton>
             </div>
           </div>
 
-          {/* Bottom row — elapsed | scrubber | total, mirrors the
-              overlay card's bottom row. */}
+          {/* Row 2 — transport. Centered prev / play / next with 32×32
+              tap targets, matching the rest of the site's icon-button
+              family. */}
+          <div className="flex items-center justify-center gap-2">
+            <MiniButton label="Previous track" onClick={prev}>
+              <SkipBackIcon size={14} />
+            </MiniButton>
+            <MiniButton
+              label={isPlaying ? "Pause" : "Play"}
+              onClick={togglePlay}
+            >
+              {isPlaying ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+            </MiniButton>
+            <MiniButton label="Next track" onClick={next}>
+              <SkipForwardIcon size={14} />
+            </MiniButton>
+          </div>
+
+          {/* Row 3 — elapsed | scrubber | total. */}
           <div
             className="flex items-center gap-2"
             style={{
               fontFamily:
                 "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: 9,
+              fontSize: 11,
               fontWeight: 500,
               color: "var(--color-fg-tertiary)",
               letterSpacing: "0.04em",
               lineHeight: 1,
             }}
           >
-            <span className="tabular-nums shrink-0">
+            <span className="tabular-nums shrink-0" style={{ minWidth: 30 }}>
               {formatTime(displayTime)}
             </span>
             <div className="flex-1 min-w-0">
@@ -199,12 +202,15 @@ export default function MusicMiniWidget() {
                 onCommit={() => {
                   requestAnimationFrame(() => setScrubbing(false));
                 }}
-                restingHeight={1.5}
-                expandedHeight={2.5}
-                thumbSize={8}
+                restingHeight={2}
+                expandedHeight={3}
+                thumbSize={10}
               />
             </div>
-            <span className="tabular-nums shrink-0">
+            <span
+              className="tabular-nums shrink-0 text-right"
+              style={{ minWidth: 30 }}
+            >
               {formatTime(duration)}
             </span>
           </div>

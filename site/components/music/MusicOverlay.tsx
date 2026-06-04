@@ -14,6 +14,12 @@ import {
   SkipBackIcon,
   SkipForwardIcon,
 } from "@/components/Icons";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -52,117 +58,81 @@ function formatTime(sec: number): string {
 
 function TransportButton({
   label,
+  tooltip,
   onClick,
   children,
   emphasized = false,
 }: {
   label: string;
+  tooltip?: string;
   onClick: () => void;
   children: React.ReactNode;
   emphasized?: boolean;
 }) {
-  const size = emphasized ? 56 : 32;
+  // Emphasized (play/pause) buttons keep the larger 56×56 footprint but
+  // share the same hover treatment as the rest of the icon-button family:
+  // accent text + 10% accent-tinted bg, 4px radius.
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      className="inline-flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
-      style={{
-        width: size,
-        height: size,
-        color: "var(--color-fg)",
-        background: "transparent",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.color = "var(--color-accent)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.color = "var(--color-fg)";
-      }}
-    >
-      {children}
-    </button>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={onClick}
+            aria-label={label}
+            className="bio-toolbar-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+            style={
+              emphasized ? { width: 56, height: 56 } : undefined
+            }
+          />
+        }
+      >
+        {children}
+      </TooltipTrigger>
+      <TooltipContent>{tooltip ?? label}</TooltipContent>
+    </Tooltip>
   );
 }
 
 /** Numbered visualizer toggles — replaces the icon-based SceneToggles for
  *  the overlay. Each scene is represented by its position (1-N); hovering
- *  reveals the scene's label as an immediate tooltip directly above the
- *  button. Multiple scenes can be active simultaneously (the underlying
- *  context supports it), so the active state is a tinted fill rather than
- *  a radio. */
+ *  surfaces the scene's label via the shared shadcn tooltip. Multiple
+ *  scenes can be active simultaneously (the underlying context supports
+ *  it), so the active state is a tinted fill rather than a radio. */
 function NumberedSceneToggles() {
   const { activeScenes, toggleScene } = useVisualizerScene();
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   return (
-    <div className="relative flex items-center justify-center gap-1.5">
+    <div className="flex items-center justify-center gap-1.5">
       {SCENES.map((s, idx) => {
         const active = activeScenes.has(s.id);
-        const hovered = hoveredIdx === idx;
         return (
-          <div key={s.id} className="relative">
-            <AnimatePresence>
-              {hovered && (
-                <motion.span
-                  initial={{ opacity: 0, y: 2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 2 }}
-                  transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute left-1/2 -translate-x-1/2 -top-7 whitespace-nowrap pointer-events-none"
-                  style={{
-                    fontFamily:
-                      "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                    fontSize: 10,
-                    fontWeight: 500,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    lineHeight: 1,
-                    color: "var(--color-fg-secondary)",
-                    padding: "4px 6px",
-                    backgroundColor: "var(--color-bg)",
-                    border: "1px solid var(--color-border)",
-                  }}
-                >
-                  {s.label}
-                </motion.span>
-              )}
-            </AnimatePresence>
-            <button
-              type="button"
-              onClick={() => toggleScene(s.id)}
-              onMouseEnter={() => setHoveredIdx(idx)}
-              onMouseLeave={() =>
-                setHoveredIdx((cur) => (cur === idx ? null : cur))
+          <Tooltip key={s.id}>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={() => toggleScene(s.id)}
+                  aria-label={`Toggle ${s.label} scene`}
+                  aria-pressed={active}
+                  className={`bio-toolbar-btn${active ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
+                />
               }
-              onFocus={() => setHoveredIdx(idx)}
-              onBlur={() =>
-                setHoveredIdx((cur) => (cur === idx ? null : cur))
-              }
-              aria-label={`Toggle ${s.label} scene`}
-              aria-pressed={active}
-              className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none cursor-pointer active:scale-[0.96] [transition-property:color,background-color,transform] duration-150 ease-out"
-              style={{
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                fontSize: 11,
-                fontWeight: 500,
-                lineHeight: 1,
-                borderRadius: 4,
-                color: active
-                  ? "var(--color-accent)"
-                  : "var(--color-fg-tertiary)",
-                backgroundColor: active
-                  ? "color-mix(in srgb, var(--color-accent) 12%, transparent)"
-                  : hovered
-                    ? "color-mix(in srgb, var(--color-fg) 6%, transparent)"
-                    : "transparent",
-              }}
             >
-              {idx + 1}
-            </button>
-          </div>
+              <span
+                style={{
+                  fontFamily:
+                    "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  lineHeight: 1,
+                }}
+              >
+                {idx + 1}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{s.label}</TooltipContent>
+          </Tooltip>
         );
       })}
     </div>
@@ -249,6 +219,7 @@ export default function MusicOverlay() {
           role="dialog"
           aria-label="Music player"
         >
+          <TooltipProvider delay={100}>
           <motion.div
             initial={{ opacity: 0, y: 16, filter: "blur(12px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -329,17 +300,26 @@ export default function MusicOverlay() {
               {/* Center — transport controls only. Scrubber lives at
                   the bottom of the card as the visible bottom border. */}
               <div className="flex items-center justify-center gap-1 shrink-0 grow-[2] basis-0 min-w-0">
-                <TransportButton label="Previous track" onClick={handlePrev}>
+                <TransportButton
+                  label="Previous track"
+                  tooltip="Previous"
+                  onClick={handlePrev}
+                >
                   <SkipBackIcon size={15} />
                 </TransportButton>
                 <TransportButton
                   label={isPlaying ? "Pause" : "Play"}
+                  tooltip={isPlaying ? "Pause" : "Play"}
                   onClick={togglePlay}
                   emphasized
                 >
                   {isPlaying ? <PauseIcon size={28} /> : <PlayIcon size={28} />}
                 </TransportButton>
-                <TransportButton label="Next track" onClick={handleNext}>
+                <TransportButton
+                  label="Next track"
+                  tooltip="Next"
+                  onClick={handleNext}
+                >
                   <SkipForwardIcon size={15} />
                 </TransportButton>
               </div>
@@ -347,14 +327,21 @@ export default function MusicOverlay() {
               {/* Right — visualizer toggles + minimize. */}
               <div className="flex items-center gap-2 shrink-0 basis-0 grow justify-end">
                 <NumberedSceneToggles />
-                <button
-                  type="button"
-                  onClick={close}
-                  aria-label="Shrink to mini player"
-                  className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none cursor-pointer text-(--color-fg-tertiary) hover:text-(--color-accent)"
-                >
-                  <MinimizeIcon size={14} />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <button
+                        type="button"
+                        onClick={close}
+                        aria-label="Shrink to mini player"
+                        className="bio-toolbar-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+                      />
+                    }
+                  >
+                    <MinimizeIcon size={14} />
+                  </TooltipTrigger>
+                  <TooltipContent>Minimize</TooltipContent>
+                </Tooltip>
               </div>
               </div>
 
@@ -395,6 +382,7 @@ export default function MusicOverlay() {
               </div>
             </div>
           </motion.div>
+          </TooltipProvider>
         </motion.div>
       )}
     </AnimatePresence>,
