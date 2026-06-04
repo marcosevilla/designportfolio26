@@ -214,11 +214,11 @@ export function MoonIcon({ size = 16, className, style }: IconProps) {
 
 // ── Transport (music player) ──
 
-// Transport icons render filled (solid) instead of stroked so the
-// player chrome reads as more substantial in the hero toolbar.
+// Transport icons render thin/stroked (strokeWidth 1.5, no fill) to match
+// the header icon family — every icon-button glyph shares one line style.
 export function PlayIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" strokeLinejoin="round" className={className} style={style}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
       <path d="M8 5.5L19 12 8 18.5z" />
     </svg>
   );
@@ -226,27 +226,27 @@ export function PlayIcon({ size = 18, className, style }: IconProps) {
 
 export function PauseIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className} style={style}>
-      <rect x="7.5" y="5.5" width="3.5" height="13" rx="1" />
-      <rect x="13" y="5.5" width="3.5" height="13" rx="1" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <line x1="9" y1="5.5" x2="9" y2="18.5" />
+      <line x1="15" y1="5.5" x2="15" y2="18.5" />
     </svg>
   );
 }
 
 export function SkipBackIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" strokeLinejoin="round" className={className} style={style}>
-      <rect x="5" y="6" width="2.6" height="12" rx="0.8" />
-      <path d="M19 6L9 12l10 6z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <line x1="6.5" y1="6" x2="6.5" y2="18" />
+      <path d="M19 6.5L10 12l9 5.5z" />
     </svg>
   );
 }
 
 export function SkipForwardIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" strokeLinejoin="round" className={className} style={style}>
-      <rect x="16.4" y="6" width="2.6" height="12" rx="0.8" />
-      <path d="M5 6l10 6L5 18z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <line x1="17.5" y1="6" x2="17.5" y2="18" />
+      <path d="M5 6.5L14 12 5 17.5z" />
     </svg>
   );
 }

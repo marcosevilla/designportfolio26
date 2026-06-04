@@ -22,18 +22,15 @@ function ExpandIcon({ size = 12, className }: { size?: number; className?: strin
       height={size}
       viewBox="0 0 16 16"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
       aria-hidden
     >
-      <rect
-        x="1.5"
-        y="1.5"
-        width="13"
-        height="13"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <rect x="2" y="2" width="6" height="6" fill="currentColor" />
+      <rect x="1.5" y="1.5" width="13" height="13" />
+      <rect x="4" y="4" width="6" height="6" />
     </svg>
   );
 }

@@ -16,52 +16,31 @@ import {
 
 const POPOVER_EASE = [0.22, 1, 0.36, 1] as const;
 
-const TINT_HOVER = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
-const TINT_ACTIVE = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
-
-function ThemeModeSegment() {
+/** Light/dark toggle — a single icon button in the toolbar (between the
+ *  music and settings buttons). Shows the mode you'll switch TO: a moon
+ *  while light, a sun while dark. */
+function ThemeToggleButton() {
   const themeState = useThemeState();
   if (!themeState.mounted) return null;
   const isLight = themeState.mode === "light";
-  const baseClasses =
-    "relative inline-flex items-center justify-center gap-1 h-7 px-2.5 rounded-full transition-colors focus:outline-none cursor-pointer";
   return (
-    <div className="flex items-center gap-1 px-1">
-      <button
-        type="button"
-        onClick={() => themeState.selectLight()}
-        aria-pressed={isLight}
-        aria-label="Switch to light mode"
-        className={baseClasses}
-        style={{
-          backgroundColor: isLight ? TINT_ACTIVE : "transparent",
-          color: isLight ? "var(--color-accent)" : "var(--color-fg-secondary)",
-          fontFamily: "var(--font-sans)",
-          fontSize: 12,
-          fontWeight: 500,
-        }}
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={() =>
+              isLight ? themeState.selectDark() : themeState.selectLight()
+            }
+            aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+            className="bio-toolbar-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+          />
+        }
       >
-        <SunIcon size={12} />
-        <span>Light</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => themeState.selectDark()}
-        aria-pressed={!isLight}
-        aria-label="Switch to dark mode"
-        className={baseClasses}
-        style={{
-          backgroundColor: !isLight ? TINT_ACTIVE : "transparent",
-          color: !isLight ? "var(--color-accent)" : "var(--color-fg-secondary)",
-          fontFamily: "var(--font-sans)",
-          fontSize: 12,
-          fontWeight: 500,
-        }}
-      >
-        <MoonIcon size={12} />
-        <span>Dark</span>
-      </button>
-    </div>
+        {isLight ? <MoonIcon size={15} /> : <SunIcon size={15} />}
+      </TooltipTrigger>
+      <TooltipContent>{isLight ? "Dark mode" : "Light mode"}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -122,7 +101,7 @@ function PortalPopover({
             right: pos.right,
             top: pos.top,
             padding: "6px",
-            borderRadius: 12,
+            borderRadius: 0,
             minWidth,
           }}
         >
@@ -163,27 +142,67 @@ function PaletteButton({
         <TooltipContent>Settings</TooltipContent>
       </Tooltip>
       <PortalPopover open={open} anchorRef={triggerRef}>
-        <div className="flex flex-col gap-2">
-          <ThemeModeSegment />
-          <div
-            aria-hidden
-            style={{
-              height: 1,
-              backgroundColor: "color-mix(in srgb, var(--color-border) 70%, transparent)",
-            }}
-          />
-          <PaletteRow />
-        </div>
+        <PaletteRow />
       </PortalPopover>
     </>
   );
 }
 
+/** Tiny notes that shed off the main glyph while audio plays. Each one
+ *  drifts up-and-outward, rotates a touch, and fades — staggered so the
+ *  button reads as gently "singing" rather than the static bg tint we
+ *  used before. Purely decorative; hidden from a11y + reduced-motion. */
+const EMIT_NOTES = [
+  { dx: 7, rot: 16, delay: 0 },
+  { dx: -6, rot: -14, delay: 0.65 },
+  { dx: 3, rot: 10, delay: 1.3 },
+];
+function EmittingNotes({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <span
+      aria-hidden
+      className="motion-reduce:hidden"
+      style={{
+        position: "absolute",
+        left: "50%",
+        top: 2,
+        pointerEvents: "none",
+        color: "var(--color-accent)",
+      }}
+    >
+      {EMIT_NOTES.map((n, i) => (
+        <motion.span
+          key={i}
+          style={{ position: "absolute", left: 0, top: 0, display: "block" }}
+          initial={{ opacity: 0, x: 0, y: 0, scale: 0.5 }}
+          animate={{
+            opacity: [0, 0.75, 0],
+            x: [0, n.dx],
+            y: [0, -15],
+            scale: [0.5, 0.95],
+            rotate: [0, n.rot],
+          }}
+          transition={{
+            duration: 1.9,
+            delay: n.delay,
+            repeat: Infinity,
+            ease: "easeOut",
+          }}
+        >
+          <MusicNoteIcon size={7} />
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
 /** Music button — opens the global MusicOverlay (no longer a popover).
- *  The matrix + transport + scrubber live inside that overlay. */
+ *  The matrix + transport + scrubber live inside that overlay. The
+ *  pressed/open state keeps the bg tint; the *playing* state is shown by
+ *  emitted notes (EmittingNotes) instead of a tint. */
 function MusicButton() {
   const { isPlaying, overlayOpen, setOverlayOpen } = useAudioPlayer();
-  const active = overlayOpen || isPlaying;
   return (
     <Tooltip>
       <TooltipTrigger
@@ -193,11 +212,14 @@ function MusicButton() {
             onClick={() => setOverlayOpen(!overlayOpen)}
             aria-label="Tunes"
             aria-pressed={overlayOpen}
-            className={`bio-toolbar-btn${active ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
+            className={`bio-toolbar-btn${overlayOpen ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
           />
         }
       >
-        <MusicNoteIcon size={15} />
+        <span style={{ position: "relative", display: "inline-flex" }}>
+          <MusicNoteIcon size={15} />
+          <EmittingNotes active={isPlaying} />
+        </span>
       </TooltipTrigger>
       <TooltipContent>Tunes</TooltipContent>
     </Tooltip>
@@ -236,6 +258,7 @@ export default function HeaderToolbar() {
       <div className="flex items-center gap-2">
         <div ref={pillRef} className="flex items-center gap-1">
           <MusicButton />
+          <ThemeToggleButton />
           <PaletteButton
             open={paletteOpen}
             onToggle={() => setPaletteOpen((v) => !v)}

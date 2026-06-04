@@ -118,7 +118,8 @@ export default function NavOverlay() {
   return (
     <>
       {/* Clickable checker rail — desktop only, hidden while the drawer
-          is open. Thickens + reveals a chevron on hover; click opens. */}
+          is open. Invisible at rest; hovering the left edge paints the
+          checker, thickens the band, and reveals a chevron. Click opens. */}
       {isDesktop && !navOpen && (
         <button
           type="button"
@@ -138,11 +139,14 @@ export default function NavOverlay() {
             justifyContent: "center",
             padding: 0,
             border: 0,
-            borderRight:
-              "0.5px solid color-mix(in srgb, var(--color-fg) 16%, transparent)",
+            borderRight: railHover
+              ? "0.5px solid color-mix(in srgb, var(--color-fg) 16%, transparent)"
+              : "0.5px solid transparent",
             cursor: "pointer",
             transition: "width 200ms cubic-bezier(0.22, 1, 0.36, 1)",
-            ...checkerBg,
+            // Resting state is an invisible hover strip at the left edge;
+            // the checker pattern only paints once the cursor enters it.
+            ...(railHover ? checkerBg : { backgroundColor: "transparent" }),
           }}
         >
           <motion.span

@@ -7,6 +7,7 @@ import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
 import AskMeAnythingButton from "./AskMeAnythingButton";
 import SocialLinks from "./SocialLinks";
+import WorkHistory from "./WorkHistory";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -137,7 +138,8 @@ export default function HomeLayout({
             with the left grid cell. */}
         {!aboutMeOpen && (
           <div className="max-w-[1344px] mx-auto w-full px-4 sm:px-8 pb-48">
-            <div className="max-w-[560px] mt-[clamp(48px,10vh,140px)]">
+            <div className="mt-[clamp(48px,10vh,140px)] flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-16">
+            <div className="max-w-[560px] w-full">
             {/* Page heading — Marco's name as the bio block's opening
                 title. Sized to read as a top-of-page header against the
                 14px body copy below. */}
@@ -145,10 +147,9 @@ export default function HomeLayout({
               className="mb-2"
               style={{
                 fontFamily:
-                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                  "var(--font-geist-sans), system-ui, sans-serif",
                 fontSize: 32,
                 fontWeight: 600,
-                textTransform: "uppercase",
                 letterSpacing: "0",
                 lineHeight: 1.2,
                 color: "var(--color-fg)",
@@ -174,7 +175,7 @@ export default function HomeLayout({
                 fontFamily:
                   "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                 textTransform: "uppercase",
-                letterSpacing: "0.06em",
+                letterSpacing: "0.02em",
               }}
               initial={{ opacity: 0, filter: "blur(12px)" }}
               animate={{
@@ -225,6 +226,22 @@ export default function HomeLayout({
             >
               <AskMeAnythingButton />
               <SocialLinks />
+            </motion.div>
+            </div>
+
+            {/* Work history — compact accordion sitting to the right of the
+                bio. Same single-open interaction as the case-study details
+                list; rows derive from RESUME_EXPERIENCE. */}
+            <motion.div
+              className="w-full lg:w-[278px] lg:shrink-0"
+              initial={{ opacity: 0, filter: "blur(12px)" }}
+              animate={{
+                opacity: heroReady ? 1 : 0,
+                filter: heroReady ? "blur(0px)" : "blur(12px)",
+              }}
+              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.24 }}
+            >
+              <WorkHistory />
             </motion.div>
             </div>
 
