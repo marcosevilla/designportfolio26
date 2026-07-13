@@ -7,7 +7,6 @@ import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
 import AskMeAnythingButton from "./AskMeAnythingButton";
 import SocialLinks from "./SocialLinks";
-import TextureDivider from "./TextureDivider";
 import { RESUME_URL } from "@/lib/resume-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
@@ -17,8 +16,9 @@ const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
 /** Decorative serif emphasis — Libre Baskerville medium italic (LB ships
  *  400/700 only, so 500 is browser-synthesized), used for inline links
  *  and emphasized phrases inside body text. Links wear the theme's
- *  accent color with a dashed underline; plain emphasis stays fg-ink
- *  with no underline. */
+ *  accent color via .dotted-link--inline, whose dashed underline draws
+ *  in on hover only; the inline serif styles win over the class's
+ *  sans-serif defaults. Plain emphasis stays fg-ink, no underline. */
 function Em({ href, children }: { href?: string; children: React.ReactNode }) {
   const base: React.CSSProperties = {
     fontFamily: BASKERVILLE,
@@ -31,14 +31,8 @@ function Em({ href, children }: { href?: string; children: React.ReactNode }) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          ...base,
-          color: "var(--color-accent)",
-          textDecorationLine: "underline",
-          textDecorationStyle: "dashed",
-          textDecorationThickness: 1,
-          textUnderlineOffset: 4,
-        }}
+        className="dotted-link--inline"
+        style={base}
       >
         {children}
       </a>
@@ -209,17 +203,6 @@ export default function HomeLayout({
                 Product Designer based in San Francisco, California
               </motion.p>
 
-              <motion.div
-                initial={{ opacity: 0, filter: "blur(12px)" }}
-                animate={{
-                  opacity: heroReady ? 1 : 0,
-                  filter: heroReady ? "blur(0px)" : "blur(12px)",
-                }}
-                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.18 }}
-              >
-                <TextureDivider />
-              </motion.div>
-
               {/* Intro bio — 16px/2 body with Baskerville-italic emphasis
                   for links and key phrases. */}
               <motion.div
@@ -313,16 +296,6 @@ export default function HomeLayout({
                 </div>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, filter: "blur(12px)" }}
-                animate={{
-                  opacity: heroReady ? 1 : 0,
-                  filter: heroReady ? "blur(0px)" : "blur(12px)",
-                }}
-                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.26 }}
-              >
-                <TextureDivider />
-              </motion.div>
             </div>
 
             {/* Select work — one column, same 600px width. */}

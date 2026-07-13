@@ -389,16 +389,16 @@ function ProjectGrid({
         Select work
       </h2>
       {items.map((item) => {
-        // Card chrome per the 2026-07 redesign: thick light frame
-        // (theme-aware #d1d1d1 equivalent), near-square corners, paper
-        // grain multiplied over the card fill.
+        // Card chrome — same stroke + radius as the media frames inside
+        // (hairline --color-border, 4px corners) so card and media read
+        // as one framing system; paper grain multiplied over the fill.
         const cellStyle: React.CSSProperties = {
           backgroundColor: "var(--color-card-bg)",
           backgroundImage: "var(--grain-image)",
           backgroundSize: "200px 200px",
           backgroundBlendMode: "multiply",
-          border: "5px solid color-mix(in srgb, var(--color-fg) 18%, var(--color-bg))",
-          borderRadius: 1,
+          border: "0.5px solid var(--color-border)",
+          borderRadius: 4,
         };
 
         if (item.type === "study") {
