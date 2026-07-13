@@ -8,7 +8,6 @@ import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
 import { HERO_NAME } from "@/lib/bio-content";
 import { useChatOverlay } from "@/lib/ChatOverlayContext";
-import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 
 /** Global site header. Full-width fixed bar at the top with an opaque
  *  page-bg fill so content scrolls cleanly behind it. The wordmark sits
@@ -18,10 +17,6 @@ import { useAudioPlayer } from "@/lib/AudioPlayerContext";
  *  appears on every route. */
 export default function SiteHeader() {
   const { chatOpen } = useChatOverlay();
-  const { overlayOpen: musicOverlayOpen, setOverlayOpen: setMusicOverlayOpen } =
-    useAudioPlayer();
-  // Music overlay deliberately keeps the header visible so the palette /
-  // theme controls in HeaderToolbar stay reachable while the player is open.
   const headerHidden = chatOpen;
   const pathname = usePathname();
 
@@ -42,7 +37,7 @@ export default function SiteHeader() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [pathname]);
-  const showWordmark = scrolledPast || musicOverlayOpen;
+  const showWordmark = scrolledPast;
 
   // Drop shadow appears the moment any content scrolls under the bar, so
   // the header lifts off the page. Separate from `scrolledPast` (which is
@@ -56,10 +51,6 @@ export default function SiteHeader() {
   }, []);
 
   const handleWordmarkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Always dismiss any overlay covering the page so "go home" is
-    // visually honored regardless of what surface the user clicked from.
-    if (musicOverlayOpen) setMusicOverlayOpen(false);
-
     if (pathname === "/") {
       e.preventDefault();
       // Tell HomeLayout to drop About mode (if open) and scroll to top.

@@ -4,9 +4,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaletteRow } from "./PaletteSwatches";
-import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useChangelogOverlay } from "@/lib/ChangelogOverlayContext";
-import { ChangelogIcon, MoonIcon, MusicNoteIcon, SettingsIcon, SunIcon } from "./Icons";
+import { ChangelogIcon, MoonIcon, SettingsIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
 import {
   Tooltip,
@@ -153,80 +152,8 @@ function PaletteButton({
  *  drifts up-and-outward, rotates a touch, and fades — staggered so the
  *  button reads as gently "singing" rather than the static bg tint we
  *  used before. Purely decorative; hidden from a11y + reduced-motion. */
-const EMIT_NOTES = [
-  { dx: 7, rot: 16, delay: 0 },
-  { dx: -6, rot: -14, delay: 0.65 },
-  { dx: 3, rot: 10, delay: 1.3 },
-];
-function EmittingNotes({ active }: { active: boolean }) {
-  if (!active) return null;
-  return (
-    <span
-      aria-hidden
-      className="motion-reduce:hidden"
-      style={{
-        position: "absolute",
-        left: "50%",
-        top: 2,
-        pointerEvents: "none",
-        color: "var(--color-accent)",
-      }}
-    >
-      {EMIT_NOTES.map((n, i) => (
-        <motion.span
-          key={i}
-          style={{ position: "absolute", left: 0, top: 0, display: "block" }}
-          initial={{ opacity: 0, x: 0, y: 0, scale: 0.5 }}
-          animate={{
-            opacity: [0, 0.75, 0],
-            x: [0, n.dx],
-            y: [0, -15],
-            scale: [0.5, 0.95],
-            rotate: [0, n.rot],
-          }}
-          transition={{
-            duration: 1.9,
-            delay: n.delay,
-            repeat: Infinity,
-            ease: "easeOut",
-          }}
-        >
-          <MusicNoteIcon size={7} />
-        </motion.span>
-      ))}
-    </span>
-  );
-}
-
-/** Music button — opens the global MusicOverlay (no longer a popover).
- *  The matrix + transport + scrubber live inside that overlay. The
- *  pressed/open state keeps the bg tint; the *playing* state is shown by
- *  emitted notes (EmittingNotes) instead of a tint. */
-function MusicButton() {
-  const { isPlaying, overlayOpen, setOverlayOpen } = useAudioPlayer();
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <button
-            type="button"
-            onClick={() => setOverlayOpen(!overlayOpen)}
-            aria-label="Tunes"
-            aria-pressed={overlayOpen}
-            className={`bio-toolbar-btn${overlayOpen ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
-          />
-        }
-      >
-        <span style={{ position: "relative", display: "inline-flex" }}>
-          <MusicNoteIcon size={15} />
-          <EmittingNotes active={isPlaying} />
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>Tunes</TooltipContent>
-    </Tooltip>
-  );
-}
-
+/* Music entrypoint removed from the header — the player now lives in
+   the bottom-right music dock (components/music/MusicMiniWidget.tsx). */
 
 /** "What's new" button — opens the global ChangelogOverlay (the
  *  month-grouped milestone log parsed from docs/CHANGELOG.md). */
@@ -282,7 +209,6 @@ export default function HeaderToolbar() {
     <TooltipProvider delay={100}>
       <div className="flex items-center gap-2">
         <div ref={pillRef} className="flex items-center gap-1">
-          <MusicButton />
           <ChangelogButton />
           <ThemeToggleButton />
           <PaletteButton

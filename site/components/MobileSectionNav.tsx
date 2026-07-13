@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { NAV_ITEMS, useActiveSection, type NavItem } from "./HomeNav";
-import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 
 const PILL_SHADOW =
   "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.18)";
@@ -24,7 +23,6 @@ export default function MobileSectionNav({
   onAboutMeClose?: () => void;
 }) {
   const { activeId, setAndLock } = useActiveSection();
-  const { overlayOpen } = useAudioPlayer();
   const [pressed, setPressed] = useState<string | null>(null);
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
@@ -52,7 +50,6 @@ export default function MobileSectionNav({
 
   return (
     <AnimatePresence>
-      {!overlayOpen && (
     <motion.nav
       key="mobile-section-nav"
       initial={{ opacity: 0, y: 8 }}
@@ -114,7 +111,6 @@ export default function MobileSectionNav({
         })}
       </div>
     </motion.nav>
-      )}
     </AnimatePresence>
   );
 }

@@ -35,7 +35,6 @@ import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
 import ChatBar from "@/components/chat/ChatBar";
 import SiteHeader from "@/components/SiteHeader";
-import MusicOverlay from "@/components/music/MusicOverlay";
 import MainBlurLayer from "@/components/MainBlurLayer";
 import { NavOverlayProvider } from "@/lib/NavOverlayContext";
 import { ChatOverlayProvider } from "@/lib/ChatOverlayContext";
@@ -114,7 +113,6 @@ export default function RootLayout({
                 <ViewportFade />
                 <MusicMiniWidget />
                 <ChatBar />
-                <MusicOverlay />
                 <ChangelogOverlay groups={getChangelog()} />
                 <PasswordModal />
                 {process.env.NODE_ENV === "development" && <Agentation />}
