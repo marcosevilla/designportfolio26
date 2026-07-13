@@ -7,59 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
 import { HERO_NAME } from "@/lib/bio-content";
-import { useNavOverlay } from "@/lib/NavOverlayContext";
 import { useChatOverlay } from "@/lib/ChatOverlayContext";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-
-/** Sidebar / panel-open glyph: a rounded rectangle with a vertical
- *  divider near the left edge — reads as "open the left panel". The
- *  divider slides right and a chevron emerges when the panel is open,
- *  signalling the inverse action (collapse). */
-function HamburgerCloseIcon({ open, size = 16 }: { open: boolean; size?: number }) {
-  return (
-    <motion.svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden
-    >
-      {/* Frame */}
-      <rect
-        x="1.75"
-        y="2.75"
-        width="12.5"
-        height="10.5"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-      {/* Sidebar fill — fades in once the panel is open so the glyph
-          reads as "panel is showing" / click to close. */}
-      <motion.rect
-        x="2.4"
-        y="3.4"
-        width="3.2"
-        height="9.2"
-        rx="0.8"
-        fill="currentColor"
-        initial={false}
-        animate={{ opacity: open ? 1 : 0 }}
-        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-      />
-      {/* Divider stroke — always visible; demarcates the sidebar
-          region from the content area. */}
-      <line
-        x1="5.6"
-        y1="3.25"
-        x2="5.6"
-        y2="12.75"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-    </motion.svg>
-  );
-}
 
 /** Global site header. Full-width fixed bar at the top with an opaque
  *  page-bg fill so content scrolls cleanly behind it. The wordmark sits
@@ -68,7 +17,6 @@ function HamburgerCloseIcon({ open, size = 16 }: { open: boolean; size?: number 
  *  boundary against content is legible. Mounted in app/layout.tsx so it
  *  appears on every route. */
 export default function SiteHeader() {
-  const { navOpen, toggleNav } = useNavOverlay();
   const { chatOpen } = useChatOverlay();
   const { overlayOpen: musicOverlayOpen, setOverlayOpen: setMusicOverlayOpen } =
     useAudioPlayer();
@@ -150,20 +98,11 @@ export default function SiteHeader() {
           alignment constraint. */}
       <div className="relative h-11">
         <div className="h-full px-3 sm:px-4 flex items-center">
-          {/* Left cluster — hamburger sits at the content's left edge;
-              the wordmark appears to its right once the user has scrolled
-              past the bio. */}
+          {/* Left cluster — the wordmark appears once the user has
+              scrolled past the bio. (Nav drawer + hamburger removed in
+              the 2026-07 single-page redesign — everything lives on the
+              home page now.) */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleNav}
-              aria-label={navOpen ? "Close navigation" : "Open navigation"}
-              aria-expanded={navOpen}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent) cursor-pointer text-(--color-fg-secondary) hover:text-(--color-accent) focus-visible:text-(--color-accent)"
-            >
-              <HamburgerCloseIcon open={navOpen} size={15} />
-            </button>
-
             <AnimatePresence initial={false}>
               {showWordmark && (
                 <motion.div

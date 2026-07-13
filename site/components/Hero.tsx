@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PARAGRAPHS, HERO_NAME } from "@/lib/bio-content";
+import { RESUME_URL } from "@/lib/resume-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
@@ -441,7 +442,7 @@ export default function Hero({
                     Marco-Sevilla-Senior-Product-Designer.pdf into public/
                     when it changes. */}
                 <a
-                  href="/Marco-Sevilla-Senior-Product-Designer.pdf"
+                  href={RESUME_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="outlined-cta mt-10 inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"

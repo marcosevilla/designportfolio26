@@ -22,8 +22,8 @@ function ChatBubbleIcon({ size = 14 }: { size?: number }) {
 }
 
 /** Inline chat-overlay trigger. Outlined CTA — light border stroke,
- *  secondary text + icon, no fill. Sits in the body content between
- *  the bio and the projects section. */
+ *  secondary text + icon, no fill. Sits flush-right in the contact row
+ *  next to the View resume button, sharing its chrome. */
 export default function AskMeAnythingButton() {
   const { setChatOpen } = useChatOverlay();
   return (
@@ -31,8 +31,8 @@ export default function AskMeAnythingButton() {
       type="button"
       onClick={() => setChatOpen(true)}
       aria-label="Open chat — ask me anything"
-      className="bio-toolbar-pill focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
-      style={{ marginLeft: -10 }}
+      className="outlined-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+      style={{ height: 32, padding: "0 8px", gap: 6, cursor: "pointer" }}
     >
       <ChatBubbleIcon size={14} />
       <span

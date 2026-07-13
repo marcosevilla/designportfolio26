@@ -2,12 +2,20 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Fraunces } from "next/font/google";
+import { Fraunces, Libre_Baskerville } from "next/font/google";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["normal", "italic"],
   variable: "--font-fraunces",
+  display: "swap",
+});
+
+const libreBaskerville = Libre_Baskerville({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-baskerville",
   display: "swap",
 });
 import MobileNav from "@/components/MobileNav";
@@ -29,7 +37,6 @@ import ChatBar from "@/components/chat/ChatBar";
 import SiteHeader from "@/components/SiteHeader";
 import MusicOverlay from "@/components/music/MusicOverlay";
 import MainBlurLayer from "@/components/MainBlurLayer";
-import NavOverlay from "@/components/NavOverlay";
 import { NavOverlayProvider } from "@/lib/NavOverlayContext";
 import { ChatOverlayProvider } from "@/lib/ChatOverlayContext";
 import ChangelogOverlay from "@/components/ChangelogOverlay";
@@ -72,7 +79,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable} ${libreBaskerville.variable}`}>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ThemeStateProvider>
@@ -89,7 +96,6 @@ export default function RootLayout({
                 </a>
                 <MobileNav />
                 <SiteHeader />
-                <NavOverlay />
                 <InlineEditorProvider>
                   <main
                     id="main"

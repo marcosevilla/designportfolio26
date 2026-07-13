@@ -7,9 +7,33 @@ import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
 import AskMeAnythingButton from "./AskMeAnythingButton";
 import SocialLinks from "./SocialLinks";
-import WorkHistory from "./WorkHistory";
+import TextureDivider from "./TextureDivider";
+import { RESUME_URL } from "@/lib/resume-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
+
+const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
+
+/** Decorative serif emphasis — Libre Baskerville italic, used for
+ *  inline links and emphasized phrases inside body text. Renders an
+ *  <a> when href is provided, plain <em> otherwise. */
+function Em({ href, children }: { href?: string; children: React.ReactNode }) {
+  const style: React.CSSProperties = {
+    fontFamily: BASKERVILLE,
+    fontStyle: "italic",
+    fontWeight: 400,
+    color: "var(--color-fg)",
+    textDecoration: "none",
+  };
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" style={style}>
+        {children}
+      </a>
+    );
+  }
+  return <em style={style}>{children}</em>;
+}
 
 export default function HomeLayout({
   work,
@@ -99,18 +123,14 @@ export default function HomeLayout({
       {/* Section nav is no longer always-visible. It now lives behind
           the hamburger button in SiteHeader, revealed via NavOverlay. */}
 
-      {/* Single centered column layout. At xl+ the wrapper escapes
-          <main>'s 960px constraint so the column can sit at 800px
-          centered in the viewport. About mode reverts to a single
-          650px column for the bio read.
+      {/* Single centered column layout. Home is a 600px column (see
+          inner wrapper); About mode is a 650px column for the bio read.
           paddingTop = SiteHeader height (~38) + breathing room. */}
       <div
         className={
           aboutMeOpen
             ? "max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
-            : "max-w-[1400px] mx-auto px-4 sm:px-8 " +
-              "xl:block xl:max-w-none xl:w-screen " +
-              "xl:mx-[calc(50%-50vw)] xl:px-0"
+            : "mx-auto"
         }
         style={{
           paddingTop: "clamp(96px, 12vh, 144px)",
@@ -130,132 +150,168 @@ export default function HomeLayout({
           </div>
         )}
 
-        {/* Home content. Both the bio block and the project grid live
-            inside a single 1344px-wide centered wrapper so they share a
-            left edge. Inside that wrapper the bio caps at 672px — the
-            width of one column of the 2-col project grid below — so the
-            heading + tagline + paragraph + action row visually align
-            with the left grid cell. */}
+        {/* Home content — 2026-07 single-page redesign. One centered
+            600px column: intro bio with contact row, then the one-column
+            Select work list. Everything lives on the home page now. */}
         {!aboutMeOpen && (
-          <div className="max-w-[1344px] mx-auto w-full px-4 sm:px-8 pb-48">
-            <div className="mt-[clamp(48px,10vh,140px)] flex flex-col lg:flex-row lg:items-start gap-10 lg:gap-16">
-            <div className="max-w-[560px] w-full">
-            {/* Page heading — Marco's name as the bio block's opening
-                title. Sized to read as a top-of-page header against the
-                14px body copy below. */}
-            <motion.h1
-              className="mb-2"
-              style={{
-                fontFamily:
-                  "var(--font-geist-sans), system-ui, sans-serif",
-                fontSize: 32,
-                fontWeight: 600,
-                letterSpacing: "0",
-                lineHeight: 1.2,
-                color: "var(--color-fg)",
-              }}
-              initial={{ opacity: 0, filter: "blur(12px)" }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(12px)",
-              }}
-              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.1 }}
-            >
-              Marco Sevilla
-            </motion.h1>
+          <div className="max-w-[600px] mx-auto w-full px-4 sm:px-8 pb-48">
+            <div className="mt-8 flex flex-col gap-6">
+              {/* Page heading — Libre Baskerville, the site's new serif. */}
+              <motion.h1
+                style={{
+                  fontFamily: BASKERVILLE,
+                  fontSize: 32,
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  lineHeight: 1.2,
+                  color: "var(--color-fg)",
+                }}
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.1 }}
+              >
+                Marco Sevilla
+              </motion.h1>
 
-            {/* Tagline — same size as bio body, secondary color, sits on
-                its own line right below the heading. Extracted from the
-                original first sentence so the main bio focuses on what
-                drives the work rather than the location lead-in. */}
-            <motion.p
-              className="text-(--color-fg-secondary) leading-[26px] mb-6"
-              style={{
-                fontSize: "calc(14px + var(--font-size-offset))",
-                fontWeight: 500,
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                textTransform: "uppercase",
-                letterSpacing: "0.02em",
-              }}
-              initial={{ opacity: 0, filter: "blur(12px)" }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(12px)",
-              }}
-              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.15 }}
-            >
-              Senior Product Designer based in San Francisco
-            </motion.p>
+              {/* Tagline — serif italic, full-ink. */}
+              <motion.p
+                style={{
+                  fontFamily: BASKERVILLE,
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  fontSize: 18,
+                  lineHeight: "26px",
+                  letterSpacing: "0.02em",
+                  color: "var(--color-fg)",
+                }}
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.15 }}
+              >
+                Product Designer based in San Francisco, California
+              </motion.p>
 
-            {/* Bio block — sits at the top of the right column, above the first
-                project card. Multi-paragraph intro that doubles as a
-                positioning statement for the work below. */}
-            <motion.div
-              className="text-(--color-fg) leading-[22px] mb-8 flex flex-col gap-4"
-              style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
-              initial={{ opacity: 0, filter: "blur(12px)" }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(12px)",
-              }}
-              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
-            >
-              <p>
-                Currently at Canary Technologies, building software for
-                the world&apos;s largest hospitality brands. Previously, I
-                was the Lead Visual Designer for a suite of animation tools
-                at Vyond, made wine discovery more accessible at Vivino, and
-                was the Founding Product Designer at General Task.
-              </p>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.18 }}
+              >
+                <TextureDivider />
+              </motion.div>
 
-            {/* Action row. Ask-me-anything chat trigger flush-left, then
-                a tighter cluster of outlined text-only social links to
-                its right. The larger gap (gap-6) between the chat
-                trigger and the social cluster keeps each as its own
-                affordance group; gap-1.5 inside the social cluster
-                tightens those into a single visual unit. */}
-            <motion.div
-              className="mb-40 flex flex-wrap items-center gap-6"
-              initial={{ opacity: 0, filter: "blur(12px)" }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(12px)",
-              }}
-              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.28 }}
-            >
-              <AskMeAnythingButton />
-              <SocialLinks />
-            </motion.div>
+              {/* Intro bio — 16px/2 body with Baskerville-italic emphasis
+                  for links and key phrases. */}
+              <motion.div
+                className="flex flex-col gap-8"
+                style={{
+                  fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+                  fontSize: "calc(16px + var(--font-size-offset))",
+                  lineHeight: 2,
+                  letterSpacing: "-0.02em",
+                  color: "var(--color-fg)",
+                }}
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
+              >
+                <p>
+                  I&apos;m an AI-native designer driven by curiosity, quality
+                  craft, and caffeine. My goal is to produce work that expands
+                  the ways humans work and create.
+                </p>
+                <p>
+                  Currently, I&apos;m at{" "}
+                  <Em href="https://www.canarytechnologies.com/">
+                    Canary Technologies
+                  </Em>
+                  , exploring how agentic workflows can help hotel operators at
+                  the <Em>world&apos;s largest hospitality enterprises –</Em>{" "}
+                  Marriott, Wyndham, and IHG. I&apos;ve led design for several
+                  0-1 products: a guest experience platform, a hotel CMS,
+                  mobile food and beverage ordering, and the knowledge base
+                  that powers our AI-native products.
+                </p>
+                <p>
+                  Seven years in, I&apos;m a design generalist who thrives in
+                  startups. My work ranges from building scalable brand systems
+                  as a marketing designer at{" "}
+                  <Em href="https://www.vivino.com/">Vivino</Em> and{" "}
+                  <Em href="https://www.vyond.com/">Vyond</Em>, to founding
+                  product design at{" "}
+                  <Em href="https://www.generaltask.com/">General Task</Em>,
+                  where we built productivity tooling for knowledge workers.
+                </p>
+                <p>
+                  Outside of work, you&apos;ll find me{" "}
+                  <Em>dabbling in music photography,</Em> developing websites,
+                  or tinkering on various design sidequests.
+                </p>
+              </motion.div>
+
+              {/* Contact row — social icons flush-left; View resume +
+                  Ask me anything outlined CTAs flush-right. */}
+              <motion.div
+                className="flex flex-wrap items-center justify-between gap-4"
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.24 }}
+              >
+                <SocialLinks />
+                <div className="flex items-center gap-3">
+                  <a
+                    href={RESUME_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="outlined-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+                    style={{
+                      height: 32,
+                      padding: "0 8px",
+                      fontFamily:
+                        "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                      fontSize: 11,
+                      fontWeight: 500,
+                      lineHeight: 1,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                      textDecoration: "none",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    View resume
+                  </a>
+                  <AskMeAnythingButton />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, filter: "blur(12px)" }}
+                animate={{
+                  opacity: heroReady ? 1 : 0,
+                  filter: heroReady ? "blur(0px)" : "blur(12px)",
+                }}
+                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.26 }}
+              >
+                <TextureDivider />
+              </motion.div>
             </div>
 
-            {/* Work history — compact accordion sitting to the right of the
-                bio. Same single-open interaction as the case-study details
-                list; rows derive from RESUME_EXPERIENCE. */}
-            <motion.div
-              className="w-full lg:w-[278px] lg:shrink-0"
-              initial={{ opacity: 0, filter: "blur(12px)" }}
-              animate={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(12px)",
-              }}
-              transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.24 }}
-            >
-              <WorkHistory />
-            </motion.div>
-            </div>
-
-            {/* Project grid. At xl+ it breaks out of the 1344px content
-                column to span the full viewport width, with an 18px left
-                inset so its left edge lands just past the NavOverlay
-                checkered rail (the "left column bar"); the right edge runs
-                to the viewport edge. Mirrors the w-screen breakout pattern
-                used on the outer wrapper above. */}
-            <section
-              id="projects"
-              className="xl:w-screen xl:mx-[calc(50%-50vw)] xl:pl-[18px]"
-            >
+            {/* Select work — one column, same 600px width. */}
+            <section id="projects" className="mt-[100px]">
               <motion.div
                 initial={{ opacity: 0, filter: "blur(12px)" }}
                 animate={{

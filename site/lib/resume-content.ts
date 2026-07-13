@@ -11,6 +11,11 @@
 // employment title that HR will confirm on background checks. Keep them
 // distinct on purpose.
 
+// Canonical hosted resume — linked from the home contact row and the
+// About page's "View resume" button.
+export const RESUME_URL =
+  "https://drive.google.com/file/d/1GE6AZ2iqz6VDMXElLTbSDfS5NghMXQKd/view?usp=sharing";
+
 export const RESUME_HEADER = {
   name: "Marco Sevilla",
   tagline: "Senior Product Designer",

@@ -372,66 +372,53 @@ function ProjectGrid({
 
   if (items.length === 0) return null;
 
-  // Divider color used both for the outer container border and the
-  // 1px gap between cells. Painting it on the outer container's
-  // background lets a single `gap-px` on the grid render hairline
-  // dividers between every cell — and crucially, every cell stays
-  // exactly the same width, since no cell carries its own border.
-  // (The prior border-right-on-left-cells-only approach made left
-  // cells 1px narrower than right cells in 2-col rows.)
-  const gridStrokeColor =
-    "color-mix(in srgb, var(--color-fg) 8%, transparent)";
-
   return (
-    <div
-      className="mt-6 overflow-clip"
-      style={{
-        border: `0.5px solid ${gridStrokeColor}`,
-        borderRadius: 0,
-        backgroundColor: gridStrokeColor,
-      }}
-    >
-      {/* Checkered header bar — same monochrome checkerboard as the
-          NavOverlay left rail (see NavOverlay.tsx textureStyle), here a
-          horizontal bar framing the top of the grid that also carries the
-          "Select projects" section title inline. */}
-      <div style={checkerStripStyle}>
-        <h2 style={gridHeaderTitleStyle}>Select projects</h2>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-px">
-        {items.map((item, idx) => {
-          // Cells need an opaque background so they fully cover the
-          // outer container's stroke-color fill — the 1px gap between
-          // cells is what creates the divider lines. The shared paper
-          // grain is layered + multiplied over the card shade so the
-          // cards read as the same textured material as the rest of the
-          // chrome.
-          const cellStyle: React.CSSProperties = {
-            backgroundColor: "var(--color-card-bg)",
-            backgroundImage: "var(--grain-image)",
-            backgroundSize: "200px 200px",
-            backgroundBlendMode: "multiply",
-          };
+    <div className="flex flex-col gap-12">
+      {/* Section label — Libre Baskerville italic, the redesign's serif
+          accent for section titles. */}
+      <h2
+        style={{
+          fontFamily: "var(--font-baskerville), Georgia, serif",
+          fontStyle: "italic",
+          fontWeight: 400,
+          fontSize: 20,
+          lineHeight: 1.4,
+          color: "var(--color-fg)",
+        }}
+      >
+        Select work
+      </h2>
+      {items.map((item) => {
+        // Card chrome per the 2026-07 redesign: thick light frame
+        // (theme-aware #d1d1d1 equivalent), near-square corners, paper
+        // grain multiplied over the card fill.
+        const cellStyle: React.CSSProperties = {
+          backgroundColor: "var(--color-card-bg)",
+          backgroundImage: "var(--grain-image)",
+          backgroundSize: "200px 200px",
+          backgroundBlendMode: "multiply",
+          border: "5px solid color-mix(in srgb, var(--color-fg) 18%, var(--color-bg))",
+          borderRadius: 1,
+        };
 
-          if (item.type === "study") {
-            return (
-              <StudyCell
-                key={item.key}
-                study={item.study}
-                cellStyle={cellStyle}
-                onOpen={() => onOpen(item.study.slug)}
-              />
-            );
-          }
+        if (item.type === "study") {
           return (
-            <PlaygroundCell
+            <StudyCell
               key={item.key}
-              card={item.card}
+              study={item.study}
               cellStyle={cellStyle}
+              onOpen={() => onOpen(item.study.slug)}
             />
           );
-        })}
-      </div>
+        }
+        return (
+          <PlaygroundCell
+            key={item.key}
+            card={item.card}
+            cellStyle={cellStyle}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -447,11 +434,11 @@ function CellCaption({
   description?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-3">
       <h3
         style={{
           fontFamily: "var(--font-sans)",
-          fontSize: "calc(14px + var(--font-size-offset))",
+          fontSize: "calc(16px + var(--font-size-offset))",
           fontWeight: 500,
           letterSpacing: "-0.01em",
           lineHeight: "22px",
@@ -493,9 +480,8 @@ function StudyMediaFrame({
 }) {
   return (
     <div
-      className="w-full overflow-hidden relative"
+      className="w-full overflow-hidden relative h-[323px]"
       style={{
-        aspectRatio: "1 / 1",
         backgroundColor: PLACEHOLDER_BG,
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
@@ -519,14 +505,13 @@ function StudyCell({
   const href = STUDY_ROUTES[study.slug];
 
   const sharedClassName =
-    "flex flex-col h-full w-full p-6 sm:p-8 gap-6 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)";
+    "flex flex-col h-full w-full p-6 gap-6 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)";
 
+  // Caption above the media frame per the 2026-07 redesign.
   const cellInner = (
     <>
-      <div className="flex-1 flex items-center justify-center min-h-0">
-        <StudyMediaFrame study={study} locked={locked} />
-      </div>
       <CellCaption title={study.title} description={study.description} />
+      <StudyMediaFrame study={study} locked={locked} />
     </>
   );
 
@@ -570,13 +555,11 @@ function PlaygroundCell({
 }) {
   return (
     <div
-      className="flex flex-col h-full w-full p-6 sm:p-8 gap-6"
+      className="flex flex-col h-full w-full p-6 gap-6"
       style={cellStyle}
     >
-      <div className="flex-1 flex items-center justify-center min-h-0">
-        <PlaygroundMediaFrame card={card} />
-      </div>
       <CellCaption title={card.title} description={card.description} />
+      <PlaygroundMediaFrame card={card} />
     </div>
   );
 }
@@ -588,9 +571,8 @@ function PlaygroundCell({
 function PlaygroundMediaFrame({ card: _card }: { card: PlaygroundCard }) {
   return (
     <div
-      className="w-full overflow-hidden relative"
+      className="w-full overflow-hidden relative h-[323px]"
       style={{
-        aspectRatio: "1 / 1",
         backgroundColor: PLACEHOLDER_BG,
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
@@ -613,36 +595,6 @@ const CARD_BG = "var(--color-card-bg)";
 // placeholder.
 const PLACEHOLDER_BG =
   "color-mix(in srgb, var(--color-fg) 9%, var(--color-bg))";
-
-// Checkered grid header bar — mirrors the NavOverlay left rail's
-// monochrome checkerboard (NavOverlay.tsx textureStyle), oriented as a
-// horizontal bar so the grid's top edge rhymes with the rail's texture
-// instead of a plain hairline. Carries the "Select projects" title
-// inline. Checker contrast bumped to 10% so the pattern reads clearly.
-const GRID_CHECKER = "color-mix(in srgb, var(--color-fg) 10%, transparent)";
-const checkerStripStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  padding: "9px 16px",
-  backgroundColor: "var(--color-bg)",
-  backgroundImage: `linear-gradient(45deg, ${GRID_CHECKER} 25%, transparent 25%, transparent 75%, ${GRID_CHECKER} 75%), linear-gradient(45deg, ${GRID_CHECKER} 25%, transparent 25%, transparent 75%, ${GRID_CHECKER} 75%)`,
-  backgroundSize: "6px 6px",
-  backgroundPosition: "0 0, 3px 3px",
-  borderBottom:
-    "0.5px solid color-mix(in srgb, var(--color-fg) 16%, transparent)",
-};
-// "Select projects" title, now living inside the checkered header bar —
-// Geist Mono uppercase label to match the site's other mono section
-// labels (nav, section links).
-const gridHeaderTitleStyle: React.CSSProperties = {
-  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-  fontSize: 12,
-  fontWeight: 500,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  lineHeight: 1,
-  color: "var(--color-fg)",
-};
 
 // Slugs hidden from the homepage gallery (in-flight content / not
 // ready to show). Removing a slug from this set re-enables the card
