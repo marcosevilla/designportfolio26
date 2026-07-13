@@ -14,25 +14,37 @@ const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
 const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
 
-/** Decorative serif emphasis — Libre Baskerville italic, used for
- *  inline links and emphasized phrases inside body text. Renders an
- *  <a> when href is provided, plain <em> otherwise. */
+/** Decorative serif emphasis — Libre Baskerville medium italic (LB ships
+ *  400/700 only, so 500 is browser-synthesized), used for inline links
+ *  and emphasized phrases inside body text. Links wear the theme's
+ *  accent color with a dashed underline; plain emphasis stays fg-ink
+ *  with no underline. */
 function Em({ href, children }: { href?: string; children: React.ReactNode }) {
-  const style: React.CSSProperties = {
+  const base: React.CSSProperties = {
     fontFamily: BASKERVILLE,
     fontStyle: "italic",
-    fontWeight: 400,
-    color: "var(--color-fg)",
-    textDecoration: "none",
+    fontWeight: 500,
   };
   if (href) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" style={style}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          ...base,
+          color: "var(--color-accent)",
+          textDecorationLine: "underline",
+          textDecorationStyle: "dashed",
+          textDecorationThickness: 1,
+          textUnderlineOffset: 4,
+        }}
+      >
         {children}
       </a>
     );
   }
-  return <em style={style}>{children}</em>;
+  return <em style={{ ...base, color: "var(--color-fg)" }}>{children}</em>;
 }
 
 export default function HomeLayout({
@@ -255,8 +267,11 @@ export default function HomeLayout({
                 </p>
                 <p>
                   Outside of work, you&apos;ll find me{" "}
-                  <Em>dabbling in music photography,</Em> developing websites,
-                  or tinkering on various design sidequests.
+                  <Em href="https://www.marcosevilla.photo">
+                    dabbling in music photography
+                  </Em>
+                  , developing websites, or tinkering on various design
+                  sidequests.
                 </p>
               </motion.div>
 

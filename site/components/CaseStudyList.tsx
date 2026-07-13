@@ -466,27 +466,120 @@ function CellCaption({
   );
 }
 
-// TEMPORARY: every case study cell renders a uniform grey square
-// placeholder while the per-slug imagery is being re-cropped for the
-// new 1:1 frame. Per-slug tints, gallery content, layers/video/image
-// rendering, and the "Under construction" fallback are all bypassed
-// here — restore by reinstating the prior rendering branches below.
+// Media frame — renders the first galleryContent entry for the study
+// inside the fixed 323px frame: product video (autoplay loop), layered
+// UI composite (centered, drop-shadow), or plain image. Studies without
+// media fall back to the grey "Under construction" placeholder.
 function StudyMediaFrame({
-  study: _study,
+  study,
   locked,
 }: {
   study: CaseStudyMeta;
   locked: boolean;
 }) {
+  const items = galleryContent[study.slug] ?? [];
+  const item = items[0] ?? null;
+  const layers = item && typeof item === "object" && "layers" in item ? item.layers : null;
+  const video = item && typeof item === "object" && "video" in item ? item : null;
+  const image =
+    typeof item === "string"
+      ? item
+      : item && typeof item === "object" && "src" in item
+        ? item.src
+        : null;
+  const fit =
+    item && typeof item === "object" && "src" in item ? (item.fit ?? "contain") : "contain";
+  const objectPosition =
+    item && typeof item === "object" && "src" in item ? (item.objectPosition ?? "center") : "center";
+  const hasMedia = Boolean(video || layers || image);
+
+  // Brand tint behind composites/contained images; neutral grey for the
+  // empty placeholder state.
+  const tint = CARD_TINTS[study.slug];
+  const mediaBg = tint
+    ? `color-mix(in srgb, ${tint} ${CARD_TINT_AMOUNT}%, ${CARD_BG})`
+    : CARD_BG;
+
   return (
     <div
       className="w-full overflow-hidden relative h-[323px]"
       style={{
-        backgroundColor: PLACEHOLDER_BG,
+        backgroundColor: hasMedia ? mediaBg : PLACEHOLDER_BG,
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
       }}
     >
+      {video && (
+        <video
+          src={video.video}
+          poster={video.poster}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+      )}
+      {/* Layered composites: only the UI mock renders (layers.bg stays
+          skipped, same as before). uiWidth/uiHeight become max-bounds so
+          the mock scales into the shorter 323px frame without clipping;
+          drop-shadow traces the PNG's alpha shape. */}
+      {layers && (
+        <img
+          src={layers.ui}
+          alt=""
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            maxWidth: layers.uiWidth ?? "92%",
+            maxHeight: layers.uiHeight ?? "88%",
+            width: "auto",
+            height: "auto",
+            borderRadius: layers.uiBorderRadius ?? undefined,
+            filter: layers.uiShadow ?? undefined,
+            display: "block",
+            pointerEvents: "none",
+          }}
+        />
+      )}
+      {!layers && image && (
+        <img
+          src={image}
+          alt=""
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: fit,
+            objectPosition,
+            display: "block",
+          }}
+        />
+      )}
+      {!hasMedia && (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+            fontSize: "11px",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "var(--color-fg-tertiary)",
+          }}
+        >
+          Under construction
+        </div>
+      )}
       <LockedFrameBadge locked={locked} />
     </div>
   );
@@ -564,11 +657,9 @@ function PlaygroundCell({
   );
 }
 
-// TEMPORARY: playground cells also render the uniform grey square
-// placeholder (see PLACEHOLDER_BG comment + StudyMediaFrame). The
-// previous `<video>` rendering is bypassed here — restore by
-// reinstating the video / "Coming soon" branches.
-function PlaygroundMediaFrame({ card: _card }: { card: PlaygroundCard }) {
+// Playground media — autoplay loop of the card's demo video inside the
+// same fixed 323px frame; "Coming soon" placeholder when no video yet.
+function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
   return (
     <div
       className="w-full overflow-hidden relative h-[323px]"
@@ -577,7 +668,40 @@ function PlaygroundMediaFrame({ card: _card }: { card: PlaygroundCard }) {
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
       }}
-    />
+    >
+      {card.video ? (
+        <video
+          src={card.video}
+          poster={card.poster}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+            fontSize: "11px",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "var(--color-fg-tertiary)",
+          }}
+        >
+          Coming soon
+        </div>
+      )}
+    </div>
   );
 }
 
