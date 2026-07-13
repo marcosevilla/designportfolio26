@@ -8,13 +8,13 @@ prompts:
   - What do you do outside of work?
   - How can I reach you?
 ---
-I'm a Product Designer in San Francisco. Currently at [Canary Technologies](https://www.canarytechnologies.com/), building software for the world's largest hospitality brands including Marriott, Wyndham, Best Western, and IHG. I lead design for our Food & Beverage, Upsells, Guest Experience, and Tipping products.
+I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. My goal is to produce work that expands the ways we work and create.
 
-Previously, I helped democratize wine discovery at [Vivino](https://www.vivino.com/), made animated video production more accessible at [Vyond](https://www.vyond.com/), and built an all-in-one productivity tool for software engineers at [General Task](https://www.generaltask.com/).
+Currently, I'm at [Canary Technologies](https://www.canarytechnologies.com/), exploring how agentic workflows can help hotel operators at the world's largest hospitality enterprises — Marriott, Wyndham, and IHG. I've led design for several 0→1 products: a guest experience platform, a hotel CMS, mobile food and beverage ordering, and the knowledge base that powers our AI-native products.
 
-Growing up, I spent countless hours on PCs my dad custom-built, editing videos, manipulating photos, and creating worlds in simulation games. Those digital playgrounds turned into a love for honing my craft, and a deep interest in building systems that help people do their best work.
+Seven years in, I'm a design generalist who thrives in startups. My work ranges from building scalable brand systems as a marketing designer at [Vivino](https://www.vivino.com/) and [Vyond](https://www.vyond.com/), to founding product design at [General Task](https://www.generaltask.com/), where we built productivity tooling for knowledge workers.
 
-When I'm not designing, you'll find me shooting [music photography](photo-stack), working on creative side projects, singing, or on the pickleball court.
+Outside of work, you'll find me [taking photos at concerts](photo-stack), developing websites, or tinkering on design sidequests.
 
 ----
 

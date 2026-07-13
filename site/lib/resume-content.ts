@@ -22,7 +22,7 @@ export const RESUME_HEADER = {
 };
 
 export const RESUME_SUMMARY =
-  "Senior product designer with 7 years across B2B SaaS, AI products, and 0→1. Founding designer at General Task (YC W23). At Canary, design ownership on AI products driving $4.8M+ CARR for Marriott, Wyndham, Best Western, and Omni. I prototype in code with Claude as a daily collaborator.";
+  "Product designer with 7 years across B2B SaaS, AI products, and 0→1, operating at senior scope. Founding designer at General Task (YC W23). At Canary, design ownership on AI products driving $4.8M+ CARR for Marriott, Wyndham, Best Western, and Omni. I prototype in code with Claude as a daily collaborator.";
 
 export const RESUME_TOOLS = [
   "Figma",

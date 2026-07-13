@@ -40,19 +40,6 @@ export const PLAYLIST: Track[] = [
     mood: "warm",
   },
   {
-    src: "/audio/track-0.mp3",
-    title: "Blue Spring",
-    artist: "Nathan Micay",
-    // Spring sunset — deep blue kicks, sky mids, magenta highs, pale gold air
-    palette: {
-      bass: "#1D4ED8",   // blue-700
-      mids: "#0EA5E9",   // sky-500
-      highs: "#F472B6",  // pink-400
-      air: "#FDE68A",    // amber-200
-    },
-    mood: "energetic",
-  },
-  {
     src: "/audio/track-1.mp3",
     title: "DANCE..",
     artist: "Slayyyter",
@@ -103,6 +90,84 @@ export const PLAYLIST: Track[] = [
       air: "#E0E7FF",    // indigo-100
     },
     mood: "dreamy",
+  },
+  {
+    src: "/audio/track-8.mp3",
+    title: "I'll Take It",
+    artist: "Sophia Stel",
+    // Dusk haze — navy kicks, blue mids, blush highs, stone air
+    palette: {
+      bass: "#1E3A8A",   // blue-900
+      mids: "#3B82F6",   // blue-500
+      highs: "#FDA4AF",  // rose-300
+      air: "#F5F5F4",    // stone-100
+    },
+    mood: "dreamy",
+  },
+  {
+    src: "/audio/track-9.mp3",
+    title: "eat, sleep, slay",
+    artist: "horsegiirL",
+    // Hyper-pop pasture — magenta kicks, pink mids, lime highs, blush air
+    palette: {
+      bass: "#BE185D",   // pink-700
+      mids: "#EC4899",   // pink-500
+      highs: "#A3E635",  // lime-400
+      air: "#FCE7F3",    // pink-100
+    },
+    mood: "energetic",
+  },
+  {
+    src: "/audio/track-10.mp3",
+    title: "Tell Me (U Want It)",
+    artist: "underscores",
+    // Glitch contrast — slate kicks, red mids, green highs, near-white air
+    palette: {
+      bass: "#1E293B",   // slate-800
+      mids: "#DC2626",   // red-600
+      highs: "#4ADE80",  // green-400
+      air: "#F8FAFC",    // slate-50
+    },
+    mood: "energetic",
+  },
+  {
+    src: "/audio/track-11.mp3",
+    title: "Fuck My Computer",
+    artist: "Ninajirachi",
+    // Deep-sea circuit — teal kicks, aqua mids, ice highs, stone air
+    palette: {
+      bass: "#134E4A",   // teal-900
+      mids: "#2DD4BF",   // teal-400
+      highs: "#A5F3FC",  // cyan-200
+      air: "#E7E5E4",    // stone-200
+    },
+    mood: "energetic",
+  },
+  {
+    src: "/audio/track-12.mp3",
+    title: "We Are Making Out (feat. yeule)",
+    artist: "Mura Masa",
+    // Crimson wash — oxblood kicks, red mids, salmon highs, blush air
+    palette: {
+      bass: "#991B1B",   // red-800
+      mids: "#EF4444",   // red-500
+      highs: "#FCA5A5",  // red-300
+      air: "#FEF2F2",    // red-50
+    },
+    mood: "dreamy",
+  },
+  {
+    src: "/audio/track-13.mp3",
+    title: "Winny",
+    artist: "Fred again.., Sammy Virji & Winny",
+    // B&W single cover — grayscale ramp
+    palette: {
+      bass: "#171717",   // neutral-900
+      mids: "#525252",   // neutral-600
+      highs: "#A3A3A3",  // neutral-400
+      air: "#F5F5F5",    // neutral-100
+    },
+    mood: "energetic",
   },
 ];
 

@@ -44,7 +44,11 @@ function main() {
 
   const name = data.name ?? "";
 
-  const paragraphs = content
+  // Only the section above the first horizontal-rule divider is the
+  // visitor-facing bio — everything below it is drafts/scratch space.
+  const bio = content.split(/^\s*-{3,}\s*$/m)[0];
+
+  const paragraphs = bio
     .split(/\n{2,}/)
     .map((p) => p.replace(/\s+/g, " ").trim())
     .filter(Boolean)

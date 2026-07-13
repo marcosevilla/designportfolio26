@@ -172,6 +172,7 @@ export default function HomeLayout({
               className="text-(--color-fg-secondary) leading-[26px] mb-6"
               style={{
                 fontSize: "calc(14px + var(--font-size-offset))",
+                fontWeight: 500,
                 fontFamily:
                   "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                 textTransform: "uppercase",

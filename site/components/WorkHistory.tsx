@@ -34,90 +34,80 @@ const ROWS: Row[] = RESUME_EXPERIENCE.map((job) => ({
 
 const MONO = "var(--font-geist-mono), ui-monospace, Menlo, monospace";
 const SANS = "var(--font-geist-sans), system-ui, sans-serif";
+// Match the homepage bio body copy (14px + the user's font-size offset).
+const SIZE = "calc(14px + var(--font-size-offset))";
 
 export default function WorkHistory() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (
-    <div
-      style={{
-        backgroundColor: "var(--color-bg)",
-        border: "0.5px solid var(--color-border)",
-      }}
-    >
+    <div>
       {ROWS.map((row, i) => {
         const isOpen = openIdx === i;
         return (
-          <div
-            key={i}
-            style={{
-              borderBottom:
-                i < ROWS.length - 1
-                  ? "0.5px solid var(--color-border)"
-                  : undefined,
-            }}
-          >
+          <div key={i}>
             <button
               type="button"
               onClick={() => setOpenIdx(isOpen ? null : i)}
               aria-expanded={isOpen}
               className="w-full flex items-baseline gap-2 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
-              style={{ padding: "4px 8px" }}
+              style={{ padding: "4px 0" }}
             >
-              <span
-                className="shrink-0 uppercase whitespace-nowrap"
-                style={{
-                  fontFamily: MONO,
-                  fontWeight: 500,
-                  fontSize: 11,
-                  lineHeight: "26px",
-                  color: "var(--color-fg)",
-                }}
-              >
-                <span className="inline-block w-[9px]">
-                  {isOpen ? "−" : "+"}
-                </span>{" "}
-                {row.company}
-              </span>
+              {/* Left to right: +/− marker, date range (mono), company
+                  name (sans). No dotted leader. The date column has a fixed
+                  ch width so company names line up across rows. */}
               <span
                 aria-hidden
-                className="flex-1 overflow-hidden whitespace-nowrap"
+                className="shrink-0 text-center"
                 style={{
-                  fontFamily: SANS,
-                  fontSize: 11,
-                  lineHeight: 1,
-                  color: "var(--color-fg-tertiary)",
-                  transform: "translateY(-1px)",
+                  fontFamily: MONO,
+                  fontSize: SIZE,
+                  lineHeight: "22px",
+                  color: "var(--color-fg)",
+                  minWidth: "1.5ch",
                 }}
               >
-                {"·".repeat(200)}
+                {isOpen ? "−" : "+"}
               </span>
               <span
                 className="shrink-0 whitespace-nowrap"
                 style={{
                   fontFamily: MONO,
-                  fontSize: 11,
-                  lineHeight: "26px",
+                  fontSize: SIZE,
+                  lineHeight: "22px",
                   color: "var(--color-fg)",
+                  minWidth: "12ch",
                 }}
               >
                 {row.years}
+              </span>
+              <span
+                className="whitespace-nowrap"
+                style={{
+                  fontFamily: SANS,
+                  fontWeight: 500,
+                  fontSize: SIZE,
+                  lineHeight: "22px",
+                  color: "var(--color-fg)",
+                }}
+              >
+                {row.company}
               </span>
             </button>
             <div
               className="overflow-hidden transition-all duration-300 ease-in-out"
               style={{
-                maxHeight: isOpen ? 400 : 0,
+                maxHeight: isOpen ? 600 : 0,
                 opacity: isOpen ? 1 : 0,
               }}
             >
               <p
                 style={{
                   fontFamily: SANS,
-                  fontSize: 10,
-                  lineHeight: 1.8,
+                  fontSize: SIZE,
+                  lineHeight: "22px",
                   color: "var(--color-fg-secondary)",
-                  padding: "0 8px 8px",
+                  padding: "0 0 8px",
                 }}
               >
                 {row.description}

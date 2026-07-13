@@ -32,6 +32,9 @@ import MainBlurLayer from "@/components/MainBlurLayer";
 import NavOverlay from "@/components/NavOverlay";
 import { NavOverlayProvider } from "@/lib/NavOverlayContext";
 import { ChatOverlayProvider } from "@/lib/ChatOverlayContext";
+import ChangelogOverlay from "@/components/ChangelogOverlay";
+import { ChangelogOverlayProvider } from "@/lib/ChangelogOverlayContext";
+import { getChangelog } from "@/lib/changelog";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -80,6 +83,7 @@ export default function RootLayout({
               <PasswordGateProvider>
                 <NavOverlayProvider>
                 <ChatOverlayProvider>
+                <ChangelogOverlayProvider>
                 <a href="#main" className="skip-to-content">
                   Skip to content
                 </a>
@@ -105,8 +109,10 @@ export default function RootLayout({
                 <MusicMiniWidget />
                 <ChatBar />
                 <MusicOverlay />
+                <ChangelogOverlay groups={getChangelog()} />
                 <PasswordModal />
                 {process.env.NODE_ENV === "development" && <Agentation />}
+                </ChangelogOverlayProvider>
                 </ChatOverlayProvider>
                 </NavOverlayProvider>
               </PasswordGateProvider>

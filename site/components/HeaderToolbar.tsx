@@ -5,7 +5,8 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaletteRow } from "./PaletteSwatches";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
-import { MoonIcon, MusicNoteIcon, SettingsIcon, SunIcon } from "./Icons";
+import { useChangelogOverlay } from "@/lib/ChangelogOverlayContext";
+import { ChangelogIcon, MoonIcon, MusicNoteIcon, SettingsIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
 import {
   Tooltip,
@@ -227,6 +228,30 @@ function MusicButton() {
 }
 
 
+/** "What's new" button — opens the global ChangelogOverlay (the
+ *  month-grouped milestone log parsed from docs/CHANGELOG.md). */
+function ChangelogButton() {
+  const { changelogOpen, toggleChangelog } = useChangelogOverlay();
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={toggleChangelog}
+            aria-label="What's new"
+            aria-pressed={changelogOpen}
+            className={`bio-toolbar-btn${changelogOpen ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
+          />
+        }
+      >
+        <ChangelogIcon size={15} />
+      </TooltipTrigger>
+      <TooltipContent>What&rsquo;s new</TooltipContent>
+    </Tooltip>
+  );
+}
+
 /** Header toolbar — fixed top-right cluster. Two sibling pills (controls +
  *  chat trigger) sharing chrome + drop shadow. Always anchored to the
  *  viewport's right edge; not tied to any section. */
@@ -258,6 +283,7 @@ export default function HeaderToolbar() {
       <div className="flex items-center gap-2">
         <div ref={pillRef} className="flex items-center gap-1">
           <MusicButton />
+          <ChangelogButton />
           <ThemeToggleButton />
           <PaletteButton
             open={paletteOpen}

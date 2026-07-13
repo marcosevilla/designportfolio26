@@ -53,6 +53,22 @@ export function ListIcon({ size = 16, className }: IconProps) {
   );
 }
 
+/** Changelog / "what's new" — a release-notes timeline: leading dots on a
+ *  vertical rail, each with a line to its right. Thin stroked, no fills, to
+ *  sit in the same icon family as the rest of the toolbar. */
+export function ChangelogIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="5" cy="6" r="1.5" />
+      <circle cx="5" cy="12" r="1.5" />
+      <circle cx="5" cy="18" r="1.5" />
+      <line x1="10" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="17" y2="12" />
+      <line x1="10" y1="18" x2="19" y2="18" />
+    </svg>
+  );
+}
+
 export function CarouselIcon({ size = 16, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>

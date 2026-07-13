@@ -654,6 +654,9 @@ const HIDDEN_SLUGS = new Set<string>(["upsells", "design-system"]);
 // every other card falls back to the gallery-open button behavior.
 const STUDY_ROUTES: Record<string, string> = {
   "fb-ordering": "/work/fb-ordering",
+  compendium: "/work/compendium",
+  "ai-workflow": "/work/ai-workflow",
+  "knowledge-base": "/work/knowledge-base",
 };
 
 // Per-card accent tint, blended at low opacity over CARD_BG so each

@@ -28,3 +28,6 @@ Thumbs.db
 
 # Git worktrees (used by superpowers:using-git-worktrees skill)
 .worktrees/
+
+# Playwright MCP output (snapshots, console logs, screenshots)
+.playwright-mcp/

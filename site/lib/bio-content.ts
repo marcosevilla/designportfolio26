@@ -8,25 +8,25 @@ export const HERO_NAME = "Marco Sevilla";
 
 export const PARAGRAPHS: Paragraph[] = [
   [
-    { text: "I'm a Product Designer in San Francisco. Currently at" },
+    { text: "I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. My goal is to produce work that expands the ways we work and create." },
+  ],
+  [
+    { text: "Currently, I'm at" },
     { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" },
-    { text: ", building software for the world's largest hospitality brands including Marriott, Wyndham, Best Western, and IHG. I lead design for our Food & Beverage, Upsells, Guest Experience, and Tipping products." },
+    { text: ", exploring how agentic workflows can help hotel operators at the world's largest hospitality enterprises — Marriott, Wyndham, and IHG. I've led design for several 0→1 products: a guest experience platform, a hotel CMS, mobile food and beverage ordering, and the knowledge base that powers our AI-native products." },
   ],
   [
-    { text: "Previously, I helped democratize wine discovery at" },
+    { text: "Seven years in, I'm a design generalist who thrives in startups. My work ranges from building scalable brand systems as a marketing designer at" },
     { text: "Vivino", href: "https://www.vivino.com/" },
-    { text: ", made animated video production more accessible at" },
+    { text: "and" },
     { text: "Vyond", href: "https://www.vyond.com/" },
-    { text: ", and built an all-in-one productivity tool for software engineers at" },
+    { text: ", to founding product design at" },
     { text: "General Task", href: "https://www.generaltask.com/" },
-    { text: "." },
+    { text: ", where we built productivity tooling for knowledge workers." },
   ],
   [
-    { text: "Growing up, I spent countless hours on PCs my dad custom-built, editing videos, manipulating photos, and creating worlds in simulation games. Those digital playgrounds turned into a love for honing my craft, and a deep interest in building systems that help people do their best work." },
-  ],
-  [
-    { text: "When I'm not designing, you'll find me shooting" },
-    { text: "music photography", href: "photo-stack" },
-    { text: ", working on creative side projects, singing, or on the pickleball court." },
+    { text: "Outside of work, you'll find me" },
+    { text: "taking photos at concerts", href: "photo-stack" },
+    { text: ", developing websites, or tinkering on design sidequests." },
   ],
 ];
