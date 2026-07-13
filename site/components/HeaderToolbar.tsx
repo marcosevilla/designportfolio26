@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaletteRow } from "./PaletteSwatches";
 import { useChangelogOverlay } from "@/lib/ChangelogOverlayContext";
-import { ChangelogIcon, MoonIcon, SettingsIcon, SunIcon } from "./Icons";
+import { ChangelogIcon, MoonIcon, PaintBrushIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
 import {
   Tooltip,
@@ -137,7 +137,7 @@ function PaletteButton({
             />
           }
         >
-          <SettingsIcon size={15} />
+          <PaintBrushIcon size={15} />
         </TooltipTrigger>
         <TooltipContent>Settings</TooltipContent>
       </Tooltip>
@@ -209,7 +209,8 @@ export default function HeaderToolbar() {
     <TooltipProvider delay={100}>
       <div className="flex items-center gap-2">
         <div ref={pillRef} className="flex items-center gap-1">
-          <ChangelogButton />
+          {/* ChangelogButton hidden for now — re-add here when the
+              changelog is ready to surface again. */}
           <ThemeToggleButton />
           <PaletteButton
             open={paletteOpen}
