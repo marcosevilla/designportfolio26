@@ -253,7 +253,7 @@ export default function SystemArchitecture() {
           Information architecture
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {/* Staff column */}
           <div
             className="rounded-lg border p-4"

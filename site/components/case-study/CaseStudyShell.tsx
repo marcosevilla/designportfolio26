@@ -25,7 +25,9 @@ export default function CaseStudyShell({
         style={typescale.body}
       >
         <InlineTOC />
-        <div className="max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0 pt-24 lg:pt-[18vh]">
+        {/* Single 600px column matching the home page (TOC sidebar is
+            rendered separately via SidebarTOCBridge and excluded). */}
+        <div className="max-w-[600px] mx-auto px-4 sm:px-8 pt-24 lg:pt-[18vh]">
           {children}
         </div>
       </article>

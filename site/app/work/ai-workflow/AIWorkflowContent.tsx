@@ -30,14 +30,26 @@ export default function AIWorkflowContent() {
           {/* Title + Subtitle */}
           <div>
             <h1
-              className="tracking-tight text-(--color-fg)"
-              style={typescale.display}
+              className="text-(--color-fg)"
+              style={{
+                ...typescale.display,
+                fontFamily: "var(--font-baskerville), Georgia, serif",
+                fontWeight: 700,
+                letterSpacing: "0.02em",
+              }}
             >
               How I Work with AI
             </h1>
             <p
               className="mt-3 text-(--color-fg-secondary)"
-              style={{ ...typescale.subtitle, maxWidth: "66%" }}
+              style={{
+                fontFamily: "var(--font-baskerville), Georgia, serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                fontSize: 18,
+                lineHeight: "26px",
+                letterSpacing: "0.02em",
+              }}
             >
               AI isn&apos;t a novelty in my workflow — it&apos;s the
               infrastructure. I use Claude Code as a daily development partner,

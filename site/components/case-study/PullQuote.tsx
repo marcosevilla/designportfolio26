@@ -9,7 +9,14 @@ export default function PullQuote({
 }) {
   return (
     <blockquote className="my-10 pl-6 border-l-[3px] border-(--color-accent)">
-      <p className="text-(--color-fg) italic" style={typescale.pullQuote}>
+      <p
+        className="text-(--color-fg) italic"
+        style={{
+          ...typescale.pullQuote,
+          fontFamily: "var(--font-baskerville), Georgia, serif",
+          letterSpacing: "0.01em",
+        }}
+      >
         &ldquo;{quote}&rdquo;
       </p>
       {attribution && (

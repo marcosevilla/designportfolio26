@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import QuickStats from "@/components/case-study/QuickStats";
-import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import NextProject from "@/components/case-study/NextProject";
 import PullQuote from "@/components/case-study/PullQuote";
@@ -61,7 +60,7 @@ function DesignPrinciples() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+    <div className="grid grid-cols-1 gap-4 mt-2">
       {PRINCIPLES.map((p, i) => {
         const isOpen = openIdx === i;
         return (
@@ -125,12 +124,12 @@ export default function FBOrderingContent() {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* Title + Subtitle + Project Details */}
-        <div className="lg:grid lg:gap-x-20 lg:items-start" style={{ gridTemplateColumns: "2fr 1fr" }}>
+        <div>
           <div>
-            <h1 className="tracking-tight text-(--color-fg) whitespace-nowrap" style={typescale.display}>F&B Mobile Ordering</h1>
+            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>F&B Mobile Ordering</h1>
             <p className="mt-3 text-(--color-fg-secondary)">I led the design of a mobile ordering system for hotels, expanding Canary&apos;s product suite into new revenue channels — spanning guest ordering, a menu CMS, and a staff fulfillment dashboard. The product went from concept to production in four months, shipping 93 of 100 scoped issues across three connected surfaces.</p>
           </div>
-          <div className="mt-6 lg:mt-[52px] overflow-hidden">
+          <div className="mt-8 overflow-hidden">
             <ProjectDetails rows={[
               { label: "Company", value: "Canary Technologies", content: "Hotel software platform serving 20,000+ properties worldwide." },
               { label: "Timeline", value: "Aug 2025 – Feb 2026", content: "Research to GA launch. Core ordering flow designed in a 4-day sprint, iterated over 6 months." },
@@ -168,12 +167,9 @@ export default function FBOrderingContent() {
             <MobileShowcase />
           </FadeIn>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-10">
-            <FadeIn delay={0.1}><ImagePlaceholder description="Order confirmation with ETA" aspectRatio="3/4" /></FadeIn>
+          <div className="grid grid-cols-1 gap-5 mt-10">
             <FadeIn><img src="/images/fb-ordering/fb-ordering-table.png" alt="Staff fulfillment dashboard — new orders" className="w-full rounded-lg" /></FadeIn>
             <FadeIn delay={0.1}><img src="/images/fb-ordering/fb-ordering-dashboard.png" alt="Staff order detail with approve/deny" className="w-full rounded-lg" /></FadeIn>
-            <FadeIn><ImagePlaceholder description="Hotel admin — delivery type setup" aspectRatio="16/9" /></FadeIn>
-            <FadeIn delay={0.1}><ImagePlaceholder description="Supplemental fees and taxes configuration" aspectRatio="16/9" /></FadeIn>
           </div>
         </FadeIn>
 
@@ -218,13 +214,6 @@ export default function FBOrderingContent() {
             </TwoCol.Left>
           </TwoCol>
 
-          <FadeIn>
-            <ImagePlaceholder
-              description="Hero mockup — guest ordering flow showing menu → item detail → cart → confirmation"
-              aspectRatio="16/9"
-            />
-          </FadeIn>
-
           <TwoCol className="mt-10">
             <TwoCol.Left>
               <SectionHeading>Design approach</SectionHeading>
@@ -265,17 +254,10 @@ export default function FBOrderingContent() {
             </FadeIn>
 
             <FadeIn>
-              <TwoCol>
-                <TwoCol.Left>
-                  <SectionHeading level={4}>2. Delivery type drives the entire experience</SectionHeading>
-                  <p>
-                    I identified that all hotel ordering workflows share a common variable: where the food goes. This became the central design insight — in-room vs. alternative location (pool, lounge) determines the checkout flow, authentication requirements, and staff fulfillment workflow. Hotels configure this per outlet, and the guest experience adapts automatically. This simplified what could have been dozens of edge cases into a clean, scalable model.
-                  </p>
-                </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="Diagram showing delivery type → checkout flow branching" aspectRatio="16/9" />
-                </TwoCol.Right>
-              </TwoCol>
+              <SectionHeading level={4}>2. Delivery type drives the entire experience</SectionHeading>
+              <p>
+                I identified that all hotel ordering workflows share a common variable: where the food goes. This became the central design insight — in-room vs. alternative location (pool, lounge) determines the checkout flow, authentication requirements, and staff fulfillment workflow. Hotels configure this per outlet, and the guest experience adapts automatically. This simplified what could have been dozens of edge cases into a clean, scalable model.
+              </p>
             </FadeIn>
 
             <FadeIn>
@@ -293,31 +275,17 @@ export default function FBOrderingContent() {
             </FadeIn>
 
             <FadeIn>
-              <TwoCol>
-                <TwoCol.Left>
-                  <SectionHeading level={4}>4. Reservation-linked ordering with graceful fallbacks</SectionHeading>
-                  <p>
-                    For PMS-integrated hotels, orders tie to guest reservations — contact details pre-fill, identity is verified, and staff see a trust badge. For non-PMS hotels or walk-in visitors, I designed a manual entry flow that still captures everything staff need. This let us ship to a much wider range of hotels without waiting for POS integrations.
-                  </p>
-                </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="Verified vs. unverified vs. walk-in badge states on staff dashboard" aspectRatio="3/2" />
-                </TwoCol.Right>
-              </TwoCol>
+              <SectionHeading level={4}>4. Reservation-linked ordering with graceful fallbacks</SectionHeading>
+              <p>
+                For PMS-integrated hotels, orders tie to guest reservations — contact details pre-fill, identity is verified, and staff see a trust badge. For non-PMS hotels or walk-in visitors, I designed a manual entry flow that still captures everything staff need. This let us ship to a much wider range of hotels without waiting for POS integrations.
+              </p>
             </FadeIn>
 
             <FadeIn>
-              <TwoCol>
-                <TwoCol.Left>
-                  <SectionHeading level={4}>5. Built on Upsells infrastructure, designed for F&amp;B</SectionHeading>
-                  <p>
-                    Rather than building from scratch, F&amp;B ordering reuses Canary&#39;s existing Purchase Order system from Upsells. I designed the staff experience to feel native to F&amp;B — color-coded priorities, time-elapsed sorting, dedicated notification settings — while engineering could ship faster by leveraging existing backend rails.
-                  </p>
-                </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="Staff order fulfillment dashboard" aspectRatio="16/9" />
-                </TwoCol.Right>
-              </TwoCol>
+              <SectionHeading level={4}>5. Built on Upsells infrastructure, designed for F&amp;B</SectionHeading>
+              <p>
+                Rather than building from scratch, F&amp;B ordering reuses Canary&#39;s existing Purchase Order system from Upsells. I designed the staff experience to feel native to F&amp;B — color-coded priorities, time-elapsed sorting, dedicated notification settings — while engineering could ship faster by leveraging existing backend rails.
+              </p>
             </FadeIn>
           </div>
         </FadeIn>
@@ -390,17 +358,12 @@ export default function FBOrderingContent() {
               </TwoCol.Left>
             </TwoCol>
 
-            <TwoCol className="mt-8">
-              <TwoCol.Left>
-                <SectionHeading level={3}>The prototype</SectionHeading>
-                <p className="mb-5">
-                  I built a fully interactive prototype (Next.js + React, deployed to Vercel) that evolved over several weeks — starting with order management screens, expanding to menu management, then a full functional demo with 50+ pre-loaded items and real cart persistence, then AI-powered menu parsing using Claude&#39;s API, and finally the modifier system. This wasn&#39;t a throwaway prototype — it became the primary demo tool for sales calls, GTM enablement, and stakeholder reviews.
-                </p>
-              </TwoCol.Left>
-              <TwoCol.Right>
-                <ImagePlaceholder description="Code prototype on Vercel — functional demo with 50+ items" aspectRatio="16/9" />
-              </TwoCol.Right>
-            </TwoCol>
+            <div className="mt-8">
+              <SectionHeading level={3}>The prototype</SectionHeading>
+              <p className="mb-5">
+                I built a fully interactive prototype (Next.js + React, deployed to Vercel) that evolved over several weeks — starting with order management screens, expanding to menu management, then a full functional demo with 50+ pre-loaded items and real cart persistence, then AI-powered menu parsing using Claude&#39;s API, and finally the modifier system. This wasn&#39;t a throwaway prototype — it became the primary demo tool for sales calls, GTM enablement, and stakeholder reviews.
+              </p>
+            </div>
           </ExpandableSection>
         </FadeIn>
 
@@ -414,8 +377,6 @@ export default function FBOrderingContent() {
                 </p>
               </TwoCol.Left>
             </TwoCol>
-
-            <ImagePlaceholder description="Early Figma explorations, wireframes of ordering flow" aspectRatio="16/9" />
 
             <TwoCol className="mt-10">
               <TwoCol.Left>
@@ -469,10 +430,6 @@ export default function FBOrderingContent() {
                 </ul>
               </TwoCol.Left>
             </TwoCol>
-
-            <div className="mt-10">
-              <ImagePlaceholder description="Before/after — phone-based ordering vs. digital flow" aspectRatio="16/9" />
-            </div>
           </ExpandableSection>
         </FadeIn>
 

@@ -1,7 +1,6 @@
 "use client";
 
 import QuickStats from "@/components/case-study/QuickStats";
-import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import NextProject from "@/components/case-study/NextProject";
 import PullQuote from "@/components/case-study/PullQuote";
@@ -26,7 +25,6 @@ const TOC_ITEMS = [
   { id: "process", label: "Process" },
   { id: "impact", label: "Impact" },
   { id: "reflection", label: "Reflection" },
-  { id: "gallery", label: "Gallery" },
 ];
 
 export default function CompendiumContent() {
@@ -34,8 +32,8 @@ export default function CompendiumContent() {
     <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Digital Compendium</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.</p>
+          <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
+          <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.</p>
         </div>
 
         {/* Hero Image */}
@@ -72,13 +70,6 @@ export default function CompendiumContent() {
             </TwoCol.Left>
           </TwoCol>
 
-          <FadeIn>
-            <ImagePlaceholder
-              description="Split view of CMS builder (left) and guest mobile experience (right)"
-              aspectRatio="16/9"
-            />
-          </FadeIn>
-
           {/* Key decisions */}
           <TwoCol className="mt-10">
             <TwoCol.Left>
@@ -88,59 +79,31 @@ export default function CompendiumContent() {
 
           <div className="space-y-14 mt-6">
             <FadeIn>
-              <TwoCol>
-                <TwoCol.Left>
-                  <SectionHeading level={4}>1. Builder-first architecture</SectionHeading>
-                  <p className="mb-5">
-                    I designed the CMS as a structured builder rather than a free-form editor. Hotels configure sections (restaurants, amenities, custom content) through a guided interface with real-time preview. This was deliberate — hotel staff aren&apos;t web designers, and a &ldquo;builder&rdquo; metaphor with clear sections and drag-to-reorder maps directly to how they think about their property&apos;s offerings. The patterns would be reused across registration cards, auth forms, and other editors.
-                  </p>
-                </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="CMS builder interface with section management" aspectRatio="16/9" />
-                </TwoCol.Right>
-              </TwoCol>
+              <SectionHeading level={4}>1. Builder-first architecture</SectionHeading>
+              <p className="mb-5">
+                I designed the CMS as a structured builder rather than a free-form editor. Hotels configure sections (restaurants, amenities, custom content) through a guided interface with real-time preview. This was deliberate — hotel staff aren&apos;t web designers, and a &ldquo;builder&rdquo; metaphor with clear sections and drag-to-reorder maps directly to how they think about their property&apos;s offerings. The patterns would be reused across registration cards, auth forms, and other editors.
+              </p>
             </FadeIn>
 
             <FadeIn>
-              <TwoCol>
-                <TwoCol.Left>
-                  <SectionHeading level={4}>2. Custom sections as the extensibility layer</SectionHeading>
-                  <p className="mb-5">
-                    Rather than hard-coding every content type, I designed a custom sections system that lets hotels create their own categories with items, images, descriptions, and call-to-action buttons. This single pattern — adopted by 82% of active properties — solved everything from &ldquo;spa services&rdquo; to &ldquo;local attractions&rdquo; to &ldquo;hotel policies&rdquo; without requiring product-specific development for each use case.
-                  </p>
-                </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="Custom section examples across different hotel types" aspectRatio="16/9" />
-                </TwoCol.Right>
-              </TwoCol>
+              <SectionHeading level={4}>2. Custom sections as the extensibility layer</SectionHeading>
+              <p className="mb-5">
+                Rather than hard-coding every content type, I designed a custom sections system that lets hotels create their own categories with items, images, descriptions, and call-to-action buttons. This single pattern — adopted by 82% of active properties — solved everything from &ldquo;spa services&rdquo; to &ldquo;local attractions&rdquo; to &ldquo;hotel policies&rdquo; without requiring product-specific development for each use case.
+              </p>
             </FadeIn>
 
             <FadeIn>
-              <TwoCol>
-                <TwoCol.Left>
-                  <SectionHeading level={4}>3. Compendium as the guest journey endpoint</SectionHeading>
-                  <p className="mb-5">
-                    I positioned Compendium as where every guest touchpoint leads. Check-in completes? You land on Compendium. Arrival SMS? Links to Compendium. QR code in the lobby? Compendium. This wasn&apos;t just navigation — it was the product strategy. By making Compendium the hub, every other Canary product (messaging, upsells, tipping, food ordering) gets organic distribution.
-                  </p>
-                </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="Guest journey map showing Compendium as the central hub" aspectRatio="16/9" />
-                </TwoCol.Right>
-              </TwoCol>
+              <SectionHeading level={4}>3. Compendium as the guest journey endpoint</SectionHeading>
+              <p className="mb-5">
+                I positioned Compendium as where every guest touchpoint leads. Check-in completes? You land on Compendium. Arrival SMS? Links to Compendium. QR code in the lobby? Compendium. This wasn&apos;t just navigation — it was the product strategy. By making Compendium the hub, every other Canary product (messaging, upsells, tipping, food ordering) gets organic distribution.
+              </p>
             </FadeIn>
 
             <FadeIn>
-              <TwoCol>
-                <TwoCol.Left>
-                  <SectionHeading level={4}>4. Compendium Lite as a freemium growth lever</SectionHeading>
-                  <p className="mb-5">
-                    When we needed to drive cross-sell and deepen the Wyndham relationship, I designed Compendium Lite — a constrained version (2 sections, 4 items per section) that any Canary customer could activate for free. The design challenge was creating clear upgrade triggers without making the free version feel broken. I placed contextual &ldquo;Request Upgrade&rdquo; prompts at natural friction points — when a hotel tries to add a third section or fifth item — so the limitation feels like an invitation, not a wall.
-                  </p>
-                </TwoCol.Left>
-                <TwoCol.Right>
-                  <ImagePlaceholder description="Compendium Lite showing section limits and upgrade prompt" aspectRatio="16/9" />
-                </TwoCol.Right>
-              </TwoCol>
+              <SectionHeading level={4}>4. Compendium Lite as a freemium growth lever</SectionHeading>
+              <p className="mb-5">
+                When we needed to drive cross-sell and deepen the Wyndham relationship, I designed Compendium Lite — a constrained version (2 sections, 4 items per section) that any Canary customer could activate for free. The design challenge was creating clear upgrade triggers without making the free version feel broken. I placed contextual &ldquo;Request Upgrade&rdquo; prompts at natural friction points — when a hotel tries to add a third section or fifth item — so the limitation feels like an invitation, not a wall.
+              </p>
             </FadeIn>
           </div>
         </FadeIn>
@@ -224,8 +187,6 @@ export default function CompendiumContent() {
               </TwoCol.Left>
             </TwoCol>
 
-            <ImagePlaceholder description="Figma file evolution showing phases of Compendium design" aspectRatio="16/9" />
-
             <TwoCol className="mt-10">
               <TwoCol.Left>
                 <div className="space-y-8">
@@ -278,10 +239,6 @@ export default function CompendiumContent() {
                 </ul>
               </TwoCol.Left>
             </TwoCol>
-
-            <div className="mt-10">
-              <ImagePlaceholder description="Before/after — printed compendium booklet vs. digital Compendium on phone" aspectRatio="16/9" />
-            </div>
           </ExpandableSection>
         </FadeIn>
 
@@ -372,20 +329,8 @@ export default function CompendiumContent() {
           </ExpandableSection>
         </FadeIn>
 
-        {/* ── Visual Gallery ── */}
-        <FadeIn as="section" className="scroll-mt-24 pt-32">
-          <SectionHeading id="gallery">The Work</SectionHeading>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <FadeIn><ImagePlaceholder description="CMS builder main page with section management" aspectRatio="16/9" /></FadeIn>
-            <FadeIn delay={0.1}><ImagePlaceholder description="Restaurant/amenity editor with image gallery" aspectRatio="16/9" /></FadeIn>
-            <FadeIn><ImagePlaceholder description="Guest welcome screen on mobile" aspectRatio="3/4" /></FadeIn>
-            <FadeIn delay={0.1}><ImagePlaceholder description="Guest section browsing on mobile" aspectRatio="3/4" /></FadeIn>
-            <FadeIn><ImagePlaceholder description="QR code template selector" aspectRatio="16/9" /></FadeIn>
-            <FadeIn delay={0.1}><ImagePlaceholder description="Bulk image upload flow" aspectRatio="16/9" /></FadeIn>
-            <FadeIn><ImagePlaceholder description="Translation picker for multi-language content" aspectRatio="16/9" /></FadeIn>
-            <FadeIn delay={0.1}><ImagePlaceholder description="Restaurant detail with photos on mobile" aspectRatio="3/4" /></FadeIn>
-          </div>
-        </FadeIn>
+        {/* Visual gallery removed with the placeholder cleanup — restore
+            the section (+ its "gallery" TOC entry) once real images land. */}
 
         {/* ── Next Project ── */}
         <FadeIn>
