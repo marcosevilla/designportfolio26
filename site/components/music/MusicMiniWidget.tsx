@@ -13,7 +13,6 @@ import {
   SkipForwardIcon,
   MusicNoteIcon,
   ChevronUpIcon,
-  ChevronDownIcon,
 } from "@/components/Icons";
 import InsetScrubber from "./InsetScrubber";
 import {
@@ -25,6 +24,13 @@ import {
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+// Peek heights for the collapsed visualizer — the top edge of the LED
+// screen stays visible so it can be clicked back open; hovering the
+// player nudges it out a little further.
+const PEEK_REST = 10;
+const PEEK_HOVER = 20;
+const VIZ_HEIGHT = 132;
+
 function formatTime(sec: number): string {
   if (!isFinite(sec) || sec < 0) return "0:00";
   const m = Math.floor(sec / 60);
@@ -32,19 +38,35 @@ function formatTime(sec: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function ArrowIcon({ dir, size = 11 }: { dir: "left" | "right"; size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      style={dir === "left" ? { transform: "scaleX(-1)" } : undefined}
+    >
+      <path d="M3 8h10" />
+      <path d="M9 4l4 4-4 4" />
+    </svg>
+  );
+}
+
 function MiniButton({
   label,
   tooltip,
   onClick,
-  active = false,
-  small = false,
   children,
 }: {
   label: string;
   tooltip?: string;
   onClick: () => void;
-  active?: boolean;
-  small?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -55,9 +77,7 @@ function MiniButton({
             type="button"
             onClick={onClick}
             aria-label={label}
-            aria-pressed={active || undefined}
-            className={`bio-toolbar-btn${active ? " bio-toolbar-btn--active" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
-            style={small ? { width: 24, height: 24 } : undefined}
+            className="bio-toolbar-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
           />
         }
       >
@@ -68,34 +88,43 @@ function MiniButton({
   );
 }
 
-/** Numbered visualizer-scene toggles (migrated from the retired
- *  MusicOverlay) — compact 24px buttons; hover reveals the scene name. */
-function SceneToggles() {
-  const { activeScenes, toggleScene } = useVisualizerScene();
+/** Small square control that floats over the LED screen — theme bg,
+ *  hairline outline, soft drop shadow so it contrasts with the matrix. */
+function VizCornerButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-1">
-      {SCENES.map((s, idx) => (
-        <MiniButton
-          key={s.id}
-          label={`Toggle ${s.label} scene`}
-          tooltip={s.label}
-          onClick={() => toggleScene(s.id)}
-          active={activeScenes.has(s.id)}
-          small
-        >
-          <span
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            onClick={onClick}
+            aria-label={label}
+            className="flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
             style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: 11,
-              fontWeight: 500,
-              lineHeight: 1,
+              width: 22,
+              height: 22,
+              borderRadius: 4,
+              backgroundColor: "var(--color-bg)",
+              border: "0.5px solid var(--color-border)",
+              boxShadow:
+                "0 1px 2px rgba(0,0,0,0.10), 0 3px 8px -2px rgba(0,0,0,0.16)",
+              color: "var(--color-fg-secondary)",
             }}
-          >
-            {idx + 1}
-          </span>
-        </MiniButton>
-      ))}
-    </div>
+          />
+        }
+      >
+        {children}
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -126,11 +155,13 @@ function RevealRow({ show, children }: { show: boolean; children: React.ReactNod
  * - Collapsed: a floating round button with a soft drop shadow. Clicking
  *   it opens the mini player (and starts playback on first open).
  * - Expanded: the mini player card with the LED visualizer attached to
- *   its top. At rest only the transport + track info row shows; hovering
- *   (or focusing into) the card reveals the scene toggles / visualizer
- *   chevron row and the scrubber. Clicking anywhere outside the card —
- *   or pressing Esc — minimizes it back to the round button (playback
- *   keeps going).
+ *   its top. Hovering the LED screen reveals floating corner controls —
+ *   scene prev/next arrows top-right, collapse chevron top-left. When
+ *   collapsed, the screen's top edge stays "peeking" above the controls
+ *   (a little taller while hovering the player); clicking the peek
+ *   expands it again. At rest only transport + track info show; hovering
+ *   the card reveals the scrubber. Click outside or Esc minimizes the
+ *   card back to the round button (playback keeps going).
  */
 export default function MusicMiniWidget() {
   const {
@@ -145,16 +176,24 @@ export default function MusicMiniWidget() {
     prev,
     seek,
   } = useAudioPlayer();
+  const { scene, setOnlyScene } = useVisualizerScene();
 
   const [expanded, setExpanded] = useState(false);
   const [vizOpen, setVizOpen] = useState(true);
   const [hovered, setHovered] = useState(false);
+  const [vizHovered, setVizHovered] = useState(false);
   const [scrubbing, setScrubbing] = useState(false);
   const [scrubValue, setScrubValue] = useState(0);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const displayTime = scrubbing ? scrubValue : currentTime;
   // Keep the extra rows open mid-drag even if the pointer strays.
   const revealed = hovered || scrubbing;
+
+  const cycleScene = (dir: 1 | -1) => {
+    const idx = SCENES.findIndex((s) => s.id === scene);
+    const nextIdx = (idx + dir + SCENES.length) % SCENES.length;
+    setOnlyScene(SCENES[nextIdx].id);
+  };
 
   const openDock = () => {
     setExpanded(true);
@@ -163,7 +202,7 @@ export default function MusicMiniWidget() {
     }
   };
 
-  // With the minimize button gone, clicking outside the card (or Esc)
+  // With no minimize button, clicking outside the card (or Esc)
   // collapses it back to the round entry button.
   useEffect(() => {
     if (!expanded) return;
@@ -182,6 +221,8 @@ export default function MusicMiniWidget() {
       window.removeEventListener("keydown", onKey);
     };
   }, [expanded]);
+
+  const vizHeight = vizOpen ? VIZ_HEIGHT : revealed ? PEEK_HOVER : PEEK_REST;
 
   return (
     <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end">
@@ -241,46 +282,71 @@ export default function MusicMiniWidget() {
             }}
           >
             <TooltipProvider delay={100}>
-              {/* Visualizer — attached to the top of the card, collapsible
-                  via the chevron in the hover-revealed row below. */}
-              <AnimatePresence initial={false}>
-                {vizOpen && (
-                  <motion.div
-                    key="viz"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 132, opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: EASE }}
-                    className="overflow-hidden shrink-0"
-                    style={{
-                      borderBottom: "0.5px solid var(--color-border)",
-                    }}
-                  >
-                    <LedMatrix height={132} />
-                  </motion.div>
+              {/* LED screen — full height when open; collapsed it keeps a
+                  clickable "peek" of its top edge that grows slightly on
+                  player hover. Corner controls float over the screen on
+                  hover: collapse chevron top-left, scene arrows top-right. */}
+              <motion.div
+                animate={{ height: vizHeight }}
+                transition={{ duration: 0.3, ease: EASE }}
+                className="relative overflow-hidden shrink-0"
+                style={{ borderBottom: "0.5px solid var(--color-border)" }}
+                onMouseEnter={() => setVizHovered(true)}
+                onMouseLeave={() => setVizHovered(false)}
+              >
+                <LedMatrix height={VIZ_HEIGHT} />
+
+                {/* Collapsed: the whole peek strip is the expand control. */}
+                {!vizOpen && (
+                  <button
+                    type="button"
+                    onClick={() => setVizOpen(true)}
+                    aria-label="Expand visualizer"
+                    title="Expand visualizer"
+                    className="absolute inset-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)"
+                    style={{ background: "transparent" }}
+                  />
                 )}
-              </AnimatePresence>
+
+                {/* Open + hovered: floating corner controls. */}
+                <AnimatePresence>
+                  {vizOpen && vizHovered && (
+                    <motion.div
+                      key="viz-controls"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.18, ease: EASE }}
+                      className="absolute inset-x-0 top-0 flex items-start justify-between p-1.5 pointer-events-none"
+                    >
+                      <div className="pointer-events-auto">
+                        <VizCornerButton
+                          label="Hide visualizer"
+                          onClick={() => setVizOpen(false)}
+                        >
+                          <ChevronUpIcon size={11} />
+                        </VizCornerButton>
+                      </div>
+                      <div className="flex items-center gap-1 pointer-events-auto">
+                        <VizCornerButton
+                          label="Previous scene"
+                          onClick={() => cycleScene(-1)}
+                        >
+                          <ArrowIcon dir="left" />
+                        </VizCornerButton>
+                        <VizCornerButton
+                          label="Next scene"
+                          onClick={() => cycleScene(1)}
+                        >
+                          <ArrowIcon dir="right" />
+                        </VizCornerButton>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
 
               <div className="flex flex-col px-3 py-3">
-                {/* Scene toggles + visualizer chevron — hover-revealed,
-                    sitting where the track info used to be. */}
-                <RevealRow show={revealed}>
-                  <div className="flex items-center justify-between pb-2">
-                    <SceneToggles />
-                    <MiniButton
-                      label={vizOpen ? "Hide visualizer" : "Show visualizer"}
-                      tooltip={vizOpen ? "Hide visualizer" : "Show visualizer"}
-                      onClick={() => setVizOpen((v) => !v)}
-                    >
-                      {vizOpen ? (
-                        <ChevronUpIcon size={12} />
-                      ) : (
-                        <ChevronDownIcon size={12} />
-                      )}
-                    </MiniButton>
-                  </div>
-                </RevealRow>
-
                 {/* Always visible — transport left, track info right. */}
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 shrink-0">
