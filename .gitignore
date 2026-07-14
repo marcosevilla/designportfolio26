@@ -31,3 +31,5 @@ Thumbs.db
 
 # Playwright MCP output (snapshots, console logs, screenshots)
 .playwright-mcp/
+.vercel
+.env*
