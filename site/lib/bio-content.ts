@@ -8,24 +8,21 @@ export const HERO_NAME = "Marco Sevilla";
 
 export const PARAGRAPHS: Paragraph[] = [
   [
-    { text: "I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. My goal is to produce work that expands the ways we work and create." },
-  ],
-  [
-    { text: "Currently, I'm at" },
+    { text: "Currently at" },
     { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" },
-    { text: ", exploring how agentic workflows can help hotel operators at the world's largest hospitality enterprises — Marriott, Wyndham, and IHG. I've led design for several 0→1 products: a guest experience platform, a hotel CMS, mobile food and beverage ordering, and the knowledge base that powers our AI-native products." },
+    { text: ", building software for the world's largest enterprises in hospitality — Marriott, Wyndham, and IHG. I've led design for several 0→1 products: a guest experience platform, a hotel CMS, mobile food and beverage ordering, and the knowledge base that powers our AI-native products." },
   ],
   [
-    { text: "Seven years in, I'm a design generalist who thrives in startups. My work ranges from building scalable brand systems as a marketing designer at" },
+    { text: "In the past, I built scalable brand systems as a marketing designer at" },
     { text: "Vivino", href: "https://www.vivino.com/" },
     { text: "and" },
     { text: "Vyond", href: "https://www.vyond.com/" },
-    { text: ", to founding product design at" },
+    { text: ", and founded product design at" },
     { text: "General Task", href: "https://www.generaltask.com/" },
     { text: ", where we built productivity tooling for knowledge workers." },
   ],
   [
-    { text: "Outside of work, you'll find me" },
+    { text: "I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. Outside of work, you'll find me" },
     { text: "taking photos at concerts", href: "photo-stack" },
     { text: ", developing websites, or tinkering on design sidequests." },
   ],

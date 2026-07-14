@@ -7,23 +7,29 @@ import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
 import AskMeAnythingButton from "./AskMeAnythingButton";
 import SocialLinks from "./SocialLinks";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { RESUME_URL } from "@/lib/resume-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
 const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
 
-/** Decorative serif emphasis — Libre Baskerville medium italic (LB ships
- *  400/700 only, so 500 is browser-synthesized), used for inline links
- *  and emphasized phrases inside body text. Links wear the theme's
- *  accent color via .dotted-link--inline, whose dashed underline draws
- *  in on hover only; the inline serif styles win over the class's
- *  sans-serif defaults. Plain emphasis stays fg-ink, no underline. */
+/** Emphasis for inline links and key phrases inside body text — Geist
+ *  at body weight, upright (fontStyle normal also cancels the browser's
+ *  default italic on the <em> branch). Links wear the theme's accent via
+ *  .dotted-link--inline: dotted underline at rest, dashed accent
+ *  underline draws in on hover. Plain emphasis stays fg-ink, no
+ *  underline. */
 function Em({ href, children }: { href?: string; children: React.ReactNode }) {
   const base: React.CSSProperties = {
-    fontFamily: BASKERVILLE,
-    fontStyle: "italic",
-    fontWeight: 500,
+    fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+    fontStyle: "normal",
+    fontWeight: 400,
   };
   if (href) {
     return (
@@ -222,34 +228,55 @@ export default function HomeLayout({
                 transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
               >
                 <p>
-                  I&apos;m an AI-native designer driven by curiosity, quality
-                  craft, and caffeine. My goal is to produce work that expands
-                  the ways humans work and create.
-                </p>
-                <p>
-                  Currently, I&apos;m at{" "}
+                  Currently at{" "}
                   <Em href="https://www.canarytechnologies.com/">
                     Canary Technologies
                   </Em>
-                  , exploring how agentic workflows can help hotel operators at
-                  the <Em>world&apos;s largest hospitality enterprises –</Em>{" "}
-                  Marriott, Wyndham, and IHG. I&apos;ve led design for several
-                  0-1 products: a guest experience platform, a hotel CMS,
-                  mobile food and beverage ordering, and the knowledge base
-                  that powers our AI-native products.
+                  , building software for the{" "}
+                  <TooltipProvider delay={100}>
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <em
+                            className="dotted-link--inline cursor-help"
+                            style={{
+                              fontFamily:
+                                "var(--font-geist-sans), system-ui, sans-serif",
+                              fontStyle: "normal",
+                              fontWeight: 400,
+                            }}
+                          />
+                        }
+                      >
+                        world&apos;s largest enterprises in hospitality
+                      </TooltipTrigger>
+                      <TooltipContent
+                        sideOffset={8}
+                        className="block max-w-[340px] px-4 py-3 text-left text-sm leading-relaxed"
+                      >
+                        Our enterprise customers include Marriott, Wyndham, and
+                        IHG. I&apos;ve led design for several 0→1 products
+                        along the way. These include a guest experience
+                        platform, a hotel CMS, mobile food and beverage
+                        ordering, and the knowledge base that powers our
+                        AI-native products.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  .
                 </p>
                 <p>
-                  Seven years in, I&apos;m a design generalist who thrives in
-                  startups. My work ranges from building scalable brand systems
-                  as a marketing designer at{" "}
-                  <Em href="https://www.vivino.com/">Vivino</Em> and{" "}
-                  <Em href="https://www.vyond.com/">Vyond</Em>, to founding
+                  In the past, I built scalable brand systems as a marketing
+                  designer at <Em href="https://www.vivino.com/">Vivino</Em>{" "}
+                  and <Em href="https://www.vyond.com/">Vyond</Em>, and founded
                   product design at{" "}
                   <Em href="https://www.generaltask.com/">General Task</Em>,
                   where we built productivity tooling for knowledge workers.
                 </p>
                 <p>
-                  Outside of work, you&apos;ll find me{" "}
+                  I&apos;m an AI-native designer driven by curiosity, quality
+                  craft, and (of course) caffeine. Outside of work,
+                  you&apos;ll find me{" "}
                   <Em href="https://www.marcosevilla.photo">
                     dabbling in music photography
                   </Em>
@@ -275,7 +302,7 @@ export default function HomeLayout({
                     href={RESUME_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="outlined-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+                    className="filled-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
                     style={{
                       height: 32,
                       padding: "0 8px",

@@ -28,7 +28,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     title: "Six Degrees",
     year: "Feb 2026 →",
     description:
-      "I designed and developed one of my favorite roadtrip games into a digital experience with the help of Claude Code: Connect randomly paired actors through a chain co-stars and their shared films.",
+      "I turned my favorite roadtrip game into a digital experience. The object is to connect two random actors through a chain of shared films and co-stars. Built with Claude.",
     video: "/videos/six-degrees.mp4",
     aspect: "1756 / 1080",
   },
@@ -36,8 +36,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     slug: "pajamagrams",
     title: "Pajamagrams",
     year: "Jan 2026",
-    description:
-      "A mobile-first word puzzle inspired by Bananagrams — drag tiles into place across clue-based rounds.",
+    description: "Mobile word game inspired by Bananagrams. Built with Claude.",
     video: "/videos/pajamagrams.mp4",
     aspect: "628 / 1080",
   },
@@ -46,7 +45,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     title: "Custom Wrapped",
     year: "Nov 2025",
     description:
-      "A personal year-in-review styled like Spotify Wrapped — vertical swipes through milestones pulled from my calendar, Letterboxd, and other vaults.",
+      "A Spotify Wrapped-inspired personal year-in-review experience. Data aggregation, interaction, and animations created with the help of Claude Code.",
     video: "/videos/custom-wrapped.mp4",
     aspect: "648 / 1080",
   },

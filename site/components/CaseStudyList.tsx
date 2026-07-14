@@ -12,7 +12,6 @@ import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
 import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
-import GalleryMode from "./GalleryMode";
 import { galleryContent } from "@/lib/gallery-content";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import { isLocked } from "@/lib/locked-content";
@@ -62,10 +61,6 @@ export default function CaseStudyList({ studies: allStudies }: CaseStudyListProp
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const filterAreaRef = useRef<HTMLDivElement>(null);
-
-  // ── Gallery mode ──
-  const [galleryOpen, setGalleryOpen] = useState(false);
-  const [galleryStartSlug, setGalleryStartSlug] = useState<string | null>(null);
 
   // Compute filtered studies
   const matchingSlugs = getMatchingSlugs(activeFilters);
@@ -249,26 +244,11 @@ export default function CaseStudyList({ studies: allStudies }: CaseStudyListProp
         </span>
       )}
 
-      {/* Linear-style project grid — case studies + playground items in
-          one bordered 2-column grid. Locked studies still wear the
-          LockGate hover treatment and route clicks to the unlock modal;
-          unlocked study clicks open the fullscreen gallery. Playground
-          cells are media-only and non-interactive (no /play subpages
-          anymore). */}
-      <ProjectGrid
-        studies={filteredStudies}
-        onOpen={(slug) => {
-          setGalleryStartSlug(slug);
-          setGalleryOpen(true);
-        }}
-      />
-
-      <GalleryMode
-        open={galleryOpen}
-        onClose={() => setGalleryOpen(false)}
-        studies={filteredStudies}
-        initialStudySlug={galleryStartSlug}
-      />
+      {/* Project grid — case studies + playground items in one column.
+          Locked studies wear the LockGate hover treatment and route
+          clicks to the unlock modal; studies with a dedicated route link
+          out, the rest are static media cells. */}
+      <ProjectGrid studies={filteredStudies} />
     </section>
   );
 }
@@ -350,13 +330,7 @@ type GridItem =
   | { type: "study"; key: string; study: CaseStudyMeta }
   | { type: "playground"; key: string; card: PlaygroundCard };
 
-function ProjectGrid({
-  studies,
-  onOpen,
-}: {
-  studies: CaseStudyMeta[];
-  onOpen: (slug: string) => void;
-}) {
+function ProjectGrid({ studies }: { studies: CaseStudyMeta[] }) {
   const items: GridItem[] = [
     ...studies.map<GridItem>((s) => ({
       type: "study",
@@ -373,7 +347,7 @@ function ProjectGrid({
   if (items.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-8">
       {/* Section label — Libre Baskerville italic, the redesign's serif
           accent for section titles. */}
       <h2
@@ -389,35 +363,14 @@ function ProjectGrid({
         Select work
       </h2>
       {items.map((item) => {
-        // Card chrome — same stroke + radius as the media frames inside
-        // (hairline --color-border, 4px corners) so card and media read
-        // as one framing system; paper grain multiplied over the fill.
-        const cellStyle: React.CSSProperties = {
-          backgroundColor: "var(--color-card-bg)",
-          backgroundImage: "var(--grain-image)",
-          backgroundSize: "200px 200px",
-          backgroundBlendMode: "multiply",
-          border: "0.5px solid var(--color-border)",
-          borderRadius: 4,
-        };
-
+        // Chromeless cells per the 2026-07-14 feedback pass — no card
+        // fill, stroke, or padding, so each cell sits flush with the
+        // column and the "Select work" label. The media frames inside
+        // carry the only framing.
         if (item.type === "study") {
-          return (
-            <StudyCell
-              key={item.key}
-              study={item.study}
-              cellStyle={cellStyle}
-              onOpen={() => onOpen(item.study.slug)}
-            />
-          );
+          return <StudyCell key={item.key} study={item.study} />;
         }
-        return (
-          <PlaygroundCell
-            key={item.key}
-            card={item.card}
-            cellStyle={cellStyle}
-          />
-        );
+        return <PlaygroundCell key={item.key} card={item.card} />;
       })}
     </div>
   );
@@ -434,7 +387,7 @@ function CellCaption({
   description?: string;
 }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       <h3
         style={{
           fontFamily: "var(--font-sans)",
@@ -585,53 +538,39 @@ function StudyMediaFrame({
   );
 }
 
-function StudyCell({
-  study,
-  cellStyle,
-  onOpen,
-}: {
-  study: CaseStudyMeta;
-  cellStyle: React.CSSProperties;
-  onOpen: () => void;
-}) {
+function StudyCell({ study }: { study: CaseStudyMeta }) {
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
 
-  const sharedClassName =
-    "flex flex-col h-full w-full p-6 gap-6 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)";
-
   // Caption above the media frame per the 2026-07 redesign.
+  // Title only — the descriptions came off the cards in the 2026-07-14
+  // feedback pass (playground cells still show theirs).
   const cellInner = (
     <>
-      <CellCaption title={study.title} description={study.description} />
+      <CellCaption title={study.title} />
       <StudyMediaFrame study={study} locked={locked} />
     </>
   );
 
-  const button = href ? (
+  // Studies with a dedicated route link out; the rest are static media
+  // cells (the fullscreen gallery carousel was removed 2026-07-14).
+  const cell = href ? (
     <Link
       href={href}
       aria-label={`Open case study — ${study.title}`}
-      className={sharedClassName}
-      style={cellStyle}
+      className="flex flex-col h-full w-full gap-4 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)"
     >
       {cellInner}
     </Link>
   ) : (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={`Open project gallery — ${study.title}`}
-      className={sharedClassName}
-      style={cellStyle}
-    >
+    <div className="flex flex-col h-full w-full gap-4 text-left">
       {cellInner}
-    </button>
+    </div>
   );
 
   return (
     <LockGate mode="card" locked={locked}>
-      {button}
+      {cell}
     </LockGate>
   );
 }
@@ -639,18 +578,9 @@ function StudyCell({
 // Playground cells share the same chrome and caption typography as
 // case study cells. Non-interactive since the dedicated /play subpages
 // were removed.
-function PlaygroundCell({
-  card,
-  cellStyle,
-}: {
-  card: PlaygroundCard;
-  cellStyle: React.CSSProperties;
-}) {
+function PlaygroundCell({ card }: { card: PlaygroundCard }) {
   return (
-    <div
-      className="flex flex-col h-full w-full p-6 gap-6"
-      style={cellStyle}
-    >
+    <div className="flex flex-col h-full w-full gap-4">
       <CellCaption title={card.title} description={card.description} />
       <PlaygroundMediaFrame card={card} />
     </div>
@@ -725,9 +655,9 @@ const PLACEHOLDER_BG =
 // without touching anywhere else.
 const HIDDEN_SLUGS = new Set<string>(["upsells", "design-system"]);
 
-// Slugs that route to a dedicated case study page instead of opening
-// the homepage gallery overlay. Cards in this map render as <Link>;
-// every other card falls back to the gallery-open button behavior.
+// Slugs that route to a dedicated case study page. Cards in this map
+// render as <Link>; every other card is a static, non-interactive
+// media cell (the fullscreen gallery carousel was removed 2026-07-14).
 const STUDY_ROUTES: Record<string, string> = {
   "fb-ordering": "/work/fb-ordering",
   compendium: "/work/compendium",

@@ -265,25 +265,35 @@ body::before {
 .dotted-link--inline {
   color: var(--color-accent);
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: none;
+  /* Two underline layers at the same baseline position: a bold dashed
+     accent line that draws in on hover (layer 1, 0 → 100%), over an
+     always-visible subtle dotted rest line (layer 2). */
   background-image: repeating-linear-gradient(
-    to right,
-    currentColor 0,
-    currentColor 4px,
-    transparent 4px,
-    transparent 7px
-  );
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 0 1.5px;
+      to right,
+      currentColor 0,
+      currentColor 4px,
+      transparent 4px,
+      transparent 7px
+    ),
+    repeating-linear-gradient(
+      to right,
+      var(--color-fg-tertiary) 0,
+      var(--color-fg-tertiary) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  background-repeat: no-repeat, no-repeat;
+  background-position: 0 100%, 0 100%;
+  background-size: 0 1.5px, 100% 1px;
   transition: background-size 350ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dotted-link--inline:hover,
 .dotted-link--inline:focus-visible {
   color: var(--color-accent);
-  background-size: 100% 1.5px;
+  background-size: 100% 1.5px, 100% 1px;
 }
 
 /* Photo stack — hover trigger inside bio paragraph */
@@ -726,6 +736,24 @@ img[class*="rounded-"] {
   color: var(--color-accent);
   border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
   background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+/* Filled CTA — darker take on the theme accent so the primary actions
+   (View resume, Ask me anything) pop against the outlined family. */
+.filled-cta {
+  background-color: color-mix(in srgb, var(--color-accent) 90%, black);
+  color: var(--color-bg);
+  border: 0.5px solid transparent;
+  border-radius: 4px;
+  transition:
+    color 150ms ease-out,
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.filled-cta:hover,
+.filled-cta:focus-visible {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
 }
 
 .chat-surface {

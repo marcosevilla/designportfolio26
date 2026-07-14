@@ -6,7 +6,6 @@
  */
 export const LOCKED_SLUGS: ReadonlySet<string> = new Set([
   // Work case studies
-  "fb-ordering",
   "compendium",
   "knowledge-base",
   "upsells",

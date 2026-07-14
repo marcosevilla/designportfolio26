@@ -31,7 +31,7 @@ export default function AskMeAnythingButton() {
       type="button"
       onClick={() => setChatOpen(true)}
       aria-label="Open chat — ask me anything"
-      className="outlined-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+      className="filled-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
       style={{ height: 32, padding: "0 8px", gap: 6, cursor: "pointer" }}
     >
       <ChatBubbleIcon size={14} />

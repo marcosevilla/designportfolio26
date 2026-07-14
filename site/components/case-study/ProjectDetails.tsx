@@ -30,7 +30,7 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
               onClick={() => setOpenIdx(isOpen ? null : i)}
               className="w-full flex items-baseline gap-2 py-1.5 text-left cursor-pointer"
               style={{
-                ...typescale.label,
+                ...typescale.body,
                 color: "var(--color-accent)",
               }}
             >
@@ -52,10 +52,13 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
               }}
             >
               {row.groups ? (
-                <div className="pb-3" style={{ ...typescale.label, marginLeft: indent, lineHeight: 2 }}>
+                <div
+                  className="pb-3 divide-y divide-(--color-border)"
+                  style={{ ...typescale.body, marginLeft: indent, lineHeight: 2 }}
+                >
                   {row.groups.map((group, g) => (
-                    <p key={g} className={`text-[var(--color-fg-secondary)]${g > 0 ? " mt-1" : ""}`}>
-                      <span className="text-(--color-fg)" style={{ fontWeight: 700 }}>{group.heading}:</span>
+                    <p key={g} className="py-2 text-[var(--color-fg-secondary)]">
+                      <span className="text-(--color-fg)">{group.heading}:</span>
                       {" "}{group.items.join(", ")}
                     </p>
                   ))}
@@ -63,7 +66,7 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
               ) : row.content.includes(" · ") ? (
                 <ul
                   className="pb-3 text-(--color-fg-secondary) list-none"
-                  style={{ ...typescale.label, marginLeft: indent, lineHeight: 2 }}
+                  style={{ ...typescale.body, marginLeft: indent, lineHeight: 2 }}
                 >
                   {row.content.split(" · ").map((item, j) => {
                     const parts = item.split(" — ");
@@ -79,7 +82,7 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
               ) : (
                 <p
                   className="pb-3 text-(--color-fg-secondary)"
-                  style={{ ...typescale.label, marginLeft: indent, lineHeight: 1.8 }}
+                  style={{ ...typescale.body, marginLeft: indent, lineHeight: 1.8 }}
                 >
                   {row.content}
                 </p>
