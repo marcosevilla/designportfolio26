@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { typescale } from "@/lib/typography";
+
+// Matches SectionHeading's h2 (which mirrors the homepage "Select work"
+// label): Libre Baskerville italic, 400/20.
+const H2_STYLE: React.CSSProperties = {
+  fontFamily: "var(--font-baskerville), Georgia, serif",
+  fontStyle: "italic",
+  fontWeight: 400,
+  fontSize: 20,
+  lineHeight: 1.4,
+  color: "var(--color-fg)",
+};
 
 export default function ExpandableSection({
   title,
@@ -18,10 +28,7 @@ export default function ExpandableSection({
     <section id={id} className="scroll-mt-24">
       {/* Desktop: always visible, no toggle */}
       <div className="hidden md:block">
-        <h2
-          className="mt-12 mb-3"
-          style={typescale.sectionLabel}
-        >
+        <h2 className="mt-12 mb-3" style={H2_STYLE}>
           {title}
         </h2>
         {children}
@@ -35,11 +42,7 @@ export default function ExpandableSection({
           aria-expanded={open}
           aria-controls={`${id}-content`}
         >
-          <h2
-            style={typescale.sectionLabel}
-          >
-            {title}
-          </h2>
+          <h2 style={H2_STYLE}>{title}</h2>
           <svg
             width="20"
             height="20"

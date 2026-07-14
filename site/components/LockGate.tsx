@@ -18,6 +18,12 @@ type CardModeProps = {
    * `rounded-2xl` (Playground cards). Pass `rounded-none` for sharp work cards.
    */
   cardRadius?: string;
+  /**
+   * Overrides the click action while locked. Default routes to the
+   * unlock (password) modal; the work grid passes a media-preview
+   * opener instead.
+   */
+  onActivate?: () => void;
   children: React.ReactNode;
 };
 
@@ -43,7 +49,10 @@ export default function LockGate(props: LockGateProps) {
 
   if (props.mode === "card") {
     return (
-      <LockedCardWrapper onClick={requestUnlock} cardRadius={props.cardRadius ?? "rounded-2xl"}>
+      <LockedCardWrapper
+        onClick={props.onActivate ?? requestUnlock}
+        cardRadius={props.cardRadius ?? "rounded-2xl"}
+      >
         {props.children}
       </LockedCardWrapper>
     );
@@ -90,7 +99,7 @@ function LockedCardWrapper({
       <button
         type="button"
         onClick={onClick}
-        aria-label="Locked — click to view unlock options"
+        aria-label="In progress — click to preview"
         className={`absolute inset-0 cursor-pointer ${cardRadius} outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)`}
       />
     </div>
@@ -112,7 +121,6 @@ export function LockedFrameBadge({ locked }: { locked: boolean }) {
         WebkitBackdropFilter: "blur(2px)",
       }}
     >
-      <LockIcon size={24} style={{ color: "var(--color-fg-secondary)" }} />
       <span
         style={{
           fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
@@ -123,7 +131,7 @@ export function LockedFrameBadge({ locked }: { locked: boolean }) {
           color: "var(--color-fg-tertiary)",
         }}
       >
-        In progress — click for details
+        In progress — click to preview
       </span>
     </div>
   );

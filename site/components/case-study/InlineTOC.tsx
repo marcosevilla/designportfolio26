@@ -72,15 +72,19 @@ export default function InlineTOC() {
         <BackChevronIcon size={12} />
         Back
       </Link>
+      {/* Text indent (16px) = Back chevron slot (12px) + gap-1 (4px), so
+          link labels sit flush with the "Back" label and the star-to-link
+          gap matches the chevron-to-"Back" gap. */}
       <ul
         className="flex flex-col gap-2 relative"
-        style={{ paddingLeft: "24px" }}
+        style={{ paddingLeft: "16px" }}
         onMouseLeave={() => setHoveredIndex(null)}
       >
         {activeIndex >= 0 && (
           <motion.span
-            className="absolute left-0 pointer-events-none"
+            className="absolute left-0 pointer-events-none text-center"
             style={{
+              width: "12px",
               color: "var(--color-accent)",
               fontSize: "12px",
               lineHeight: "20px",

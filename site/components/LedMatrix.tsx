@@ -12,7 +12,10 @@ const SPACING = 5;
 const DOT_BASE = 2;
 const DOT_BLOOM = 3;
 const DEFAULT_HEIGHT = 200;
-const CORNER_RADIUS = 12;
+// 0 = no corner mask — the matrix fills its frame edge-to-edge. The
+// shader's rounded-corner discard stays available if a surface wants
+// rounded corners again.
+const CORNER_RADIUS = 0;
 const BOOT_FADE_MS = 400;
 
 // ── Intro wipe ──────────────────────────────────────────────────────────

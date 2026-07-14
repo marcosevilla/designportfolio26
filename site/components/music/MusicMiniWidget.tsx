@@ -128,23 +128,39 @@ function VizCornerButton({
   );
 }
 
-/** Hover-revealed row — collapses to zero height at rest, animates open
- *  while the pointer (or keyboard focus) is inside the player. */
-function RevealRow({ show, children }: { show: boolean; children: React.ReactNode }) {
+/** Little music notes that drift up out of the collapsed dock button
+ *  while a track is playing. Pointer-transparent so the button stays
+ *  clickable; each note loops on its own phase offset. */
+function EmittingNotes() {
   return (
-    <AnimatePresence initial={false}>
-      {show && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.24, ease: EASE }}
-          className="overflow-hidden"
+    <div className="absolute inset-0 pointer-events-none" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="absolute"
+          style={{
+            left: 8 + i * 11,
+            top: -2,
+            color: "var(--color-accent)",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: [0, 1, 0],
+            y: [4, -24],
+            x: i % 2 === 0 ? [0, -5] : [0, 5],
+            scale: [0.7, 1],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            delay: i * 0.66,
+            ease: "easeOut",
+          }}
         >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <MusicNoteIcon size={10} />
+        </motion.span>
+      ))}
+    </div>
   );
 }
 
@@ -152,16 +168,17 @@ function RevealRow({ show, children }: { show: boolean; children: React.ReactNod
  * Music dock — the single entrypoint + surface for the audio player.
  * Fixed to the bottom-right corner on every route:
  *
- * - Collapsed: a floating round button with a soft drop shadow. Clicking
+ * - Collapsed: a floating round button with a soft drop shadow; little
+ *   music notes drift up out of it while a track is playing. Clicking
  *   it opens the mini player (and starts playback on first open).
  * - Expanded: the mini player card with the LED visualizer attached to
- *   its top. Hovering the LED screen reveals floating corner controls —
- *   scene prev/next arrows top-right, collapse chevron top-left. When
- *   collapsed, the screen's top edge stays "peeking" above the controls
- *   (a little taller while hovering the player); clicking the peek
- *   expands it again. At rest only transport + track info show; hovering
- *   the card reveals the scrubber. Click outside or Esc minimizes the
- *   card back to the round button (playback keeps going).
+ *   its top. Hovering anywhere on the player reveals the screen's
+ *   floating corner controls — scene prev/next arrows top-right,
+ *   collapse chevron top-left. When collapsed, the screen's top edge
+ *   stays "peeking" above the controls (a little taller while hovering
+ *   the player); clicking the peek expands it again. Transport, track
+ *   info, and the scrubber are always visible. Click outside or Esc
+ *   minimizes the card back to the round button (playback keeps going).
  */
 export default function MusicMiniWidget() {
   const {
@@ -181,7 +198,6 @@ export default function MusicMiniWidget() {
   const [expanded, setExpanded] = useState(false);
   const [vizOpen, setVizOpen] = useState(true);
   const [hovered, setHovered] = useState(false);
-  const [vizHovered, setVizHovered] = useState(false);
   const [scrubbing, setScrubbing] = useState(false);
   const [scrubValue, setScrubValue] = useState(0);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -238,7 +254,7 @@ export default function MusicMiniWidget() {
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             exit={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}
             transition={{ duration: 0.22, ease: EASE }}
-            className="flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+            className="relative flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
             style={{
               width: 44,
               height: 44,
@@ -253,6 +269,7 @@ export default function MusicMiniWidget() {
             }}
           >
             <MusicNoteIcon size={17} />
+            {isPlaying && <EmittingNotes />}
           </motion.button>
         ) : (
           // ── Expanded: mini player with LED visualizer on top ──
@@ -291,8 +308,6 @@ export default function MusicMiniWidget() {
                 transition={{ duration: 0.3, ease: EASE }}
                 className="relative overflow-hidden shrink-0"
                 style={{ borderBottom: "0.5px solid var(--color-border)" }}
-                onMouseEnter={() => setVizHovered(true)}
-                onMouseLeave={() => setVizHovered(false)}
               >
                 <LedMatrix height={VIZ_HEIGHT} />
 
@@ -308,9 +323,9 @@ export default function MusicMiniWidget() {
                   />
                 )}
 
-                {/* Open + hovered: floating corner controls. */}
+                {/* Open + player hovered anywhere: floating corner controls. */}
                 <AnimatePresence>
-                  {vizOpen && vizHovered && (
+                  {vizOpen && hovered && (
                     <motion.div
                       key="viz-controls"
                       initial={{ opacity: 0 }}
@@ -393,8 +408,8 @@ export default function MusicMiniWidget() {
                   </div>
                 </div>
 
-                {/* Scrubber — hover-revealed. Elapsed | bar | total. */}
-                <RevealRow show={revealed}>
+                {/* Scrubber — always visible. Elapsed | bar | total. */}
+                <div>
                   <div
                     className="flex items-center gap-2 pt-2"
                     style={{
@@ -434,7 +449,7 @@ export default function MusicMiniWidget() {
                       {formatTime(duration)}
                     </span>
                   </div>
-                </RevealRow>
+                </div>
               </div>
             </TooltipProvider>
           </motion.div>

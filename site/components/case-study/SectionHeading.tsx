@@ -8,12 +8,13 @@ const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
 
 /**
  * Standardized case study heading with optional scroll anchor.
- * Libre Baskerville per the 2026-07 redesign — bold serif section
- * headers, italic serif subheaders; body copy stays Geist.
+ * All levels wear the homepage section-label style ("Select work"
+ * in ProjectGrid): Libre Baskerville italic, weight 400 — h3/h4
+ * step the size down. Body copy stays Geist.
  *
- * h2: main section heading + anchor div for TOC linking
- * h3: subsection heading (mt-16 mb-6)
- * h4: sub-subsection heading (mb-3)
+ * h2: main section heading + anchor div for TOC linking (20px)
+ * h3: subsection heading (19px, mt-16 mb-6)
+ * h4: sub-subsection heading (16px, mb-3)
  */
 export default function SectionHeading({ id, level = 2, children }: SectionHeadingProps) {
   if (level === 2) {
@@ -24,10 +25,10 @@ export default function SectionHeading({ id, level = 2, children }: SectionHeadi
           className="mt-12 mb-3 text-(--color-fg)"
           style={{
             fontFamily: BASKERVILLE,
-            fontWeight: 700,
-            fontSize: 24,
-            lineHeight: 1.3,
-            letterSpacing: "0.01em",
+            fontStyle: "italic",
+            fontWeight: 400,
+            fontSize: 20,
+            lineHeight: 1.4,
           }}
         >
           {children}
@@ -46,7 +47,6 @@ export default function SectionHeading({ id, level = 2, children }: SectionHeadi
           fontWeight: 400,
           fontSize: 19,
           lineHeight: 1.4,
-          letterSpacing: "0.01em",
         }}
       >
         {children}
@@ -63,7 +63,6 @@ export default function SectionHeading({ id, level = 2, children }: SectionHeadi
         fontWeight: 400,
         fontSize: 16,
         lineHeight: 1.4,
-        letterSpacing: "0.01em",
       }}
     >
       {children}

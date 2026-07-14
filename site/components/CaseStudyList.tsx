@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { CaseStudyMeta } from "@/lib/types";
@@ -61,6 +62,10 @@ export default function CaseStudyList({ studies: allStudies }: CaseStudyListProp
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const filterAreaRef = useRef<HTMLDivElement>(null);
+
+  // Locked-card media preview (lightbox) — slug of the study being
+  // previewed, or null when closed.
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null);
 
   // Compute filtered studies
   const matchingSlugs = getMatchingSlugs(activeFilters);
@@ -245,10 +250,12 @@ export default function CaseStudyList({ studies: allStudies }: CaseStudyListProp
       )}
 
       {/* Project grid — case studies + playground items in one column.
-          Locked studies wear the LockGate hover treatment and route
-          clicks to the unlock modal; studies with a dedicated route link
-          out, the rest are static media cells. */}
-      <ProjectGrid studies={filteredStudies} />
+          Locked studies wear the LockGate hover treatment and open a
+          full-resolution media preview on click; studies with a
+          dedicated route link out, the rest are static media cells. */}
+      <ProjectGrid studies={filteredStudies} onPreview={setPreviewSlug} />
+
+      <MediaPreviewLightbox slug={previewSlug} onClose={() => setPreviewSlug(null)} />
     </section>
   );
 }
@@ -330,7 +337,13 @@ type GridItem =
   | { type: "study"; key: string; study: CaseStudyMeta }
   | { type: "playground"; key: string; card: PlaygroundCard };
 
-function ProjectGrid({ studies }: { studies: CaseStudyMeta[] }) {
+function ProjectGrid({
+  studies,
+  onPreview,
+}: {
+  studies: CaseStudyMeta[];
+  onPreview: (slug: string) => void;
+}) {
   const items: GridItem[] = [
     ...studies.map<GridItem>((s) => ({
       type: "study",
@@ -347,7 +360,7 @@ function ProjectGrid({ studies }: { studies: CaseStudyMeta[] }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-16">
       {/* Section label — Libre Baskerville italic, the redesign's serif
           accent for section titles. */}
       <h2
@@ -368,7 +381,9 @@ function ProjectGrid({ studies }: { studies: CaseStudyMeta[] }) {
         // column and the "Select work" label. The media frames inside
         // carry the only framing.
         if (item.type === "study") {
-          return <StudyCell key={item.key} study={item.study} />;
+          return (
+            <StudyCell key={item.key} study={item.study} onPreview={onPreview} />
+          );
         }
         return <PlaygroundCell key={item.key} card={item.card} />;
       })}
@@ -382,13 +397,18 @@ function ProjectGrid({ studies }: { studies: CaseStudyMeta[] }) {
 function CellCaption({
   title,
   description,
+  note,
 }: {
   title: string;
   description?: string;
+  /** Small mono status label rendered to the right of the title
+   *  (e.g. "Coming soon" on locked studies). */
+  note?: string;
 }) {
   return (
     <div className="flex flex-col gap-2">
       <h3
+        className="flex items-baseline gap-2.5"
         style={{
           fontFamily: "var(--font-sans)",
           fontSize: "calc(16px + var(--font-size-offset))",
@@ -399,6 +419,21 @@ function CellCaption({
         }}
       >
         {title}
+        {note && (
+          <span
+            style={{
+              fontFamily:
+                "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: 10,
+              fontWeight: 500,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--color-fg-tertiary)",
+            }}
+          >
+            {note}
+          </span>
+        )}
       </h3>
       {description && (
         <p
@@ -538,7 +573,13 @@ function StudyMediaFrame({
   );
 }
 
-function StudyCell({ study }: { study: CaseStudyMeta }) {
+function StudyCell({
+  study,
+  onPreview,
+}: {
+  study: CaseStudyMeta;
+  onPreview: (slug: string) => void;
+}) {
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
 
@@ -547,7 +588,7 @@ function StudyCell({ study }: { study: CaseStudyMeta }) {
   // feedback pass (playground cells still show theirs).
   const cellInner = (
     <>
-      <CellCaption title={study.title} />
+      <CellCaption title={study.title} note={locked ? "Coming soon" : undefined} />
       <StudyMediaFrame study={study} locked={locked} />
     </>
   );
@@ -569,9 +610,112 @@ function StudyCell({ study }: { study: CaseStudyMeta }) {
   );
 
   return (
-    <LockGate mode="card" locked={locked}>
+    <LockGate
+      mode="card"
+      locked={locked}
+      onActivate={() => onPreview(study.slug)}
+    >
       {cell}
     </LockGate>
+  );
+}
+
+// First gallery entry for a study, reduced to a single previewable
+// medium: product video, layered-composite UI mock, or plain image.
+function firstStudyMedia(
+  slug: string
+): { video?: { src: string; poster?: string }; image?: string } | null {
+  const item = (galleryContent[slug] ?? [])[0] ?? null;
+  if (!item) return null;
+  if (typeof item === "string") return { image: item };
+  if ("video" in item) return { video: { src: item.video, poster: item.poster } };
+  if ("layers" in item) return { image: item.layers.ui };
+  if ("src" in item) return { image: item.src };
+  return null;
+}
+
+// Full-resolution media preview for locked (in-progress) studies —
+// darkened backdrop, media centered at up to 90vw × 85vh. Clicking the
+// backdrop or pressing Esc closes; clicking the media does not.
+function MediaPreviewLightbox({
+  slug,
+  onClose,
+}: {
+  slug: string | null;
+  onClose: () => void;
+}) {
+  const media = slug ? firstStudyMedia(slug) : null;
+
+  // Portal target — the grid lives inside a framer-motion wrapper whose
+  // `filter` style becomes the containing block for position:fixed, so
+  // the overlay must escape to <body> to actually cover the viewport.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (!slug) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [slug, onClose]);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {slug && media && (
+        <motion.div
+          key="media-preview"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="fixed inset-0 z-[140] flex items-center justify-center p-6 cursor-zoom-out"
+          style={{ background: "rgba(0, 0, 0, 0.72)" }}
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Media preview"
+        >
+          <motion.div
+            initial={{ scale: 0.96 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.96 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {media.video ? (
+              <video
+                src={media.video.src}
+                poster={media.video.poster}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="block rounded-md"
+                style={{ maxWidth: "90vw", maxHeight: "85vh" }}
+              />
+            ) : (
+              <img
+                src={media.image}
+                alt=""
+                className="block rounded-md"
+                style={{
+                  maxWidth: "90vw",
+                  maxHeight: "85vh",
+                  width: "auto",
+                  height: "auto",
+                }}
+              />
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 }
 

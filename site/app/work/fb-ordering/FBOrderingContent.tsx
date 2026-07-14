@@ -2,7 +2,6 @@
 
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import NextProject from "@/components/case-study/NextProject";
-import PullQuote from "@/components/case-study/PullQuote";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
@@ -41,7 +40,7 @@ export default function FBOrderingContent() {
               muted
               playsInline
               preload="metadata"
-              className="w-full max-w-[360px] mx-auto rounded-lg block"
+              className="w-full rounded-lg block"
             />
           </FadeIn>
 
@@ -73,11 +72,14 @@ export default function FBOrderingContent() {
             <TwoCol.Left>
               <SectionHeading id="solution">The Solution</SectionHeading>
               <p className="mb-5">
-                A mobile-first ordering flow embedded in Canary&#39;s Digital Compendium, from menu browsing to order confirmation, plus a staff dashboard for fulfilling orders in real time. Built on Canary&#39;s existing Upsells rails so engineering could ship fast. Four decisions defined the design:
+                We built a mobile-first ordering experience for our guests that served as an extension to our existing guest experience platform. Guests can browse available menu items, add to their carts, and then send their orders to hotel staff easily.
+              </p>
+              <p className="mb-5">
+                To manage inbound orders, we built a dashboard and notification system that enabled operators to easily notify their kitchen staff and complete fulfillment. There were four major decisions that defined the design:
               </p>
               <ul className="list-disc pl-5 space-y-2">
-                <li><span className="font-medium text-(--color-fg)">Menu-first landing:</span> guests land directly on the menu, not a hotel info page. They arrive with intent to order; removing that friction was the biggest conversion lever.</li>
-                <li><span className="font-medium text-(--color-fg)">Delivery type drives the experience:</span> one variable (in-room vs. poolside) determines checkout, authentication, and staff workflow. One config instead of dozens of edge cases.</li>
+                <li><span className="font-medium text-(--color-fg)">Built upon our existing infrastructure:</span> fast implementation was important in order to go-to-market quickly. We designed mobile ordering as an extension to our existing guest experience and upselling platforms using similar patterns, but tweaked to match food &amp; beverage use cases.</li>
+                <li><span className="font-medium text-(--color-fg)">Delivery type drives the experience:</span> hotel customers wanted to go beyond in-room dining in order to expand channels for revenue. We had to design a flow that flexibly allowed for alternative locations such as orders delivered poolside, or to the hotel lounge.</li>
                 <li><span className="font-medium text-(--color-fg)">Five system objects as the IA backbone:</span> Ordering Outlets, Menus, Items, Modifier Groups, Orders. Manage items once, compose menus flexibly.</li>
                 <li><span className="font-medium text-(--color-fg)">Works with or without a PMS:</span> reservation-linked ordering when integrated, manual entry fallback for everyone else. No POS requirement meant shipping to the whole market.</li>
               </ul>
@@ -108,13 +110,6 @@ export default function FBOrderingContent() {
                 </p>
               </TwoCol.Left>
             </TwoCol>
-
-            <FadeIn>
-              <PullQuote
-                quote="Significant value in the bundle, estimating over $2,000/year savings from eliminating physical menus and reducing errors."
-                attribution="Chateau Avalon ownership"
-              />
-            </FadeIn>
           </ExpandableSection>
         </FadeIn>
 
