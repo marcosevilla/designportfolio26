@@ -16,6 +16,7 @@ import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
 import Grid, { Col } from "@/components/layout/Grid";
 import { galleryContent } from "@/lib/gallery-content";
 import LockGate, { LockedFrameBadge } from "./LockGate";
+import DeviceShell from "./DeviceShell";
 import { isLocked } from "@/lib/locked-content";
 
 
@@ -532,25 +533,60 @@ function StudyMediaFrame({
         borderRadius: 4,
       }}
     >
-      {video && (
-        <video
-          src={video.video}
-          poster={video.poster}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          }}
-        />
-      )}
+      {video &&
+        (video.shell ? (
+          // Specimen system (prototype): the video renders as a contained
+          // artifact inside a DeviceShell on the themed canvas, never
+          // full-bleed — so the theme owns the backdrop, not the
+          // recording's baked-in background.
+          <div className="absolute inset-0 flex items-center justify-center">
+            <DeviceShell
+              variant={video.shell}
+              style={
+                video.shell === "phone"
+                  ? { height: "86%" }
+                  : { width: "78%", aspectRatio: "16 / 10" }
+              }
+            >
+              <video
+                src={video.video}
+                poster={video.poster}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                  transform: video.zoom ? `scale(${video.zoom})` : undefined,
+                }}
+              />
+            </DeviceShell>
+          </div>
+        ) : (
+          <video
+            src={video.video}
+            poster={video.poster}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        ))}
       {/* Layered composites: only the UI mock renders (layers.bg stays
           skipped, same as before). uiWidth/uiHeight become max-bounds so
           the mock scales into the shorter 323px frame without clipping;
@@ -857,6 +893,7 @@ const STUDY_ROUTES: Record<string, string> = {
 // clash with a tinted bg; ai-workflow — no hero gradient defined) fall
 // back to the neutral CARD_BG.
 const CARD_TINTS: Record<string, string> = {
+  "fb-ordering": "#EF5A3C", // brand orange — themed wash behind the phone shell
   compendium: "#2563EB", // blue
   upsells: "#0D9488", // teal
   checkin: "#D97706", // amber (was #6366F1 indigo — too close to compendium)

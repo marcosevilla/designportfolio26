@@ -31,6 +31,16 @@ export type GallerySlotConfig =
        *  Pass the video's native ratio (e.g. "4 / 3") so the clip fills
        *  cleanly with no crop or letterbox. */
       aspect?: string;
+      /** Specimen-system prototype (2026-07-15): render the video inside
+       *  a DeviceShell on the themed card canvas instead of full-bleed.
+       *  "phone" masks to a portrait device, "browser" to a window with
+       *  chrome. Fixes recordings whose baked-in backgrounds fight the
+       *  color themes. */
+      shell?: "phone" | "browser";
+      /** Scale applied to the video inside the shell (object-fit: cover,
+       *  centered). Use >1 to crop away baked-in margins around the UI
+       *  in the source recording. Default 1. */
+      zoom?: number;
     }
   | {
       layers: {
@@ -63,6 +73,12 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
     {
       video: "/videos/fb-mobile.mp4",
       aspect: "4 / 3",
+      // Specimen prototype: the recording is a phone UI centered on a
+      // baked white canvas — the shell masks to the phone and the card's
+      // themed tint takes over as the backdrop. zoom crops the white
+      // margins out of the source.
+      shell: "phone",
+      zoom: 1.02,
     },
     {
       layers: {
@@ -83,6 +99,11 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
     {
       video: "/videos/guest-experience-dash.mp4",
       aspect: "16 / 10",
+      // Specimen prototype: the recording composes its own navy scene;
+      // the browser shell + zoom crop into the dashboard window so the
+      // baked backdrop stops fighting the color themes.
+      shell: "browser",
+      zoom: 1.32,
     },
   ],
   upsells: [
