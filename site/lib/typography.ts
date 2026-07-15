@@ -70,10 +70,11 @@ export const typescale = {
     lineHeight: 1.4,
   } as CSSProperties,
 
-  /** Case study body text */
+  /** Case study body text — site-wide body standard (14/22.4, = 1.6),
+   *  matches the global body default in globals.css and the home bio. */
   body: {
-    fontSize: scaled("16px"),
-    lineHeight: "26px",
+    fontSize: scaled("14px"),
+    lineHeight: "22.4px",
   } as CSSProperties,
 
   /** Case study hero subtitle, NextProject description */

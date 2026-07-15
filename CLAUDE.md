@@ -337,7 +337,7 @@ Three weights system-wide: 400 body/labels, 500 titles/UI, 600 hero emphasis. Al
 | Section h2 (case study) | 500 | 14px | `typescale.sectionLabel` — tertiary color, acts as small label above section content. NOT a large heading. |
 | Section h3 | 500 | 18px | `typescale.h3` |
 | Section h4 | 500 | 16px | `typescale.h4` |
-| Body / case study prose | 400 | 14px / 22 line-height | `typescale.body` |
+| Body / case study prose | 400 | 14px / 22.4px line-height | `typescale.body` — SITE-WIDE body standard (2026-07-15): same 14/22.4 on the home bio (inline in HomeLayout) and the `body` element default (globals.css, unitless 1.6). Change all three together. |
 | QuickStats value | 500 | 24px | `typescale.statValue` |
 | PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
 | NextProject title | 500 | 22px | `typescale.nextProjectTitle` |

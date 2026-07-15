@@ -219,8 +219,10 @@ export default function HomeLayout({
                 className="flex flex-col gap-8"
                 style={{
                   fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-                  fontSize: "calc(16px + var(--font-size-offset))",
-                  lineHeight: 2,
+                  // Site-wide body standard: 14/22.4 (matches typescale.body
+                  // and the globals.css body default).
+                  fontSize: "calc(14px + var(--font-size-offset))",
+                  lineHeight: "22.4px",
                   letterSpacing: "-0.02em",
                   color: "var(--color-fg)",
                 }}
