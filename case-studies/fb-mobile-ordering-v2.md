@@ -38,6 +38,9 @@ fact-sources: retrospective-2026-04-30 (Obsidian), case-study-draft (honest draf
 Critique says: this is a product description, not a hook. Lead with stakes or outcome.
 
 ✏️ *Your rewrite:*
+*Warning: the following case study may induce hunger.*
+
+I designed a 0-to-1 food & beverage ordering platform for hotels, the newest addition to Canary's suite of revenue-generating products. Guests' late-night munchies were increasingly going to DoorDash instead of the front desk, so we rebuilt room service to be modern, convenient, and visually enticing. In four months, we pushed out an MVP with $23K in committed ARR a few weeks after launch.
 
 ---
 
