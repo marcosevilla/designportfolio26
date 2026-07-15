@@ -7,8 +7,16 @@ import PullQuote from "@/components/case-study/PullQuote";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
+import MetaRail from "@/components/case-study/MetaRail";
+import Grid, { Col } from "@/components/layout/Grid";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
+
+const META = [
+  { label: "Year", values: ["2024 · shipped 2026"] },
+  { label: "Role", values: ["Product designer"] },
+  { label: "Scope", values: ["Information architecture", "Research & personas", "KB UI"] },
+];
 
 const STATS = [
   { value: "2", label: "AI products powered by one knowledge base" },
@@ -29,11 +37,16 @@ const TOC_ITEMS = [
 export default function KnowledgeBaseContent() {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
-        {/* Title + Subtitle */}
-        <div>
-          <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>AI Knowledge Base</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A ground-up redesign of the information architecture and UI for Canary&apos;s AI knowledge base — the system where hotels enter the property data that powers both the AI chatbot and voice assistant.</p>
-        </div>
+        {/* Title + Subtitle with metadata rail (intro-rail) */}
+        <Grid preset="intro-rail">
+          <Col>
+            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>AI Knowledge Base</h1>
+            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A ground-up redesign of the information architecture and UI for Canary&apos;s AI knowledge base — the system where hotels enter the property data that powers both the AI chatbot and voice assistant.</p>
+          </Col>
+          <Col className="mt-8 lg:mt-2">
+            <MetaRail items={META} />
+          </Col>
+        </Grid>
 
         {/* Quick Stats */}
         <FadeIn>
@@ -42,8 +55,8 @@ export default function KnowledgeBaseContent() {
 
         {/* ── The Problem ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-24">
-          <TwoCol>
-            <TwoCol.Left>
+          <Grid preset="prose">
+            <Col>
               <SectionHeading id="problem">The Problem</SectionHeading>
               <p className="mb-5">
                 Canary&apos;s AI messaging product and voice assistant both relied on a knowledge base where hotels enter property information — hours of operation, amenity details, shuttle schedules, restaurant menus. But the existing UI had shipped as a quick MVP years earlier: hotels had no structured way to enter information, the categorization was flat, and the whole experience was buried inside the Messaging tab even though it powered multiple products.
@@ -51,68 +64,81 @@ export default function KnowledgeBaseContent() {
               <p>
                 The business consequence was direct. AI response quality depended on knowledge base completeness — the target was answering 90% of guest messages from KB data — but hotels weren&apos;t filling it out because the UI made it feel like a chore rather than a natural part of setup. Our largest enterprise customer was openly nervous about the complexity. The brief: make it approachable, easy to feed, and genuinely powerful.
               </p>
-            </TwoCol.Left>
-          </TwoCol>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── The Solution ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-32">
-          <TwoCol>
-            <TwoCol.Left>
+          <Grid preset="prose">
+            <Col>
               <SectionHeading id="solution">The Solution</SectionHeading>
               <p className="mb-8">
                 I redesigned the knowledge base from scratch — a new information architecture built on structured categories, personas grounded in hotel research, and a UI that made entering property data feel like completing a profile rather than filling out a form. The IA foundation I established is what the current KB V2 is built on.
               </p>
-            </TwoCol.Left>
-          </TwoCol>
+            </Col>
+          </Grid>
 
           {/* Key decisions */}
-          <TwoCol className="mt-10">
-            <TwoCol.Left>
+          <Grid preset="prose" className="mt-10">
+            <Col>
               <SectionHeading level={3}>Key Design Decisions</SectionHeading>
-            </TwoCol.Left>
-          </TwoCol>
+            </Col>
+          </Grid>
 
-          <div className="space-y-14 mt-6">
+          {/* Alternating 2-col spread at desktop (5 blocks, last sits left) */}
+          <Grid className="mt-6 gap-y-14">
+            <Col lg="1-6">
             <FadeIn>
               <SectionHeading level={4}>1. Categorized subjects instead of flat custom statements</SectionHeading>
               <p className="mb-5">
                 The existing KB was an unstructured list of freeform statements — hotels typed text and hoped the AI could use it. I redesigned it as a categorized taxonomy: Basic Info, Policies &amp; Rules, Amenities (services, facilities, dining, shopping, outdoor), Location, and In-room Conveniences. The principle: reduce cognitive load by asking hotels to fill in what they know about specific topics, not to write generic &ldquo;statements.&rdquo; Entering information should feel like describing your hotel, not programming a chatbot. This categorization became the backbone for how hotels think about their property data.
               </p>
             </FadeIn>
+            </Col>
 
+            <Col lg="7-12">
             <FadeIn>
               <SectionHeading level={4}>2. Platform-level navigation, not product-specific</SectionHeading>
               <p className="mb-5">
                 Early on I raised what became the defining architectural question: where does the knowledge base live? It powered both Messaging and Voice, so burying it inside the Messaging tab made no sense. I proposed a standalone knowledge base section accessible across products. Nearly two years later, that exact decision shipped — the KB moved out of Messaging into its own standalone section in admin settings. The most important design call in the project was an architecture question, not a screen.
               </p>
             </FadeIn>
+            </Col>
 
+            <Col lg="1-6">
             <FadeIn>
               <SectionHeading level={4}>3. Completion metrics to drive adoption</SectionHeading>
               <p className="mb-5">
                 Hotels weren&apos;t filling out the KB because there was no sense of progress or urgency. I designed completion metrics — time to complete, percentage filled per category — turning setup from an open-ended chore into a trackable task. The concept was validated at design review and later implemented as per-category progress bars in the current UI.
               </p>
             </FadeIn>
+            </Col>
 
+            <Col lg="7-12">
             <FadeIn>
               <SectionHeading level={4}>4. Progressive disclosure with AI-aware branching</SectionHeading>
               <p className="mb-5">
                 Each category became a progressive questioning flow: &ldquo;Does your property have X?&rdquo; → Yes (ask when, what, where; upload files) → No (show nothing) → Unanswered. That three-state model mapped directly to how the AI responds: yes with an answer, no with an explanation, or escalate to a human. I also prioritized information by how easy it is for hotels to gather — property name and address at the top, the bar&apos;s closing time on Christmas deeper in the flow — so the highest-impact data gets filled first.
               </p>
             </FadeIn>
+            </Col>
 
+            <Col lg="1-6">
             <FadeIn>
               <SectionHeading level={4}>5. &ldquo;Any added friction for the hotel is awful&rdquo; as a design principle</SectionHeading>
               <p className="mb-5">
                 From the first brainstorm, I established this as the guiding principle for every KB decision. Hotels are stretched thin — every extra click or confusing label directly reduces AI quality, because hotels simply won&apos;t bother. It informed everything: the categorized structure (fewer decisions), the completion metrics (momentum), and contextual editing (edit where you see the data, not in a separate admin panel).
               </p>
             </FadeIn>
-          </div>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Research & Discovery ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Research & Discovery" id="research">
             <TwoCol>
               <TwoCol.Left>
@@ -178,10 +204,14 @@ export default function KnowledgeBaseContent() {
               />
             </FadeIn>
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Design Process ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Design Process" id="process">
             <TwoCol>
               <TwoCol.Left>
@@ -245,10 +275,14 @@ export default function KnowledgeBaseContent() {
             </TwoCol>
 
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Impact & Results ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Impact & Results" id="impact">
             <TwoCol>
               <TwoCol.Left>
@@ -276,10 +310,14 @@ export default function KnowledgeBaseContent() {
               </TwoCol.Left>
             </TwoCol>
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Reflection ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Reflection" id="reflection">
             <TwoCol>
               <TwoCol.Left>
@@ -306,6 +344,8 @@ export default function KnowledgeBaseContent() {
               </TwoCol.Left>
             </TwoCol>
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* Visual gallery removed with the placeholder cleanup — restore

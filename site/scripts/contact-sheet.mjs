@@ -4,6 +4,7 @@
  *
  *   npm run sheet -- /work/fb-ordering
  *   npm run sheet -- / --name home
+ *   npm run sheet -- /work/compendium --unlock   (see through LockGate)
  *
  * Output: .sheets/<slug>/{w390,w768,w1024,w1440}.png + sheet.html
  * Requires the dev server running on localhost:3000 and Google Chrome
@@ -50,6 +51,10 @@ const browser = await chromium.launch({ channel: "chrome", headless: true });
 const shots = [];
 for (const { w, label } of WIDTHS) {
   const page = await browser.newPage({ viewport: { width: w, height: 900 } });
+  if (args.includes("--unlock")) {
+    // Pre-seed the LockGate unlock flag (lib/PasswordGateContext.tsx).
+    await page.addInitScript(() => localStorage.setItem("portfolio-unlocked", "1"));
+  }
   await page.goto(BASE + route, { waitUntil: "networkidle" });
   // The dev-only Agentation toolbar photobombs screenshots (known quirk).
   await page.addStyleTag({ content: "[data-agentation-root] { display: none !important; }" });

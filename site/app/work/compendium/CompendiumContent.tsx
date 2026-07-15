@@ -8,8 +8,16 @@ import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
+import MetaRail from "@/components/case-study/MetaRail";
+import Grid, { Col } from "@/components/layout/Grid";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
+
+const META = [
+  { label: "Year", values: ["2024–2025"] },
+  { label: "Role", values: ["Product designer", "100% design ownership"] },
+  { label: "Scope", values: ["CMS builder", "Guest experience", "Compendium Lite"] },
+];
 
 const STATS = [
   { value: "$1M+", label: "Cumulative CARR (Dec '25)" },
@@ -30,11 +38,16 @@ const TOC_ITEMS = [
 export default function CompendiumContent() {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
-        {/* Title + Subtitle */}
-        <div>
-          <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.</p>
-        </div>
+        {/* Title + Subtitle with metadata rail (intro-rail) */}
+        <Grid preset="intro-rail">
+          <Col>
+            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
+            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.</p>
+          </Col>
+          <Col className="mt-8 lg:mt-2">
+            <MetaRail items={META} />
+          </Col>
+        </Grid>
 
         {/* Hero Image */}
         <CaseStudyHeroImage description="Digital Compendium — guest hub overview" />
@@ -46,8 +59,8 @@ export default function CompendiumContent() {
 
         {/* ── The Problem ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-24">
-          <TwoCol>
-            <TwoCol.Left>
+          <Grid preset="prose">
+            <Col>
               <SectionHeading id="problem">The Problem</SectionHeading>
               <p className="mb-5">
                 Hotels have relied on printed compendiums — booklets in guest rooms listing amenities, restaurant menus, Wi-Fi info, and local attractions — for decades. These are expensive to produce, impossible to update quickly, deteriorate with use, and require sanitization. Competitors like Duve, Hudini, and LoungeUp had already gone digital, and several offered features Canary didn&apos;t match: in-room dining, activity booking, and analytics.
@@ -55,61 +68,72 @@ export default function CompendiumContent() {
               <p>
                 Canary needed a digital compendium that did more than replicate a PDF. The product had to become the guest&apos;s home screen during their stay — a hub connecting reservation info, messaging, upsells, tipping, and eventually food ordering. Without it, Canary was selling point solutions while competitors sold a guest experience. The initiative target: increase average revenue per room per month from $5.10 to $10.
               </p>
-            </TwoCol.Left>
-          </TwoCol>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── The Solution ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-32">
-          <TwoCol>
-            <TwoCol.Left>
+          <Grid preset="prose">
+            <Col>
               <SectionHeading id="solution">The Solution</SectionHeading>
               <p className="mb-8">
                 I designed the full Compendium platform end-to-end — a hotel-facing CMS builder for managing content, and a guest-facing mobile web experience for browsing it — and then extended it through six major phases over 18 months, from MVP through enterprise-wide release.
               </p>
-            </TwoCol.Left>
-          </TwoCol>
+            </Col>
+          </Grid>
 
           {/* Key decisions */}
-          <TwoCol className="mt-10">
-            <TwoCol.Left>
+          <Grid preset="prose" className="mt-10">
+            <Col>
               <SectionHeading level={3}>Key Design Decisions</SectionHeading>
-            </TwoCol.Left>
-          </TwoCol>
+            </Col>
+          </Grid>
 
-          <div className="space-y-14 mt-6">
+          {/* 2×2 at desktop — the four decisions read as a composed spread */}
+          <Grid className="mt-6 gap-y-14">
+            <Col lg="1-6">
             <FadeIn>
               <SectionHeading level={4}>1. Builder-first architecture</SectionHeading>
               <p className="mb-5">
                 I designed the CMS as a structured builder rather than a free-form editor. Hotels configure sections (restaurants, amenities, custom content) through a guided interface with real-time preview. This was deliberate — hotel staff aren&apos;t web designers, and a &ldquo;builder&rdquo; metaphor with clear sections and drag-to-reorder maps directly to how they think about their property&apos;s offerings. The patterns would be reused across registration cards, auth forms, and other editors.
               </p>
             </FadeIn>
+            </Col>
 
+            <Col lg="7-12">
             <FadeIn>
               <SectionHeading level={4}>2. Custom sections as the extensibility layer</SectionHeading>
               <p className="mb-5">
                 Rather than hard-coding every content type, I designed a custom sections system that lets hotels create their own categories with items, images, descriptions, and call-to-action buttons. This single pattern — adopted by 82% of active properties — solved everything from &ldquo;spa services&rdquo; to &ldquo;local attractions&rdquo; to &ldquo;hotel policies&rdquo; without requiring product-specific development for each use case.
               </p>
             </FadeIn>
+            </Col>
 
+            <Col lg="1-6">
             <FadeIn>
               <SectionHeading level={4}>3. Compendium as the guest journey endpoint</SectionHeading>
               <p className="mb-5">
                 I positioned Compendium as where every guest touchpoint leads. Check-in completes? You land on Compendium. Arrival SMS? Links to Compendium. QR code in the lobby? Compendium. This wasn&apos;t just navigation — it was the product strategy. By making Compendium the hub, every other Canary product (messaging, upsells, tipping, food ordering) gets organic distribution.
               </p>
             </FadeIn>
+            </Col>
 
+            <Col lg="7-12">
             <FadeIn>
               <SectionHeading level={4}>4. Compendium Lite as a freemium growth lever</SectionHeading>
               <p className="mb-5">
                 When we needed to drive cross-sell and deepen the Wyndham relationship, I designed Compendium Lite — a constrained version (2 sections, 4 items per section) that any Canary customer could activate for free. The design challenge was creating clear upgrade triggers without making the free version feel broken. I placed contextual &ldquo;Request Upgrade&rdquo; prompts at natural friction points — when a hotel tries to add a third section or fifth item — so the limitation feels like an invitation, not a wall.
               </p>
             </FadeIn>
-          </div>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Research & Discovery ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Research & Discovery" id="research">
             <TwoCol>
               <TwoCol.Left>
@@ -174,10 +198,14 @@ export default function CompendiumContent() {
               />
             </FadeIn>
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Design Process ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Design Process" id="process">
             <TwoCol>
               <TwoCol.Left>
@@ -240,10 +268,14 @@ export default function CompendiumContent() {
               </TwoCol.Left>
             </TwoCol>
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Impact & Results ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Impact & Results" id="impact">
             <TwoCol>
               <TwoCol.Left>
@@ -296,10 +328,14 @@ export default function CompendiumContent() {
               </TwoCol.Left>
             </TwoCol>
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* ── Reflection ── */}
         <FadeIn className="pt-32">
+          <Grid preset="prose">
+            <Col>
           <ExpandableSection title="Reflection" id="reflection">
             <TwoCol>
               <TwoCol.Left>
@@ -327,6 +363,8 @@ export default function CompendiumContent() {
               </TwoCol.Left>
             </TwoCol>
           </ExpandableSection>
+            </Col>
+          </Grid>
         </FadeIn>
 
         {/* Visual gallery removed with the placeholder cleanup — restore
