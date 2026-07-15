@@ -423,6 +423,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // Shared title + description block — same typography across case
 // studies and playground items so the grid reads as one consistent
 // composition.
+// PARKED 2026-07-15: cards went pure-visual, so nothing renders this
+// right now. Kept intact (with the note slot for locked studies) so
+// captions can come back with one line per cell.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function CellCaption({
   title,
   description,
@@ -618,15 +622,13 @@ function StudyCell({
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
 
-  // Caption above the media frame per the 2026-07 redesign.
-  // Title only — the descriptions came off the cards in the 2026-07-14
-  // feedback pass (playground cells still show theirs).
-  const cellInner = (
-    <>
-      <CellCaption title={study.title} note={locked ? "Coming soon" : undefined} />
-      <StudyMediaFrame study={study} locked={locked} featured={featured} />
-    </>
-  );
+  // Pure-visual cells (2026-07-15 pass): no caption — the media frame
+  // is the whole card. Titles/descriptions are parked in CellCaption
+  // below and the study metadata if we want them back. The link's
+  // aria-label still carries the study title for screen readers, and
+  // the lock affordances live on the frame (LockedFrameBadge + LockGate
+  // hover badge).
+  const cellInner = <StudyMediaFrame study={study} locked={locked} featured={featured} />;
 
   // Studies with a dedicated route link out; the rest are static media
   // cells (the fullscreen gallery carousel was removed 2026-07-14).
@@ -634,12 +636,12 @@ function StudyCell({
     <Link
       href={href}
       aria-label={`Open case study — ${study.title}`}
-      className="flex flex-col h-full w-full gap-4 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)"
+      className="flex flex-col h-full w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)"
     >
       {cellInner}
     </Link>
   ) : (
-    <div className="flex flex-col h-full w-full gap-4 text-left">
+    <div className="flex flex-col h-full w-full text-left">
       {cellInner}
     </div>
   );
@@ -758,9 +760,10 @@ function MediaPreviewLightbox({
 // case study cells. Non-interactive since the dedicated /play subpages
 // were removed.
 function PlaygroundCell({ card }: { card: PlaygroundCard }) {
+  // Pure-visual cell — caption removed 2026-07-15 (title/description
+  // still live on the card data in lib/playground-cards.ts).
   return (
-    <div className="flex flex-col h-full w-full gap-4">
-      <CellCaption title={card.title} description={card.description} />
+    <div className="flex flex-col h-full w-full">
       <PlaygroundMediaFrame card={card} />
     </div>
   );
