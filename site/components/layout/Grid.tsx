@@ -24,9 +24,9 @@ interface ColProps {
   children?: ReactNode;
   /** Column spec for phone (<768). Defaults to "full". */
   base?: string;
-  /** Column spec for tablet (768–1023). Falls back to base. */
+  /** Column spec for tablet (768–1199). Falls back to base. */
   md?: string;
-  /** Column spec for desktop (≥1024). Falls back to md. */
+  /** Column spec for desktop (≥1200). Falls back to md. */
   lg?: string;
   className?: string;
   style?: CSSProperties;

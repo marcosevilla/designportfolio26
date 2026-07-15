@@ -51,17 +51,21 @@ const shots = [];
 for (const { w, label } of WIDTHS) {
   const page = await browser.newPage({ viewport: { width: w, height: 900 } });
   await page.goto(BASE + route, { waitUntil: "networkidle" });
+  // The dev-only Agentation toolbar photobombs screenshots (known quirk).
+  await page.addStyleTag({ content: "[data-agentation-root] { display: none !important; }" });
   // Let entrance animations, blur-ins, and lazy media settle.
   await page.waitForTimeout(1200);
-  // Force intersection-observer FadeIns visible by scrolling through the page.
+  // Force intersection-observer FadeIns visible by scrolling through the
+  // page slowly enough for each section's entrance to fire, then give the
+  // last animations time to finish before the full-page capture.
   await page.evaluate(async () => {
-    const step = window.innerHeight;
+    const step = Math.round(window.innerHeight * 0.7);
     for (let y = 0; y < document.body.scrollHeight; y += step) {
       window.scrollTo(0, y);
-      await new Promise((r) => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 150));
     }
     window.scrollTo(0, 0);
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 1500));
   });
   const file = `w${w}.png`;
   await page.screenshot({ path: join(outDir, file), fullPage: true });

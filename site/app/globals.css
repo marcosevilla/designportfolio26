@@ -956,8 +956,11 @@ body {
 }
 /* ── Editorial 12-column grid ──────────────────────────────────────────
    Placement is authored per band via CSS vars set inline by <Col>
-   (components/layout/Grid.tsx). Bands: phone <768 / tablet 768–1023 /
-   desktop ≥1024. Unset bands inherit downward: lg → md → base → full.
+   (components/layout/Grid.tsx). Bands: phone <768 / tablet 768–1199 /
+   desktop ≥1200 (desktop starts at 1200, not Tailwind's lg=1024, so
+   authored compositions only apply where the canvas has real room next
+   to the fixed case-study TOC — below that the tablet collapse holds).
+   Unset bands inherit downward: lg → md → base → full.
    Vocabulary + diagrams: docs/LAYOUT-REFERENCE.html */
 :root {
   --grid-max: 1128px; /* 12×72px cols + 11×24px gaps */
@@ -978,7 +981,7 @@ body {
     grid-column: var(--col-md, var(--col-base, 1 / -1));
   }
 }
-@media (min-width: 1024px) {
+@media (min-width: 1200px) {
   .col-ed {
     grid-column: var(--col-lg, var(--col-md, var(--col-base, 1 / -1)));
   }

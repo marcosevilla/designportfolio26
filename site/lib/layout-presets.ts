@@ -3,8 +3,8 @@
  * presets and the column-spec grammar.
  *
  * Spec grammar: "START-END" (1-indexed, END inclusive, 12 columns) or
- * "full". Bands: base = phone (<768), md = tablet (768–1023),
- * lg = desktop (≥1024). Unspecified bands inherit downward
+ * "full". Bands: base = phone (<768), md = tablet (768–1199),
+ * lg = desktop (≥1200). Unspecified bands inherit downward
  * (lg falls back to md, md to base, base to full).
  *
  * Visual reference for all of this: docs/LAYOUT-REFERENCE.html
