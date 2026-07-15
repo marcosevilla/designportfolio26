@@ -196,34 +196,17 @@ function buildRelations(): [string, string][] {
 const RELATIONS = buildRelations();
 
 /* Build connector curves: right edge of source → left edge of target,
-   attach points fanned 8px apart when a card has several connections. */
+   always attaching at the vertical center of both cards. */
 const COL_X = Object.fromEntries(COLUMNS.map((c) => [c.key, c.x]));
 const cardByName = Object.fromEntries(CARD_DATA.map((c) => [c.name, c]));
 const centerY = (c: Card) => c.y + c.h / 2;
 
 type Conn = { id: string; src: string; tgt: string; d: string };
 function buildConnectors(): Conn[] {
-  const outBy: Record<string, [string, string][]> = {};
-  const inBy: Record<string, [string, string][]> = {};
-  for (const r of RELATIONS) {
-    (outBy[r[0]] = outBy[r[0]] || []).push(r);
-    (inBy[r[1]] = inBy[r[1]] || []).push(r);
-  }
-  const srcY = new Map(), tgtY = new Map();
-  const FAN = 8;
-  for (const [name, list] of Object.entries(outBy)) {
-    list.sort((a, b) => centerY(cardByName[a[1]]) - centerY(cardByName[b[1]]));
-    list.forEach((r, i) => srcY.set(r, centerY(cardByName[name]) + (i - (list.length - 1) / 2) * FAN));
-  }
-  for (const [name, list] of Object.entries(inBy)) {
-    list.sort((a, b) => centerY(cardByName[a[0]]) - centerY(cardByName[b[0]]));
-    list.forEach((r, i) => tgtY.set(r, centerY(cardByName[name]) + (i - (list.length - 1) / 2) * FAN));
-  }
-  return RELATIONS.map((r) => {
-    const [src, tgt] = r;
+  return RELATIONS.map(([src, tgt]) => {
     const x1 = COL_X[cardByName[src].col] + CARD_W;
     const x2 = COL_X[cardByName[tgt].col];
-    const y1 = srcY.get(r), y2 = tgtY.get(r);
+    const y1 = centerY(cardByName[src]), y2 = centerY(cardByName[tgt]);
     const dx = (x2 - x1) * 0.45;
     return { id: `${src}→${tgt}`, src, tgt, d: `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}` };
   });
