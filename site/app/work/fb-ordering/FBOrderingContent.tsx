@@ -1,6 +1,7 @@
 "use client";
 
 import ExpandableSection from "@/components/case-study/ExpandableSection";
+import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
 import NextProject from "@/components/case-study/NextProject";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -104,6 +105,18 @@ export default function FBOrderingContent() {
                 <li><span className="font-medium text-(--color-fg)">Five system objects as the IA backbone:</span> Ordering Outlets, Menus, Items, Modifier Groups, Orders. Manage items once, compose menus flexibly.</li>
                 <li><span className="font-medium text-(--color-fg)">Works with or without a PMS:</span> reservation-linked ordering when integrated, manual entry fallback for everyone else. No POS requirement meant shipping to the whole market.</li>
               </ul>
+            </Col>
+          </Grid>
+        </FadeIn>
+
+        {/* ── Object flow diagram ── */}
+        <FadeIn className="pt-16">
+          <Grid>
+            <Col lg="full">
+              <ObjectFlowDiagram />
+              <p className="mt-4 text-center text-(--color-fg-tertiary)" style={{ fontSize: "12px" }}>
+                The five-object model in practice: a Club sandwich is authored once, appears on the Lunch menu, and is served poolside and in-room.
+              </p>
             </Col>
           </Grid>
         </FadeIn>
