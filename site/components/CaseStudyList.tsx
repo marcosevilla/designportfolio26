@@ -385,7 +385,7 @@ function ProjectGrid({
           const lg = i === 0 ? "full" : (i - 1) % 2 === 0 ? "1-6" : "7-12";
           const cell =
             item.type === "study" ? (
-              <StudyCell study={item.study} onPreview={onPreview} />
+              <StudyCell study={item.study} onPreview={onPreview} featured={i === 0} />
             ) : (
               <PlaygroundCell card={item.card} />
             );
@@ -470,9 +470,11 @@ function CellCaption({
 function StudyMediaFrame({
   study,
   locked,
+  featured = false,
 }: {
   study: CaseStudyMeta;
   locked: boolean;
+  featured?: boolean;
 }) {
   const items = galleryContent[study.slug] ?? [];
   const item = items[0] ?? null;
@@ -499,7 +501,7 @@ function StudyMediaFrame({
 
   return (
     <div
-      className="w-full overflow-hidden relative h-[323px]"
+      className={`w-full overflow-hidden relative ${featured ? "h-[323px] md:h-[480px] lg:h-[560px]" : "h-[323px]"}`}
       style={{
         backgroundColor: hasMedia ? mediaBg : PLACEHOLDER_BG,
         border: "0.5px solid var(--color-border)",
@@ -585,9 +587,13 @@ function StudyMediaFrame({
 function StudyCell({
   study,
   onPreview,
+  featured = false,
 }: {
   study: CaseStudyMeta;
   onPreview: (slug: string) => void;
+  /** Full-canvas first cell — gets a taller media frame so cover-fit
+   *  video isn't cropped to a sliver at canvas width. */
+  featured?: boolean;
 }) {
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
@@ -598,7 +604,7 @@ function StudyCell({
   const cellInner = (
     <>
       <CellCaption title={study.title} note={locked ? "Coming soon" : undefined} />
-      <StudyMediaFrame study={study} locked={locked} />
+      <StudyMediaFrame study={study} locked={locked} featured={featured} />
     </>
   );
 
