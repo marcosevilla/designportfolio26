@@ -520,7 +520,16 @@ export default function ObjectFlowDiagram() {
   );
 
   return (
-    <div ref={ref} className="w-full">
+    // Container stroke — the switch, caption, and SVG read as one
+    // framed diagram unit (same hairline + radius as the media frames).
+    <div
+      ref={ref}
+      className="w-full px-6 py-8 sm:px-8"
+      style={{
+        border: "0.5px solid var(--color-border)",
+        borderRadius: 4,
+      }}
+    >
       {/* ── View switch + caption ── */}
       <div className="mb-6 flex flex-col items-center gap-2.5">
         <div

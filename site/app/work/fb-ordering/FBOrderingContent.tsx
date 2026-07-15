@@ -67,10 +67,10 @@ export default function FBOrderingContent() {
             </Grid>
           </FadeIn>
 
-          {/* Dashboard UI is dense — full canvas each, stacked */}
+          {/* Dashboard UI is dense — full canvas. (The fulfillment-table
+              mock came out in the 2026-07-15 feedback pass.) */}
           <Grid className="mt-10 gap-y-8">
-            <Col lg="full"><FadeIn><img src="/images/fb-ordering/fb-ordering-table.png" alt="Staff fulfillment dashboard showing new orders" className="w-full rounded-lg" /></FadeIn></Col>
-            <Col lg="full"><FadeIn delay={0.1}><img src="/images/fb-ordering/fb-ordering-dashboard.png" alt="Staff order detail with approve/deny" className="w-full rounded-lg" /></FadeIn></Col>
+            <Col lg="full"><FadeIn><img src="/images/fb-ordering/fb-ordering-dashboard.png" alt="Staff order detail with approve/deny" className="w-full rounded-lg" /></FadeIn></Col>
           </Grid>
         </FadeIn>
 
