@@ -4,37 +4,52 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
- * ANIMATION STORYBOARD — Object Flow Diagram
+ * ANIMATION STORYBOARD — Object Flow Diagram (dual view)
  *
- * Columns read as an order's lifecycle, left → right:
- *   Items → Modifier groups (incl. "No modifications" pass-through) → Menus → Outlets
+ * TWO READINGS of the same five-object model, toggled by a
+ * segmented control above the SVG:
  *
+ *   SYSTEM COMPOSITION (default) — how a hotel authors the catalog:
+ *     Items → Modifier groups → Menus → Ordering outlets
+ *     route legs: item → mod(s) → menu → outlet
+ *     interactive column: Items
+ *
+ *   GUEST ORDERING FLOW — the order a guest meets the objects:
+ *     Ordering outlets → Menus → Items → Modifier groups
+ *     route legs: outlet → menu → item → mod(s)
+ *     interactive column: Ordering outlets
+ *     (menu → item edges are direct here; modifiers hang off the end)
+ *
+ * ENTRANCE (per view mount / replay):
  *     0ms   waiting for scroll into view
  *   100ms   column headers fade in (staggered 120ms, L→R)
  *   450ms   cards rise in, 8px → 0 (staggered 50ms per card, 140ms per column)
  *  1150ms   connectors fade in (staggered 30ms)
  *  1900ms   ambient dash-flow starts on all gray connectors (1.3s loop)
- *  2150ms   ROUTE ENGINE begins —
- *           leg1: dot(s) travel item → modifier(s) (700ms) — a route may carry
- *                 1–2 modifiers at once, so up to two dots run in parallel
- *           leg2: dots travel modifier(s) → menu (700ms), converging
- *           leg3: single dot travels menu → outlet (700ms)
- *           hold: full route stays lit 1200ms, then the next route runs
+ *  2150ms   ROUTE ENGINE begins — three legs of 700ms each; the modifier
+ *           leg may carry 1–2 dots in parallel (leg 1 in system view,
+ *           leg 3 in guest view). Full route stays lit 1200ms, then the
+ *           next route runs.
  *
- * DEMO MODE (nothing hovered): the engine tours the menu on its own —
- *           each food item takes a turn as the highlighted item (2 routes
- *           each), with the same tiering as a hover: connected = ink,
- *           unreachable = 50% opacity. Then the next item takes over.
+ * VIEW SWITCH: connectors fade out (200ms) → cards GLIDE to their new
+ *           columns (500ms, same objects, new reading) → connectors fade
+ *           back in and the route engine restarts on the new view's
+ *           interactive column.
  *
- * INTERACTION — hover or click a food item (Items column):
- *           pauses the tour and pins the engine to that item, cycling
+ * DEMO MODE (nothing hovered): the engine tours the interactive column
+ *           on its own — each card takes a turn as the highlighted
+ *           anchor (2 routes each), with the same tiering as a hover.
+ *
+ * INTERACTION — hover or click a card in the interactive column:
+ *           pauses the tour and pins the engine to that card, cycling
  *           through every route its order can take.
  *           taken      = solid accent + tinted cards (what the dot runs)
  *           possible   = ink dashed connectors, ink arrows, ink borders
  *           inapplicable = 50% opacity
  *           click pins (tap on touch); background click unpins / replays
  *
- *  reduced motion: no dots/loops — first route lit, tiers still apply
+ *  reduced motion: no dots/loops/glide — first route lit, tiers still
+ *           apply, view switch is an instant swap
  * ───────────────────────────────────────────────────────── */
 
 const TIMING = {
@@ -42,14 +57,20 @@ const TIMING = {
   cards: 450, // cards rise in
   connectors: 1150, // connectors fade in
   ambient: 1900, // dash-flow loop begins
-  itemBeat: 250, // pause before an item's first route (lets tiers read)
+  itemBeat: 250, // pause before an anchor's first route (lets tiers read)
   dotTravel: 700, // ms for dots to cross one leg
   routeHold: 1200, // ms a completed route stays lit before the next runs
   dotBegin: 30, // ms after render before dots start (lets SMIL paths update)
 };
 
+const SWITCH = {
+  connsOut: 200, // ms connectors fade out before columns move
+  glide: 500, // ms cards travel to their new columns
+  connsIn: 550, // ms after click that connectors fade back in
+};
+
 const DEMO = {
-  routesPerItem: 2, // routes each item runs before the tour moves on
+  routesPerItem: 2, // routes each anchor runs before the tour moves on
 };
 
 const HEADERS = {
@@ -68,11 +89,11 @@ const CONNECTORS = {
   flowDuration: 1.3, // s per ambient dash loop
   flowShift: -12, // px of dashoffset per loop (2 dash periods)
   baseOpacity: 0.75, // resting opacity of a neutral connector
-  dimOpacity: 0.35, // inapplicable connector while an item is active
+  dimOpacity: 0.35, // inapplicable connector while an anchor is active
 };
 
 const TIERS = {
-  dimCardOpacity: 0.5, // inapplicable cards while an item is active
+  dimCardOpacity: 0.5, // inapplicable cards while an anchor is active
   possibleStroke: "var(--color-fg)", // connected-but-not-taken ink
 };
 
@@ -104,6 +125,44 @@ const MENU_OUTLETS: Record<string, string[]> = {
   Dinner: ["In-room dining"],
 };
 const ITEMS = Object.keys(ITEM_MODS);
+const MENUS = Object.keys(MENU_OUTLETS);
+const OUTLETS = [...new Set(Object.values(MENU_OUTLETS).flat())];
+const menusAt = (outlet: string) => MENUS.filter((m) => MENU_OUTLETS[m].includes(outlet));
+const itemsOn = (menu: string) => ITEMS.filter((i) => ITEM_MENUS[i].includes(menu));
+
+/* ─── Views ─── */
+
+type ViewKey = "system" | "guest";
+const VIEWS: ViewKey[] = ["system", "guest"];
+
+const VIEW_META: Record<ViewKey, { label: string; caption: string; aria: string }> = {
+  system: {
+    label: "System composition",
+    caption: "How a hotel composes an order: author an item once, sell it everywhere.",
+    aria:
+      "Interactive diagram of the five-object model, read as the hotel composes it: a food item is customized by modifier groups (or passes through with no modifications), appears on menus, and is served at ordering outlets. Hover or tap a food item to trace every route its order can take; when idle, the diagram tours each item on its own.",
+  },
+  guest: {
+    label: "Guest ordering flow",
+    caption: "The same five objects in the order a guest meets them: outlet, menu, item, customization.",
+    aria:
+      "Interactive diagram of the five-object model, read as a guest experiences it: from an ordering outlet the guest opens a menu, picks an item, and customizes it with modifier groups. Hover or tap an ordering outlet to trace every order a guest could place there; when idle, the diagram tours each outlet on its own.",
+  },
+};
+
+const VIEW_ORDER: Record<ViewKey, string[]> = {
+  system: ["items", "mods", "menus", "outlets"],
+  guest: ["outlets", "menus", "items", "mods"],
+};
+const COL_XS = [100, 460, 820, 1180];
+const VIEW_COL_X: Record<ViewKey, Record<string, number>> = Object.fromEntries(
+  VIEWS.map((v) => [v, Object.fromEntries(VIEW_ORDER[v].map((col, i) => [col, COL_XS[i]]))]),
+) as Record<ViewKey, Record<string, number>>;
+
+const VIEW_ANCHORS: Record<ViewKey, { col: string; names: string[] }> = {
+  system: { col: "items", names: ITEMS },
+  guest: { col: "outlets", names: OUTLETS },
+};
 
 /* ─── Icons (lucide path data) ─── */
 
@@ -145,10 +204,10 @@ const ICONS: Record<string, IconShape[]> = {
 /* ─── Layout ─── */
 
 const COLUMNS = [
-  { key: "items", x: 100, icon: "sandwich", title: "Items", desc: ["Shared library of food & beverage", "items, often shared across menus."] },
-  { key: "mods", x: 460, icon: "settings", title: "Modifier groups", desc: ["Add-ons, substitutions, variations.", "Every order passes through, even", "with no modifications."] },
-  { key: "menus", x: 820, icon: "book", title: "Menus", desc: ["Collections of items offered at a", "specific period of time, or a", "specific location."] },
-  { key: "outlets", x: 1180, icon: "bell", title: "Ordering outlets", desc: ["Guest entry point, embedded", "in Compendium"] },
+  { key: "items", icon: "sandwich", title: "Items", desc: ["Shared library of food & beverage", "items, often shared across menus."] },
+  { key: "mods", icon: "settings", title: "Modifier groups", desc: ["Add-ons, substitutions, variations.", "Every order passes through, even", "with no modifications."] },
+  { key: "menus", icon: "book", title: "Menus", desc: ["Collections of items offered at a", "specific period of time, or a", "specific location."] },
+  { key: "outlets", icon: "bell", title: "Ordering outlets", desc: ["Guest entry point, embedded", "in Compendium"] },
 ];
 
 type Card = { name: string; col: string; icon: string; y: number; h: number; sub?: string; price?: string; dashed?: boolean };
@@ -173,77 +232,115 @@ const CARD_DATA: Card[] = [
   { name: "Poolside dining", col: "outlets", icon: "bell", y: 444, h: 44, sub: "11:00 AM – 4:00 PM" },
   { name: "In-room dining", col: "outlets", icon: "bell", y: 611, h: 44, sub: "11:00 AM – 4:00 PM" },
 ];
-
-/* Derive the static edge set from the source data:
-   item → each applicable modifier (+ No modifications for every item)
-   modifier → every menu reachable through an item that carries it
-   menu → its outlets */
-function buildRelations(): [string, string][] {
-  const rels: [string, string][] = [];
-  const modMenus: Record<string, Set<string>> = {};
-  for (const item of ITEMS) {
-    for (const mod of [NO_MODS, ...ITEM_MODS[item]]) {
-      rels.push([item, mod]);
-      for (const menu of ITEM_MENUS[item]) (modMenus[mod] = modMenus[mod] || new Set()).add(menu);
-    }
-  }
-  const seen = new Set(rels.map((r) => r.join("→")));
-  const dedup = rels.filter((r) => { const k = r.join("→"); if (!seen.has(k)) return false; seen.delete(k); return true; });
-  for (const [mod, menus] of Object.entries(modMenus)) for (const menu of menus) dedup.push([mod, menu]);
-  for (const [menu, outlets] of Object.entries(MENU_OUTLETS)) for (const outlet of outlets) dedup.push([menu, outlet]);
-  return dedup;
-}
-const RELATIONS = buildRelations();
-
-/* Build connector curves: right edge of source → left edge of target,
-   always attaching at the vertical center of both cards. */
-const COL_X = Object.fromEntries(COLUMNS.map((c) => [c.key, c.x]));
 const cardByName = Object.fromEntries(CARD_DATA.map((c) => [c.name, c]));
 const centerY = (c: Card) => c.y + c.h / 2;
 
+/* Derive each view's edge set from the source data.
+   system: item → each applicable modifier (+ No modifications for every item),
+           modifier → every menu reachable through an item that carries it,
+           menu → its outlets
+   guest:  outlet → each menu served there, menu → each item on it,
+           item → its modifiers (direct menu→item edges; mods hang off the end) */
+function buildRelations(view: ViewKey): [string, string][] {
+  const rels: [string, string][] = [];
+  if (view === "system") {
+    const modMenus: Record<string, Set<string>> = {};
+    for (const item of ITEMS) {
+      for (const mod of [NO_MODS, ...ITEM_MODS[item]]) {
+        rels.push([item, mod]);
+        for (const menu of ITEM_MENUS[item]) (modMenus[mod] = modMenus[mod] || new Set()).add(menu);
+      }
+    }
+    for (const [mod, menus] of Object.entries(modMenus)) for (const menu of menus) rels.push([mod, menu]);
+    for (const [menu, outlets] of Object.entries(MENU_OUTLETS)) for (const outlet of outlets) rels.push([menu, outlet]);
+  } else {
+    for (const outlet of OUTLETS) for (const menu of menusAt(outlet)) rels.push([outlet, menu]);
+    for (const menu of MENUS) for (const item of itemsOn(menu)) rels.push([menu, item]);
+    for (const item of ITEMS) for (const mod of [NO_MODS, ...ITEM_MODS[item]]) rels.push([item, mod]);
+  }
+  return rels;
+}
+
+/* Build connector curves: right edge of source → left edge of target,
+   always attaching at the vertical center of both cards. */
 type Conn = { id: string; src: string; tgt: string; d: string };
-function buildConnectors(): Conn[] {
-  return RELATIONS.map(([src, tgt]) => {
-    const x1 = COL_X[cardByName[src].col] + CARD_W;
-    const x2 = COL_X[cardByName[tgt].col];
+function buildConnectors(view: ViewKey): Conn[] {
+  const colX = VIEW_COL_X[view];
+  return buildRelations(view).map(([src, tgt]) => {
+    const x1 = colX[cardByName[src].col] + CARD_W;
+    const x2 = colX[cardByName[tgt].col];
     const y1 = centerY(cardByName[src]), y2 = centerY(cardByName[tgt]);
     const dx = (x2 - x1) * 0.45;
     return { id: `${src}→${tgt}`, src, tgt, d: `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}` };
   });
 }
-const CONNS = buildConnectors();
-const connById = Object.fromEntries(CONNS.map((c) => [c.id, c]));
+const VIEW_CONNS = Object.fromEntries(VIEWS.map((v) => [v, buildConnectors(v)])) as Record<ViewKey, Conn[]>;
+const VIEW_CONN_BY_ID = Object.fromEntries(
+  VIEWS.map((v) => [v, Object.fromEntries(VIEW_CONNS[v].map((c) => [c.id, c]))]),
+) as Record<ViewKey, Record<string, Conn>>;
 
-/* ─── Routes: every order an item can become ─── */
+/* ─── Routes: every order the anchor can become ─── */
 
 type Route = { item: string; mods: string[]; menu: string; outlet: string };
-function routesFor(item: string): Route[] {
-  const combos = ITEM_MENUS[item].flatMap((menu) => MENU_OUTLETS[menu].map((outlet) => ({ menu, outlet })));
+
+function modSelections(item: string): string[][] {
   const real = ITEM_MODS[item];
   const selections: string[][] = [[NO_MODS], ...real.map((m) => [m])];
   if (real.length >= 2) selections.push([real[0], real[1]]); // multi-modifier order
-  const n = Math.max(combos.length, selections.length);
-  return Array.from({ length: n }, (_, i) => ({
-    item,
-    mods: selections[i % selections.length],
-    ...combos[i % combos.length],
+  return selections;
+}
+
+function routesFor(view: ViewKey, anchor: string): Route[] {
+  if (view === "system") {
+    const combos = ITEM_MENUS[anchor].flatMap((menu) => MENU_OUTLETS[menu].map((outlet) => ({ menu, outlet })));
+    const selections = modSelections(anchor);
+    const n = Math.max(combos.length, selections.length);
+    return Array.from({ length: n }, (_, i) => ({
+      item: anchor,
+      mods: selections[i % selections.length],
+      ...combos[i % combos.length],
+    }));
+  }
+  const combos = menusAt(anchor).flatMap((menu) => itemsOn(menu).map((item) => ({ menu, item })));
+  return combos.map((c, i) => ({
+    outlet: anchor,
+    menu: c.menu,
+    item: c.item,
+    mods: modSelections(c.item)[i % modSelections(c.item).length],
   }));
 }
 
-/** The item's full connected subgraph (cards + edges) for tier styling */
-function connectedTo(item: string) {
-  const mods = [NO_MODS, ...ITEM_MODS[item]];
-  const menus = ITEM_MENUS[item];
-  const cards = new Set([item, ...mods, ...menus]);
+/** The anchor's full connected subgraph (cards + edges) for tier styling */
+function connectedTo(view: ViewKey, anchor: string) {
+  const cards = new Set<string>([anchor]);
   const edges = new Set<string>();
-  for (const mod of mods) {
-    edges.add(`${item}→${mod}`);
-    for (const menu of menus) edges.add(`${mod}→${menu}`);
-  }
-  for (const menu of menus) {
-    for (const outlet of MENU_OUTLETS[menu]) {
-      cards.add(outlet);
-      edges.add(`${menu}→${outlet}`);
+  if (view === "system") {
+    const mods = [NO_MODS, ...ITEM_MODS[anchor]];
+    const menus = ITEM_MENUS[anchor];
+    for (const mod of mods) {
+      cards.add(mod);
+      edges.add(`${anchor}→${mod}`);
+      for (const menu of menus) edges.add(`${mod}→${menu}`);
+    }
+    for (const menu of menus) {
+      cards.add(menu);
+      for (const outlet of MENU_OUTLETS[menu]) {
+        cards.add(outlet);
+        edges.add(`${menu}→${outlet}`);
+      }
+    }
+  } else {
+    for (const menu of menusAt(anchor)) {
+      cards.add(menu);
+      edges.add(`${anchor}→${menu}`);
+      for (const item of itemsOn(menu)) {
+        cards.add(item);
+        edges.add(`${menu}→${item}`);
+        for (const mod of [NO_MODS, ...ITEM_MODS[item]]) {
+          cards.add(mod);
+          edges.add(`${item}→${mod}`);
+        }
+      }
     }
   }
   return { cards, edges };
@@ -256,6 +353,8 @@ export default function ObjectFlowDiagram() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
+  const [view, setView] = useState<ViewKey>("system");
+  const [connsVisible, setConnsVisible] = useState(true);
   const [stage, setStage] = useState(0);
   const [replay, setReplay] = useState(0);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -265,10 +364,37 @@ export default function ObjectFlowDiagram() {
   const [routePhase, setRoutePhase] = useState<RoutePhase>("leg1");
   const [dotsBegun, setDotsBegun] = useState(false);
   const dotRefs = useRef<(MotionEl | null)[]>([]);
+  const switchTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const userItem = pinned ?? hovered; // the item the viewer is inspecting
-  const engineItem = userItem ?? ITEMS[demoIdx % ITEMS.length]; // demo tour when idle
-  const connected = useMemo(() => (stage >= 4 ? connectedTo(engineItem) : null), [engineItem, stage]);
+  const anchors = VIEW_ANCHORS[view];
+  const colX = VIEW_COL_X[view];
+  const conns = VIEW_CONNS[view];
+  const connById = VIEW_CONN_BY_ID[view];
+  const userAnchor = pinned ?? hovered; // the card the viewer is inspecting
+  const engineAnchor = userAnchor ?? anchors.names[demoIdx % anchors.names.length]; // demo tour when idle
+  const connected = useMemo(
+    () => (stage >= 4 ? connectedTo(view, engineAnchor) : null),
+    [view, engineAnchor, stage],
+  );
+
+  /* View switch: connectors out → columns glide → connectors in, engine restarts */
+  const switchView = (next: ViewKey) => {
+    if (next === view) return;
+    switchTimers.current.forEach(clearTimeout);
+    switchTimers.current = [];
+    setPinned(null);
+    setHovered(null);
+    setDemoIdx(0);
+    setRoute(null);
+    if (reduced) {
+      setView(next);
+      return;
+    }
+    setConnsVisible(false);
+    switchTimers.current.push(setTimeout(() => setView(next), SWITCH.connsOut));
+    switchTimers.current.push(setTimeout(() => setConnsVisible(true), SWITCH.connsIn));
+  };
+  useEffect(() => () => switchTimers.current.forEach(clearTimeout), []);
 
   /* Entrance sequence */
   useEffect(() => {
@@ -287,11 +413,11 @@ export default function ObjectFlowDiagram() {
     return () => timers.forEach(clearTimeout);
   }, [isInView, reduced, replay]);
 
-  /* Route engine — cycles the engine item's routes; in demo mode the tour
-     advances to the next item after DEMO.routesPerItem routes */
+  /* Route engine — cycles the engine anchor's routes; in demo mode the tour
+     advances to the next anchor after DEMO.routesPerItem routes */
   useEffect(() => {
-    if (stage < 4) return;
-    const routes = routesFor(engineItem);
+    if (stage < 4 || !connsVisible) return;
+    const routes = routesFor(view, engineAnchor);
     if (reduced) {
       setRoute(routes[0]);
       setRoutePhase("lit");
@@ -312,7 +438,7 @@ export default function ObjectFlowDiagram() {
           timers.push(
             setTimeout(() => {
               idx++;
-              if (!userItem && idx >= DEMO.routesPerItem) setDemoIdx((d) => d + 1); // tour: next item takes over
+              if (!userAnchor && idx >= DEMO.routesPerItem) setDemoIdx((d) => d + 1); // tour: next anchor takes over
               else runRoute();
             }, TIMING.dotTravel * 3 + TIMING.routeHold),
           );
@@ -324,7 +450,7 @@ export default function ObjectFlowDiagram() {
       cancelled = true;
       timers.forEach(clearTimeout);
     };
-  }, [stage, reduced, replay, engineItem, userItem]);
+  }, [stage, reduced, replay, view, connsVisible, engineAnchor, userAnchor]);
 
   /* Kick the SMIL dots each time a traveling leg starts */
   useEffect(() => {
@@ -337,33 +463,52 @@ export default function ObjectFlowDiagram() {
     return () => clearTimeout(id);
   }, [route, routePhase, reduced]);
 
-  /* Paths the dots run during the current leg (1–2 in parallel on legs 1 & 2) */
-  const dotPaths: string[] = !route || reduced
-    ? []
-    : routePhase === "leg1"
-      ? route.mods.map((m) => connById[`${route.item}→${m}`]?.d).filter(Boolean)
-      : routePhase === "leg2"
-        ? route.mods.map((m) => connById[`${m}→${route.menu}`]?.d).filter(Boolean)
-        : routePhase === "leg3"
-          ? [connById[`${route.menu}→${route.outlet}`]?.d].filter(Boolean)
-          : [];
+  /* Paths the dots run during the current leg — the modifier leg
+     (leg 1 system / leg 3 guest) may carry 1–2 dots in parallel */
+  const connD = (src: string, tgt: string) => connById[`${src}→${tgt}`]?.d;
+  const legPaths: Record<Exclude<RoutePhase, "lit">, string[]> = !route
+    ? { leg1: [], leg2: [], leg3: [] }
+    : view === "system"
+      ? {
+          leg1: route.mods.map((m) => connD(route.item, m)).filter(Boolean) as string[],
+          leg2: route.mods.map((m) => connD(m, route.menu)).filter(Boolean) as string[],
+          leg3: [connD(route.menu, route.outlet)].filter(Boolean) as string[],
+        }
+      : {
+          leg1: [connD(route.outlet, route.menu)].filter(Boolean) as string[],
+          leg2: [connD(route.menu, route.item)].filter(Boolean) as string[],
+          leg3: route.mods.map((m) => connD(route.item, m)).filter(Boolean) as string[],
+        };
+  const dotPaths: string[] = reduced || routePhase === "lit" ? [] : legPaths[routePhase];
 
   /* Per-route accent state: legs and cards light as the dots arrive */
   const phaseRank = { leg1: 0, leg2: 1, leg3: 2, lit: 3 }[routePhase];
   const takenEdges: Record<string, boolean> = {};
-  const takenCards: Record<string, boolean> = { [engineItem]: stage >= 4 };
+  const takenCards: Record<string, boolean> = { [engineAnchor]: stage >= 4 };
   if (route) {
-    for (const m of route.mods) {
-      takenEdges[`${route.item}→${m}`] = phaseRank >= 1;
-      takenEdges[`${m}→${route.menu}`] = phaseRank >= 2;
-      takenCards[m] = phaseRank >= 1;
+    if (view === "system") {
+      for (const m of route.mods) {
+        takenEdges[`${route.item}→${m}`] = phaseRank >= 1;
+        takenEdges[`${m}→${route.menu}`] = phaseRank >= 2;
+        takenCards[m] = phaseRank >= 1;
+      }
+      takenEdges[`${route.menu}→${route.outlet}`] = phaseRank >= 3;
+      takenCards[route.menu] = phaseRank >= 2;
+      takenCards[route.outlet] = phaseRank >= 3;
+    } else {
+      takenEdges[`${route.outlet}→${route.menu}`] = phaseRank >= 1;
+      takenCards[route.menu] = phaseRank >= 1;
+      takenEdges[`${route.menu}→${route.item}`] = phaseRank >= 2;
+      takenCards[route.item] = phaseRank >= 2;
+      for (const m of route.mods) {
+        takenEdges[`${route.item}→${m}`] = phaseRank >= 3;
+        takenCards[m] = phaseRank >= 3;
+      }
     }
-    takenEdges[`${route.menu}→${route.outlet}`] = phaseRank >= 3;
-    takenCards[route.menu] = phaseRank >= 2;
-    takenCards[route.outlet] = phaseRank >= 3;
   }
 
-  const colIndex = Object.fromEntries(COLUMNS.map((c, i) => [c.key, i]));
+  const colIndex = Object.fromEntries(VIEW_ORDER[view].map((c, i) => [c, i]));
+  const glide = reduced ? "none" : `transform ${SWITCH.glide}ms cubic-bezier(0.4, 0, 0.2, 1)`;
 
   const renderIcon = (icon: string, x: number, y: number, size: number, color: string) => (
     <g transform={`translate(${x}, ${y}) scale(${size / 24})`} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.4s" }}>
@@ -375,144 +520,181 @@ export default function ObjectFlowDiagram() {
   );
 
   return (
-    <div
-      ref={ref}
-      className="w-full overflow-x-auto"
-      onClick={() => (pinned ? setPinned(null) : setReplay((r) => r + 1))}
-      role="img"
-      aria-label="Interactive diagram of the five-object model, read as an order's lifecycle: a food item is customized by modifier groups (or passes through with no modifications), appears on menus, and is served at ordering outlets. Hover or tap a food item to trace every route its order can take; when idle, the diagram tours each item on its own."
-    >
-      <div className="min-w-[820px]">
-        <svg viewBox="80 85 1330 610" className="block w-full" style={{ fontFamily: "inherit" }}>
-          <defs>
-            <marker id="fbArrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={NEUTRAL_LINE} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </marker>
-            <marker id="fbArrowInk" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={TIERS.possibleStroke} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </marker>
-            <marker id="fbArrowAccent" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-              <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={ACCENT} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </marker>
-          </defs>
-
-          {/* ── Column headers ── */}
-          {COLUMNS.map((col, i) => (
-            <g
-              key={col.key}
+    <div ref={ref} className="w-full">
+      {/* ── View switch + caption ── */}
+      <div className="mb-6 flex flex-col items-center gap-2.5">
+        <div
+          role="group"
+          aria-label="Diagram view"
+          className="inline-flex overflow-hidden rounded-md border"
+          style={{ borderColor: "var(--color-border)" }}
+        >
+          {VIEWS.map((v, i) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={view === v}
+              onClick={() => switchView(v)}
+              className="px-3 py-1.5"
               style={{
-                opacity: stage >= 1 ? 1 : 0,
-                transform: stage >= 1 ? "translateY(0)" : `translateY(${HEADERS.offsetY}px)`,
-                transition: `opacity 0.5s ease ${i * HEADERS.stagger}s, transform 0.5s ease ${i * HEADERS.stagger}s`,
+                fontFamily: "var(--font-mono-system)",
+                fontSize: "11px",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: view === v ? ACCENT : "var(--color-fg-secondary)",
+                background: view === v ? ACCENT_TINT : "transparent",
+                borderLeft: i > 0 ? "1px solid var(--color-border)" : "none",
+                cursor: "pointer",
+                transition: "color 0.2s, background 0.2s",
               }}
             >
-              {renderIcon(col.icon, col.x, 105, 20, "var(--color-fg)")}
-              <text x={col.x} y={152} fontSize={14} fontWeight={600} fill="var(--color-fg)">{col.title}</text>
-              {col.desc.map((line, j) => (
-                <text key={j} x={col.x} y={173 + j * 16} fontSize={11.5} fill="var(--color-fg-secondary)">{line}</text>
-              ))}
-            </g>
+              {VIEW_META[v].label}
+            </button>
           ))}
+        </div>
+        <p style={{ fontSize: "12px", color: "var(--color-fg-secondary)", textAlign: "center" }}>
+          {VIEW_META[view].caption}
+        </p>
+      </div>
 
-          {/* ── Connectors (under cards) ── */}
-          {CONNS.map((conn, i) => {
-            const taken = takenEdges[conn.id];
-            const possible = !taken && connected?.edges.has(conn.id);
-            const dimmed = connected && !taken && !possible;
-            const stroke = taken ? ACCENT : possible ? TIERS.possibleStroke : NEUTRAL_LINE;
-            const marker = taken ? "fbArrowAccent" : possible ? "fbArrowInk" : "fbArrow";
-            return (
-              <path
-                key={conn.id}
-                d={conn.d}
-                fill="none"
-                stroke={stroke}
-                strokeWidth={taken ? 1.5 : 1}
-                strokeDasharray={taken ? "none" : "3 3"}
-                markerEnd={`url(#${marker})`}
-                style={{
-                  opacity: stage >= 3 ? (taken ? 1 : dimmed ? CONNECTORS.dimOpacity : CONNECTORS.baseOpacity) : 0,
-                  transition: `opacity 0.4s ease ${stage >= 4 ? 0 : i * CONNECTORS.stagger}s, stroke 0.3s`,
-                  animation: stage >= 4 && !reduced && !taken ? `fb-dash-flow ${CONNECTORS.flowDuration}s linear ${-(i % 7) * 0.17}s infinite` : undefined,
-                }}
-              />
-            );
-          })}
+      <div
+        className="w-full overflow-x-auto"
+        onClick={() => (pinned ? setPinned(null) : setReplay((r) => r + 1))}
+        role="img"
+        aria-label={VIEW_META[view].aria}
+      >
+        <div className="min-w-[820px]">
+          <svg viewBox="80 85 1330 610" className="block w-full" style={{ fontFamily: "inherit" }}>
+            <defs>
+              <marker id="fbArrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={NEUTRAL_LINE} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </marker>
+              <marker id="fbArrowInk" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={TIERS.possibleStroke} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </marker>
+              <marker id="fbArrowAccent" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={ACCENT} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </marker>
+            </defs>
 
-          {/* ── Traveling accent dots (up to two run in parallel on modifier legs) ── */}
-          {dotPaths.map((d, i) => (
-            <circle key={`${route?.item}-${routePhase}-${i}`} r={3.5} fill={ACCENT} style={{ opacity: dotsBegun ? 1 : 0, transition: "opacity 0.15s" }}>
-              <animateMotion
-                ref={(el: SVGElement | null) => { dotRefs.current[i] = el as MotionEl | null; }}
-                dur={`${TIMING.dotTravel}ms`}
-                begin="indefinite"
-                fill="freeze"
-                path={d}
-                calcMode="spline"
-                keySplines="0.4 0 0.4 1"
-                keyTimes="0;1"
-              />
-            </circle>
-          ))}
-
-          {/* ── Cards ── */}
-          {CARD_DATA.map((card, i) => {
-            const x = COL_X[card.col];
-            const isItem = card.col === "items";
-            const taken = takenCards[card.name];
-            const possible = !taken && connected?.cards.has(card.name);
-            const dimmed = connected && !taken && !possible;
-            const borderStroke = taken ? ACCENT : possible ? TIERS.possibleStroke : "var(--color-border)";
-            const iconY = card.y + card.h / 2 - 6;
-            const delay = colIndex[card.col] * CARDS.colStagger + (i % 6) * CARDS.cardStagger;
-            return (
-              <g
-                key={card.name}
-                onMouseEnter={isItem ? () => setHovered(card.name) : undefined}
-                onMouseLeave={isItem ? () => setHovered(null) : undefined}
-                onClick={
-                  isItem
-                    ? (e) => {
-                        e.stopPropagation();
-                        setPinned((p) => (p === card.name ? null : card.name));
-                      }
-                    : undefined
-                }
-                style={{
-                  opacity: stage >= 2 ? (dimmed ? TIERS.dimCardOpacity : 1) : 0,
-                  transform: stage >= 2 ? "translateY(0)" : `translateY(${CARDS.offsetY}px)`,
-                  transition: `opacity 0.4s ease ${stage >= 4 ? 0 : delay}s, transform 0.45s ease ${delay}s`,
-                  cursor: isItem ? "pointer" : undefined,
-                }}
-              >
-                <rect
-                  x={x} y={card.y} width={CARD_W} height={card.h} rx={6}
-                  fill={taken ? ACCENT_TINT : "var(--color-surface)"}
-                  stroke={borderStroke}
-                  strokeWidth={taken || possible ? 1.5 : 1}
-                  strokeDasharray={card.dashed && !taken ? "4 3" : undefined}
-                  style={{ transition: "fill 0.4s, stroke 0.4s" }}
-                />
-                {renderIcon(card.icon, x + 14, iconY, 12, taken ? ACCENT : "var(--color-fg)")}
-                {card.sub ? (
-                  <>
-                    <text x={x + 36} y={card.y + card.h / 2 - 3} fontSize={11.5} fontWeight={500} fill="var(--color-fg)">{card.name}</text>
-                    <text x={x + 36} y={card.y + card.h / 2 + 13} fontSize={10} fill="var(--color-fg-secondary)">{card.sub}</text>
-                  </>
-                ) : (
-                  <text x={x + 36} y={card.y + card.h / 2 + 4} fontSize={11.5} fontWeight={500} fill="var(--color-fg)">
-                    {card.name}
-                    {card.price && (
-                      <tspan dx={8} fontSize={10} fontWeight={400} fill="var(--color-fg-secondary)">{card.price}</tspan>
-                    )}
-                  </text>
-                )}
+            {/* ── Column headers (outer g glides between views) ── */}
+            {COLUMNS.map((col) => (
+              <g key={col.key} style={{ transform: `translateX(${colX[col.key]}px)`, transition: glide }}>
+                <g
+                  style={{
+                    opacity: stage >= 1 ? 1 : 0,
+                    transform: stage >= 1 ? "translateY(0)" : `translateY(${HEADERS.offsetY}px)`,
+                    transition: `opacity 0.5s ease ${colIndex[col.key] * HEADERS.stagger}s, transform 0.5s ease ${colIndex[col.key] * HEADERS.stagger}s`,
+                  }}
+                >
+                  {renderIcon(col.icon, 0, 105, 20, "var(--color-fg)")}
+                  <text x={0} y={152} fontSize={14} fontWeight={600} fill="var(--color-fg)">{col.title}</text>
+                  {col.desc.map((line, j) => (
+                    <text key={j} x={0} y={173 + j * 16} fontSize={11.5} fill="var(--color-fg-secondary)">{line}</text>
+                  ))}
+                </g>
               </g>
-            );
-          })}
+            ))}
 
-          <style>{`@keyframes fb-dash-flow { to { stroke-dashoffset: ${CONNECTORS.flowShift}px; } }`}</style>
-        </svg>
+            {/* ── Connectors (under cards; crossfade on view switch) ── */}
+            {conns.map((conn, i) => {
+              const taken = takenEdges[conn.id];
+              const possible = !taken && connected?.edges.has(conn.id);
+              const dimmed = connected && !taken && !possible;
+              const stroke = taken ? ACCENT : possible ? TIERS.possibleStroke : NEUTRAL_LINE;
+              const marker = taken ? "fbArrowAccent" : possible ? "fbArrowInk" : "fbArrow";
+              return (
+                <path
+                  key={conn.id}
+                  d={conn.d}
+                  fill="none"
+                  stroke={stroke}
+                  strokeWidth={taken ? 1.5 : 1}
+                  strokeDasharray={taken ? "none" : "3 3"}
+                  markerEnd={`url(#${marker})`}
+                  style={{
+                    opacity: stage >= 3 && connsVisible ? (taken ? 1 : dimmed ? CONNECTORS.dimOpacity : CONNECTORS.baseOpacity) : 0,
+                    transition: `opacity ${connsVisible ? 0.4 : 0.2}s ease ${stage >= 4 ? 0 : i * CONNECTORS.stagger}s, stroke 0.3s`,
+                    animation: stage >= 4 && !reduced && !taken ? `fb-dash-flow ${CONNECTORS.flowDuration}s linear ${-(i % 7) * 0.17}s infinite` : undefined,
+                  }}
+                />
+              );
+            })}
+
+            {/* ── Traveling accent dots (up to two run in parallel on the modifier leg) ── */}
+            {dotPaths.map((d, i) => (
+              <circle key={`${view}-${route?.item}-${routePhase}-${i}`} r={3.5} fill={ACCENT} style={{ opacity: dotsBegun ? 1 : 0, transition: "opacity 0.15s" }}>
+                <animateMotion
+                  ref={(el: SVGElement | null) => { dotRefs.current[i] = el as MotionEl | null; }}
+                  dur={`${TIMING.dotTravel}ms`}
+                  begin="indefinite"
+                  fill="freeze"
+                  path={d}
+                  calcMode="spline"
+                  keySplines="0.4 0 0.4 1"
+                  keyTimes="0;1"
+                />
+              </circle>
+            ))}
+
+            {/* ── Cards (outer g glides between views) ── */}
+            {CARD_DATA.map((card, i) => {
+              const isAnchor = card.col === anchors.col;
+              const taken = takenCards[card.name];
+              const possible = !taken && connected?.cards.has(card.name);
+              const dimmed = connected && !taken && !possible;
+              const borderStroke = taken ? ACCENT : possible ? TIERS.possibleStroke : "var(--color-border)";
+              const delay = colIndex[card.col] * CARDS.colStagger + (i % 6) * CARDS.cardStagger;
+              return (
+                <g key={card.name} style={{ transform: `translate(${colX[card.col]}px, ${card.y}px)`, transition: glide }}>
+                  <g
+                    onMouseEnter={isAnchor ? () => setHovered(card.name) : undefined}
+                    onMouseLeave={isAnchor ? () => setHovered(null) : undefined}
+                    onClick={
+                      isAnchor
+                        ? (e) => {
+                            e.stopPropagation();
+                            setPinned((p) => (p === card.name ? null : card.name));
+                          }
+                        : undefined
+                    }
+                    style={{
+                      opacity: stage >= 2 ? (dimmed ? TIERS.dimCardOpacity : 1) : 0,
+                      transform: stage >= 2 ? "translateY(0)" : `translateY(${CARDS.offsetY}px)`,
+                      transition: `opacity 0.4s ease ${stage >= 4 ? 0 : delay}s, transform 0.45s ease ${delay}s`,
+                      cursor: isAnchor ? "pointer" : undefined,
+                    }}
+                  >
+                    <rect
+                      x={0} y={0} width={CARD_W} height={card.h} rx={6}
+                      fill={taken ? ACCENT_TINT : "var(--color-surface)"}
+                      stroke={borderStroke}
+                      strokeWidth={taken || possible ? 1.5 : 1}
+                      strokeDasharray={card.dashed && !taken ? "4 3" : undefined}
+                      style={{ transition: "fill 0.4s, stroke 0.4s" }}
+                    />
+                    {renderIcon(card.icon, 14, card.h / 2 - 6, 12, taken ? ACCENT : "var(--color-fg)")}
+                    {card.sub ? (
+                      <>
+                        <text x={36} y={card.h / 2 - 3} fontSize={11.5} fontWeight={500} fill="var(--color-fg)">{card.name}</text>
+                        <text x={36} y={card.h / 2 + 13} fontSize={10} fill="var(--color-fg-secondary)">{card.sub}</text>
+                      </>
+                    ) : (
+                      <text x={36} y={card.h / 2 + 4} fontSize={11.5} fontWeight={500} fill="var(--color-fg)">
+                        {card.name}
+                        {card.price && (
+                          <tspan dx={8} fontSize={10} fontWeight={400} fill="var(--color-fg-secondary)">{card.price}</tspan>
+                        )}
+                      </text>
+                    )}
+                  </g>
+                </g>
+              );
+            })}
+
+            <style>{`@keyframes fb-dash-flow { to { stroke-dashoffset: ${CONNECTORS.flowShift}px; } }`}</style>
+          </svg>
+        </div>
       </div>
     </div>
   );
