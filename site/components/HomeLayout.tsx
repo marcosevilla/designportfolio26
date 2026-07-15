@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Grid, { Col } from "@/components/layout/Grid";
+import { RESUME_URL } from "@/lib/resume-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -286,6 +287,36 @@ export default function HomeLayout({
                   , developing websites, or tinkering on various design
                   sidequests.
                 </p>
+
+                {/* Contact links — same dotted-underline treatment as the
+                    inline bio links; email opens in the same tab (mailto). */}
+                <div className="flex items-center gap-5">
+                  <a
+                    href={RESUME_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dotted-link--inline"
+                    style={{ fontStyle: "normal", fontWeight: 400 }}
+                  >
+                    Resume
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/marcogsevilla/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dotted-link--inline"
+                    style={{ fontStyle: "normal", fontWeight: 400 }}
+                  >
+                    LinkedIn
+                  </a>
+                  <a
+                    href="mailto:marcogsevilla@gmail.com"
+                    className="dotted-link--inline"
+                    style={{ fontStyle: "normal", fontWeight: 400 }}
+                  >
+                    Email
+                  </a>
+                </div>
               </motion.div>
 
             </div>
