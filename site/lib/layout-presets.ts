@@ -48,11 +48,12 @@ export function parseColSpec(spec: string): string {
  * always win over the preset slot.
  */
 export const PRESETS: Record<PresetName, ColSpec[]> = {
-  /** One comfortable text column (~65ch at full canvas). */
-  prose: [{ md: "1-9", lg: "1-6" }],
+  /** One comfortable text column (~65ch), optically centered — equal
+   *  air both sides so text-only runs don't read left-hung. */
+  prose: [{ md: "3-10", lg: "4-9" }],
 
-  /** Wider text column for intro paragraphs or dense sections. */
-  "prose-wide": [{ md: "1-10", lg: "1-8" }],
+  /** Wider centered text column for intros or dense sections. */
+  "prose-wide": [{ md: "2-11", lg: "3-10" }],
 
   /** Main content + narrow metadata rail (Year / Role / Scope). */
   "intro-rail": [
