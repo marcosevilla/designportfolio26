@@ -9,7 +9,6 @@ import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
-import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
 
 const META = [
@@ -140,8 +139,6 @@ export default function KnowledgeBaseContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Research & Discovery" id="research">
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Research methods</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
                   <li>Kickoff with the PM — scoped the work, identified pilot hotels, reviewed the existing AI architecture</li>
@@ -151,11 +148,7 @@ export default function KnowledgeBaseContent() {
                   <li>Competitive analysis of listings products (Redfin, Zillow, Vrbo) for structured property-data-entry patterns</li>
                   <li>Design reviews with a staff designer that shaped P0 priorities and scoping</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
 
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Key insights</SectionHeading>
                 <div className="space-y-6">
                   <div>
@@ -194,8 +187,6 @@ export default function KnowledgeBaseContent() {
                     </p>
                   </div>
                 </div>
-              </TwoCol.Left>
-            </TwoCol>
 
             <FadeIn className="mt-8">
               <PullQuote
@@ -213,16 +204,10 @@ export default function KnowledgeBaseContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Design Process" id="process">
-            <TwoCol>
-              <TwoCol.Left>
                 <p className="mb-8">
                   <strong className="text-(--color-fg)">Approach:</strong> I framed the design around three levels of increasing automation — make manual input easy (IA and UI that reduce cognitive load), do some of the work for them (prefill from existing data), and full automation via integrations (out of scope for V1). The IA also had to serve two products at once: the data hotels enter had to work for both the AI knowledge base and the guest-facing compendium.
                 </p>
-              </TwoCol.Left>
-            </TwoCol>
 
-            <TwoCol className="mt-10">
-              <TwoCol.Left>
                 <div className="space-y-8">
                   <div>
                     <SectionHeading level={4}>Research &amp; scoping</SectionHeading>
@@ -259,11 +244,7 @@ export default function KnowledgeBaseContent() {
                     </p>
                   </div>
                 </div>
-              </TwoCol.Left>
-            </TwoCol>
 
-            <TwoCol className="mt-10">
-              <TwoCol.Left>
                 <SectionHeading level={3}>Constraints I designed around</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2">
                   <li><strong className="text-(--color-fg)">A years-old MVP with learned workarounds</strong> — the redesign had to improve the experience without breaking existing workflows</li>
@@ -271,8 +252,6 @@ export default function KnowledgeBaseContent() {
                   <li><strong className="text-(--color-fg)">Enterprise scale</strong> — thousands of properties each needed KB setup, making onboarding friction a multiplicative problem</li>
                   <li><strong className="text-(--color-fg)">Compressed timeline</strong> — competing priorities meant the design work had to be efficient and decisive</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
 
           </ExpandableSection>
             </Col>
@@ -284,8 +263,6 @@ export default function KnowledgeBaseContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Impact & Results" id="impact">
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Design impact</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
                   <li>Created the categorization structure that was approved as the KB&apos;s IA foundation — the backbone for how hotels structure property data today</li>
@@ -307,8 +284,6 @@ export default function KnowledgeBaseContent() {
                   <li>The KB now powers voice AI in addition to messaging and continues expanding to more data sources and AI products</li>
                   <li>The cross-sell opportunity identified in the first brainstorm — one structured dataset serving both AI and the guest compendium — is materializing in the current roadmap</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
           </ExpandableSection>
             </Col>
           </Grid>
@@ -319,8 +294,6 @@ export default function KnowledgeBaseContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Reflection" id="reflection">
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Worked well</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
                   <li>Visiting a pilot hotel and interviewing operations gave me signal no Figma exploration could — it directly shaped the categorization structure. User research was the highest-leverage activity in the project.</li>
@@ -341,8 +314,6 @@ export default function KnowledgeBaseContent() {
                   <li>Design that isn&apos;t implemented immediately isn&apos;t wasted — but it needs an advocate. The IA survived because it was structurally sound; the timeline could have been shorter if I&apos;d connected it to business urgency sooner.</li>
                   <li>&ldquo;Where does this live?&rdquo; is one of the most important design questions. The KB&apos;s placement was a product architecture problem disguised as a UI problem, and surfacing that early was worth more than any individual screen.</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
           </ExpandableSection>
             </Col>
           </Grid>

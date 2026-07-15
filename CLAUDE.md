@@ -217,16 +217,15 @@ Each dedicated case study has:
 - `page.tsx` - Metadata and wrapper (negative top margin for full-bleed hero)
 - `[Name]Content.tsx` - Rich component: full-bleed gradient hero, then post-hero content in a two-column editorial layout
 
-### Two-Column Editorial Layout (TwoCol)
-All 6 case studies use a uniform two-column grid at lg+ breakpoint, inspired by makingsoftware.com:
-- **Container**: `max-w-content mx-auto px-4 sm:px-8 lg:max-w-none lg:px-0` — below lg stays 500px centered, at lg+ expands to fill `<main>` (960px)
-- **Grid**: `lg:grid lg:grid-cols-2 lg:gap-x-10` — per-section (not one top-level grid), columns align uniformly across page
-- **Column width**: (912 - 40px gap) / 2 = 436px each
-- **Prose sections**: `TwoCol > TwoCol.Left` — left column with right empty (breathing room)
-- **Paired sections**: `TwoCol > TwoCol.Left + TwoCol.Right` — text left, image right (decision blocks)
-- **Full-width elements**: No TwoCol wrapper — QuickStats, hero images, PullQuotes, galleries, NextProject
-- **Mobile (<lg)**: Single column, unchanged from before
-- **Component**: `site/components/case-study/TwoCol.tsx` — compound component with `TwoCol.Left` and `TwoCol.Right`
+### Editorial 12-Column Grid (shipped 2026-07-14, replaces TwoCol)
+**Visual reference + prompting vocabulary: `docs/LAYOUT-REFERENCE.html`** (open in a browser). All pages share one 12-col canvas; content is *placed* per band, not wrapped.
+- **Canvas**: `--grid-max: 1128px`, `--grid-gap: 24px` (globals.css). Case studies: `CaseStudyShell` clears the fixed InlineTOC at lg (`lg:ml-[200px]`), re-centers ≥1560px. Home: centered canvas in HomeLayout. Root `<main>` no longer caps width — each page owns its measure.
+- **Bands**: phone <768 / tablet 768–1199 / desktop ≥1200 (custom media queries on `.col-ed`, NOT Tailwind's lg=1024 — desktop compositions only apply with real room). Unset bands inherit downward: `lg → md → base → full`.
+- **Primitives**: `site/components/layout/Grid.tsx` — `<Grid preset?>` + `<Col base? md? lg?>`, spec grammar `"1-6"` (inclusive) / `"full"`. Parser + presets: `site/lib/layout-presets.ts` (tests: `npx tsx scripts/test-grid-spec.ts`).
+- **Presets**: prose (1-6), prose-wide (1-8), intro-rail (1-7 + 9-12 MetaRail), media-right (1-5 + 6-12), media-left (1-7 + 8-12), media-full, duo (1-6 + 7-12, holds on tablet), quote-offset (3-10). Preset assigns specs to `<Col>` children in order; explicit props win.
+- **MetaRail** (`components/case-study/MetaRail.tsx`): Year/Role/Scope rail on every case-study intro + used conceptually by the home contact rail. Horizontal on tablet, vertical column at lg.
+- **Per-section grids**: each section wraps itself in `<Grid>`; identical tracks keep columns aligned page-wide. Portrait media never goes media-full — use a narrow explicit span (e.g. `lg="5-8"`).
+- **Contact sheets**: `cd site && npm run sheet -- <route> [--unlock] [--name <slug>]` → `.sheets/<slug>/sheet.html` tiling 390/768/1024/1440 full-page screenshots (requires dev server; playwright-core + installed Chrome; hides Agentation). Use after any layout change.
 
 ### CaseStudyHero Gradient Colors
 | Study | gradient[0] | gradient[1] |
@@ -450,8 +449,15 @@ Before ending any session:
 ## Current State
 _Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
-- **Last worked on (2026-07-14):** Big feedback-driven polish pass ahead of the Hightouch referral. Everything committed and deployed to prod (`a1213f4`, `666d195`, `2b1a711`), all verified live on marcosevilla.com. Dedicated case-study routes exist again (fb-ordering, compendium, knowledge-base, ai-workflow) — the May "homepage only" note below is obsolete.
-- **Completed this session (2026-07-14):**
+- **Last worked on (2026-07-14, evening session):** Editorial 12-column grid system — full layout restructure on branch **`feat/editorial-grid`** (NOT yet merged to main or deployed). See "Editorial 12-Column Grid" in Key Patterns above and `docs/LAYOUT-REFERENCE.html` for the authoring vocabulary. Plan doc: `docs/superpowers/plans/2026-07-14-editorial-grid-system.md`.
+- **Completed this session (2026-07-14 evening, branch feat/editorial-grid):**
+  - Grid/Col primitives + 8 named presets + spec parser w/ tests; `.grid-ed`/`.col-ed` CSS in globals.css (bands 768/1200).
+  - All 4 case studies migrated: intro-rail title blocks with MetaRail (Year/Role/Scope), prose sections, key-decision 2-col spreads (compendium 2×2, KB alternating ×5), F&B portrait video at `lg="5-8"`, dashboards full-canvas. TwoCol.tsx DELETED (all usages stripped).
+  - Homepage: bio 1–7 + contact rail 9–12 (intro-rail), work grid featured-first (F&B full canvas) then 2-up; CaseStudyList's ProjectGrid places cells on the shared grid.
+  - Root `layout.tsx`: `<main>` max-w-[960px] cap REMOVED — pages own their width.
+  - Contact-sheet tooling: `npm run sheet -- <route> [--unlock]` (playwright-core, channel chrome).
+  - `docs/LAYOUT-REFERENCE.html` — visual reference for the whole system (Marco's authoring doc).
+- **Earlier same day (deployed to prod on main):**
   - Homepage bio rewritten + condensed to 3 paragraphs: "Currently at Canary… world's largest enterprises in hospitality" (that phrase is a shadcn/Base-UI tooltip trigger carrying the Marriott/Wyndham/IHG + 0→1 products detail), "In the past…", "I'm an AI-native designer… (of course) caffeine". Source is `content/bio.md` → `scripts/build-bio.mjs` → `lib/bio-content.ts`; HomeLayout has a hardcoded copy — edit both.
   - Inline link style unified (`.dotted-link--inline` + `Em` in HomeLayout): rest = subtle dotted underline (fg-tertiary 1px layer), hover = dashed accent underline draws in over it (two background layers, same position), Geist upright (fontStyle normal), weight 400, letter-spacing inherits body. Applies to bio, About, chat links.
   - Work grid (`CaseStudyList.tsx`): cards are chromeless (no bg/border/padding, flush with "Select work", `gap-16`), captions are title-only for studies (playground keeps descriptions), locked studies get a mono "COMING SOON" label beside the title. GalleryMode carousel DELETED — locked cards now open `MediaPreviewLightbox` (full-res first gallery media, dark backdrop, portal to body, Esc/backdrop-click closes); LockGate card mode has `onActivate` override, badge says "In progress — click to preview" (no lock icon). Routeless+unlocked studies are static cells.
@@ -460,7 +466,7 @@ _Updated by Claude at end of each session. Architectural facts get promoted into
   - SocialLinks: X/Twitter removed (LinkedIn + email remain).
   - `fb-ordering` removed from `LOCKED_SLUGS` — publicly viewable for recruiters.
   - **Chat fixed in prod:** the three Vercel env vars (`ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL/TOKEN`) existed but decrypted empty → `TypeError: fetch failed` 500s. Marco re-entered values + redeployed; verified working end-to-end live. Local `.env.local` still lacks these keys, so chat 500s on localhost until added.
-- **In flight:** None. Clean tree on `main`, deployed.
+- **In flight:** `feat/editorial-grid` awaiting Marco's review + merge/deploy. Review with the contact sheets in `site/.sheets/` or `npm run dev`. The old May "CaseStudyHero gradient" and "Content Width System" sections above predate both July redesigns — treat as historical.
 - **Known issues / quirks:**
   - `position: fixed` overlays nested under HomeLayout's framer-motion wrappers get trapped by the animated `filter` style (it becomes the containing block) — portal to `document.body` (see `MediaPreviewLightbox`). SiteHeader is `z-[130]`; overlays that must cover it need z ≥ 140.
   - Agentation toolbar (dev-only, bottom-right) intercepts clicks on the music dock in that corner during browser automation — hide `[data-agentation-root]` when testing.

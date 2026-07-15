@@ -10,7 +10,6 @@ import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
-import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
 
 const META = [
@@ -135,8 +134,6 @@ export default function CompendiumContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Research & Discovery" id="research">
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Research methods</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
                   <li>Full design QA audit of the guest experience in preparation for Best Western conference — documented all bugs and filed 6+ engineering tickets</li>
@@ -145,11 +142,7 @@ export default function CompendiumContent() {
                   <li>Live feedback from COMO property tours, Omni pilot hotels, Best Western rollout, Eurostars (270 properties), and Wyndham</li>
                   <li>COMO brand requirements workshops — outlined UI requirements including custom fonts, gradient treatments, and brand-specific styling</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
 
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Key insights</SectionHeading>
                 <div className="space-y-6">
                   <div>
@@ -188,8 +181,6 @@ export default function CompendiumContent() {
                     </p>
                   </div>
                 </div>
-              </TwoCol.Left>
-            </TwoCol>
 
             <FadeIn className="mt-8">
               <PullQuote
@@ -207,16 +198,10 @@ export default function CompendiumContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Design Process" id="process">
-            <TwoCol>
-              <TwoCol.Left>
                 <p className="mb-8">
                   <strong className="text-(--color-fg)">Approach:</strong> Build the foundation right — a structured, extensible CMS that could evolve from informational hub to interactive guest platform — then layer on capabilities phase by phase.
                 </p>
-              </TwoCol.Left>
-            </TwoCol>
 
-            <TwoCol className="mt-10">
-              <TwoCol.Left>
                 <div className="space-y-8">
                   <div>
                     <SectionHeading level={4}>Early prototyping (Jan–Apr 2024)</SectionHeading>
@@ -253,11 +238,7 @@ export default function CompendiumContent() {
                     </p>
                   </div>
                 </div>
-              </TwoCol.Left>
-            </TwoCol>
 
-            <TwoCol className="mt-10">
-              <TwoCol.Left>
                 <SectionHeading level={3}>Constraints I designed around</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2">
                   <li><strong className="text-(--color-fg)">No native app</strong> — Everything as mobile web via QR code, SMS link, or Wi-Fi portal redirect</li>
@@ -265,8 +246,6 @@ export default function CompendiumContent() {
                   <li><strong className="text-(--color-fg)">Varied technical sophistication</strong> — Hotel staff range from tech-savvy to barely comfortable with email</li>
                   <li><strong className="text-(--color-fg)">Platform foundation</strong> — Every pattern needed to be reusable across Canary&apos;s product suite</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
           </ExpandableSection>
             </Col>
           </Grid>
@@ -277,8 +256,6 @@ export default function CompendiumContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Impact & Results" id="impact">
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Business impact</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
                   <li>Cumulative CARR surpassed $1M by December 2025 — &ldquo;a 25% increase in the pod&apos;s CARR in a single month&rdquo;</li>
@@ -287,8 +264,6 @@ export default function CompendiumContent() {
                   <li>Zero gross churn — no Compendium customers churned in the tracked period</li>
                   <li>F&B Mobile Ordering launched as the first interactive module on the Compendium platform</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
 
             <FadeIn>
               <PullQuote
@@ -297,8 +272,6 @@ export default function CompendiumContent() {
               />
             </FadeIn>
 
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>User impact</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
                   <li>175K monthly active guest users with 2.5 min average session time</li>
@@ -306,8 +279,6 @@ export default function CompendiumContent() {
                   <li>Custom CTAs adopted by 72% of active properties</li>
                   <li>Average 8.7 items per property — hotels are actively building out their content</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
 
             <FadeIn>
               <PullQuote
@@ -316,8 +287,6 @@ export default function CompendiumContent() {
               />
             </FadeIn>
 
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Enterprise traction</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-6">
                   <li><strong className="text-(--color-fg)">Best Western:</strong> Largest rollout, drove 70% of Q4 ARR activations; one property displayed Compendium QR codes on all guest room TVs</li>
@@ -325,8 +294,6 @@ export default function CompendiumContent() {
                   <li><strong className="text-(--color-fg)">COMO Hotels:</strong> Multi-property deployment across Asia-Pacific</li>
                   <li><strong className="text-(--color-fg)">Omni Hotels:</strong> $200K Compendium deal closed, now exploring geofenced QR codes and loyalty integration</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
           </ExpandableSection>
             </Col>
           </Grid>
@@ -337,8 +304,6 @@ export default function CompendiumContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Reflection" id="reflection">
-            <TwoCol>
-              <TwoCol.Left>
                 <SectionHeading level={3}>Worked well</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
                   <li>Designing the builder as a structured, section-based CMS rather than a free-form page editor was the right call. It maps to how hotel staff think and ensures content quality without requiring design skills.</li>
@@ -360,8 +325,6 @@ export default function CompendiumContent() {
                   <li>Enterprise products need polish at a different standard. When Best Western is rolling out to hundreds of properties, every pixel matters.</li>
                   <li>The freemium model (Compendium Lite) is a design problem, not just a business decision. Where you place constraints, how you communicate limits, and what triggers the upgrade conversation are all UX decisions.</li>
                 </ul>
-              </TwoCol.Left>
-            </TwoCol>
           </ExpandableSection>
             </Col>
           </Grid>
