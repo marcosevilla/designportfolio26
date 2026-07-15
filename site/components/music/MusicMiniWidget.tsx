@@ -240,8 +240,10 @@ export default function MusicMiniWidget() {
 
   const vizHeight = vizOpen ? VIZ_HEIGHT : revealed ? PEEK_HOVER : PEEK_REST;
 
+  // Positioning comes from the shared floating-dock container in
+  // app/layout.tsx (fixed bottom-right, beside ChatFab).
   return (
-    <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end">
+    <div className="flex flex-col items-end">
       <AnimatePresence mode="wait" initial={false}>
         {!expanded ? (
           // ── Collapsed: floating entry button ──

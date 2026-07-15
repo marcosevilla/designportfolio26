@@ -69,10 +69,8 @@ const LINKS: SocialLink[] = [
   },
 ];
 
-/** Cluster of three icon buttons (LinkedIn, X, Email) wrapped in shadcn
- *  tooltips. Chrome matches AskMeAnythingButton via `outlined-cta` so the
- *  icon row reads as the same family of secondary CTAs as the chat
- *  trigger to its left. */
+/** Cluster of icon buttons (LinkedIn, Email) wrapped in shadcn tooltips.
+ *  Lives in SiteHeader's left cluster beside the View resume CTA. */
 export default function SocialLinks() {
   return (
     <TooltipProvider delay={100}>

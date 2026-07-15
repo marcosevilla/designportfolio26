@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
+import SocialLinks from "./SocialLinks";
 import { HERO_NAME } from "@/lib/bio-content";
+import { RESUME_URL } from "@/lib/resume-content";
 import { useChatOverlay } from "@/lib/ChatOverlayContext";
 
 /** Global site header. Full-width fixed bar at the top with an opaque
@@ -93,7 +95,7 @@ export default function SiteHeader() {
               scrolled past the bio. (Nav drawer + hamburger removed in
               the 2026-07 single-page redesign — everything lives on the
               home page now.) */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <AnimatePresence initial={false}>
               {showWordmark && (
                 <motion.div
@@ -123,6 +125,32 @@ export default function SiteHeader() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Contact cluster — moved out of the homepage contact rail
+                (2026-07-15 feedback pass) so the resume CTA is one click
+                away on every route. Flush left, after the wordmark. */}
+            <a
+              href={RESUME_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="filled-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+              style={{
+                height: 28,
+                padding: "0 8px",
+                fontFamily:
+                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                fontSize: 11,
+                fontWeight: 500,
+                lineHeight: 1,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              View resume
+            </a>
+            <SocialLinks />
           </div>
 
           {/* Right cluster — ml-auto keeps it flush-right against the

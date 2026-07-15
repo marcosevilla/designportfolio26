@@ -5,8 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
-import AskMeAnythingButton from "./AskMeAnythingButton";
-import SocialLinks from "./SocialLinks";
 import {
   Tooltip,
   TooltipContent,
@@ -14,7 +12,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Grid, { Col } from "@/components/layout/Grid";
-import { RESUME_URL } from "@/lib/resume-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -293,47 +290,9 @@ export default function HomeLayout({
 
             </div>
             </Col>
-
-            {/* Contact rail — stacks vertically beside the bio at
-                desktop; below the bio (social left, CTAs right) on
-                phone/tablet. */}
-            <Col className="mt-10 lg:mt-3">
-              <motion.div
-                className="flex flex-wrap items-center justify-between gap-4 lg:flex-col lg:items-start lg:gap-6"
-                initial={{ opacity: 0, filter: "blur(12px)" }}
-                animate={{
-                  opacity: heroReady ? 1 : 0,
-                  filter: heroReady ? "blur(0px)" : "blur(12px)",
-                }}
-                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.24 }}
-              >
-                <SocialLinks />
-                <div className="flex items-center gap-3">
-                  <a
-                    href={RESUME_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="filled-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
-                    style={{
-                      height: 32,
-                      padding: "0 8px",
-                      fontFamily:
-                        "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                      fontSize: 11,
-                      fontWeight: 500,
-                      lineHeight: 1,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      textDecoration: "none",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    View resume
-                  </a>
-                  <AskMeAnythingButton />
-                </div>
-              </motion.div>
-            </Col>
+            {/* Contact rail removed 2026-07-15 — View resume + socials
+                moved to SiteHeader's left cluster; Ask me anything is the
+                floating ChatFab beside the music dock. */}
             </Grid>
 
             {/* Select work — full canvas; ProjectGrid places cells on

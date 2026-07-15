@@ -31,6 +31,7 @@ import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
 import { VisualizerSceneProvider } from "@/lib/VisualizerSceneContext";
 import { ThemeStateProvider } from "@/components/ThemeToggle";
 import MusicMiniWidget from "@/components/music/MusicMiniWidget";
+import ChatFab from "@/components/ChatFab";
 import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
 import ChatBar from "@/components/chat/ChatBar";
@@ -113,7 +114,13 @@ export default function RootLayout({
                   )}
                 </InlineEditorProvider>
                 <ViewportFade />
-                <MusicMiniWidget />
+                {/* Floating dock — chat FAB + music dock share the
+                    bottom-right corner; items-end keeps the chat button
+                    bottom-aligned when the music panel expands. */}
+                <div className="fixed bottom-4 right-4 z-[60] flex items-end gap-3">
+                  <ChatFab />
+                  <MusicMiniWidget />
+                </div>
                 <ChatBar />
                 <ChangelogOverlay groups={getChangelog()} />
                 <PasswordModal />
