@@ -1,6 +1,7 @@
 "use client";
 
 import ExpandableSection from "@/components/case-study/ExpandableSection";
+import ImagePlaceholder from "@/components/case-study/ImagePlaceholder";
 import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
 import NextProject from "@/components/case-study/NextProject";
 import FadeIn from "@/components/case-study/FadeIn";
@@ -75,7 +76,7 @@ export default function FBOrderingContent() {
 
         {/* ── The Problem ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-24">
-          <Grid preset="prose">
+          <Grid preset="media-right">
             <Col>
               <SectionHeading id="problem">The Problem</SectionHeading>
               <p className="mb-5">
@@ -85,12 +86,15 @@ export default function FBOrderingContent() {
                 Canary&#39;s Guest Hub was still a static content product. F&amp;B ordering would make it transactional: a revenue engine, not just an info layer. The discipline was scope: no marketplaces, no kitchen software. Just get a guest&#39;s order to staff efficiently.
               </p>
             </Col>
+            <Col className="mt-8 lg:mt-0">
+              <ImagePlaceholder description="The status quo: door-hanger breakfast menu / front-desk phone ordering" aspectRatio="4/3" />
+            </Col>
           </Grid>
         </FadeIn>
 
         {/* ── The Solution ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-32">
-          <Grid preset="prose">
+          <Grid preset="media-right">
             <Col>
               <SectionHeading id="solution">The Solution</SectionHeading>
               <p className="mb-5">
@@ -106,6 +110,9 @@ export default function FBOrderingContent() {
                 <li><span className="font-medium text-(--color-fg)">Works with or without a PMS:</span> reservation-linked ordering when integrated, manual entry fallback for everyone else. No POS requirement meant shipping to the whole market.</li>
               </ul>
             </Col>
+            <Col className="mt-8 lg:mt-0">
+              <ImagePlaceholder description="Delivery-type selection and cart flow (guest mobile web)" aspectRatio="3/4" />
+            </Col>
           </Grid>
         </FadeIn>
 
@@ -120,7 +127,7 @@ export default function FBOrderingContent() {
 
         {/* ── Research & Discovery ── */}
         <FadeIn className="pt-32">
-          <Grid preset="prose">
+          <Grid preset="media-right">
             <Col>
               <ExpandableSection title="Research & Discovery" id="research">
                 <p>
@@ -128,12 +135,15 @@ export default function FBOrderingContent() {
                 </p>
               </ExpandableSection>
             </Col>
+            <Col className="mt-8 lg:mt-0">
+              <ImagePlaceholder description="Interactive Next.js prototype used in usability tests and sales demos" aspectRatio="16/10" />
+            </Col>
           </Grid>
         </FadeIn>
 
         {/* ── Impact & Results ── */}
         <FadeIn className="pt-32">
-          <Grid preset="prose">
+          <Grid preset="media-right">
             <Col>
               <ExpandableSection title="Impact & Results" id="impact">
                 <p className="mb-8">
@@ -141,12 +151,15 @@ export default function FBOrderingContent() {
                 </p>
               </ExpandableSection>
             </Col>
+            <Col className="mt-8 lg:mt-0">
+              <ImagePlaceholder description="Launch metrics: pilot orders, verbal commitments, APAC pipeline" aspectRatio="16/10" />
+            </Col>
           </Grid>
         </FadeIn>
 
         {/* ── Reflection ── */}
         <FadeIn className="pt-32">
-          <Grid preset="prose">
+          <Grid preset="media-right">
             <Col>
               <ExpandableSection title="Reflection" id="reflection">
                 <ul className="list-disc pl-5 space-y-2">
@@ -155,6 +168,9 @@ export default function FBOrderingContent() {
                   <li><span className="font-medium text-(--color-fg)">I&#39;d push harder on staff notifications in the MVP.</span> Post-launch feedback from HOMA showed hotels needed immediate alerts, as their team had to keep checking for new orders.</li>
                 </ul>
               </ExpandableSection>
+            </Col>
+            <Col className="mt-8 lg:mt-0">
+              <ImagePlaceholder description="Staff notifications concept / HOMA post-launch feedback" aspectRatio="16/10" />
             </Col>
           </Grid>
         </FadeIn>
