@@ -115,7 +115,7 @@ export default function FBOrderingContent() {
             <Col lg="full">
               <ObjectFlowDiagram />
               <p className="mt-4 text-center text-(--color-fg-tertiary)" style={{ fontSize: "12px" }}>
-                The five-object model in practice: a Club sandwich is authored once, appears on the Lunch menu, and is served poolside and in-room.
+                The five-object model in practice: an item is authored once, composed into menus, and served wherever those menus run. Hover any food item to trace the routes its order can take.
               </p>
             </Col>
           </Grid>

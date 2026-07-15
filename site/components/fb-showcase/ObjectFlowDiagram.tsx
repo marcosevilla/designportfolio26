@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
@@ -13,14 +13,21 @@ import { useInView, useReducedMotion } from "framer-motion";
  *   450ms   cards rise in, 8px → 0 (staggered 50ms per card, 140ms per column)
  *  1150ms   connectors fade in (staggered 30ms)
  *  1900ms   ambient dash-flow starts on all gray connectors (1.3s loop)
- *  2300ms   CYCLE begins —
- *           run1: accent dot travels Club sandwich → Lunch (850ms)
- *           run2: Lunch lights up; two dots travel Lunch → Poolside / In-room (850ms)
- *           hold: full path lit (Club → Lunch → Poolside + In-room), 3200ms
- *           idle: accent fades back to neutral, 900ms gap, cycle repeats
+ *  2300ms   ROUTE ENGINE begins on the demo item (Club sandwich) —
+ *           leg1: accent dot travels item → menu (850ms), menu lights on arrival
+ *           leg2: dot travels menu → outlet (850ms), outlet lights on arrival
+ *           hold: route stays lit 1400ms, then the item's NEXT route runs
+ *           (cycles through every menu→outlet route the item can take)
  *
- *  reduced motion: skip straight to the fully-lit state, no loops
- *  click anywhere on the figure to replay from the top
+ * INTERACTION — hover or click a food item (Items column):
+ *           taken      route the dot is running → solid accent, tinted cards
+ *           possible   everything connected to the item → primary-ink dashed
+ *                      connectors, ink arrowheads, ink card borders
+ *           inapplicable  everything else → 50% opacity
+ *           click pins the selection (tap on touch); click background unpins;
+ *           background click also replays the entrance when nothing is pinned
+ *
+ *  reduced motion: no dots/loops — first route lit, tiers still apply
  * ───────────────────────────────────────────────────────── */
 
 const TIMING = {
@@ -30,8 +37,8 @@ const TIMING = {
   ambient: 1900, // dash-flow loop begins
   cycleStart: 2300, // first accent dot leaves
   dotTravel: 850, // ms for a dot to cross one segment
-  holdLit: 3200, // ms the full accent path stays lit
-  cycleGap: 900, // ms of neutral state between cycles
+  routeHold: 1400, // ms a completed route stays lit before the next runs
+  dotBegin: 30, // ms after render before a dot starts (lets SMIL path update)
 };
 
 const HEADERS = {
@@ -49,8 +56,16 @@ const CONNECTORS = {
   stagger: 0.03, // s between connectors fading in
   flowDuration: 1.3, // s per ambient dash loop
   flowShift: -12, // px of dashoffset per loop (2 dash periods)
+  baseOpacity: 0.75, // resting opacity of a neutral connector
+  dimOpacity: 0.35, // inapplicable connector while an item is active
 };
 
+const TIERS = {
+  dimCardOpacity: 0.5, // inapplicable cards while an item is active
+  possibleStroke: "var(--color-fg)", // connected-but-not-taken ink
+};
+
+const DEMO_ITEM = "Club sandwich"; // route engine runs this when nothing is hovered/pinned
 const ACCENT = "#EF5A3C";
 const ACCENT_TINT = `color-mix(in srgb, ${ACCENT} 8%, var(--color-surface))`;
 const NEUTRAL_LINE = "var(--color-fg-tertiary)";
@@ -117,8 +132,8 @@ const CARD_DATA: Card[] = [
   { name: "In-room dining", col: "outlets", icon: "bell", y: 611, h: 44, sub: "11:00 AM – 4:00 PM" },
 ];
 
-/** [source, target, accent?] — arrows always flow left → right */
-const RELATIONS: [string, string, boolean?][] = [
+/** [source, target] — arrows always flow left → right */
+const RELATIONS: [string, string][] = [
   ["No salt", "Club sandwich"],
   ["No salt", "Lasagna"],
   ["No salt", "Filet mignon"],
@@ -128,15 +143,15 @@ const RELATIONS: [string, string, boolean?][] = [
   ["Whole wheat bread", "Club sandwich"],
   ["Sourdough bread", "Club sandwich"],
   ["BBQ sauce", "Ribeye steak"],
-  ["Club sandwich", "Lunch", true],
+  ["Club sandwich", "Lunch"],
   ["Lasagna", "Lunch"],
   ["Lasagna", "Dinner"],
   ["Espresso Martini", "Happy hour"],
   ["Espresso Martini", "Dessert"],
   ["Filet mignon", "Dinner"],
   ["Ribeye steak", "Dinner"],
-  ["Lunch", "Poolside dining", true],
-  ["Lunch", "In-room dining", true],
+  ["Lunch", "Poolside dining"],
+  ["Lunch", "In-room dining"],
   ["Happy hour", "Hotel lobby"],
   ["Happy hour", "Poolside dining"],
   ["Dessert", "In-room dining"],
@@ -149,9 +164,10 @@ const COL_X = Object.fromEntries(COLUMNS.map((c) => [c.key, c.x]));
 const cardByName = Object.fromEntries(CARD_DATA.map((c) => [c.name, c]));
 const centerY = (c: Card) => c.y + c.h / 2;
 
-function buildConnectors() {
-  const outBy: Record<string, [string, string, boolean?][]> = {};
-  const inBy: Record<string, [string, string, boolean?][]> = {};
+type Conn = { id: string; src: string; tgt: string; d: string };
+function buildConnectors(): Conn[] {
+  const outBy: Record<string, [string, string][]> = {};
+  const inBy: Record<string, [string, string][]> = {};
   for (const r of RELATIONS) {
     (outBy[r[0]] = outBy[r[0]] || []).push(r);
     (inBy[r[1]] = inBy[r[1]] || []).push(r);
@@ -166,26 +182,43 @@ function buildConnectors() {
     list.forEach((r, i) => tgtY.set(r, centerY(cardByName[name]) + (i - (list.length - 1) / 2) * 9));
   }
   return RELATIONS.map((r) => {
-    const [src, tgt, accent] = r;
+    const [src, tgt] = r;
     const x1 = COL_X[cardByName[src].col] + CARD_W;
     const x2 = COL_X[cardByName[tgt].col];
     const y1 = srcY.get(r), y2 = tgtY.get(r);
     const dx = (x2 - x1) * 0.45;
-    return {
-      id: `${src}→${tgt}`,
-      accent: !!accent,
-      d: `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`,
-    };
+    return { id: `${src}→${tgt}`, src, tgt, d: `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}` };
   });
 }
 const CONNS = buildConnectors();
-const ACCENT_SEGS = {
-  toLunch: "Club sandwich→Lunch",
-  toPool: "Lunch→Poolside dining",
-  toRoom: "Lunch→In-room dining",
-};
+const connById = Object.fromEntries(CONNS.map((c) => [c.id, c]));
 
-type Phase = "idle" | "run1" | "run2" | "hold";
+/** Every menu→outlet route an item's order can take: [item→menu leg, menu→outlet leg] */
+function routesFor(item: string): { leg1: Conn; leg2: Conn }[] {
+  const routes: { leg1: Conn; leg2: Conn }[] = [];
+  for (const leg1 of CONNS.filter((c) => c.src === item && cardByName[c.tgt].col === "menus")) {
+    for (const leg2 of CONNS.filter((c) => c.src === leg1.tgt)) {
+      routes.push({ leg1, leg2 });
+    }
+  }
+  return routes;
+}
+
+/** The item's full connected subgraph: its modifiers, menus, and those menus' outlets */
+function connectedTo(item: string) {
+  const cards = new Set([item]);
+  const edges = new Set<string>();
+  for (const c of CONNS) {
+    if (c.tgt === item) { cards.add(c.src); edges.add(c.id); } // modifiers in
+    if (c.src === item) {
+      cards.add(c.tgt); edges.add(c.id); // menus out
+      for (const c2 of CONNS.filter((x) => x.src === c.tgt)) { cards.add(c2.tgt); edges.add(c2.id); } // outlets
+    }
+  }
+  return { cards, edges };
+}
+
+type RoutePhase = "leg1" | "leg2" | "lit";
 type MotionEl = SVGElement & { beginElement: () => void };
 
 export default function ObjectFlowDiagram() {
@@ -193,20 +226,26 @@ export default function ObjectFlowDiagram() {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
   const [stage, setStage] = useState(0);
-  const [phase, setPhase] = useState<Phase>("idle");
   const [replay, setReplay] = useState(0);
-  const dotRefs = useRef<(MotionEl | null)[]>([]);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<string | null>(null);
+  const [route, setRoute] = useState<{ leg1: Conn; leg2: Conn } | null>(null);
+  const [routePhase, setRoutePhase] = useState<RoutePhase>("leg1");
+  const dotA = useRef<MotionEl | null>(null);
+  const dotB = useRef<MotionEl | null>(null);
+
+  const userItem = pinned ?? hovered; // the item the viewer is inspecting (null = demo mode)
+  const engineItem = userItem ?? DEMO_ITEM;
+  const connected = useMemo(() => (userItem ? connectedTo(userItem) : null), [userItem]);
 
   /* Entrance sequence */
   useEffect(() => {
     if (!isInView) return;
     if (reduced) {
       setStage(4);
-      setPhase("hold");
       return;
     }
     setStage(0);
-    setPhase("idle");
     const timers = [
       setTimeout(() => setStage(1), TIMING.headers),
       setTimeout(() => setStage(2), TIMING.cards),
@@ -216,52 +255,58 @@ export default function ObjectFlowDiagram() {
     return () => timers.forEach(clearTimeout);
   }, [isInView, reduced, replay]);
 
-  /* Accent dot cycle */
+  /* Route engine — cycles through every route the engine item can take */
   useEffect(() => {
-    if (stage < 4 || reduced) return;
+    if (stage < 4) return;
+    const routes = routesFor(engineItem);
+    if (!routes.length) { setRoute(null); return; }
+    if (reduced) {
+      setRoute(routes[0]);
+      setRoutePhase("lit");
+      return;
+    }
     let cancelled = false;
-    let timers: ReturnType<typeof setTimeout>[] = [];
-    const cycle = (first: boolean) => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    let idx = 0;
+    const runRoute = (delay: number) => {
       if (cancelled) return;
-      timers = [];
-      const start = first ? TIMING.cycleStart - TIMING.ambient : 0;
       timers.push(
         setTimeout(() => {
-          setPhase("run1");
-          dotRefs.current[0]?.beginElement();
-        }, start),
-        setTimeout(() => {
-          setPhase("run2");
-          dotRefs.current[1]?.beginElement();
-          dotRefs.current[2]?.beginElement();
-        }, start + TIMING.dotTravel),
-        setTimeout(() => setPhase("hold"), start + TIMING.dotTravel * 2),
-        setTimeout(() => setPhase("idle"), start + TIMING.dotTravel * 2 + TIMING.holdLit),
-        setTimeout(() => cycle(false), start + TIMING.dotTravel * 2 + TIMING.holdLit + TIMING.cycleGap),
+          setRoute(routes[idx % routes.length]);
+          setRoutePhase("leg1");
+          timers.push(setTimeout(() => dotA.current?.beginElement(), TIMING.dotBegin));
+          timers.push(setTimeout(() => { setRoutePhase("leg2"); dotB.current?.beginElement(); }, TIMING.dotTravel));
+          timers.push(setTimeout(() => setRoutePhase("lit"), TIMING.dotTravel * 2));
+          timers.push(setTimeout(() => { idx++; runRoute(0); }, TIMING.dotTravel * 2 + TIMING.routeHold));
+        }, delay),
       );
     };
-    cycle(true);
+    runRoute(userItem ? 0 : TIMING.cycleStart - TIMING.ambient);
     return () => {
       cancelled = true;
       timers.forEach(clearTimeout);
     };
-  }, [stage, reduced, replay]);
+  }, [stage, reduced, replay, engineItem, userItem]);
 
-  const litCards: Record<string, boolean> = {
-    "Club sandwich": stage >= 4,
-    Lunch: phase === "run2" || phase === "hold",
-    "Poolside dining": phase === "hold",
-    "In-room dining": phase === "hold",
-  };
-  const litSegs: Record<string, boolean> = {
-    [ACCENT_SEGS.toLunch]: phase === "run2" || phase === "hold",
-    [ACCENT_SEGS.toPool]: phase === "hold",
-    [ACCENT_SEGS.toRoom]: phase === "hold",
-  };
+  /* Per-route accent state: legs and cards light as the dot arrives */
+  const takenEdges: Record<string, boolean> = route
+    ? {
+        [route.leg1.id]: routePhase !== "leg1",
+        [route.leg2.id]: routePhase === "lit",
+      }
+    : {};
+  const takenCards: Record<string, boolean> = route
+    ? {
+        [engineItem]: true,
+        [route.leg1.tgt]: routePhase !== "leg1",
+        [route.leg2.tgt]: routePhase === "lit",
+      }
+    : { [engineItem]: stage >= 4 };
+
   const colIndex = Object.fromEntries(COLUMNS.map((c, i) => [c.key, i]));
 
   const renderIcon = (icon: string, x: number, y: number, size: number, color: string) => (
-    <g transform={`translate(${x}, ${y}) scale(${size / 24})`} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.5s" }}>
+    <g transform={`translate(${x}, ${y}) scale(${size / 24})`} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.4s" }}>
       {ICONS[icon].map((s, i) => {
         const Tag = s.tag;
         return <Tag key={i} {...(s.attrs as object)} />;
@@ -270,12 +315,21 @@ export default function ObjectFlowDiagram() {
   );
 
   return (
-    <div ref={ref} className="w-full overflow-x-auto" onClick={() => setReplay((r) => r + 1)} role="img" aria-label="Diagram of the five-object model: modifier groups attach to items, items compose menus, and menus are served at ordering outlets. Example: the Club sandwich is authored once, appears on the Lunch menu, and is served at both Poolside and In-room dining.">
+    <div
+      ref={ref}
+      className="w-full overflow-x-auto"
+      onClick={() => (pinned ? setPinned(null) : setReplay((r) => r + 1))}
+      role="img"
+      aria-label="Interactive diagram of the five-object model: modifier groups attach to items, items compose menus, and menus are served at ordering outlets. Hover or tap a food item to trace every route its order can take."
+    >
       <div className="min-w-[820px]">
         <svg viewBox="80 85 1330 610" className="block w-full" style={{ fontFamily: "inherit" }}>
           <defs>
             <marker id="fbArrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={NEUTRAL_LINE} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </marker>
+            <marker id="fbArrowInk" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={TIERS.possibleStroke} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </marker>
             <marker id="fbArrowAccent" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M 1 1 L 7 4 L 1 7" fill="none" stroke={ACCENT} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -302,69 +356,79 @@ export default function ObjectFlowDiagram() {
 
           {/* ── Connectors (under cards) ── */}
           {CONNS.map((conn, i) => {
-            const lit = conn.accent && litSegs[conn.id];
+            const taken = takenEdges[conn.id];
+            const possible = !taken && connected?.edges.has(conn.id);
+            const dimmed = connected && !taken && !possible;
+            const stroke = taken ? ACCENT : possible ? TIERS.possibleStroke : NEUTRAL_LINE;
+            const marker = taken ? "fbArrowAccent" : possible ? "fbArrowInk" : "fbArrow";
             return (
               <path
                 key={conn.id}
                 d={conn.d}
                 fill="none"
-                stroke={lit ? ACCENT : NEUTRAL_LINE}
-                strokeWidth={lit ? 1.5 : 1}
-                strokeDasharray={lit ? "none" : "3 3"}
-                markerEnd={lit ? "url(#fbArrowAccent)" : "url(#fbArrow)"}
+                stroke={stroke}
+                strokeWidth={taken ? 1.5 : 1}
+                strokeDasharray={taken ? "none" : "3 3"}
+                markerEnd={`url(#${marker})`}
                 style={{
-                  opacity: stage >= 3 ? (lit ? 1 : 0.75) : 0,
-                  transition: `opacity 0.5s ease ${i * CONNECTORS.stagger}s, stroke 0.4s`,
-                  animation: stage >= 4 && !reduced && !lit ? `fb-dash-flow ${CONNECTORS.flowDuration}s linear ${-(i % 7) * 0.17}s infinite` : undefined,
+                  opacity: stage >= 3 ? (taken ? 1 : dimmed ? CONNECTORS.dimOpacity : CONNECTORS.baseOpacity) : 0,
+                  transition: `opacity 0.4s ease ${stage >= 4 ? 0 : i * CONNECTORS.stagger}s, stroke 0.3s`,
+                  animation: stage >= 4 && !reduced && !taken ? `fb-dash-flow ${CONNECTORS.flowDuration}s linear ${-(i % 7) * 0.17}s infinite` : undefined,
                 }}
               />
             );
           })}
 
-          {/* ── Traveling accent dots ── */}
-          {!reduced &&
-            [ACCENT_SEGS.toLunch, ACCENT_SEGS.toPool, ACCENT_SEGS.toRoom].map((segId, i) => {
-              const conn = CONNS.find((c) => c.id === segId)!;
-              const visible = (i === 0 && phase === "run1") || (i > 0 && phase === "run2");
-              return (
-                <circle key={segId} r={3.5} fill={ACCENT} style={{ opacity: visible ? 1 : 0, transition: "opacity 0.15s" }}>
-                  <animateMotion
-                    ref={(el: SVGElement | null) => { dotRefs.current[i] = el as MotionEl | null; }}
-                    dur={`${TIMING.dotTravel}ms`}
-                    begin="indefinite"
-                    fill="freeze"
-                    path={conn.d}
-                    calcMode="spline"
-                    keySplines="0.4 0 0.4 1"
-                    keyTimes="0;1"
-                  />
-                </circle>
-              );
-            })}
+          {/* ── Traveling accent dots (leg1: item → menu, leg2: menu → outlet) ── */}
+          {!reduced && route && (
+            <>
+              <circle r={3.5} fill={ACCENT} style={{ opacity: routePhase === "leg1" ? 1 : 0, transition: "opacity 0.15s" }}>
+                <animateMotion ref={(el: SVGElement | null) => { dotA.current = el as MotionEl | null; }} dur={`${TIMING.dotTravel}ms`} begin="indefinite" fill="freeze" path={route.leg1.d} calcMode="spline" keySplines="0.4 0 0.4 1" keyTimes="0;1" />
+              </circle>
+              <circle r={3.5} fill={ACCENT} style={{ opacity: routePhase === "leg2" ? 1 : 0, transition: "opacity 0.15s" }}>
+                <animateMotion ref={(el: SVGElement | null) => { dotB.current = el as MotionEl | null; }} dur={`${TIMING.dotTravel}ms`} begin="indefinite" fill="freeze" path={route.leg2.d} calcMode="spline" keySplines="0.4 0 0.4 1" keyTimes="0;1" />
+              </circle>
+            </>
+          )}
 
           {/* ── Cards ── */}
           {CARD_DATA.map((card, i) => {
             const x = COL_X[card.col];
-            const lit = litCards[card.name];
+            const isItem = card.col === "items";
+            const taken = takenCards[card.name];
+            const possible = !taken && connected?.cards.has(card.name);
+            const dimmed = connected && !taken && !possible;
+            const borderStroke = taken ? ACCENT : possible ? TIERS.possibleStroke : "var(--color-border)";
             const iconY = card.y + card.h / 2 - 6;
             const delay = colIndex[card.col] * CARDS.colStagger + (i % 5) * CARDS.cardStagger;
             return (
               <g
                 key={card.name}
+                onMouseEnter={isItem ? () => setHovered(card.name) : undefined}
+                onMouseLeave={isItem ? () => setHovered(null) : undefined}
+                onClick={
+                  isItem
+                    ? (e) => {
+                        e.stopPropagation();
+                        setPinned((p) => (p === card.name ? null : card.name));
+                      }
+                    : undefined
+                }
                 style={{
-                  opacity: stage >= 2 ? 1 : 0,
+                  opacity: stage >= 2 ? (dimmed ? TIERS.dimCardOpacity : 1) : 0,
                   transform: stage >= 2 ? "translateY(0)" : `translateY(${CARDS.offsetY}px)`,
-                  transition: `opacity 0.45s ease ${delay}s, transform 0.45s ease ${delay}s`,
+                  transition: `opacity 0.4s ease ${stage >= 4 ? 0 : delay}s, transform 0.45s ease ${delay}s`,
+                  cursor: isItem ? "pointer" : undefined,
                 }}
               >
                 <rect
                   x={x} y={card.y} width={CARD_W} height={card.h} rx={6}
-                  fill={lit ? ACCENT_TINT : "var(--color-surface)"}
-                  stroke={lit ? ACCENT : "var(--color-border)"}
-                  strokeWidth={lit ? 1.5 : 1}
-                  style={{ transition: "fill 0.45s, stroke 0.45s" }}
+                  fill={taken ? ACCENT_TINT : "var(--color-surface)"}
+                  stroke={borderStroke}
+                  strokeWidth={taken || possible ? 1.5 : 1}
+                  style={{ transition: "fill 0.4s, stroke 0.4s" }}
                 />
-                {renderIcon(card.icon, x + 14, iconY, 12, lit ? ACCENT : "var(--color-fg)")}
+                {renderIcon(card.icon, x + 14, iconY, 12, taken ? ACCENT : "var(--color-fg)")}
                 {card.sub ? (
                   <>
                     <text x={x + 36} y={card.y + card.h / 2 - 3} fontSize={11.5} fontWeight={500} fill="var(--color-fg)">{card.name}</text>
