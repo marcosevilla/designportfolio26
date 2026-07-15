@@ -31,7 +31,8 @@ export default function FBOrderingContent() {
         <Grid preset="intro-rail">
           <Col>
             <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>F&B Mobile Ordering</h1>
-            <p className="mt-3 text-(--color-fg-secondary)">I led the design of a mobile ordering system for hotels: guest ordering, a menu CMS, and a staff fulfillment dashboard. I took it from concept to production in four months.</p>
+            <p className="mt-3 italic text-(--color-fg-tertiary)">Warning: this case study may induce hunger.</p>
+            <p className="mt-3 text-(--color-fg-secondary)">I designed a 0-to-1 food &amp; beverage ordering platform for hotels, the newest addition to Canary&#39;s suite of revenue products. Guests&#39; late-night munchies were increasingly going to DoorDash instead of the front desk, so we rebuilt room service to be modern, convenient, and visually enticing. Four months to MVP, $23K in committed ARR five weeks after launch.</p>
           </Col>
           <Col className="mt-8 lg:mt-2">
             <MetaRail items={META} />
@@ -77,7 +78,7 @@ export default function FBOrderingContent() {
             <Col>
               <SectionHeading id="problem">The Problem</SectionHeading>
               <p className="mb-5">
-                Hotels lose F&amp;B revenue when guests have to call the front desk to order room service: misheard orders, tied-up staff, and enough friction that many guests just open DoorDash instead. Meanwhile, Canary was losing deals in APAC markets where mobile ordering is table stakes.
+                One hotel we spoke to ran breakfast on door hangers. Guests forgot to hang them, staff missed pickups, and complaints piled up. At most properties the alternative was the front desk phone: misheard orders, tied-up staff, and enough friction that guests simply gave up. Meanwhile, Canary was losing deals in APAC markets where mobile ordering is table stakes.
               </p>
               <p>
                 Canary&#39;s Guest Hub was still a static content product. F&amp;B ordering would make it transactional: a revenue engine, not just an info layer. The discipline was scope: no marketplaces, no kitchen software. Just get a guest&#39;s order to staff efficiently.
