@@ -13,6 +13,7 @@ import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
 import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
+import Grid, { Col } from "@/components/layout/Grid";
 import { galleryContent } from "@/lib/gallery-content";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import { isLocked } from "@/lib/locked-content";
@@ -375,18 +376,26 @@ function ProjectGrid({
       >
         Select work
       </h2>
-      {items.map((item) => {
-        // Chromeless cells per the 2026-07-14 feedback pass — no card
-        // fill, stroke, or padding, so each cell sits flush with the
-        // column and the "Select work" label. The media frames inside
-        // carry the only framing.
-        if (item.type === "study") {
+      {/* Editorial placement: the first study is the featured cell and
+          spans the full canvas; everything after runs 2-up at desktop.
+          Cells stay chromeless (2026-07-14 pass) — the media frames
+          carry the only framing. */}
+      <Grid className="gap-y-16">
+        {items.map((item, i) => {
+          const lg = i === 0 ? "full" : (i - 1) % 2 === 0 ? "1-6" : "7-12";
+          const cell =
+            item.type === "study" ? (
+              <StudyCell study={item.study} onPreview={onPreview} />
+            ) : (
+              <PlaygroundCell card={item.card} />
+            );
           return (
-            <StudyCell key={item.key} study={item.study} onPreview={onPreview} />
+            <Col key={item.key} lg={lg}>
+              {cell}
+            </Col>
           );
-        }
-        return <PlaygroundCell key={item.key} card={item.card} />;
-      })}
+        })}
+      </Grid>
     </div>
   );
 }
