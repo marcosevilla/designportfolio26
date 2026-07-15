@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editorial Grid — Layout Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface-2: #f3f1ed;
+    --border: rgba(20, 18, 14, 0.10);
+    --border-soft: rgba(20, 18, 14, 0.06);
+    --text: #1c1a16;
+    --text-dim: rgba(28, 26, 22, 0.62);
+    --text-faint: rgba(28, 26, 22, 0.38);
+    --accent: #c2410c;          /* terracotta — placed content */
+    --accent-dim: rgba(194, 65, 12, 0.10);
+    --accent-2: #4d7c0f;        /* sage — secondary slot */
+    --accent-2-dim: rgba(77, 124, 15, 0.12);
+    --rail: #1e3a5f;            /* deep blue — rail/meta slot */
+    --rail-dim: rgba(30, 58, 95, 0.10);
+    --track: rgba(20, 18, 14, 0.045);
+    --serif: "Libre Baskerville", Georgia, serif;
+    --sans: "DM Sans", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17150f;
+      --surface: #1e1c15;
+      --surface-2: #24211a;
+      --border: rgba(240, 235, 225, 0.12);
+      --border-soft: rgba(240, 235, 225, 0.07);
+      --text: #ece8df;
+      --text-dim: rgba(236, 232, 223, 0.64);
+      --text-faint: rgba(236, 232, 223, 0.36);
+      --accent: #f97316;
+      --accent-dim: rgba(249, 115, 22, 0.14);
+      --accent-2: #a3e635;
+      --accent-2-dim: rgba(163, 230, 53, 0.12);
+      --rail: #93b4d8;
+      --rail-dim: rgba(147, 180, 216, 0.14);
+      --track: rgba(240, 235, 225, 0.05);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(1200px 500px at 70% -10%, var(--accent-dim), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 0 24px 120px;
+  }
+  main { max-width: 1080px; margin: 0 auto; }
+
+  /* ── header ── */
+  header { padding: 88px 0 56px; border-bottom: 1px solid var(--border); }
+  .kicker {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent);
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 400; font-size: clamp(34px, 5vw, 52px);
+    line-height: 1.15; margin: 14px 0 18px; letter-spacing: 0.01em;
+  }
+  h1 em { font-style: italic; }
+  .lead { font-size: 17px; color: var(--text-dim); max-width: 620px; }
+  .lead code { font-family: var(--mono); font-size: 14px; }
+
+  /* ── sections ── */
+  section { margin-top: 84px; }
+  .section-label {
+    display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px;
+  }
+  .section-label .num {
+    font-family: var(--mono); font-size: 12px; color: var(--text-faint);
+  }
+  h2 {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 26px; letter-spacing: 0.01em;
+  }
+  .section-intro { color: var(--text-dim); max-width: 640px; margin: 10px 0 30px; }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 4px; padding: 1px 5px; }
+  pre { background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 8px; padding: 16px 18px; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; font-size: 13px; line-height: 1.7; }
+
+  /* ── canvas anatomy ── */
+  .anatomy {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px; overflow-x: auto;
+  }
+  .anatomy-canvas { min-width: 640px; }
+  .track-row {
+    display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px;
+  }
+  .track {
+    background: var(--track); border-radius: 4px; height: 120px;
+    display: flex; align-items: flex-end; justify-content: center;
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint); padding-bottom: 8px;
+  }
+  .anatomy-notes { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 20px; }
+  .anatomy-note { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+  .anatomy-note b { color: var(--text); font-weight: 500; }
+
+  /* ── bands ── */
+  .bands { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .band {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px;
+  }
+  .band--desktop { border-color: var(--accent); box-shadow: 0 12px 32px -18px var(--accent-dim); }
+  .band .range { font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
+  .band h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 20px; margin: 4px 0 10px; }
+  .band p { font-size: 13.5px; color: var(--text-dim); }
+  .band .prop { display: inline-block; margin-top: 12px; font-family: var(--mono); font-size: 12px; color: var(--accent); }
+  .inherit-note {
+    margin-top: 18px; padding: 14px 18px; border-left: 3px solid var(--accent);
+    background: var(--accent-dim); border-radius: 0 8px 8px 0;
+    font-size: 13.5px; color: var(--text-dim);
+  }
+  .inherit-note b { color: var(--text); }
+
+  /* ── preset gallery ── */
+  .preset {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px 24px 20px; margin-bottom: 16px;
+  }
+  .preset-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px; margin-bottom: 6px; }
+  .preset-head .name { font-family: var(--mono); font-size: 15px; font-weight: 500; color: var(--accent); }
+  .preset-head .say { font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--text-dim); }
+  .preset-desc { font-size: 13.5px; color: var(--text-dim); margin-bottom: 18px; max-width: 620px; }
+  .preset-diagrams { display: grid; grid-template-columns: 3fr 2fr 1fr; gap: 16px; align-items: start; }
+  .mini { min-width: 0; }
+  .mini .frame {
+    position: relative; border: 1px solid var(--border-soft); border-radius: 6px;
+    background: var(--surface-2); padding: 6px;
+  }
+  .mini .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; }
+  .mini.phone .grid { grid-template-columns: 1fr; }
+  .mini .t { background: var(--track); border-radius: 2px; height: 64px; }
+  .mini .slot {
+    border-radius: 3px; height: 64px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em;
+  }
+  .mini .slot.s0 { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+  .mini .slot.s1 { background: var(--rail-dim); color: var(--rail); border: 1px solid var(--rail); }
+  .mini .caption { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 7px; text-align: center; }
+  .mini .caption b { color: var(--text-dim); font-weight: 500; }
+  @media (max-width: 760px) {
+    .preset-diagrams { grid-template-columns: 1fr; }
+    .mini.phone .frame { max-width: 120px; }
+  }
+
+  /* ── tables ── */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  thead th {
+    position: sticky; top: 0; background: var(--surface-2); text-align: left;
+    font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text-faint); padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 13px 18px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  td .say-cell { font-family: var(--serif); font-style: italic; font-size: 14px; }
+  td small { display: block; color: var(--text-faint); margin-top: 2px; }
+
+  /* ── file map ── */
+  .files { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .file {
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .file .path { font-family: var(--mono); font-size: 12.5px; color: var(--text); font-weight: 500; }
+  .file p { font-size: 13px; color: var(--text-dim); margin-top: 5px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    section, header { animation: fadeUp 0.5s ease both; }
+    section:nth-of-type(1) { animation-delay: 0.05s; }
+    section:nth-of-type(2) { animation-delay: 0.1s; }
+    section:nth-of-type(3) { animation-delay: 0.15s; }
+    section:nth-of-type(4) { animation-delay: 0.2s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="kicker">marcosevilla.com · layout system</div>
+    <h1>The <em>Editorial Grid</em>, and how to ask for it</h1>
+    <p class="lead">
+      Every page sits on one shared 12-column canvas. Content is <em>placed</em>, not wrapped —
+      you (or Claude) put each block on specific columns at each breakpoint. This doc is the
+      shared vocabulary: say the words in the left columns and the layout on the right happens.
+      Source of truth in code: <code>site/lib/layout-presets.ts</code>.
+    </p>
+  </header>
+
+  <section>
+    <div class="section-label"><span class="num">01</span><h2>The canvas</h2></div>
+    <p class="section-intro">
+      12 equal columns, 24px gaps, max width 1128px (each column ≈ 72px at full size).
+      The canvas is fluid — columns shrink with the window, the composition holds.
+      On case studies the canvas sits to the right of the fixed table of contents.
+    </p>
+    <div class="anatomy">
+      <div class="anatomy-canvas">
+        <div class="track-row" id="anatomy-tracks"></div>
+        <div class="anatomy-notes">
+          <span class="anatomy-note"><b>canvas</b> max 1128px</span>
+          <span class="anatomy-note"><b>columns</b> 12 × ~72px</span>
+          <span class="anatomy-note"><b>gap</b> 24px</span>
+          <span class="anatomy-note"><b>spec</b> "1-6" = columns 1 through 6, inclusive</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">02</span><h2>The three bands</h2></div>
+    <p class="section-intro">
+      Layouts are authored per band. You mostly design the <b>desktop</b> composition;
+      the other two collapse sensibly on their own unless you say otherwise.
+    </p>
+    <div class="bands">
+      <div class="band">
+        <div class="range">&lt; 768px</div>
+        <h3>phone</h3>
+        <p>Everything stacks full-width, in source order. You rarely need to author this band.</p>
+        <span class="prop">base="…"</span>
+      </div>
+      <div class="band">
+        <div class="range">768 – 1199px</div>
+        <h3>tablet</h3>
+        <p>Mostly still stacked, but with room to breathe — prose narrows, pairs like <code>duo</code> hold side-by-side.</p>
+        <span class="prop">md="…"</span>
+      </div>
+      <div class="band band--desktop">
+        <div class="range">≥ 1200px</div>
+        <h3>desktop</h3>
+        <p>The authored composition. Multi-column placements only switch on where they have real room — no awkward squeezed middle state.</p>
+        <span class="prop">lg="…"</span>
+      </div>
+    </div>
+    <div class="inherit-note">
+      <b>Inheritance:</b> an unset band falls back to the one below it — <code>lg → md → base → full width</code>.
+      So <code>&lt;Col lg="1-6"&gt;</code> means "columns 1–6 on desktop, full width everywhere else."
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">03</span><h2>The presets — say the name, get the layout</h2></div>
+    <p class="section-intro">
+      Named compositions. In conversation just use the name: <em>“make the Impact section
+      media-right”</em>, <em>“put the intro on intro-rail.”</em> Orange is the first block
+      inside the section, blue is the second.
+    </p>
+    <div id="preset-gallery"></div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">04</span><h2>How to prompt me</h2></div>
+    <p class="section-intro">Phrases that map one-to-one onto layout changes. Mix freely — everything composes.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width: 44%">Say this</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td><span class="say-cell">“Make the Solution section prose-wide”</span></td>
+              <td>That section’s text column grows from 6 to 8 columns on desktop.</td></tr>
+          <tr><td><span class="say-cell">“Put the dashboard shot media-right next to the Problem text”</span></td>
+              <td>Text moves to columns 1–5, image spans 6–12 beside it.</td></tr>
+          <tr><td><span class="say-cell">“Full-bleed the guest video” / “make it media-full”</span></td>
+              <td>The media spans all 12 columns of the canvas.</td></tr>
+          <tr><td><span class="say-cell">“Run those two screenshots as a duo”</span></td>
+              <td>Side-by-side pair, 6 columns each. Holds on tablet, stacks on phone.</td></tr>
+          <tr><td><span class="say-cell">“Put the quote at 3-10”  <small>(any explicit span works)</small></span></td>
+              <td>One-off placement: <code>&lt;Col lg="3-10"&gt;</code> — start column 3, end column 10.</td></tr>
+          <tr><td><span class="say-cell">“On tablet make it 2-11 instead”</span></td>
+              <td>Adds an <code>md</code> spec — same grammar per band.</td></tr>
+          <tr><td><span class="say-cell">“Feature the first work cell” / “make the KB cell featured”</span></td>
+              <td>Home work grid: featured cells span the full canvas, the rest run 2-up.</td></tr>
+          <tr><td><span class="say-cell">“Add a meta rail with Year / Role / Scope”</span></td>
+              <td>The section becomes intro-rail with a <code>MetaRail</code> in the blue slot.</td></tr>
+          <tr><td><span class="say-cell">“Alternate these blocks left / right”</span></td>
+              <td>Blocks take 1-6, 7-12, 1-6, … — the 2×2 spread used for Key Decisions.</td></tr>
+          <tr><td><span class="say-cell">“Sheet it” / “run a contact sheet on compendium”</span></td>
+              <td><code>npm run sheet -- /work/compendium --unlock</code> → one HTML page with the layout at 390 / 768 / 1024 / 1440 for review.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">05</span><h2>The JSX, if you’re in the code</h2></div>
+    <pre><code>// a preset assigns columns to children in order
+&lt;Grid preset="media-right"&gt;
+  &lt;Col&gt;…text…&lt;/Col&gt;      // → lg 1-5
+  &lt;Col&gt;…image…&lt;/Col&gt;     // → lg 6-12
+&lt;/Grid&gt;
+
+// explicit placement (wins over presets)
+&lt;Grid&gt;
+  &lt;Col md="2-11" lg="3-10"&gt;…pull quote…&lt;/Col&gt;
+&lt;/Grid&gt;
+
+// every section is its own &lt;Grid&gt; — identical tracks keep
+// columns aligned down the whole page</code></pre>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">06</span><h2>Where things live</h2></div>
+    <div class="files">
+      <div class="file"><div class="path">site/lib/layout-presets.ts</div><p>Preset definitions + the "1-6" spec parser. Add or tune presets here.</p></div>
+      <div class="file"><div class="path">site/components/layout/Grid.tsx</div><p>The <code>&lt;Grid&gt;</code> / <code>&lt;Col&gt;</code> primitives.</p></div>
+      <div class="file"><div class="path">site/app/globals.css</div><p><code>.grid-ed</code> / <code>.col-ed</code> CSS + band media queries (768 / 1200) + <code>--grid-max</code>, <code>--grid-gap</code>.</p></div>
+      <div class="file"><div class="path">site/components/case-study/MetaRail.tsx</div><p>Year / Role / Scope rail used by intro-rail.</p></div>
+      <div class="file"><div class="path">site/scripts/contact-sheet.mjs</div><p><code>npm run sheet -- &lt;route&gt; [--unlock]</code> → <code>.sheets/&lt;slug&gt;/sheet.html</code>.</p></div>
+      <div class="file"><div class="path">site/components/case-study/CaseStudyShell.tsx</div><p>The case-study canvas (width, TOC clearance, centering ≥1560px).</p></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Canvas anatomy: 12 numbered tracks
+  const tracks = document.getElementById("anatomy-tracks");
+  for (let i = 1; i <= 12; i++) {
+    const d = document.createElement("div");
+    d.className = "track";
+    d.textContent = i;
+    tracks.appendChild(d);
+  }
+
+  // Preset gallery — rendered from the same slot data as lib/layout-presets.ts.
+  // If the presets change in code, update PRESETS here to match.
+  const PRESETS = {
+    "prose": {
+      say: "“keep it prose” — the default for body text",
+      desc: "One comfortable text column (~65 characters). Right side stays empty on purpose — that’s the editorial breathing room.",
+      labels: ["text"],
+      slots: [{ md: [1, 9], lg: [1, 6] }],
+    },
+    "prose-wide": {
+      say: "“make it prose-wide”",
+      desc: "Wider text column for intros or dense sections with bullets.",
+      labels: ["text"],
+      slots: [{ md: [1, 10], lg: [1, 8] }],
+    },
+    "intro-rail": {
+      say: "“intro-rail with Year / Role / Scope”",
+      desc: "Main content plus a narrow metadata rail. Used on every case-study title block and the homepage bio + contact rail.",
+      labels: ["main", "rail"],
+      slots: [{ md: [1, 8], lg: [1, 7] }, { md: [1, 8], lg: [9, 12], stackMd: true }],
+    },
+    "media-right": {
+      say: "“text left, image media-right”",
+      desc: "Text at reading width, larger media beside it. The workhorse for decision-plus-screenshot moments.",
+      labels: ["text", "media"],
+      slots: [{ lg: [1, 5] }, { lg: [6, 12] }],
+    },
+    "media-left": {
+      say: "“flip it media-left”",
+      desc: "Mirror of media-right — media leads, text follows.",
+      labels: ["media", "text"],
+      slots: [{ lg: [1, 7] }, { lg: [8, 12] }],
+    },
+    "media-full": {
+      say: "“full-bleed it” / “media-full”",
+      desc: "Media spans the whole canvas. For landscape shots and dense UI that needs the room — portrait media should use a narrower explicit span (e.g. 5-8) instead.",
+      labels: ["media"],
+      slots: [{ lg: [1, 12] }],
+    },
+    "duo": {
+      say: "“run them as a duo”",
+      desc: "Two equal cells side by side. One of the few placements that holds on tablet.",
+      labels: ["media", "media"],
+      slots: [{ md: [1, 6], lg: [1, 6] }, { md: [7, 12], lg: [7, 12] }],
+    },
+    "quote-offset": {
+      say: "“offset the quote”",
+      desc: "Pushed off the left edge so it breaks the reading rhythm — for pull quotes and big statements.",
+      labels: ["quote"],
+      slots: [{ md: [2, 11], lg: [3, 10] }],
+    },
+  };
+
+  function miniCanvas(kind, preset) {
+    const wrap = document.createElement("div");
+    wrap.className = "mini " + kind;
+    const frame = document.createElement("div");
+    frame.className = "frame";
+    const grid = document.createElement("div");
+    grid.className = "grid";
+
+    if (kind === "phone") {
+      // Everything stacks full width in source order
+      preset.slots.forEach((_, i) => {
+        const s = document.createElement("div");
+        s.className = "slot s" + i;
+        s.textContent = preset.labels[i];
+        s.style.height = "40px";
+        grid.appendChild(s);
+      });
+    } else {
+      // 12 background tracks — same grid row as the slots; CSS grid
+      // lets items share cells, so slots overlay tracks cleanly.
+      for (let i = 1; i <= 12; i++) {
+        const t = document.createElement("div");
+        t.className = "t";
+        t.style.gridColumn = i + " / " + (i + 1);
+        t.style.gridRow = "1";
+        if (kind === "tablet") t.style.height = "52px";
+        grid.appendChild(t);
+      }
+      let extraRow = 1;
+      preset.slots.forEach((slot, i) => {
+        const span = kind === "desktop" ? slot.lg : slot.md;
+        const s = document.createElement("div");
+        s.className = "slot s" + i;
+        s.textContent = preset.labels[i];
+        s.style.zIndex = "1";
+        if (kind === "tablet") s.style.height = "52px";
+        if (!span) {
+          // md unset → falls back to full width, own row below
+          s.style.gridColumn = "1 / -1";
+          s.style.gridRow = String(++extraRow);
+        } else {
+          s.style.gridColumn = span[0] + " / " + (span[1] + 1);
+          // stack rail below main on tablet where the preset says so
+          if (kind === "tablet" && slot.stackMd) s.style.gridRow = String(++extraRow);
+          else s.style.gridRow = "1";
+        }
+        grid.appendChild(s);
+      });
+    }
+
+    frame.appendChild(grid);
+    wrap.appendChild(frame);
+    const cap = document.createElement("div");
+    cap.className = "caption";
+    const specs = preset.slots
+      .map((sl) => {
+        const v = kind === "desktop" ? sl.lg : kind === "tablet" ? sl.md : null;
+        return v ? v[0] + "-" + v[1] : "full";
+      })
+      .join(" · ");
+    cap.innerHTML =
+      kind === "desktop" ? "<b>desktop</b> " + specs :
+      kind === "tablet" ? "<b>tablet</b> " + specs :
+      "<b>phone</b> stack";
+    wrap.appendChild(cap);
+    return wrap;
+  }
+
+  const gallery = document.getElementById("preset-gallery");
+  for (const [name, preset] of Object.entries(PRESETS)) {
+    const card = document.createElement("div");
+    card.className = "preset";
+    card.innerHTML =
+      '<div class="preset-head"><span class="name">' + name + '</span>' +
+      '<span class="say">' + preset.say + "</span></div>" +
+      '<div class="preset-desc">' + preset.desc + "</div>";
+    const dias = document.createElement("div");
+    dias.className = "preset-diagrams";
+    dias.appendChild(miniCanvas("desktop", preset));
+    dias.appendChild(miniCanvas("tablet", preset));
+    dias.appendChild(miniCanvas("phone", preset));
+    card.appendChild(dias);
+    gallery.appendChild(card);
+  }
+</script>
+</body>
+</html>
