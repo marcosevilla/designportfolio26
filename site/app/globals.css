@@ -986,3 +986,23 @@ body {
     grid-column: var(--col-lg, var(--col-md, var(--col-base, 1 / -1)));
   }
 }
+
+/* Case-study canvas. Below lg: a centered padded column. At lg+: clears
+   the 178px fixed InlineTOC (48px left + 130px wide) with a 200px left
+   margin, and re-centers as soon as the viewport is wide enough that
+   true centering clears the TOC anyway. One rule on one physical
+   property — Tailwind's mx-auto (logical margin-inline) loses to any
+   physical lg:ml-* utility in the cascade, so don't mix them here. */
+.case-canvas {
+  /* width stays auto — with the fixed lg margins the box must shrink
+     to the leftover space (width:100% would overflow to the right on
+     1200–1360px viewports). */
+  max-width: var(--grid-max);
+  margin-inline: auto;
+}
+@media (min-width: 1024px) {
+  .case-canvas {
+    margin-left: max(200px, calc((100vw - var(--grid-max)) / 2));
+    margin-right: 32px;
+  }
+}

@@ -19,6 +19,7 @@ const WIDTHS = [
   { w: 768, label: "tablet · 768" },
   { w: 1024, label: "desktop · 1024" },
   { w: 1440, label: "desktop · 1440" },
+  { w: 1920, label: "wide · 1920" },
 ];
 const BASE = process.env.SHEET_BASE_URL || "http://localhost:3000";
 
