@@ -25,9 +25,12 @@ export default function CaseStudyShell({
         style={typescale.body}
       >
         <InlineTOC />
-        {/* Single 600px column matching the home page (TOC sidebar is
-            rendered separately via SidebarTOCBridge and excluded). */}
-        <div className="max-w-[600px] mx-auto px-4 sm:px-8 pt-24 lg:pt-[18vh]">
+        {/* Editorial grid canvas (12 cols, --grid-max wide). Placement
+            lives in .case-canvas (globals.css): centered, except at lg+
+            it keeps a min 200px left margin to clear the fixed InlineTOC.
+            Sections inside wrap themselves in <Grid> — see
+            docs/LAYOUT-REFERENCE.html */}
+        <div className="case-canvas px-4 sm:px-8 lg:px-0 pt-24 lg:pt-[18vh]">
           {children}
         </div>
       </article>

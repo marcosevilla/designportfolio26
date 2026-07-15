@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Grid, { Col } from "@/components/layout/Grid";
 import { RESUME_URL } from "@/lib/resume-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
@@ -162,12 +163,15 @@ export default function HomeLayout({
           </div>
         )}
 
-        {/* Home content — 2026-07 single-page redesign. One centered
-            600px column: intro bio with contact row, then the one-column
-            Select work list. Everything lives on the home page now. */}
+        {/* Home content — editorial grid canvas. Intro sits on the
+            intro-rail preset (bio cols 1–7, contact rail 9–12); the
+            Select work section spans the canvas and lays its cells on
+            the same 12-col grid. See docs/LAYOUT-REFERENCE.html */}
         {!aboutMeOpen && (
-          <div className="max-w-[600px] mx-auto w-full px-4 sm:px-8 pb-48">
-            <div className="mt-8 flex flex-col gap-6">
+          <div className="max-w-(--grid-max) mx-auto w-full px-4 sm:px-8 pb-48">
+            <Grid preset="intro-rail" className="mt-8">
+            <Col>
+            <div className="flex flex-col gap-6">
               {/* Page heading — Libre Baskerville, the site's new serif. */}
               <motion.h1
                 style={{
@@ -285,10 +289,15 @@ export default function HomeLayout({
                 </p>
               </motion.div>
 
-              {/* Contact row — social icons flush-left; View resume +
-                  Ask me anything outlined CTAs flush-right. */}
+            </div>
+            </Col>
+
+            {/* Contact rail — stacks vertically beside the bio at
+                desktop; below the bio (social left, CTAs right) on
+                phone/tablet. */}
+            <Col className="mt-10 lg:mt-3">
               <motion.div
-                className="flex flex-wrap items-center justify-between gap-4"
+                className="flex flex-wrap items-center justify-between gap-4 lg:flex-col lg:items-start lg:gap-6"
                 initial={{ opacity: 0, filter: "blur(12px)" }}
                 animate={{
                   opacity: heroReady ? 1 : 0,
@@ -322,10 +331,11 @@ export default function HomeLayout({
                   <AskMeAnythingButton />
                 </div>
               </motion.div>
+            </Col>
+            </Grid>
 
-            </div>
-
-            {/* Select work — one column, same 600px width. */}
+            {/* Select work — full canvas; ProjectGrid places cells on
+                the shared 12-col grid (featured first cell, 2-up after). */}
             <section id="projects" className="mt-[100px]">
               <motion.div
                 initial={{ opacity: 0, filter: "blur(12px)" }}

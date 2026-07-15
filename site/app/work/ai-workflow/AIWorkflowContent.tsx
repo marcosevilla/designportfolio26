@@ -5,8 +5,15 @@ import NextProject from "@/components/case-study/NextProject";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
-import TwoCol from "@/components/TwoCol";
+import MetaRail from "@/components/case-study/MetaRail";
+import Grid, { Col } from "@/components/layout/Grid";
 import { typescale } from "@/lib/typography";
+
+const META = [
+  { label: "Year", values: ["Ongoing"] },
+  { label: "Role", values: ["Designer + builder"] },
+  { label: "Tools", values: ["Claude Code", "6 MCP integrations", "Next.js"] },
+];
 
 const STATS = [
   { value: "Daily", label: "Claude Code usage" },
@@ -27,8 +34,9 @@ const TOC_ITEMS = [
 export default function AIWorkflowContent() {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
-          {/* Title + Subtitle */}
-          <div>
+          {/* Title + Subtitle with metadata rail (intro-rail) */}
+          <Grid preset="intro-rail">
+            <Col>
             <h1
               className="text-(--color-fg)"
               style={{
@@ -55,7 +63,11 @@ export default function AIWorkflowContent() {
               infrastructure. I use Claude Code as a daily development partner,
               connected to my real tools, learning from every session.
             </p>
-          </div>
+            </Col>
+            <Col className="mt-8 lg:mt-2">
+              <MetaRail items={META} />
+            </Col>
+          </Grid>
 
           {/* Quick Stats */}
           <FadeIn>
@@ -64,8 +76,8 @@ export default function AIWorkflowContent() {
 
           {/* Overview */}
           <FadeIn as="section" className="scroll-mt-24 pt-24">
-            <TwoCol>
-              <TwoCol.Left>
+            <Grid preset="prose">
+              <Col>
                 <SectionHeading id="overview">Overview</SectionHeading>
                 <p className="mb-5">
                   Most designers talk about AI as a future possibility. I use it
@@ -81,14 +93,14 @@ export default function AIWorkflowContent() {
                   learned about where AI genuinely helps versus where human
                   judgment is irreplaceable.
                 </p>
-              </TwoCol.Left>
-            </TwoCol>
+              </Col>
+            </Grid>
           </FadeIn>
 
           {/* The Setup */}
           <FadeIn as="section" className="scroll-mt-24 pt-32">
-            <TwoCol>
-              <TwoCol.Left>
+            <Grid preset="prose">
+              <Col>
                 <SectionHeading id="the-setup">The Setup</SectionHeading>
                 <p className="mb-5">
                   My primary tool is Claude Code — Anthropic&apos;s CLI for
@@ -110,14 +122,14 @@ export default function AIWorkflowContent() {
                   goal is a working environment where AI handles the scaffolding
                   so I can focus on design decisions.
                 </p>
-              </TwoCol.Left>
-            </TwoCol>
+              </Col>
+            </Grid>
           </FadeIn>
 
           {/* MCP Integrations */}
           <FadeIn as="section" className="scroll-mt-24 pt-32">
-            <TwoCol>
-              <TwoCol.Left>
+            <Grid preset="prose">
+              <Col>
                 <SectionHeading id="mcp-integrations">
                   MCP Integrations
                 </SectionHeading>
@@ -187,14 +199,14 @@ export default function AIWorkflowContent() {
                   tickets + Notion docs into a single conversation. It
                   eliminates the tab-switching that fragments attention.
                 </p>
-              </TwoCol.Left>
-            </TwoCol>
+              </Col>
+            </Grid>
           </FadeIn>
 
           {/* Self-Improving System */}
           <FadeIn as="section" className="scroll-mt-24 pt-32">
-            <TwoCol>
-              <TwoCol.Left>
+            <Grid preset="prose">
+              <Col>
                 <SectionHeading id="self-improving-system">
                   Self-Improving System
                 </SectionHeading>
@@ -219,14 +231,14 @@ export default function AIWorkflowContent() {
                   measurably better than starting from scratch every time — and
                   it compounds over weeks.
                 </p>
-              </TwoCol.Left>
-            </TwoCol>
+              </Col>
+            </Grid>
           </FadeIn>
 
           {/* Building Real Software */}
           <FadeIn as="section" className="scroll-mt-24 pt-32">
-            <TwoCol>
-              <TwoCol.Left>
+            <Grid preset="prose">
+              <Col>
                 <SectionHeading id="building-real-software">
                   Building Real Software
                 </SectionHeading>
@@ -257,14 +269,14 @@ export default function AIWorkflowContent() {
                   interaction patterns, information hierarchy. AI handles the
                   implementation mechanics.
                 </p>
-              </TwoCol.Left>
-            </TwoCol>
+              </Col>
+            </Grid>
           </FadeIn>
 
           {/* What I've Learned */}
           <FadeIn as="section" className="scroll-mt-24 pt-32">
-            <TwoCol>
-              <TwoCol.Left>
+            <Grid preset="prose">
+              <Col>
                 <SectionHeading id="what-ive-learned">
                   What I&apos;ve Learned
                 </SectionHeading>
@@ -305,8 +317,8 @@ export default function AIWorkflowContent() {
                     </p>
                   </div>
                 </div>
-              </TwoCol.Left>
-            </TwoCol>
+              </Col>
+            </Grid>
           </FadeIn>
 
           {/* Next Project */}

@@ -12,7 +12,8 @@
     "build:bio": "node scripts/build-bio.mjs",
     "predev": "node scripts/build-bio.mjs",
     "prebuild": "node scripts/build-bio.mjs",
-    "print:resume": "node scripts/print-resume.mjs"
+    "print:resume": "node scripts/print-resume.mjs",
+    "sheet": "node scripts/contact-sheet.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
@@ -44,6 +45,7 @@
     "agentation": "^3.0.2",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.1.6",
+    "playwright-core": "^1.61.1",
     "postcss": "^8.4.0",
     "tailwindcss": "^4.2.4",
     "tsx": "^4.21.0",

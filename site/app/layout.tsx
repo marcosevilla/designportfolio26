@@ -96,9 +96,11 @@ export default function RootLayout({
                 <MobileNav />
                 <SiteHeader />
                 <InlineEditorProvider>
+                  {/* No width cap here — each page owns its measure. Case
+                      studies use the editorial grid canvas (CaseStudyShell),
+                      home/writing set their own max-w. */}
                   <main
                     id="main"
-                    className="max-w-[960px] mx-auto px-4 sm:px-8 lg:px-6"
                   >
                     <MainBlurLayer>{children}</MainBlurLayer>
                   </main>

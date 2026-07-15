@@ -954,3 +954,55 @@ body {
     opacity: 1;
   }
 }
+/* ── Editorial 12-column grid ──────────────────────────────────────────
+   Placement is authored per band via CSS vars set inline by <Col>
+   (components/layout/Grid.tsx). Bands: phone <768 / tablet 768–1199 /
+   desktop ≥1200 (desktop starts at 1200, not Tailwind's lg=1024, so
+   authored compositions only apply where the canvas has real room next
+   to the fixed case-study TOC — below that the tablet collapse holds).
+   Unset bands inherit downward: lg → md → base → full.
+   Vocabulary + diagrams: docs/LAYOUT-REFERENCE.html */
+:root {
+  --grid-max: 1128px; /* 12×72px cols + 11×24px gaps */
+  --grid-gap: 24px;
+}
+.grid-ed {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  width: 100%;
+}
+.col-ed {
+  grid-column: var(--col-base, 1 / -1);
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  .col-ed {
+    grid-column: var(--col-md, var(--col-base, 1 / -1));
+  }
+}
+@media (min-width: 1200px) {
+  .col-ed {
+    grid-column: var(--col-lg, var(--col-md, var(--col-base, 1 / -1)));
+  }
+}
+
+/* Case-study canvas. Below lg: a centered padded column. At lg+: clears
+   the 178px fixed InlineTOC (48px left + 130px wide) with a 200px left
+   margin, and re-centers as soon as the viewport is wide enough that
+   true centering clears the TOC anyway. One rule on one physical
+   property — Tailwind's mx-auto (logical margin-inline) loses to any
+   physical lg:ml-* utility in the cascade, so don't mix them here. */
+.case-canvas {
+  /* width stays auto — with the fixed lg margins the box must shrink
+     to the leftover space (width:100% would overflow to the right on
+     1200–1360px viewports). */
+  max-width: var(--grid-max);
+  margin-inline: auto;
+}
+@media (min-width: 1024px) {
+  .case-canvas {
+    margin-left: max(200px, calc((100vw - var(--grid-max)) / 2));
+    margin-right: 32px;
+  }
+}
