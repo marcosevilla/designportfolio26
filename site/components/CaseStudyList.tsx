@@ -360,43 +360,63 @@ function ProjectGrid({
 
   if (items.length === 0) return null;
 
+  const studyItems = items.filter((it) => it.type === "study");
+  const playItems = items.filter((it) => it.type === "playground");
+
   return (
     <div className="flex flex-col gap-16">
-      {/* Section label — Libre Baskerville italic, the redesign's serif
-          accent for section titles. */}
-      <h2
-        style={{
-          fontFamily: "var(--font-baskerville), Georgia, serif",
-          fontStyle: "italic",
-          fontWeight: 400,
-          fontSize: 20,
-          lineHeight: 1.4,
-          color: "var(--color-fg)",
-        }}
-      >
-        Select work
-      </h2>
+      <SectionLabel>Select work</SectionLabel>
       {/* Editorial placement: the first study is the featured cell and
           spans the full canvas; everything after runs 2-up at desktop.
           Cells stay chromeless (2026-07-14 pass) — the media frames
           carry the only framing. */}
       <Grid className="gap-y-16">
-        {items.map((item, i) => {
+        {studyItems.map((item, i) => {
           const lg = i === 0 ? "full" : (i - 1) % 2 === 0 ? "1-6" : "7-12";
-          const cell =
-            item.type === "study" ? (
-              <StudyCell study={item.study} onPreview={onPreview} featured={i === 0} />
-            ) : (
-              <PlaygroundCell card={item.card} />
-            );
           return (
             <Col key={item.key} lg={lg}>
-              {cell}
+              {item.type === "study" && (
+                <StudyCell study={item.study} onPreview={onPreview} featured={i === 0} />
+              )}
             </Col>
           );
         })}
       </Grid>
+
+      {/* Playground / experiments get their own label so the grid reads
+          as two sections: client work above, sidequests below. */}
+      {playItems.length > 0 && (
+        <>
+          <SectionLabel>Just for fun</SectionLabel>
+          <Grid className="gap-y-16">
+            {playItems.map((item, i) => (
+              <Col key={item.key} lg={i % 2 === 0 ? "1-6" : "7-12"}>
+                {item.type === "playground" && <PlaygroundCell card={item.card} />}
+              </Col>
+            ))}
+          </Grid>
+        </>
+      )}
     </div>
+  );
+}
+
+// Section label — Libre Baskerville italic, the redesign's serif accent
+// for section titles ("Select work", "Just for fun").
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h2
+      style={{
+        fontFamily: "var(--font-baskerville), Georgia, serif",
+        fontStyle: "italic",
+        fontWeight: 400,
+        fontSize: 20,
+        lineHeight: 1.4,
+        color: "var(--color-fg)",
+      }}
+    >
+      {children}
+    </h2>
   );
 }
 
