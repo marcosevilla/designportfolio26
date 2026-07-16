@@ -4,18 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 /**
- * Cycling name header (revived 2026-07-15 from e59ddb5, restyled for the
- * Baskerville h1 slot in HomeLayout).
+ * Cycling tagline (revived 2026-07-15 from e59ddb5; moved from the h1 to
+ * the tagline slot same day — the h1 stays a static "Marco Sevilla").
  *
- * Cycle: "Marco Sevilla" types in and dwells (name is the anchor state) →
- * deletes → one-time queue of conversational pre-phrases at a smaller scale
- * (some with a mid-phrase pause that resumes typing where it left off) →
- * "hello" in 10 languages with a per-character scramble settle → back to the
- * name, forever.
+ * Cycle: the tagline types in and dwells (anchor state) → deletes → queue
+ * of conversational pre-phrases (some with a mid-phrase pause that resumes
+ * typing where it left off) → "hello" in 10 languages with a per-character
+ * scramble settle → back to the tagline, forever.
  *
- * The Geist `*` cursor sits at the end of the current text and blinks via
- * .cycling-greeting-cursor. The row height is locked so the tagline and bio
- * below never reflow during any phase.
+ * Every phrase renders at the SAME size/style — the component inherits the
+ * parent tagline's Libre Baskerville italic 18px. The Geist `*` cursor sits
+ * at the end of the current text and blinks via .cycling-greeting-cursor.
+ * The row height is locked so the bio below never reflows.
  */
 
 type Phrase = {
@@ -25,7 +25,7 @@ type Phrase = {
   segmentPauseMs?: number;
 };
 
-const NAME = "Marco Sevilla";
+const ANCHOR = "Product Designer based in San Francisco, California";
 
 const PRE_PHRASES: Phrase[] = [
   { segments: ["Hello, friend.", " Welcome to my portfolio."], segmentPauseMs: 5000 },
@@ -66,7 +66,7 @@ function randomChar() {
 const PLAIN_TYPE_MS = 32;          // per-char delay for plain typing
 const TYPE_SCRAMBLE_TICKS = 5;     // random char flickers per locked-in letter
 const TYPE_TICK_MS = 32;           // scramble flicker rate (translations)
-const NAME_HOLD_MS = 9000;         // dwell on the name before the cycle starts
+const ANCHOR_HOLD_MS = 9000;       // dwell on the tagline before the cycle starts
 const HOLD_MS = 4200;              // dwell on each translation
 const DELETE_MS = 70;              // backspace cadence
 const POST_DELETE_PAUSE_MS = 1800; // breath between phrases / languages
@@ -79,25 +79,17 @@ const MAX_READ_MS = 5500;
 const computeReadMs = (chars: number) =>
   Math.min(MAX_READ_MS, Math.max(MIN_READ_MS, chars * READ_MS_PER_CHAR));
 
-// ─── Visual constants ────────────────────────────────────────────────────────
-// Name + short greetings hold the full h1 scale; long pre-phrases drop to a
-// smaller size so they fit the bio column (cols 1–7) on one line.
-const NAME_FONT_SIZE = "32px";
-const PRE_FONT_SIZE = "18px";
-
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export default function CyclingGreeting({ start = true }: { start?: boolean }) {
   const [display, setDisplay] = useState("");
-  const [fontSize, setFontSize] = useState(NAME_FONT_SIZE);
   const reducedMotion = usePrefersReducedMotion();
 
   const cancelledRef = useRef(false);
 
   useEffect(() => {
     if (reducedMotion) {
-      setFontSize(NAME_FONT_SIZE);
-      setDisplay(NAME);
+      setDisplay(ANCHOR);
       return;
     }
     if (!start) return;
@@ -143,21 +135,19 @@ export default function CyclingGreeting({ start = true }: { start?: boolean }) {
     };
 
     const cycle = async () => {
-      // Outer loop: name → pre-phrases → translations → name → … forever.
+      // Outer loop: tagline → pre-phrases → translations → tagline → … forever.
       while (!cancelledRef.current) {
-        // ─── The name (anchor state) ───────────────────────────────────────
-        setFontSize(NAME_FONT_SIZE);
-        await typePlain("", NAME);
+        // ─── The tagline (anchor state) ────────────────────────────────────
+        await typePlain("", ANCHOR);
         if (cancelledRef.current) return;
-        await sleep(NAME_HOLD_MS);
+        await sleep(ANCHOR_HOLD_MS);
         if (cancelledRef.current) return;
-        await deleteOut(NAME);
+        await deleteOut(ANCHOR);
         if (cancelledRef.current) return;
         await sleep(POST_DELETE_PAUSE_MS);
         if (cancelledRef.current) return;
 
         // ─── Pre-phrases ───────────────────────────────────────────────────
-        setFontSize(PRE_FONT_SIZE);
         for (const phrase of PRE_PHRASES) {
           let built = "";
           for (let i = 0; i < phrase.segments.length; i++) {
@@ -180,7 +170,6 @@ export default function CyclingGreeting({ start = true }: { start?: boolean }) {
         }
 
         // ─── Translations (10 languages, one full pass) ────────────────────
-        setFontSize(NAME_FONT_SIZE);
         for (let idx = 0; idx < GREETINGS.length; idx++) {
           await typeWithScramble(GREETINGS[idx]);
           if (cancelledRef.current) return;
@@ -194,7 +183,7 @@ export default function CyclingGreeting({ start = true }: { start?: boolean }) {
           await sleep(POST_DELETE_PAUSE_MS);
           if (cancelledRef.current) return;
         }
-        // Loop back to the name.
+        // Loop back to the tagline.
       }
     };
 
@@ -210,20 +199,20 @@ export default function CyclingGreeting({ start = true }: { start?: boolean }) {
       aria-hidden
       style={{
         // Block-level flex so the row sits in its own block box. Fixed pixel
-        // height locks the row regardless of which script / size is showing,
-        // so the tagline + bio below never reflow.
+        // height (tagline's 26px line-height) locks the row regardless of
+        // which script is showing, so the bio below never reflows. Font
+        // family/size/style are inherited from the parent tagline — every
+        // phrase renders in Libre Baskerville italic 18px.
         display: "flex",
         alignItems: "center",
         width: "fit-content",
         maxWidth: "100%",
-        fontSize,
-        lineHeight: 1.2,
-        height: 40,
+        height: 26,
         overflow: "hidden",
         whiteSpace: "nowrap",
       }}
     >
-      <span style={{ lineHeight: 1.2 }}>{display}</span>
+      <span>{display}</span>
       <span
         className="cycling-greeting-cursor"
         style={{

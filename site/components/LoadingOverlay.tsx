@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const STORAGE_KEY = "portfolio-loaded";
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
@@ -21,8 +20,9 @@ const TARGET = "(∩ᵔ ᵕ ᵔ )⊃━☆ﾟ.*+.✧⋅.˳˳.⋅ॱ˙ ˙ॱ⋅.�
 const TARGET_CHARS = Array.from(TARGET);
 
 // Plain typewriter — each letter locks in directly without scramble.
+// No backspace phase (cut 2026-07-15): the sequence ends a beat after the
+// full trail is on screen, then fades straight into the page.
 const TYPE_DELAY_MS = 40;
-const BACKSPACE_DELAY_MS = 14;
 const HOLD_MS = 1100;
 const PRE_TYPE_DELAY_MS = 350;
 const PRE_FADE_DELAY_MS = 250;
@@ -134,27 +134,20 @@ export default function LoadingOverlay({
         await sleep(TYPE_DELAY_MS);
       }
 
-      // Hold
+      // Hold — the full trail sits on screen for a beat, then the
+      // sequence ends (no backspace: cut 2026-07-15).
       setPhase("holding");
       await sleep(HOLD_MS);
       if (cancelled) return;
 
-      // Backspace — the star wipes the trail back out, fast.
-      setPhase("backspacing");
-      for (let i = TARGET_CHARS.length - 1; i >= 0; i--) {
-        if (cancelled) return;
-        setText(TARGET_CHARS.slice(0, i).join(""));
-        await sleep(BACKSPACE_DELAY_MS);
-      }
-
       await sleep(PRE_FADE_DELAY_MS);
       if (cancelled) return;
 
-      // Hand layoutId off to the wordmark's PlaygroundStar in the same
-      // commit, then unmount the loader's star — framer-motion picks up
-      // the shared layoutId and morphs from here to the wordmark slot.
+      // Release the star flag (HomeLayout uses it to let the wordmark
+      // area take over) and fade the whole overlay out via CSS — the
+      // overlay deliberately avoids framer-motion for its own lifecycle
+      // (see note above the return).
       onStarReleasedRef.current?.();
-      setStarHere(false);
       setPhase("fading");
       onFadeRef.current?.();
 
@@ -173,17 +166,23 @@ export default function LoadingOverlay({
 
   const visible = phase !== "done" && phase !== "pending";
 
+  // NOTE (2026-07-15): the overlay's own fade/unmount is plain CSS, not
+  // framer-motion. The previous AnimatePresence + animate-opacity version
+  // silently stalled — the exit tween never ran and the overlay stayed
+  // mounted at full opacity over the page. A CSS transition driven by the
+  // `fading` phase is deterministic; the element unmounts once phase hits
+  // `done` (opacity has already reached 0 by then, so removal is invisible).
   return (
-    <AnimatePresence>
+    <>
       {visible && (
-        <motion.div
+        <div
           key="loading-overlay"
           className="fixed inset-0 z-[200] flex items-center justify-center px-4 pointer-events-none"
-          style={{ backgroundColor: "var(--color-bg)" }}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: phase === "fading" ? 0 : 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: FADE_MS / 1000, ease: BLUR_EASE }}
+          style={{
+            backgroundColor: "var(--color-bg)",
+            opacity: phase === "fading" ? 0 : 1,
+            transition: `opacity ${FADE_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+          }}
         >
           <div
             className="flex items-center whitespace-nowrap"
@@ -207,10 +206,11 @@ export default function LoadingOverlay({
             </span>
 
             {starHere && (
-              // Wrapping mirrors PlaygroundStar's structure (outer 0.66em
-              // slot, inner 0.42em glyph span) so the layoutId morph only
-              // interpolates size + position. The wrapper's font-size is
-              // ~3× the text's so the glyph reads larger than the text.
+              // The terminal ✧ of the sparkle trail — rides the end of the
+              // typed text, blinks like a cursor before typing starts, and
+              // fades out with the overlay. (No layoutId morph: the old
+              // hero-star receiver lives in Hero, which doesn't mount on
+              // the home view, so the handoff was a no-op.)
               <span
                 aria-hidden
                 className="inline-flex items-center justify-center shrink-0"
@@ -222,38 +222,23 @@ export default function LoadingOverlay({
                   flex: "0 0 auto",
                   // Negative margin cancels the slot's left-side padding so
                   // the visible glyph sits flush against the typed text —
-                  // makes "Welcome" feel like it's emanating from the star.
+                  // the trail feels like it's streaming from the star.
                   marginLeft: "-0.18em",
                   // Cursor-blink: opacity toggles instantly on the wrapper
-                  // (no CSS transition) so the star flickers cleanly. The
-                  // motion.span layoutId child keeps tracking position
-                  // through the toggle.
+                  // (no CSS transition) so the star flickers cleanly.
                   opacity: starBlinkOn ? 1 : 0,
                 }}
               >
                 <span
                   style={{ position: "relative", display: "inline-block", fontSize: "0.42em", lineHeight: 1 }}
                 >
-                  <motion.span
-                    layoutId="hero-star"
-                    style={{ display: "inline-block", fontWeight: 500 }}
-                    // Instant layout updates so the star snaps along with
-                    // each typed/backspaced character, anchored to the
-                    // text rather than gliding behind it. The morph into
-                    // the wordmark slot uses the wordmark's own spring
-                    // transition (PlaygroundStar) since framer-motion
-                    // drives shared-layoutId animations from the new
-                    // element's transition (glyph crossfades ✧ → *).
-                    transition={{ layout: { duration: 0 } }}
-                  >
-                    ✧
-                  </motion.span>
+                  <span style={{ display: "inline-block", fontWeight: 500 }}>✧</span>
                 </span>
               </span>
             )}
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

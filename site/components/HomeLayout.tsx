@@ -4,7 +4,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
-import CyclingGreeting from "./CyclingGreeting";
 import LoadingOverlay from "./LoadingOverlay";
 import {
   Tooltip,
@@ -171,13 +170,8 @@ export default function HomeLayout({
             <Grid preset="intro-rail" className="mt-8">
             <Col>
             <div className="flex flex-col gap-6">
-              {/* Page heading — Libre Baskerville, the site's new serif.
-                  Text is the CyclingGreeting: "Marco Sevilla" anchor →
-                  pre-phrases → hello ×10 languages, looping. aria-label
-                  keeps the accessible name stable while the visual text
-                  cycles. */}
+              {/* Page heading — Libre Baskerville, the site's new serif. */}
               <motion.h1
-                aria-label="Marco Sevilla"
                 style={{
                   fontFamily: BASKERVILLE,
                   fontSize: 32,
@@ -193,10 +187,13 @@ export default function HomeLayout({
                 }}
                 transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.1 }}
               >
-                <CyclingGreeting start={heroReady} />
+                Marco Sevilla
               </motion.h1>
 
-              {/* Tagline — serif italic, full-ink. */}
+              {/* Tagline — serif italic, full-ink. (CyclingGreeting was
+                  mounted here briefly 2026-07-15, then parked — the
+                  component lives on in components/CyclingGreeting.tsx,
+                  swap it back in for the text node to re-enable.) */}
               <motion.p
                 style={{
                   fontFamily: BASKERVILLE,

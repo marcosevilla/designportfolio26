@@ -545,9 +545,8 @@ body::before {
   display: inline-flex;
   align-items: center;
   animation: blink-cursor 1.2s steps(1, end) infinite;
-  /* Absolute size — decoupled from the header so the smaller pre-phrase
-     scale doesn't shrink the cursor with it. */
-  font-size: 26px;
+  /* Absolute size — sized against the 18px italic tagline it lives in. */
+  font-size: 20px;
   line-height: 1;
 }
 

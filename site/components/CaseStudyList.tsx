@@ -408,26 +408,25 @@ function ProjectGrid({
   );
 }
 
-// Testimonials — each quote is a full body-text paragraph with the
-// author set off in tertiary. Sits on the prose band (cols 4-9) so the
-// block reads as editorial text, not another card row.
+// Testimonials — one quote per colleague, set three-up across the full
+// editorial canvas (cols 1-4 / 5-8 / 9-12 at desktop; stacks on
+// smaller bands like the study cells above).
 function Testimonials() {
+  const lgSpecs = ["1-4", "5-8", "9-12"] as const;
   return (
     <div className="flex flex-col gap-16">
       <SectionLabel>Kind words</SectionLabel>
-      <Grid preset="prose">
-        <Col>
-          <div className="flex flex-col gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <p key={i} style={{ ...typescale.body, color: "var(--color-fg-secondary)" }}>
-                “{t.text}”{" "}
-                <span style={{ color: "var(--color-fg-tertiary)" }}>
-                  — {t.author}
-                </span>
-              </p>
-            ))}
-          </div>
-        </Col>
+      <Grid>
+        {TESTIMONIALS.map((t, i) => (
+          <Col key={t.author} lg={lgSpecs[i % lgSpecs.length]}>
+            <p style={{ ...typescale.body, color: "var(--color-fg-secondary)" }}>
+              “{t.text}”{" "}
+              <span style={{ color: "var(--color-fg-tertiary)" }}>
+                — {t.author}
+              </span>
+            </p>
+          </Col>
+        ))}
       </Grid>
     </div>
   );
