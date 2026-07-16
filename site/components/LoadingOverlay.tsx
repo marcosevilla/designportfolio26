@@ -22,15 +22,16 @@ const TARGET_CHARS = Array.from(TARGET);
 // Plain typewriter — each letter locks in directly without scramble.
 // No backspace phase (cut 2026-07-15): the sequence ends a beat after the
 // full trail is on screen, then fades straight into the page.
-const TYPE_DELAY_MS = 40;
-const HOLD_MS = 1100;
-const PRE_TYPE_DELAY_MS = 350;
-const PRE_FADE_DELAY_MS = 250;
-const FADE_MS = 600;
+// All timings ÷1.5 (2026-07-15, Marco: "speed up by 1.5x").
+const TYPE_DELAY_MS = 27;
+const HOLD_MS = 730;
+const PRE_TYPE_DELAY_MS = 235;
+const PRE_FADE_DELAY_MS = 165;
+const FADE_MS = 400;
 
 // Cursor-style blink before any typing happens.
 const BLINK_COUNT = 3;
-const BLINK_HALF_MS = 420; // on time and off time per half-cycle
+const BLINK_HALF_MS = 280; // on time and off time per half-cycle
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
