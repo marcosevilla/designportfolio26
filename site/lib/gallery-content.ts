@@ -88,7 +88,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         parallax: "bottom",
         uiBorderRadius: "16px",
         uiShadow:
-          "drop-shadow(0 30px 60px rgba(0, 0, 0, 0.30)) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))",
+          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
       },
     },
   ],
@@ -117,7 +117,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         uiWidth: "88%",
         parallax: "bottom",
         uiShadow:
-          "drop-shadow(0 30px 60px rgba(0, 0, 0, 0.30)) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))",
+          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
       },
     },
   ],
@@ -134,7 +134,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         // the compendium card so the two layered cards share one shadow
         // language.
         uiShadow:
-          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05)) drop-shadow(0 12px 28px rgba(0, 0, 0, 0.08)) drop-shadow(0 32px 56px rgba(0, 0, 0, 0.06))",
+          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
       },
     },
   ],
@@ -152,7 +152,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         // Same 3-stop ambient lift used on check-in + compendium so the
         // three layered cards share one shadow language.
         uiShadow:
-          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05)) drop-shadow(0 12px 28px rgba(0, 0, 0, 0.08)) drop-shadow(0 32px 56px rgba(0, 0, 0, 0.06))",
+          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
       },
     },
   ],

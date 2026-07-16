@@ -59,30 +59,8 @@ export default function DeviceShell({
         ...style,
       }}
     >
-      {/* Browser chrome — traffic lights only, no URL, so the shell
-          stays quiet next to the artifact. */}
-      <div
-        className="flex items-center gap-1.5 px-3"
-        style={{
-          height: 24,
-          backgroundColor: "var(--color-surface-raised)",
-          borderBottom: "1px solid var(--color-border)",
-          flexShrink: 0,
-        }}
-      >
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            aria-hidden
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              backgroundColor: "var(--color-border)",
-            }}
-          />
-        ))}
-      </div>
+      {/* Chrome bar (traffic lights) removed 2026-07-15 — the shell is
+          just a clean bordered window now. */}
       <div
         className="relative flex-1 overflow-hidden"
         style={{ backgroundColor: "var(--color-muted)" }}
