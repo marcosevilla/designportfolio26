@@ -45,6 +45,13 @@ export default function ChatFab() {
                   initial={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}
                   animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                   exit={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}
+                  whileTap={{
+                    scale: 0.96,
+                    // Snappier than the 0.22s enter/exit tween — at that
+                    // speed a quick click releases before the press is
+                    // perceptible.
+                    transition: { duration: 0.1, ease: EASE },
+                  }}
                   transition={{ duration: 0.22, ease: EASE }}
                   className="relative flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
                   style={{

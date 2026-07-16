@@ -438,6 +438,7 @@ body::before {
    reads as part of the same icon row as HeroActions. Hover and active wear
    the same accent-tinted background so "active" persists the hover look. */
 .bio-toolbar-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -448,7 +449,20 @@ body::before {
   background: transparent;
   color: var(--color-fg-secondary);
   cursor: pointer;
-  transition: color 150ms ease, background 150ms ease;
+  transition: color 150ms ease, background 150ms ease, scale 150ms ease;
+}
+
+/* Extend the hit area beyond the 32px visual: ±4px vertically, ±2px
+   horizontally — siblings sit in gap-1 (4px) rows, so 2px each side is
+   the most we can take without adjacent hit areas overlapping. */
+.bio-toolbar-btn::after {
+  content: "";
+  position: absolute;
+  inset: -4px -2px;
+}
+
+.bio-toolbar-btn:active {
+  scale: 0.96;
 }
 
 .bio-toolbar-btn:hover,
@@ -462,6 +476,7 @@ body::before {
    "Ask me anything" chat trigger). Auto-width with side padding, same
    transparent rest / shaded hover treatment as the icon-only siblings. */
 .bio-toolbar-pill {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -472,7 +487,17 @@ body::before {
   background: transparent;
   color: var(--color-fg-secondary);
   cursor: pointer;
-  transition: color 150ms ease, background 150ms ease;
+  transition: color 150ms ease, background 150ms ease, scale 150ms ease;
+}
+
+.bio-toolbar-pill::after {
+  content: "";
+  position: absolute;
+  inset: -4px -2px;
+}
+
+.bio-toolbar-pill:active {
+  scale: 0.96;
 }
 
 .bio-toolbar-pill:hover,
@@ -616,7 +641,8 @@ mark.bio-highlight {
    reads cleanly against any surface. Pure black in light / pure white in
    dark — see --color-image-outline (never tinted neutrals). */
 .image-outline,
-img[class*="rounded-"] {
+img[class*="rounded-"],
+video[class*="rounded-"] {
   outline: 1px solid var(--color-image-outline);
   outline-offset: -1px;
 }
@@ -885,7 +911,6 @@ img[class*="rounded-"] {
    a drawer that overlays content (no push). */
 body {
   transition: padding-right 0.46s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: padding-right;
 }
 @media (min-width: 1024px) {
   [data-chat-open="true"] body {

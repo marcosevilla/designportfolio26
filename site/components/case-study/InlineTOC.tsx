@@ -58,7 +58,7 @@ export default function InlineTOC() {
     >
       <Link
         href={backHref ?? "/#projects"}
-        className="flex items-center gap-1 transition-colors hover:text-(--color-accent) mb-6"
+        className="flex items-center gap-1 transition-colors hover:text-(--color-accent) mb-6 py-1 -my-1"
         style={{
           color: "var(--color-fg-secondary)",
           fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
@@ -115,7 +115,10 @@ export default function InlineTOC() {
               <a
                 href={`#${item.id}`}
                 onClick={(e) => handleClick(e, item.id)}
-                className="block transition-colors"
+                // py-1/-my-1 grows the 20px row to a 28px hit area without
+                // moving anything — rows sit in 8px gaps, so ±4px is the
+                // most before adjacent link hit areas would overlap.
+                className="block transition-colors py-1 -my-1"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                   fontSize: "12px",

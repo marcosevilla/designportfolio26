@@ -554,7 +554,10 @@ export default function ObjectFlowDiagram() {
               type="button"
               aria-pressed={view === v}
               onClick={() => switchView(v)}
-              className="px-3 py-1.5"
+              // The ::after extends the ~28px visual to a 40px hit area,
+              // vertically only — the two segments sit flush against each
+              // other, so horizontal extension would overlap.
+              className="px-3 py-1.5 relative after:absolute after:inset-x-0 after:-inset-y-1.5 after:content-[''] active:scale-[0.96]"
               style={{
                 fontFamily: "var(--font-mono-system)",
                 fontSize: "11px",
@@ -564,7 +567,7 @@ export default function ObjectFlowDiagram() {
                 background: view === v ? ACCENT_TINT : "transparent",
                 borderLeft: i > 0 ? "1px solid var(--color-border)" : "none",
                 cursor: "pointer",
-                transition: "color 0.2s, background 0.2s",
+                transition: "color 0.2s, background 0.2s, scale 0.15s ease",
               }}
             >
               {VIEW_META[v].label}

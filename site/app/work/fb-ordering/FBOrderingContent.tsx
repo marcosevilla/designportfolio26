@@ -39,7 +39,7 @@ export default function FBOrderingContent() {
               <img
                 src="/images/fb-ordering/fb-ordering-dashboard.png"
                 alt="Staff order detail with approve/deny"
-                className="w-full"
+                className="w-full image-outline"
                 style={{
                   borderRadius: "8px 8px 18px 18px",
                   // Same 3-stop ambient lift as the DeviceShell specimens.

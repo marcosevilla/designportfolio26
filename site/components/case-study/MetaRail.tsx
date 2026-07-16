@@ -46,7 +46,11 @@ export default function MetaRail({ items }: { items: MetaRailItem[] }) {
                   <Tooltip>
                     <TooltipTrigger
                       aria-label={`More about ${item.label.toLowerCase()}`}
-                      className="ml-1.5 inline-flex translate-y-[2px] cursor-default text-(--color-fg-tertiary) transition-colors hover:text-(--color-fg-secondary)"
+                      // ::before extends the 14px glyph to a ~42px hit
+                      // area (tap-friendly for the mobile tooltip) — the
+                      // neighboring rail text isn't interactive, so the
+                      // overlap is safe.
+                      className="ml-1.5 inline-flex translate-y-[2px] cursor-default text-(--color-fg-tertiary) transition-colors hover:text-(--color-fg-secondary) relative before:absolute before:-inset-3.5 before:content-['']"
                     >
                       <svg
                         width="14"
