@@ -19,7 +19,6 @@ const libreBaskerville = Libre_Baskerville({
   display: "swap",
 });
 import MobileNav from "@/components/MobileNav";
-import { MarqueeProvider } from "@/components/MarqueeContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import ViewportFade from "@/components/ViewportFade";
 import { InlineEditorProvider } from "@/lib/InlineEditorContext";
@@ -85,7 +84,6 @@ export default function RootLayout({
           <ThemeStateProvider>
           <AudioPlayerProvider>
           <VisualizerSceneProvider>
-          <MarqueeProvider>
             <SidebarProvider>
               <PasswordGateProvider>
                 <NavOverlayProvider>
@@ -130,7 +128,6 @@ export default function RootLayout({
                 </NavOverlayProvider>
               </PasswordGateProvider>
             </SidebarProvider>
-          </MarqueeProvider>
           </VisualizerSceneProvider>
           </AudioPlayerProvider>
           </ThemeStateProvider>
