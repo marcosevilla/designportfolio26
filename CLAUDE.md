@@ -18,7 +18,6 @@
 
 ## Known Gotchas
 - framer-motion packages have corrupted before — if you see weird build errors after no code changes, try `rm -rf node_modules && npm install` in `site/`
-- The BackgroundTexture component is sensitive — changes to it have broken the entire dev server in the past. Tread carefully and commit before touching it
 - All code lives in `site/` — run all npm commands from there, not the project root
 - After making config changes (`.claude/settings.json`, hooks, MCP configs), inform the user if a session restart is needed for changes to take effect
 - The PostToolUse hook runs `tsc --noEmit` after TS/TSX edits — if it reports errors, fix them before continuing
@@ -45,7 +44,8 @@ Reference docs live in `docs/`. Read the relevant ones based on the task — don
 | `marco_canary_portfolio.md` | Needs impact stats or ownership data for case studies |
 | `portfolio-inspiration-analysis.md` | Making design direction decisions or comparing to references |
 | `designer-portfolios.md` | Looking at reference portfolios for inspiration |
-| `TEXTURE_FEATURE_NOTES.md` | Resuming background texture work — has blocking issues and recovery plan |
+| `DEAD-CODE-AUDIT.md` | Full unused/hidden-code inventory (2026-07-15) — phantom slugs, orphan routes, stale data |
+| `SALVAGE-REVIEW.md` | What was kept for reuse after the dead-code deletion + recovery commits for everything deleted, incl. the intro/greeting animations |
 | `PORTFOLIO-RESEARCH.md` | Deep research on case study content, homepage strategy, and visual design best practices — sourced from 30+ design leaders and publications |
 | `PORTFOLIO-AUDIT.md` | Full audit of the current site with prioritized recommendations (P0-P3) — covers content, visuals, accessibility, and performance |
 
@@ -75,106 +75,85 @@ A Next.js 14 portfolio site for a product designer, featuring case studies with 
 ```
 app/
 ├── page.tsx                    # Homepage (renders HomeLayout w/ work as RSC slot)
-├── layout.tsx                  # Root layout — mounts PasswordModal, MarqueeProvider
+├── layout.tsx                  # Root layout — providers, SiteHeader, ChatFab + music dock, PasswordModal
 ├── template.tsx                # Page transitions (framer-motion fade-in on route change)
 ├── api/
 │   └── chat/                   # Chat-bar server route (Node runtime)
 ├── work/
-│   ├── [slug]/                 # Dynamic route for MDX-based case studies
-│   ├── fb-ordering/            # Dedicated custom case study
-│   ├── compendium/             # Dedicated custom case study
-│   ├── upsells/                # Dedicated custom case study
-│   ├── checkin/                # Dedicated custom case study
-│   ├── general-task/           # Dedicated custom case study
-│   ├── design-system/          # Dedicated custom case study
-│   ├── ai-workflow/            # Dedicated "How I Work with AI" page
-│   ├── page.tsx                # Work collection page
-│   └── WorkContent.tsx
-├── play/                       # Playground index + 3 subpages
-│   ├── page.tsx                # Index — title + reused <Playground hideHeader />
-│   ├── six-degrees/
-│   ├── pajamagrams/
-│   └── custom-wrapped/
-├── writing/                    # Blog/writing section
+│   ├── fb-ordering/            # Dedicated case study (editorial grid, public)
+│   ├── compendium/             # Dedicated case study (editorial grid, locked)
+│   ├── knowledge-base/         # Dedicated case study (editorial grid, locked)
+│   ├── ai-workflow/            # "How I Work with AI" (public)
+│   ├── upsells/                # RESTORED 2026-07-15 from May history (TwoCol era, locked)
+│   ├── checkin/                # RESTORED 2026-07-15 (TwoCol era, locked)
+│   ├── general-task/           # RESTORED 2026-07-15 (TwoCol era, locked)
+│   ├── design-system/          # RESTORED 2026-07-15 (TwoCol era, locked)
+│   └── page.tsx                # Redirect stub → /#projects
+├── play/page.tsx               # Redirect stub → /#playground (subpages deleted May 4)
+├── resume/                     # In-app resume w/ print CSS (orphan — links use Drive PDF)
+├── writing/                    # "Coming soon" shell (linked from nothing)
 └── dev/
-    └── type-lab/               # Dev-only typography composition tool
+    └── type-lab/               # Typography composition tool — NOT NODE_ENV-gated, ships in prod build
 
 components/
 ├── case-study/                 # Reusable case study components (TwoCol, CaseStudyHero,
 │                               # CaseStudyShell, QuickStats, ExpandableSection, PullQuote,
 │                               # NextProject, ProgressBar, ImagePlaceholder, FadeIn,
 │                               # SectionHeading, SidebarTOCBridge, TOCObserver)
-├── chat/                       # Chat bar UI (ChatBar, ChatPanel, ChatOverlay,
-│                               # ChatMessage, ChatMessageActions, ChipPrompt,
-│                               # CaseStudyCardUnfurl, parseChatMarkup, parseStream)
-├── music/                      # Audio player surfaces (HomeMiniPlayer, PlayerChip,
-│                               # SeekBar, LedMatrixUI — scene toggles)
-├── fb-showcase/                # F&B interactive components (BrowserMockup, FBCardPreview,
-│                               # MobileShowcase, RoadmapEvolution, SystemArchitecture,
-│                               # DesignPrinciples)
-├── type-tuner/                 # Dev typography composition tool (Type Lab)
+├── chat/                       # Chat bar UI (ChatBar, ChatPanel, ChatFab, ChatMessage,
+│                               # ChatMessageActions, ChipPrompt, CaseStudyCardUnfurl,
+│                               # parseChatMarkup, parseStream)
+├── music/                      # MusicMiniWidget (FAB dock) + InsetScrubber + PlayerChip
+├── fb-showcase/                # ObjectFlowDiagram (live on F&B page) + kept-for-salvage:
+│                               # RoadmapEvolution, SystemArchitecture, MobileShowcase,
+│                               # BrowserMockup (see docs/SALVAGE-REVIEW.md)
+├── layout/                     # Grid.tsx — editorial 12-col Grid/Col primitives
+├── type-tuner/                 # Typography composition tool (/dev/type-lab — ships in prod!)
 ├── dev/                        # Dev-only inline content editor (EditableOverlay,
-│                               # FloatingToolbar, SectionReorder)
-├── ui/                         # Primitives (button, slider, tooltip)
+│                               # FloatingToolbar, SectionReorder) — NODE_ENV-gated
+├── ui/                         # Primitives (tooltip — Base UI)
 │
-├── HomeLayout.tsx              # Homepage shell — Hero, HomeNav, HeroToolbar/MobileToolbar,
-│                               # LedMatrix, work slot, Playground
-├── Hero.tsx                    # Multi-phase intro animation with streaming text + chat bar
-├── HomeNav.tsx                 # Homepage anchor nav (Home / Work / Playground), * marker
-├── HeroToolbar.tsx             # Unified fixed-top toolbar (desktop) — palette popover,
-│                               # music expand, LED matrix scenes, time/weather right cluster
-├── MobileToolbar.tsx           # Mobile variant of the unified toolbar
-├── HamburgerMenu.tsx           # Toolbar overflow menu
-├── MobileNav.tsx               # Case-study-only top bar (single Back link via SidebarContext)
-├── LedMatrix.tsx               # LED matrix audio visualizer (homepage)
-├── BackgroundTexture.tsx       # Perlin noise dot wave (SENSITIVE - commit before editing)
-├── LockGate.tsx                # WIP-courtesy gate — `card` (hover overlay) / `page` modes
+├── HomeLayout.tsx              # Homepage shell — editorial grid canvas; Hero renders
+│                               # ONLY in About-me mode (intro streaming is About-only)
+├── Hero.tsx                    # About-me surface (bio paragraphs, resume CTA)
+├── SiteHeader.tsx + HeaderToolbar.tsx  # Global top chrome (wordmark, controls)
+├── NavOverlay.tsx + HamburgerMenu.tsx  # Left-edge checkerboard rail → slide drawer nav
+├── MobileNav.tsx               # Case-study-only top bar (Back link via SidebarContext)
+├── LedMatrix.tsx               # LED matrix audio visualizer canvas
+├── LockGate.tsx                # WIP-courtesy gate — `card` / `page` modes
 ├── PasswordModal.tsx           # Global unlock modal (mounted in layout.tsx)
-├── PaletteSwatches.tsx         # Theme swatch row (used inside HeroToolbar palette popover)
-├── ThemeToggle.tsx             # Theme state hook + applyColoredTheme runtime overrides
-├── HighlightableBio.tsx        # Bio surface with highlightable phrases
-├── HighlighterContext.tsx      # Highlight state provider
+├── PaletteSwatches.tsx / ThemeToggle.tsx  # Theme swatches + applyColoredTheme
+├── HighlightableBio.tsx + HighlighterContext.tsx + PhotoStack.tsx  # About bio surfaces
 ├── ConnectLinks.tsx            # Email / LinkedIn / Resume CTA cluster
-├── Resume.tsx                  # Resume content surface
-├── GalleryMode.tsx             # Gallery view component
-├── PhotoStack.tsx              # Photo stack visual
-├── LocalStatus.tsx             # Time / weather / location strip (toolbar right cluster)
-├── LoadingOverlay.tsx          # Hero loader (Geist * inside large slot)
-├── CaseStudyCard.tsx           # Homepage project cards (frosted glass, sharp edges)
-├── CaseStudyList.tsx           # Card/list toggle, localStorage persistence
-├── CaseStudyListRow.tsx        # List view row (year | title | company·role | metric)
-├── CaseStudyCarousel.tsx       # Carousel view (in-flight, see feature/carousel-view)
-├── Marquee.tsx                 # Scrolling quotes/testimonials
-├── MarqueeContext.tsx          # Marquee visibility state
-├── StreamingText.tsx           # Character-by-character text animation
-├── Playground.tsx              # Playground roster + cards (homepage section + /play index)
-├── TwoCol.tsx                  # Shared two-column editorial layout
-├── Icons.tsx                   # Shared icon components
-├── ViewportFade.tsx            # Footer gradient overlay
-└── FadeIn.tsx                  # Scroll-triggered fade animation (global)
+├── Resume.tsx                  # In-app resume (route /resume, print CSS)
+├── LocalStatus.tsx             # Time / weather / location strip
+├── LoadingOverlay.tsx          # Load intro: * blink → type "Welcome" → morph to wordmark.
+│                               # OFF via SKIP_INTRO=true (line 12); preview w/ ?loader=1 in dev
+├── CaseStudyList.tsx           # THE homepage work grid (StudyCell media frames, playground
+│                               # cells, lightbox, parked CellCaption + tag filter)
+├── WorkHistory.tsx + case-study/ProjectDetails.tsx  # Kept-for-salvage (unmounted, both work)
+├── DeviceShell.tsx             # Phone/browser specimen shells for card media
+├── StreamingText.tsx           # Character streaming (used by About bio)
+├── TwoCol.tsx                  # RESTORED 2026-07-15 — layout dep of the 4 restored studies only;
+│                               # new work uses the editorial grid
+├── Icons.tsx / ViewportFade.tsx / FadeIn.tsx  # Shared utilities
 
 lib/
 ├── locked-content.ts           # Single source of truth for locked slugs (LOCKED_SLUGS Set)
 ├── PasswordGateContext.tsx     # Unlocked-state provider (env-hash + multi-tab sync)
 ├── SidebarContext.tsx          # Case-study sidebar state + backHref
-├── playground-cards.ts         # Playground roster (homepage + /play index share this)
+├── playground-cards.ts         # Playground roster (homepage cells)
 ├── chat/                       # Chat data + prompt + rate-limit + study-metadata
-├── AudioPlayerContext.tsx      # Audio player state
-├── VisualizerSceneContext.tsx  # LED matrix scene selection
-├── visualizer-scenes.ts        # Scene definitions for LED matrix
-├── audio-analysis.ts           # FFT / audio analysis for visualizer
-├── playlist.ts                 # Audio track list
-├── carousel-transition.ts      # Carousel transition timing
-├── bio-content.ts              # Bio paragraph content (used by HighlightableBio)
-├── content.ts                  # Shared content helpers
-├── gallery-content.ts          # Gallery items
-├── resume-content.ts           # Resume data
+├── layout-presets.ts           # Editorial grid spec parser + presets
+├── AudioPlayerContext.tsx / VisualizerSceneContext.tsx / visualizer-scenes.ts
+├── audio-analysis.ts / playlist.ts
+├── NavOverlayContext.tsx / ChatOverlayContext.tsx / ChangelogOverlayContext.tsx
+├── carousel-transition.ts      # Kept-for-salvage: gradient-veil route transition
+├── dot-font.ts                 # Kept-for-salvage: 3×5 bitmap pixel font + canvas helpers
+├── bio-content.ts              # Bio paragraphs (generated from content/bio.md)
+├── content.ts / gallery-content.ts / resume-content.ts / changelog.ts
 ├── editor-types.ts + InlineEditorContext.tsx  # Dev inline editor
-├── dot-font.ts                 # Pixel font for LED matrix
-├── springs.ts                  # Shared spring configs (SPRING_HEAVY, SPRING_SNAP)
-├── study-tags.ts               # Tag filtering for case study list
-├── typography.ts               # Typescale tokens
-├── types.ts + utils.ts         # Shared types + helpers
+├── springs.ts / study-tags.ts / typography.ts / types.ts / utils.ts
 
 content/                        # MDX case study metadata (fb-ordering, checkin, general-task,
                                 # design-system, compendium, upsells)
@@ -206,11 +185,8 @@ These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + 
 
 ## Key Patterns
 
-### DEDICATED_ROUTES
-In `app/work/[slug]/page.tsx`, case studies with custom pages are excluded from static generation:
-```typescript
-const DEDICATED_ROUTES = new Set(["fb-ordering", "compendium", "upsells", "checkin", "general-task", "design-system", "ai-workflow"]);
-```
+### Routes ↔ data reconciliation (2026-07-15)
+The dynamic `app/work/[slug]/` route is long gone — every study is a dedicated route. Slug sets that must stay in sync when adding/removing a study: `lib/locked-content.ts` (LOCKED_SLUGS), `CaseStudyList.tsx` (STUDY_ROUTES + HIDDEN_SLUGS), `lib/chat/study-metadata.ts` (STUDY_SLUGS/METADATA), `lib/chat/case-study-content.ts` (FILENAME_BY_SLUG), `lib/editor-types.ts` (SLUG_TO_FILE), `content/*.mdx`. Known gap: `knowledge-base` has a live route but no chat metadata entry; chat study links resolve to `/#projects` (hardcoded in parseChatMarkup + CaseStudyCardUnfurl since May 4) even though routes exist again.
 
 ### Case Study Content Component Pattern
 Each dedicated case study has:
@@ -401,12 +377,10 @@ Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No 
 - **Mobile sticky heading:** `sticky top-14 z-40` with frosted glass bg, releases when parent section scrolls out
 - **Spacing:** `mt-28` (112px) between sections
 
-### Hero Intro Sequence
-- **5 phases:** star1 (`*` blink 1800ms, Geist weight 500) → heading streams word-by-word → star2 (1800ms) → bio paragraph streams → done
-- **Word streaming:** 40ms/word, 250ms opacity fade per word
-- **6-level progressive disclosure:** Each "+" click shows next bio paragraph with loading star (1200ms) + stream
-- **Question prompts:** "What else have you worked on?" / "How'd you get into design?" / "What drives your work?" / "What do you do outside of work?" / "How can I reach you?"
-- **SessionStorage skip:** `portfolio-intro-seen` — same-session revisits skip to `done`
+### Load Intro (LoadingOverlay)
+- **Current sequence (OFF by default):** `*` cursor-blinks ×3 → types "Welcome" (95ms/char) → holds → backspaces → star morphs via layoutId `hero-star` into the wordmark star → bg fade. Once per session (`portfolio-loaded`).
+- **Kill switch:** `SKIP_INTRO = true` at `LoadingOverlay.tsx:12` — flip to `false` to restore. Dev preview without flipping: `?loader=1`.
+- The older 5-phase streaming hero + CyclingGreeting typing header are deleted — recovery commits in `docs/SALVAGE-REVIEW.md`.
 
 ### Theme Palette Picker
 - **Surface:** Popover from the unified toolbar's palette button (desktop) / bottom sheet (mobile)
@@ -449,6 +423,12 @@ Before ending any session:
 ## Current State
 _Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
+- **Latest (2026-07-15, branch `feat/restore-studies-and-cleanup`, off `feat/object-flow-dual-view`):** Dead-code audit follow-up session.
+  - **Restored** the four May-era case studies (`/work/upsells`, `/work/checkin`, `/work/general-task`, `/work/design-system`) from pre-`7bfb4ff` history + `TwoCol.tsx` as their layout dep. Home cards re-enabled (HIDDEN_SLUGS emptied, all four in STUDY_ROUTES); still in LOCKED_SLUGS — unlock once (default code) and cards click through. design-system has no gallery media → renders the "Under construction" frame.
+  - **Deleted ~5,700 lines of dead code** (old toolbars, HomeMiniPlayer/SeekBar/LedMatrixUI, CaseStudyCard/Carousel/ListRow + carousel stubs, FBCardPreview, Marquee+MarqueeContext, ChatOverlay, Playground.tsx, InlineChip, MobileSectionNav, TextureDivider, ui/button+slider, useMediaQuery, lib/_archive) + 4 npm deps (lucide-react, next-mdx-remote, class-variance-authority, dialkit). Kept-for-salvage list + recovery commits: `docs/SALVAGE-REVIEW.md`.
+  - **Pruned stale docs** (jellyfish ×4, carousel ×2, TEXTURE_FEATURE_NOTES) and reconciled this file's structure section.
+  - **Open decisions for Marco:** re-enable load intro (`SKIP_INTRO=false`)? revive CyclingGreeting from `e59ddb5`? chat phantom-study links (see Routes ↔ data reconciliation above)? gate `/dev/type-lab`? surface `/writing` + in-app `/resume`?
+
 - **Later same session (2026-07-15, same branch):** Homepage grid: "Just for fun" label above playground cards (shared SectionLabel); cards went PURE-VISUAL (CellCaption parked in CaseStudyList.tsx, copy still in study metadata + playground-cards.ts). **Specimen-system prototype** for theme-cohesive card media: `DeviceShell.tsx` (phone/browser shells, one shadow spec), gallery video schema gains `shell`/`zoom`, applied to fb-mobile (phone) + guest-experience-dash (browser, zoom crops baked navy); fb-ordering added to CARD_TINTS. Rule: canvas is live CSS, media is a contained artifact, nothing full-bleed. KNOWN LIMIT: fb-mobile.mp4 changes composition mid-loop so the crop clips some scenes — needs a tight screen-only re-export (spec for all future recordings). F&B page: fulfillment-table mock removed; ObjectFlowDiagram wrapped in hairline container stroke + padding (no fill — cards are surface-filled).
 - **Also this session (2026-07-15, same branch):** (1) F&B lone-text sections (Problem/Solution/Research/Impact/Reflection) moved to `media-right` with ImagePlaceholders whose descriptions double as the Figma-export shot list. (2) Homepage feedback pass: featured work-grid cell media frame now 323/480/560 by band (video no longer cover-cropped); contact rail REMOVED — Resume/LinkedIn/Email are plain dotted-underline text links directly under the bio (Marco reversed an intermediate header placement, commit 9424b6f → a115e0b); Ask me anything is now `ChatFab`, a round FAB matching the music dock, both in a shared fixed container in `app/layout.tsx` (MusicMiniWidget no longer self-positions). `AskMeAnythingButton.tsx` + `SocialLinks.tsx` deleted.
 - **Last worked on (2026-07-15):** F&B object-flow diagram **dual view** on branch **`feat/object-flow-dual-view`** (NOT merged) — segmented control toggles "System composition" (Items→Mods→Menus→Outlets) vs "Guest ordering flow" (Outlets→Menus→Items→Mods, direct menu→item edges). Cards glide between column orders, connectors crossfade, route engine + hover/pin anchor flips to the view's leftmost column. Per-view caption replaces the static figure caption in `FBOrderingContent.tsx`. Spec: `docs/superpowers/specs/2026-07-15-object-flow-dual-view-design.md`. Verified both views + pinning + round-trip in browser. **Caption copy is placeholder — Marco wants a pass.** Origin: external feedback on the diagram; "labels" from that feedback = per-view captions (confirmed). Also note: main has 2 unpushed diagram commits (b0f1ef2, 14d5758) predating this branch.
@@ -474,7 +454,7 @@ _Updated by Claude at end of each session. Architectural facts get promoted into
   - `position: fixed` overlays nested under HomeLayout's framer-motion wrappers get trapped by the animated `filter` style (it becomes the containing block) — portal to `document.body` (see `MediaPreviewLightbox`). SiteHeader is `z-[130]`; overlays that must cover it need z ≥ 140.
   - Agentation toolbar (dev-only, bottom-right) intercepts clicks on the music dock in that corner during browser automation — hide `[data-agentation-root]` when testing.
   - `vercel` CLI is now linked to project `marcosevillaportfolio` (`.vercel/` gitignored). `vercel env pull` returns empty strings for the three chat secrets (sensitive) — that's expected, not a config bug.
-  - Deprecated-but-present: `CaseStudyCard.tsx`, `CaseStudyListRow.tsx` (stale hrefs), `lib/carousel-transition.ts` (carousel worktree). Untracked: `docs/fb-gallery/`, `case-studies/fb-mobile-ordering-benji.md`.
+  - Dead-code cleanup shipped 2026-07-15 (branch `feat/restore-studies-and-cleanup`): see `docs/DEAD-CODE-AUDIT.md` + `docs/SALVAGE-REVIEW.md`. Kept-for-salvage files are deliberately unreferenced — don't re-flag them as dead.
 - **Open loops:**
   - Hightouch referral blurb finalized in `~/Developer/job-hunt/hightouch-application.md` — Marco still needs to send it to Erika.
   - Remaining locked studies (compendium, knowledge-base, upsells, checkin, general-task, design-system) still need content passes before ungating.
