@@ -871,7 +871,7 @@ const PLACEHOLDER_BG =
 // Slugs hidden from the homepage gallery (in-flight content / not
 // ready to show). Removing a slug from this set re-enables the card
 // without touching anywhere else.
-const HIDDEN_SLUGS = new Set<string>(["upsells", "design-system"]);
+const HIDDEN_SLUGS = new Set<string>([]);
 
 // Slugs that route to a dedicated case study page. Cards in this map
 // render as <Link>; every other card is a static, non-interactive
@@ -881,6 +881,10 @@ const STUDY_ROUTES: Record<string, string> = {
   compendium: "/work/compendium",
   "ai-workflow": "/work/ai-workflow",
   "knowledge-base": "/work/knowledge-base",
+  upsells: "/work/upsells",
+  checkin: "/work/checkin",
+  "general-task": "/work/general-task",
+  "design-system": "/work/design-system",
 };
 
 // Per-card accent tint, blended at low opacity over CARD_BG so each
