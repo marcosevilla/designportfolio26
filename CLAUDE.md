@@ -423,7 +423,14 @@ Before ending any session:
 ## Current State
 _Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
-- **Latest (2026-07-15, branch `feat/restore-studies-and-cleanup`, off `feat/object-flow-dual-view`):** Dead-code audit follow-up session.
+- **Latest (2026-07-15 evening, same branch):** Intro/animation session on top of the audit work.
+  - **Load intro ON:** `SKIP_INTRO=false`. Sequence: `*` blinks ×3 → types the wand-kaomoji sparkle trail `(∩ᵔ ᵕ ᵔ )⊃━☆ﾟ…` (the trailing ✧ IS the loader star, not typed text) → holds → CSS fade to page. No backspace. All timings ÷1.5 (~4.5s total). Preview: `?loader=1` in dev.
+  - **CRITICAL FIX in LoadingOverlay:** the overlay's fade/unmount is plain CSS now — the old AnimatePresence/animate-opacity exit tween silently stalled (overlay stuck at opacity 1 over the page for first-time visitors, rAF healthy, React state correct). Do not reintroduce framer for the overlay lifecycle. The layoutId `hero-star` morph was removed too (receiver lives in Hero, which never mounts on home — it was a no-op).
+  - **CyclingGreeting:** revived from `e59ddb5`, briefly in the h1, then moved to the tagline, then PARKED (Marco: "maybe later") — component lives in `components/CyclingGreeting.tsx` (anchor-phrase cycle, Geist `*` cursor, `start` prop), cursor CSS still in globals.css. Tagline + h1 are static again.
+  - **SiteHeader wordmark always visible** (scroll threshold removed).
+  - **Testimonials:** "Kind words" section between Select work and Just for fun — 3 condensed quotes (one per person), three equal lg columns (1-4/5-8/9-12), data in `lib/testimonials.ts`.
+  - **Marco's parallel WIP committed as checkpoint:** CustomCursor + `lib/cursor-label.ts`, fb-guest-ordering + photography-portfolio videos, upsells mock PNG, content passes on bio/knowledge-base/gallery/playground/ObjectFlowDiagram/MetaRail.
+- **Earlier same day (2026-07-15, branch `feat/restore-studies-and-cleanup`, off `feat/object-flow-dual-view`):** Dead-code audit follow-up session.
   - **Restored** the four May-era case studies (`/work/upsells`, `/work/checkin`, `/work/general-task`, `/work/design-system`) from pre-`7bfb4ff` history + `TwoCol.tsx` as their layout dep. Home cards re-enabled (HIDDEN_SLUGS emptied, all four in STUDY_ROUTES); still in LOCKED_SLUGS — unlock once (default code) and cards click through. design-system has no gallery media → renders the "Under construction" frame.
   - **Deleted ~5,700 lines of dead code** (old toolbars, HomeMiniPlayer/SeekBar/LedMatrixUI, CaseStudyCard/Carousel/ListRow + carousel stubs, FBCardPreview, Marquee+MarqueeContext, ChatOverlay, Playground.tsx, InlineChip, MobileSectionNav, TextureDivider, ui/button+slider, useMediaQuery, lib/_archive) + 4 npm deps (lucide-react, next-mdx-remote, class-variance-authority, dialkit). Kept-for-salvage list + recovery commits: `docs/SALVAGE-REVIEW.md`.
   - **Pruned stale docs** (jellyfish ×4, carousel ×2, TEXTURE_FEATURE_NOTES) and reconciled this file's structure section.

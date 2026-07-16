@@ -24,6 +24,6 @@ export const PARAGRAPHS: Paragraph[] = [
   [
     { text: "I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. Outside of work, you'll find me" },
     { text: "taking photos at concerts", href: "photo-stack" },
-    { text: ", developing websites, or tinkering on design sidequests." },
+    { text: ", developing websites, or tinkering on design side projects." },
   ],
 ];

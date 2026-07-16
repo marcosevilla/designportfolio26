@@ -31,6 +31,7 @@ import { VisualizerSceneProvider } from "@/lib/VisualizerSceneContext";
 import { ThemeStateProvider } from "@/components/ThemeToggle";
 import MusicMiniWidget from "@/components/music/MusicMiniWidget";
 import ChatFab from "@/components/ChatFab";
+import CustomCursor from "@/components/CustomCursor";
 import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
 import ChatBar from "@/components/chat/ChatBar";
@@ -120,6 +121,7 @@ export default function RootLayout({
                   <MusicMiniWidget />
                 </div>
                 <ChatBar />
+                <CustomCursor />
                 <ChangelogOverlay groups={getChangelog()} />
                 <PasswordModal />
                 {process.env.NODE_ENV === "development" && <Agentation />}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Editorial Grid — Layout Reference</title>
+<title>Portfolio Guide — Layout + Capture Reference</title>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -181,6 +181,35 @@
   .file .path { font-family: var(--mono); font-size: 12.5px; color: var(--text); font-weight: 500; }
   .file p { font-size: 13px; color: var(--text-dim); margin-top: 5px; }
 
+  /* ── page two: capture guide ── */
+  .jump {
+    display: inline-block; margin-top: 18px; font-family: var(--mono); font-size: 12px;
+    color: var(--rail); text-decoration: none; border-bottom: 1px dashed var(--rail);
+  }
+  .jump:hover { color: var(--accent); border-color: var(--accent); }
+  .page-divider { display: flex; align-items: center; gap: 16px; margin-top: 120px; }
+  .page-divider::before, .page-divider::after { content: ""; flex: 1; border-top: 1px solid var(--border); }
+  .page-divider span {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint);
+  }
+  .chip {
+    display: inline-block; vertical-align: 2px; margin-left: 10px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.08em;
+    padding: 2px 9px; border-radius: 99px; border: 1px solid;
+  }
+  .chip--p0 { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+  .chip--p1 { color: var(--rail); border-color: var(--rail); background: var(--rail-dim); }
+  .chip--new { color: var(--accent-2); border-color: var(--accent-2); background: var(--accent-2-dim); }
+  td .cap-title { font-weight: 500; }
+  td .cap-note { display: block; color: var(--text-dim); font-size: 12.5px; margin-top: 2px; }
+  .gap-note {
+    margin-top: 18px; padding: 14px 18px; border-left: 3px solid var(--rail);
+    background: var(--rail-dim); border-radius: 0 8px 8px 0;
+    font-size: 13.5px; color: var(--text-dim);
+  }
+  .gap-note b { color: var(--text); }
+
   @media (prefers-reduced-motion: no-preference) {
     section, header { animation: fadeUp 0.5s ease both; }
     section:nth-of-type(1) { animation-delay: 0.05s; }
@@ -202,6 +231,7 @@
       shared vocabulary: say the words in the left columns and the layout on the right happens.
       Source of truth in code: <code>site/lib/layout-presets.ts</code>.
     </p>
+    <a class="jump" href="#capture-guide">↓ Page two — the capture list (prototypes → case studies)</a>
   </header>
 
   <section>
@@ -324,6 +354,183 @@
       <div class="file"><div class="path">site/components/case-study/MetaRail.tsx</div><p>Year / Role / Scope rail used by intro-rail.</p></div>
       <div class="file"><div class="path">site/scripts/contact-sheet.mjs</div><p><code>npm run sheet -- &lt;route&gt; [--unlock]</code> → <code>.sheets/&lt;slug&gt;/sheet.html</code>.</p></div>
       <div class="file"><div class="path">site/components/case-study/CaseStudyShell.tsx</div><p>The case-study canvas (width, TOC clearance, centering ≥1560px).</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ PAGE TWO ═══════════════════════ -->
+
+  <div class="page-divider" id="capture-guide"><span>Page two</span></div>
+
+  <header>
+    <div class="kicker">marcosevilla.com · capture guide</div>
+    <h1>The <em>Capture List</em> — prototypes → case studies</h1>
+    <p class="lead">
+      Everything worth recording from <code>msevilla-canary-prototypes</code>, mapped to the exact
+      portfolio slot it fills. Ordered by leverage: the public F&amp;B study first, then the media
+      that ungates locked studies, then net-new stories the portfolio doesn't tell yet.
+    </p>
+    <a class="jump" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Page one — the editorial grid</a>
+  </header>
+
+  <section>
+    <div class="section-label"><span class="num">07</span><h2>Setup &amp; recording spec</h2></div>
+    <p class="section-intro">
+      One session setup, reused for every capture below. The prototypes are a state-based router —
+      every screen is a <code>?page=</code> deep link, no clicking through menus to get there.
+    </p>
+    <div class="files">
+      <div class="file"><div class="path">server</div><p><code>cd ~/Developer/msevilla-canary-prototypes-1 &amp;&amp; npm run dev -- -p 3001</code> → <code>localhost:3001</code> (the portfolio dev server owns 3000).</p></div>
+      <div class="file"><div class="path">clean frame</div><p>Append <code>&amp;demo=1</code> to every URL — hides the Home button + all dev chrome. <code>⌘⇧H</code> toggles it live mid-recording.</p></div>
+      <div class="file"><div class="path">video spec</div><p>MP4, autoplay-loop-muted. Record <b>screen-only</b>: no baked margins or browser chrome, composition stable across the whole loop, native aspect (phone flows are 430×932). This is the lesson from <code>fb-mobile.mp4</code>, whose mid-loop composition change clips scenes in the card crop.</p></div>
+      <div class="file"><div class="path">still spec</div><p>PNG @2×. 16:9 → 2880×1620 · 3:4 → 1200×1600 · card frame 16:10. Full specs: <code>docs/VISUAL-EXPORT-GUIDE.md</code>.</p></div>
+      <div class="file"><div class="path">destinations</div><p>Videos → <code>site/public/videos/</code> · in-page stills → <code>site/public/images/&lt;slug&gt;/</code> · card composites → <code>site/public/images/gallery/&lt;slug&gt;/</code> · raw staging → <code>docs/fb-gallery/</code>.</p></div>
+      <div class="file"><div class="path">variants</div><p><code>&amp;variant=</code>, <code>&amp;tab=</code>, <code>&amp;flow=</code> lock a specific state for repeatable takes — capture variant comparisons as separate takes, not by clicking the switcher on camera (unless the switch <em>is</em> the story).</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">08</span><h2>F&amp;B Ordering<span class="chip chip--p0">P0 · public study</span></h2></div>
+    <p class="section-intro">
+      The only ungated Canary study — recruiters land here first, and it currently runs on
+      5 placeholders plus a card video with a known cropping defect. Highest return per minute of recording.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:34%">Capture</th><th style="width:30%">Route</th><th style="width:12%">Format</th><th>Fills</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cap-title">Guest ordering loop</span><span class="cap-note">Menu browse → item detail (modifiers) → cart → confirmation</span></td><td><code>?page=mobile-preview&amp;demo=1</code></td><td>MP4 · portrait</td><td>Re-export of the homepage card video (fixes the clipped crop) + the study's hero flow media</td></tr>
+          <tr><td><span class="cap-title">Delivery-type &amp; timing</span><span class="cap-note">ASAP vs scheduled, 3-day picker, meal-period slots</span></td><td><code>?page=order-timing&amp;demo=1</code></td><td>PNG · 3:4</td><td>"Delivery-type selection and cart flow" placeholder</td></tr>
+          <tr><td><span class="cap-title">New-order notification modal</span><span class="cap-note">The urgent-order attention pattern from HOMA feedback</span></td><td><code>?page=order-management&amp;demo=1</code></td><td>Clip · 16:10</td><td>"Staff notifications concept" placeholder</td></tr>
+          <tr><td><span class="cap-title">Orders v2 lifecycle</span><span class="cap-note">New / In Progress / Past tabs, "Approve &amp; complete" dual CTA</span></td><td><code>?page=orders-v2&amp;demo=1</code></td><td>Clip · 16:10</td><td>Fresher staff-dashboard media than the existing PNG</td></tr>
+          <tr><td><span class="cap-title">Order details side-sheet</span><span class="cap-note">POS status cards, denial-email preview</span></td><td><code>?page=order-management&amp;demo=1</code></td><td>PNG · 16:10</td><td>Duo with the lifecycle shot</td></tr>
+          <tr><td><span class="cap-title">Menu Management + live preview</span><span class="cap-note">Item library, POS codes, mobile preview pane</span></td><td><code>?page=menu-management&amp;tab=item-library&amp;demo=1</code></td><td>PNG · 16:10</td><td>"Interactive prototype used in usability tests / sales demos" placeholder</td></tr>
+          <tr><td><span class="cap-title">Allergen conflict validation</span><span class="cap-note">Bidirectional graying of conflicting dietary/allergen checkboxes</span></td><td><code>?page=menu-management</code> → edit item</td><td>Clip · 16:10</td><td>Key-decision highlight (media-right)</td></tr>
+          <tr><td><span class="cap-title">Add-to-cart "+" variant explorer</span><span class="cap-note">V1 always-open / V2 conditional (shipped) / V3 quick-add + undo toast</span></td><td><code>?page=fb-add-to-cart-variants&amp;demo=1</code></td><td>Clip · 16:10</td><td>Process/exploration block — shows the rigor behind one button</td></tr>
+          <tr><td><span class="cap-title">Menu availability editor</span><span class="cap-note">V4 default; V1–V5 make a variants strip if wanted</span></td><td><code>?page=menu-availability&amp;demo=1</code></td><td>PNG · 16:10</td><td>Process shot — bulk copy-to-days pattern</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gap-note">
+      <b>Already on disk:</b> <code>public/images/fb-ordering/</code> holds unused browse / item-detail / cart / landing PNGs that can fill stills today.
+      <b>Not in the repo:</b> the status-quo door-hanger shot and launch-metrics graphic — photo + Figma.
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">09</span><h2>Upsells<span class="chip chip--p1">P1 · ungates the study</span></h2></div>
+    <p class="section-intro">
+      The Upsells study is text-complete but ~14 placeholders deep — the emptiest of the locked studies.
+      The repo covers the admin, guest, and a whole front-desk story the study doesn't even mention yet.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:34%">Capture</th><th style="width:30%">Route</th><th style="width:12%">Format</th><th>Fills</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cap-title">Manage Items, V3 vs V4</span><span class="cap-note">Inline EYS vs dedicated card + Live Availability &amp; Dynamic Pricing strip</span></td><td><code>?page=upsells&amp;variant=v3</code> / <code>v4</code></td><td>PNG ×2 · 16:9</td><td>"Upsell Variants config UI" placeholder, as a duo</td></tr>
+          <tr><td><span class="cap-title">Edit upsell item</span></td><td><code>?page=upsells-edit-item&amp;id=ao-1</code></td><td>PNG · 16:9</td><td>"Full-page creation flow" placeholder</td></tr>
+          <tr><td><span class="cap-title">Extend-Your-Stay editor</span><span class="cap-note">Rate code, per-room-type occupancy thresholds, guest preview pane</span></td><td><code>?page=upsells-edit-eys-item</code></td><td>PNG · 16:9</td><td>"Creation flow with live preview" placeholder</td></tr>
+          <tr><td><span class="cap-title">Segmentation A / B / C</span><span class="cap-note">Control Matrix vs Audience Funnel vs Split View, with comparison table</span></td><td><code>?page=upsells-segmentation</code></td><td>Clip · 16:9</td><td>Exploration spread — a real three-approach decision story (DSN-1750)</td></tr>
+          <tr><td><span class="cap-title">Segment rule builder</span><span class="cap-note">Booking source, room type, length-of-stay rules</span></td><td><code>?page=upsells-segmentation-edit</code></td><td>PNG · 16:9</td><td>Configuration-UI placeholder</td></tr>
+          <tr><td><span class="cap-title">Guest EYS offer → confirmed</span></td><td><code>?page=mobile-extend-your-stay</code></td><td>MP4 · portrait</td><td>"Guest mobile upsell detail" placeholder</td></tr>
+          <tr><td><span class="cap-title">Mobile upsells cart</span><span class="cap-note">Always-visible quantity, math transparency, review step (DSN-1754)</span></td><td><code>?page=mobile-upsells-cart&amp;demo=1</code></td><td>MP4 · portrait</td><td>Guest point-of-purchase placeholder</td></tr>
+          <tr><td><span class="cap-title">Front-desk upselling, end to end</span><span class="cap-note">Opera Cloud mock → Flex Link → Canary FD tool → confirm → "Return to Opera"</span></td><td><code>?page=opera-checkin</code> → <code>fd-upsells</code></td><td>MP4 · 16:9</td><td><b>Net-new highlight</b> — the cross-app agent story (DSN-1802)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gap-note">
+      <b>Figma-only:</b> the form builder, manual translations, constraint-feedback states, and staff response side-sheet
+      aren't in this repo — their Figma nodes are listed in <code>docs/VISUAL-EXPORT-GUIDE.md</code>.
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">10</span><h2>Compendium &amp; in-stay<span class="chip chip--p1">P1 · restores the gallery</span></h2></div>
+    <p class="section-intro">
+      The Compendium study's gallery was deleted pending real images — these restore it.
+      The service-request wizard doubles as structured-intake evidence for the Knowledge Base narrative.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:34%">Capture</th><th style="width:30%">Route</th><th style="width:12%">Format</th><th>Fills</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cap-title">Compendium editor</span><span class="cap-note">Section-based CMS, connected menus, order config</span></td><td><code>?page=compendium&amp;demo=1</code></td><td>PNG · 16:9</td><td>"Builder-first CMS" visual</td></tr>
+          <tr><td><span class="cap-title">Section + item editing</span><span class="cap-note">Nested editing, business-hours config</span></td><td><code>?page=edit-compendium-section</code> / <code>edit-compendium-item</code></td><td>PNG duo</td><td>"Custom sections system" (the 82%-adoption claim)</td></tr>
+          <tr><td><span class="cap-title">Guest Hub</span></td><td><code>?page=guest-hub&amp;demo=1</code></td><td>MP4 · portrait</td><td>Guest welcome / section-nav experience</td></tr>
+          <tr><td><span class="cap-title">Messaging channels config</span></td><td><code>?page=compendium-messaging-channels</code></td><td>PNG · 16:9</td><td>Messaging touchpoint visual</td></tr>
+          <tr><td><span class="cap-title">Service-request wizard, V2 (+ V1)</span><span class="cap-note">Multi-step with step indicators; V1 text-only vs V2 with-images toggle</span></td><td><code>?page=service-request-type&amp;demo=1</code></td><td>MP4 · portrait</td><td>In-stay flow media + a clean before/after duo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gap-note">
+      <b>Figma-only:</b> Compendium Lite tier + "Request Upgrade" prompts and bulk image upload.
+      <b>Knowledge Base:</b> no KB prototype exists in this repo at all — its media (taxonomy, completion metrics,
+      progressive disclosure) must come from Figma or production. Zero captures here will fix that study.
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">11</span><h2>Digital Tips<span class="chip chip--new">Net-new story</span></h2></div>
+    <p class="section-intro">
+      Tipping is your actual product area and the portfolio's biggest untold story — mentioned in
+      case-study text, zero dedicated media. The repo has a complete suite: guest, staff wallet, and admin.
+      Enough for a new case study or a rich highlight block.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:34%">Capture</th><th style="width:30%">Route</th><th style="width:12%">Format</th><th>Fills</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cap-title">B&amp;B Hôtels review + tip</span><span class="cap-note">Welcome → €1/€2/€5 tip + fee opt-in + Google Pay → spring confirmation. FR/EN toggle, both variants</span></td><td><code>?page=bb-hotels-tip&amp;variant=v2&amp;demo=1</code></td><td>MP4 · portrait</td><td><b>Hero</b> of a tipping story — branded, animated, bilingual</td></tr>
+          <tr><td><span class="cap-title">Staff Wallet</span><span class="cap-note">Balance, stats, transactions + EN/ES toggle (80+ keys)</span></td><td><code>?page=staff-wallet&amp;demo=1</code></td><td>MP4 · portrait</td><td>Staff-side narrative</td></tr>
+          <tr><td><span class="cap-title">Cash-out prep, V1 / V2 / V3</span><span class="cap-note">Expandable cards vs swipe carousel vs "Marshall" (default)</span></td><td><code>?page=cash-out-prep&amp;demo=1</code></td><td>Clip · portrait</td><td>Variant-exploration spread</td></tr>
+          <tr><td><span class="cap-title">Tip disbursement modal</span><span class="cap-note">Production-accurate: Equal / Hours / Custom math</span></td><td><code>?page=tipping-admin&amp;tab=disbursement</code></td><td>Clip · 16:10</td><td>Admin credibility shot — matches shipped product</td></tr>
+          <tr><td><span class="cap-title">Tip Relay v2</span><span class="cap-note">Merged allocate flow + With/No HotSOS toggle</span></td><td><code>?page=tipping-tip-relay</code></td><td>PNG · 16:9</td><td>IA-redesign story</td></tr>
+          <tr><td><span class="cap-title">Resolve mappings</span><span class="cap-note">Job-code → staff resolution, HR state toggle</span></td><td><code>?page=tipping-resolve-mappings</code></td><td>PNG · 16:9</td><td>Edge-case design evidence</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">12</span><h2>Unified Cart<span class="chip chip--new">One session, three studies</span></h2></div>
+    <p class="section-intro">
+      The newest and most polished thing in the repo (DSN-1828) — a 1:1 recreation of the signed-off
+      in-stay cart unification. One recording session yields fresh media for Check-in, Compendium,
+      <em>and</em> F&amp;B at once. On desktop it renders in the 430×932 phone mockup; record the frame contents only.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:34%">Capture</th><th style="width:30%">Route</th><th style="width:12%">Format</th><th>Fills</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cap-title">Check-in flow</span><span class="cap-note">Add-ons grid → review → submitting → ID verification → toast</span></td><td><code>?page=unified-cart&amp;flow=checkin&amp;demo=1</code></td><td>MP4 · portrait</td><td>Check-in study refresh</td></tr>
+          <tr><td><span class="cap-title">Compendium flow</span><span class="cap-note">"The Statler" booking card, carousel, group-hide after submit</span></td><td><code>?page=unified-cart&amp;flow=compendium&amp;demo=1</code></td><td>MP4 · portrait</td><td>Compendium guest-experience media</td></tr>
+          <tr><td><span class="cap-title">F&amp;B flow</span><span class="cap-note">Menu-period select → detail drawer → review with fees → submit</span></td><td><code>?page=unified-cart&amp;flow=fnb&amp;demo=1</code></td><td>MP4 · portrait</td><td>F&amp;B study — the current-generation cart</td></tr>
+          <tr><td><span class="cap-title">Menu-stepper deletion sheet</span><span class="cap-note">Per-line steppers for multi-variant items; the landed answer to the dark-pattern feedback</span></td><td>inside any flow's cart</td><td>Clip · portrait</td><td>Interaction-design highlight with a real decision story</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label"><span class="num">13</span><h2>B-roll, process &amp; experiments</h2></div>
+    <p class="section-intro">
+      Not tied to a placeholder — these feed the "How I Work with AI" essay (currently zero media)
+      and process moments across studies.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:34%">Capture</th><th style="width:30%">Route</th><th style="width:12%">Format</th><th>Fills</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cap-title">Canary Copilot</span><span class="cap-note">Agentic-ops dashboard, chat mode, agent cards, morning briefs</span></td><td><code>?page=canary-copilot&amp;demo=1</code></td><td>MP4 · 16:9</td><td><b>AI-workflow essay hero candidate</b></td></tr>
+          <tr><td><span class="cap-title">Landing hub</span><span class="cap-note">Card expand + feature detail pages with rationale/research callouts</span></td><td><code>?page=landing</code></td><td>Clip · 16:10</td><td>Process evidence — you built a portfolio inside the job</td></tr>
+          <tr><td><span class="cap-title">Guided presentation tour</span><span class="cap-note">Animated spotlight cutouts + annotation panel (allergens walkthrough)</span></td><td>start from landing</td><td>Clip · 16:10</td><td>Craft/process shot — a tour engine you designed</td></tr>
+          <tr><td><span class="cap-title">Component inspector + annotation layer</span><span class="cap-note">Token inspector, pin/comment handoff system</span></td><td>global, any page</td><td>Clip · 16:10</td><td>Tooling/process shot</td></tr>
+          <tr><td><span class="cap-title">Banner showcase</span><span class="cap-note">CanaryBanner variant gallery + use-case frames</span></td><td><code>?page=banner-showcase</code></td><td>PNG · 16:9</td><td>Systems-thinking evidence</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gap-note">
+      <b>Skip for now:</b> <code>my-reservation</code>, <code>activity-log-empty-state</code>, and
+      <code>upsell-touch-targets</code> read as rough sketches — not portfolio-grade without a polish pass.
     </div>
   </section>
 </main>

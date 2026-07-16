@@ -12,7 +12,7 @@ Currently at [Canary Technologies](https://www.canarytechnologies.com/), buildin
 
 In the past, I built scalable brand systems as a marketing designer at [Vivino](https://www.vivino.com/) and [Vyond](https://www.vyond.com/), and founded product design at [General Task](https://www.generaltask.com/), where we built productivity tooling for knowledge workers.
 
-I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. Outside of work, you'll find me [taking photos at concerts](photo-stack), developing websites, or tinkering on design sidequests.
+I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. Outside of work, you'll find me [taking photos at concerts](photo-stack), developing websites, or tinkering on design side projects.
 
 ----
 

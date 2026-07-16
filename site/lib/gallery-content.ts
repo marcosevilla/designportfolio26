@@ -44,8 +44,11 @@ export type GallerySlotConfig =
     }
   | {
       layers: {
-        /** Background image — fills the frame edge-to-edge. */
-        bg: string;
+        /** Background image — fills the frame edge-to-edge. Optional
+         *  since 2026-07-15: the card renderer skips it anyway (the
+         *  themed canvas is the backdrop), so mock-only entries can
+         *  omit it. */
+        bg?: string;
         /** Foreground UI mock — centered at rest, parallax-slides in. */
         ui: string;
         /** UI width as CSS value (e.g. "70%"). Use this for landscape
@@ -71,14 +74,11 @@ export type GallerySlotConfig =
 export const galleryContent: Record<string, GallerySlotConfig[]> = {
   "fb-ordering": [
     {
-      video: "/videos/fb-mobile.mp4",
+      video: "/videos/fb-guest-ordering.mp4",
       aspect: "4 / 3",
-      // Specimen prototype: the recording is a phone UI centered on a
-      // baked white canvas — the shell masks to the phone and the card's
-      // themed tint takes over as the backdrop. zoom crops the white
-      // margins out of the source.
+      // Screen-only export at the phone's native 430:932 ratio — no baked
+      // canvas margins, so the shell mask needs no zoom crop.
       shell: "phone",
-      zoom: 1.02,
     },
     {
       layers: {
@@ -107,9 +107,18 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
     },
   ],
   upsells: [
+    // Replaced the hotel-room photo cover (2026-07-15): the themed
+    // canvas (teal CARD_TINT wash) is the backdrop, and the Figma mock
+    // composite (form builder + guest phone + responses side sheet,
+    // node 506-10090) floats on it like the other layered cards.
     {
-      src: "/images/gallery/upsells/upsells.png",
-      fit: "cover",
+      layers: {
+        ui: "/images/gallery/upsells/upsells-mocks.png",
+        uiWidth: "88%",
+        parallax: "bottom",
+        uiShadow:
+          "drop-shadow(0 30px 60px rgba(0, 0, 0, 0.30)) drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))",
+      },
     },
   ],
   checkin: [

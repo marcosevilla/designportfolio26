@@ -24,6 +24,15 @@ export type PlaygroundCard = {
 
 export const PLAYGROUND_CARDS: PlaygroundCard[] = [
   {
+    slug: "photography-portfolio",
+    title: "Photography Portfolio",
+    year: "Jul 2026",
+    description:
+      "Design explorations for my concert photography portfolio.",
+    video: "/videos/photography-portfolio.mp4",
+    aspect: "1932 / 1080",
+  },
+  {
     slug: "six-degrees",
     title: "Six Degrees",
     year: "Feb 2026 →",

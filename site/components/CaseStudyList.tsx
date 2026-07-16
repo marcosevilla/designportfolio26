@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { CaseStudyMeta } from "@/lib/types";
 import {
   PLAYGROUND_CARDS,
+  isWide,
   type PlaygroundCard,
 } from "@/lib/playground-cards";
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
@@ -15,6 +16,7 @@ import { SPRING_HEAVY } from "@/lib/springs";
 import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
 import Grid, { Col } from "@/components/layout/Grid";
 import { galleryContent } from "@/lib/gallery-content";
+import { setCursorLabel } from "@/lib/cursor-label";
 import { TESTIMONIALS } from "@/lib/testimonials";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import DeviceShell from "./DeviceShell";
@@ -410,25 +412,50 @@ function ProjectGrid({
 
 // Testimonials — one quote per colleague, set three-up across the full
 // editorial canvas (cols 1-4 / 5-8 / 9-12 at desktop; stacks on
-// smaller bands like the study cells above).
+// smaller bands like the study cells above). No section label — the
+// bordered cells read as their own organized band (Marco 2026-07-15).
 function Testimonials() {
   const lgSpecs = ["1-4", "5-8", "9-12"] as const;
   return (
-    <div className="flex flex-col gap-16">
-      <SectionLabel>Kind words</SectionLabel>
-      <Grid>
-        {TESTIMONIALS.map((t, i) => (
-          <Col key={t.author} lg={lgSpecs[i % lgSpecs.length]}>
+    <Grid className="gap-y-6">
+      {TESTIMONIALS.map((t, i) => (
+        <Col key={t.author} lg={lgSpecs[i % lgSpecs.length]}>
+          <div
+            className="h-full p-6"
+            style={{
+              border: "0.5px solid var(--color-border)",
+              borderRadius: 4,
+            }}
+          >
             <p style={{ ...typescale.body, color: "var(--color-fg-secondary)" }}>
-              “{t.text}”{" "}
-              <span style={{ color: "var(--color-fg-tertiary)" }}>
-                — {t.author}
+              “{t.text}”
+              <span
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  color: "var(--color-fg-tertiary)",
+                }}
+              >
+                —{" "}
+                {t.href ? (
+                  <a
+                    href={t.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dotted-link--inline"
+                  >
+                    {t.author}
+                  </a>
+                ) : (
+                  t.author
+                )}
+                {t.org && ` (${t.org})`}
               </span>
             </p>
-          </Col>
-        ))}
-      </Grid>
-    </div>
+          </div>
+        </Col>
+      ))}
+    </Grid>
   );
 }
 
@@ -587,10 +614,14 @@ function StudyMediaFrame({
                 playsInline
                 preload="metadata"
                 style={{
+                  // 1px overshoot: the shell screen's height is usually
+                  // fractional (86% of the band height), and the video's
+                  // rounded-down 100% leaves a hairline of the muted
+                  // screen bg visible at the bottom edge.
                   position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
+                  inset: -0.5,
+                  width: "calc(100% + 1px)",
+                  height: "calc(100% + 1px)",
                   objectFit: "cover",
                   display: "block",
                   transform: video.zoom ? `scale(${video.zoom})` : undefined,
@@ -656,17 +687,29 @@ function StudyMediaFrame({
         />
       )}
       {!hasMedia && (
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{
-            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-            fontSize: "11px",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "var(--color-fg-tertiary)",
-          }}
-        >
-          Under construction
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "calc(16px + var(--font-size-offset))",
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+              color: "var(--color-fg-secondary)",
+            }}
+          >
+            {study.title}
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--color-fg-tertiary)",
+            }}
+          >
+            Under construction
+          </span>
         </div>
       )}
       <LockedFrameBadge locked={locked} />
@@ -698,16 +741,24 @@ function StudyCell({
 
   // Studies with a dedicated route link out; the rest are static media
   // cells (the fullscreen gallery carousel was removed 2026-07-14).
+  // Cursor chat-bubble reveal (2026-07-15): the pure-visual cells give
+  // their title back through the cursor label instead of a caption.
+  const labelHandlers = {
+    onMouseEnter: () => setCursorLabel(study.title),
+    onMouseLeave: () => setCursorLabel(null),
+  };
+
   const cell = href ? (
     <Link
       href={href}
       aria-label={`Open case study — ${study.title}`}
       className="flex flex-col h-full w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)"
+      {...labelHandlers}
     >
       {cellInner}
     </Link>
   ) : (
-    <div className="flex flex-col h-full w-full text-left">
+    <div className="flex flex-col h-full w-full text-left" {...labelHandlers}>
       {cellInner}
     </div>
   );
@@ -827,20 +878,30 @@ function MediaPreviewLightbox({
 // were removed.
 function PlaygroundCell({ card }: { card: PlaygroundCard }) {
   // Pure-visual cell — caption removed 2026-07-15 (title/description
-  // still live on the card data in lib/playground-cards.ts).
+  // still live on the card data in lib/playground-cards.ts). Titles
+  // surface through the cursor chat bubble, same as the study cells.
   return (
-    <div className="flex flex-col h-full w-full">
+    <div
+      className="flex flex-col h-full w-full"
+      onMouseEnter={() => setCursorLabel(card.title)}
+      onMouseLeave={() => setCursorLabel(null)}
+    >
       <PlaygroundMediaFrame card={card} />
     </div>
   );
 }
 
-// Playground media — autoplay loop of the card's demo video inside the
-// same fixed 323px frame; "Coming soon" placeholder when no video yet.
+// Playground media — autoplay loop of the card's demo video. Landscape
+// cards keep the fixed 323px frame; portrait captures (Pajamagrams,
+// Custom Wrapped) share a taller frame so the phone videos read
+// properly instead of a cover-cropped sliver. "Coming soon" placeholder
+// when no video yet.
 function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
   return (
     <div
-      className="w-full overflow-hidden relative h-[323px]"
+      className={`w-full overflow-hidden relative ${
+        isWide(card) ? "h-[323px]" : "h-[560px] lg:h-[640px]"
+      }`}
       style={{
         backgroundColor: PLACEHOLDER_BG,
         border: "0.5px solid var(--color-border)",

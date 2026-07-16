@@ -1,3 +1,12 @@
+"use client";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 /**
  * Narrow metadata rail for case-study intros — the right-hand slot of
  * the `intro-rail` preset. Small mono labels over plain values,
@@ -6,6 +15,9 @@
 export type MetaRailItem = {
   label: string;
   values: string[];
+  /** Optional hover note — renders a small info icon after the first
+   *  value (e.g. team credits behind a "Sole designer" role). */
+  info?: string;
 };
 
 export default function MetaRail({ items }: { items: MetaRailItem[] }) {
@@ -26,9 +38,36 @@ export default function MetaRail({ items }: { items: MetaRailItem[] }) {
           >
             {item.label}
           </dt>
-          {item.values.map((v) => (
+          {item.values.map((v, i) => (
             <dd key={v} className="text-(--color-fg-secondary) leading-[22px]">
               {v}
+              {i === 0 && item.info && (
+                <TooltipProvider delay={100}>
+                  <Tooltip>
+                    <TooltipTrigger
+                      aria-label={`More about ${item.label.toLowerCase()}`}
+                      className="ml-1.5 inline-flex translate-y-[2px] cursor-default text-(--color-fg-tertiary) transition-colors hover:text-(--color-fg-secondary)"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                      </svg>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{item.info}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </dd>
           ))}
         </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "framer-motion";
+import { typescale } from "@/lib/typography";
 
 /* ─────────────────────────────────────────────────────────
  * ANIMATION STORYBOARD — Object Flow Diagram (dual view)
@@ -137,8 +138,8 @@ const VIEWS: ViewKey[] = ["system", "guest"];
 
 const VIEW_META: Record<ViewKey, { label: string; caption: string; aria: string }> = {
   system: {
-    label: "System composition",
-    caption: "How a hotel composes an order: author an item once, sell it everywhere.",
+    label: "Hotel setup",
+    caption: "How hotels build their menus: create an item once, then reuse it across any menu and ordering location.",
     aria:
       "Interactive diagram of the five-object model, read as the hotel composes it: a food item is customized by modifier groups (or passes through with no modifications), appears on menus, and is served at ordering outlets. Hover or tap a food item to trace every route its order can take; when idle, the diagram tours each item on its own.",
   },
@@ -528,15 +529,24 @@ export default function ObjectFlowDiagram() {
       style={{
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
+        // Same themed wash as the homepage F&B card, at a whisper-light
+        // 3% (10% → 5% → 3% across Marco's feedback passes) — still
+        // tracks light/dark + color themes via the card-bg token.
+        background: "color-mix(in srgb, #EF5A3C 3%, var(--color-card-bg))",
       }}
     >
-      {/* ── View switch + caption ── */}
-      <div className="mb-6 flex flex-col items-center gap-2.5">
+      {/* ── View switch + caption — left-aligned with the body column ── */}
+      <div className="mb-6 flex flex-col items-start gap-2.5">
         <div
           role="group"
           aria-label="Diagram view"
           className="inline-flex overflow-hidden rounded-md border"
-          style={{ borderColor: "var(--color-border)" }}
+          style={{
+            borderColor: "var(--color-border)",
+            // Solid page-bg fill lifts the control off the tinted wash.
+            backgroundColor: "var(--color-bg)",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
+          }}
         >
           {VIEWS.map((v, i) => (
             <button
@@ -561,7 +571,7 @@ export default function ObjectFlowDiagram() {
             </button>
           ))}
         </div>
-        <p style={{ fontSize: "12px", color: "var(--color-fg-secondary)", textAlign: "center" }}>
+        <p style={{ ...typescale.body, color: "var(--color-fg-secondary)", textAlign: "left" }}>
           {VIEW_META[view].caption}
         </p>
       </div>
@@ -597,9 +607,9 @@ export default function ObjectFlowDiagram() {
                   }}
                 >
                   {renderIcon(col.icon, 0, 105, 20, "var(--color-fg)")}
-                  <text x={0} y={152} fontSize={14} fontWeight={600} fill="var(--color-fg)">{col.title}</text>
+                  <text x={0} y={152} fontSize={17} fontWeight={600} fill="var(--color-fg)">{col.title}</text>
                   {col.desc.map((line, j) => (
-                    <text key={j} x={0} y={173 + j * 16} fontSize={11.5} fill="var(--color-fg-secondary)">{line}</text>
+                    <text key={j} x={0} y={175 + j * 18} fontSize={13} fill="var(--color-fg-secondary)">{line}</text>
                   ))}
                 </g>
               </g>
@@ -685,14 +695,14 @@ export default function ObjectFlowDiagram() {
                     {renderIcon(card.icon, 14, card.h / 2 - 6, 12, taken ? ACCENT : "var(--color-fg)")}
                     {card.sub ? (
                       <>
-                        <text x={36} y={card.h / 2 - 3} fontSize={11.5} fontWeight={500} fill="var(--color-fg)">{card.name}</text>
-                        <text x={36} y={card.h / 2 + 13} fontSize={10} fill="var(--color-fg-secondary)">{card.sub}</text>
+                        <text x={36} y={card.h / 2 - 4} fontSize={13} fontWeight={500} fill="var(--color-fg)">{card.name}</text>
+                        <text x={36} y={card.h / 2 + 14} fontSize={11.5} fill="var(--color-fg-secondary)">{card.sub}</text>
                       </>
                     ) : (
-                      <text x={36} y={card.h / 2 + 4} fontSize={11.5} fontWeight={500} fill="var(--color-fg)">
+                      <text x={36} y={card.h / 2 + 4} fontSize={13} fontWeight={500} fill="var(--color-fg)">
                         {card.name}
                         {card.price && (
-                          <tspan dx={8} fontSize={10} fontWeight={400} fill="var(--color-fg-secondary)">{card.price}</tspan>
+                          <tspan dx={8} fontSize={11.5} fontWeight={400} fill="var(--color-fg-secondary)">{card.price}</tspan>
                         )}
                       </text>
                     )}

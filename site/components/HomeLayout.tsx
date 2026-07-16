@@ -244,8 +244,11 @@ export default function HomeLayout({
                     <Tooltip>
                       <TooltipTrigger
                         render={
-                          <em
-                            className="dotted-link--inline cursor-help"
+                          <a
+                            href="https://www.canarytechnologies.com/hotel-groups"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="dotted-link--inline"
                             style={{
                               fontFamily:
                                 "var(--font-geist-sans), system-ui, sans-serif",
@@ -288,7 +291,7 @@ export default function HomeLayout({
                     dabbling in music photography
                   </Em>
                   , developing websites, or tinkering on various design
-                  sidequests.
+                  side projects.
                 </p>
 
                 {/* Contact links — same dotted-underline treatment as the
