@@ -20,24 +20,10 @@ export default function SiteHeader() {
   const headerHidden = chatOpen;
   const pathname = usePathname();
 
-  // On the home page the wordmark is suppressed until the user has
-  // scrolled past the bio (Marco's name + tagline + bio paragraphs are
-  // already on screen, so the wordmark would duplicate the page heading).
-  // Other routes show it immediately. The music overlay covers the bio,
-  // so the wordmark is forced on while it's open.
-  const [scrolledPast, setScrolledPast] = useState(pathname !== "/");
-  useEffect(() => {
-    if (pathname !== "/") {
-      setScrolledPast(true);
-      return;
-    }
-    const THRESHOLD = 280;
-    const onScroll = () => setScrolledPast(window.scrollY > THRESHOLD);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [pathname]);
-  const showWordmark = scrolledPast;
+  // Wordmark is always visible (2026-07-15): the home h1 is now the
+  // CyclingGreeting, so the name is off-screen most of the cycle — the
+  // header carries it permanently instead of waiting for scroll.
+  const showWordmark = true;
 
   // Drop shadow appears the moment any content scrolls under the bar, so
   // the header lifts off the page. Separate from `scrolledPast` (which is

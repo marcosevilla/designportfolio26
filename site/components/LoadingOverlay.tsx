@@ -11,11 +11,18 @@ const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 // restore the intro.
 const SKIP_INTRO = false;
 
-const TARGET = "Welcome";
+// Magic-wand kaomoji + sparkle trail. The trailing ✧ of the full string is
+// NOT typed as text — it's the loader star itself (layoutId hero-star), so
+// the trail appears to stream out of the star, and the star is what morphs
+// into the wordmark after the wipe.
+const TARGET = "(∩ᵔ ᵕ ᵔ )⊃━☆ﾟ.*+.✧⋅.˳˳.⋅ॱ˙ ˙ॱ⋅.˳˳.⋅ॱ˙ ˙ॱᐧ.˳˳.⋅ ˙";
+// Code-point-safe segmentation — the trail mixes scripts/diacritics, so
+// never slice the raw string by UTF-16 index.
+const TARGET_CHARS = Array.from(TARGET);
 
 // Plain typewriter — each letter locks in directly without scramble.
-const TYPE_DELAY_MS = 95;
-const BACKSPACE_DELAY_MS = 28;
+const TYPE_DELAY_MS = 40;
+const BACKSPACE_DELAY_MS = 14;
 const HOLD_MS = 1100;
 const PRE_TYPE_DELAY_MS = 350;
 const PRE_FADE_DELAY_MS = 250;
@@ -121,9 +128,9 @@ export default function LoadingOverlay({
       if (cancelled) return;
 
       // Type out
-      for (let i = 1; i <= TARGET.length; i++) {
+      for (let i = 1; i <= TARGET_CHARS.length; i++) {
         if (cancelled) return;
-        setText(TARGET.slice(0, i));
+        setText(TARGET_CHARS.slice(0, i).join(""));
         await sleep(TYPE_DELAY_MS);
       }
 
@@ -132,11 +139,11 @@ export default function LoadingOverlay({
       await sleep(HOLD_MS);
       if (cancelled) return;
 
-      // Backspace
+      // Backspace — the star wipes the trail back out, fast.
       setPhase("backspacing");
-      for (let i = TARGET.length - 1; i >= 0; i--) {
+      for (let i = TARGET_CHARS.length - 1; i >= 0; i--) {
         if (cancelled) return;
-        setText(TARGET.slice(0, i));
+        setText(TARGET_CHARS.slice(0, i).join(""));
         await sleep(BACKSPACE_DELAY_MS);
       }
 
@@ -182,16 +189,16 @@ export default function LoadingOverlay({
             className="flex items-center whitespace-nowrap"
             aria-label="Welcome"
           >
-            {/* Welcome — Marco-Sevilla typographic family but smaller so
-                it sits at roughly the same visual height as the giant
-                star. */}
+            {/* Wand kaomoji + sparkle trail — sized so the full ~50-char
+                string fits the viewport on one line; the loader star rides
+                the end of the trail as it types. */}
             <span
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "clamp(32px, 5vw, 56px)",
+                fontSize: "clamp(16px, 2.4vw, 32px)",
                 fontWeight: 500,
                 lineHeight: 1,
-                letterSpacing: "-0.025em",
+                letterSpacing: "-0.01em",
                 color: "var(--color-fg)",
                 minHeight: "1em",
               }}
@@ -209,7 +216,7 @@ export default function LoadingOverlay({
                 className="inline-flex items-center justify-center shrink-0"
                 style={{
                   color: "var(--color-accent)",
-                  fontSize: "clamp(108px, 16vw, 168px)",
+                  fontSize: "clamp(72px, 10vw, 112px)",
                   width: "0.66em",
                   height: "0.66em",
                   flex: "0 0 auto",
@@ -236,10 +243,10 @@ export default function LoadingOverlay({
                     // the wordmark slot uses the wordmark's own spring
                     // transition (PlaygroundStar) since framer-motion
                     // drives shared-layoutId animations from the new
-                    // element's transition.
+                    // element's transition (glyph crossfades ✧ → *).
                     transition={{ layout: { duration: 0 } }}
                   >
-                    *
+                    ✧
                   </motion.span>
                 </span>
               </span>
