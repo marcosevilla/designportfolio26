@@ -15,6 +15,7 @@ import { SPRING_HEAVY } from "@/lib/springs";
 import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
 import Grid, { Col } from "@/components/layout/Grid";
 import { galleryContent } from "@/lib/gallery-content";
+import { TESTIMONIALS } from "@/lib/testimonials";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import DeviceShell from "./DeviceShell";
 import { isLocked } from "@/lib/locked-content";
@@ -384,6 +385,11 @@ function ProjectGrid({
         })}
       </Grid>
 
+      {/* Testimonials — colleague quotes as full paragraphs, seated
+          between the work grid and the playground section (2026-07-15,
+          copy lifted from the retired Marquee). */}
+      <Testimonials />
+
       {/* Playground / experiments get their own label so the grid reads
           as two sections: client work above, sidequests below. */}
       {playItems.length > 0 && (
@@ -398,6 +404,31 @@ function ProjectGrid({
           </Grid>
         </>
       )}
+    </div>
+  );
+}
+
+// Testimonials — each quote is a full body-text paragraph with the
+// author set off in tertiary. Sits on the prose band (cols 4-9) so the
+// block reads as editorial text, not another card row.
+function Testimonials() {
+  return (
+    <div className="flex flex-col gap-16">
+      <SectionLabel>Kind words</SectionLabel>
+      <Grid preset="prose">
+        <Col>
+          <div className="flex flex-col gap-6">
+            {TESTIMONIALS.map((t, i) => (
+              <p key={i} style={{ ...typescale.body, color: "var(--color-fg-secondary)" }}>
+                “{t.text}”{" "}
+                <span style={{ color: "var(--color-fg-tertiary)" }}>
+                  — {t.author}
+                </span>
+              </p>
+            ))}
+          </div>
+        </Col>
+      </Grid>
     </div>
   );
 }

@@ -9,7 +9,7 @@ const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 // Temporary kill switch — skips the entire intro sequence (blink + type
 // "Welcome" + morph) and loads straight into the page. Flip to `false` to
 // restore the intro.
-const SKIP_INTRO = true;
+const SKIP_INTRO = false;
 
 const TARGET = "Welcome";
 

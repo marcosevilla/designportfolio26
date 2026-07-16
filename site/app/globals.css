@@ -534,6 +534,29 @@ body::before {
   }
 }
 
+/* Blunt on/off blink (no fade) — steps(1) flips opacity at the keyframe
+   boundary instead of interpolating. Used by the CyclingGreeting cursor. */
+@keyframes blink-cursor {
+  0%, 49.999% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.cycling-greeting-cursor {
+  display: inline-flex;
+  align-items: center;
+  animation: blink-cursor 1.2s steps(1, end) infinite;
+  /* Absolute size — decoupled from the header so the smaller pre-phrase
+     scale doesn't shrink the cursor with it. */
+  font-size: 26px;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cycling-greeting-cursor {
+    animation: none;
+  }
+}
+
 /* Marker stroke. Yellow translucent gradient with tapered ends, multiply-
    blended so dark text reads through it like real highlighter on paper. The
    paint-in keyframe grows background-size from 0% → 100% so the stroke draws
