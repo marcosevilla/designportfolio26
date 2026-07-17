@@ -12,15 +12,31 @@ export const ENV_PRESETS = [
 ] as const;
 export type EnvPreset = (typeof ENV_PRESETS)[number];
 
+// The three outlines of the ✦ ˖ mark, each independently shapeable.
+export const PIECE_KEYS = ["sparkle", "plus", "dot"] as const;
+export type PieceKey = (typeof PIECE_KEYS)[number];
+
+export interface PieceParams {
+  enabled: boolean;
+  // Extrusion values are in normalized units (the composition is scaled to a
+  // 34.4-unit box, matching the original Geist glyph, so numbers stay
+  // comparable across mark artwork).
+  depth: number;
+  bevelThickness: number;
+  bevelSize: number;
+  bevelSegments: number;
+  size: number; // in-plane scale of the piece, 1 = source proportion
+  rotation: number; // degrees, spins the piece in place
+  offsetX: number; // normalized units; +X right, +Y up, +Z toward viewer
+  offsetY: number;
+  offsetZ: number;
+}
+
 export interface LogoParams {
   shape: {
-    // Glyph-space units (the asterisk is 34.4 units wide); world scale below.
-    depth: number;
-    bevelThickness: number;
-    bevelSize: number;
-    bevelSegments: number;
-    scale: number; // glyph units → world units (0.12 ≈ 4-unit-wide mark)
+    scale: number; // whole-composition world scale (0.12 ≈ 4-unit-wide mark)
   };
+  pieces: Record<PieceKey, PieceParams>;
   material: {
     transmission: number;
     thickness: number;
@@ -50,17 +66,50 @@ export interface LogoParams {
   };
 }
 
-// Starting values follow the opensoftware.co reference numbers from
-// docs/LOGO-LAB-HANDOFF.md (transmission 1, thickness ~1.5, roughness 0.15,
-// clearcoat 1); shape depth/bevel are in glyph units, chosen so proportions
-// match the reference's depth:width ratio.
+// Material numbers follow the opensoftware.co reference from
+// docs/LOGO-LAB-HANDOFF.md; the small pieces get thinner depth + gentler
+// bevels than the sparkle so their narrow strokes don't self-intersect.
 export const DEFAULT_LOGO_PARAMS: LogoParams = {
   shape: {
-    depth: 8,
-    bevelThickness: 1,
-    bevelSize: 1,
-    bevelSegments: 8,
     scale: 0.12,
+  },
+  pieces: {
+    sparkle: {
+      enabled: true,
+      depth: 8,
+      bevelThickness: 1,
+      bevelSize: 1,
+      bevelSegments: 8,
+      size: 1,
+      rotation: 0,
+      offsetX: 0,
+      offsetY: 0,
+      offsetZ: 0,
+    },
+    plus: {
+      enabled: true,
+      depth: 5,
+      bevelThickness: 0.4,
+      bevelSize: 0.4,
+      bevelSegments: 6,
+      size: 1,
+      rotation: 0,
+      offsetX: 0,
+      offsetY: 0,
+      offsetZ: 0,
+    },
+    dot: {
+      enabled: true,
+      depth: 4,
+      bevelThickness: 0.4,
+      bevelSize: 0.4,
+      bevelSegments: 6,
+      size: 1,
+      rotation: 0,
+      offsetX: 0,
+      offsetY: 0,
+      offsetZ: 0,
+    },
   },
   material: {
     transmission: 1,

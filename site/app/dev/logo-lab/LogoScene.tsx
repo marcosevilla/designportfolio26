@@ -15,8 +15,13 @@ import {
   MeshTransmissionMaterial,
 } from "@react-three/drei";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { MARK_PATHS, MARK_VIEWBOX_HEIGHT } from "./glyph";
-import type { LogoParams } from "./params";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import {
+  MARK_PATHS,
+  MARK_VIEWBOX_HEIGHT,
+  MARK_VIEWBOX_WIDTH,
+} from "./glyph";
+import { PIECE_KEYS, type LogoParams, type PieceKey, type PieceParams } from "./params";
 
 // The original Geist * glyph box was 34.4 units; normalizing the current mark
 // to that size keeps depth/bevel slider values (and any tuned settings JSON)
@@ -25,46 +30,70 @@ const NORM = 34.4 / MARK_VIEWBOX_HEIGHT;
 
 // Parsed once per session — the mark outlines never change, only the
 // extrusion params do. (Also keeps Suspense render retries from re-parsing.)
-let cachedShapes: THREE.Shape[] | null = null;
-function getMarkShapes(): THREE.Shape[] {
-  if (!cachedShapes) {
+const shapeCache = new Map<PieceKey, THREE.Shape[]>();
+function getPieceShapes(key: PieceKey): THREE.Shape[] {
+  let shapes = shapeCache.get(key);
+  if (!shapes) {
     const svg = new SVGLoader().parse(
-      `<svg xmlns="http://www.w3.org/2000/svg">${MARK_PATHS.map(
-        (d) => `<path d="${d}"/>`
-      ).join("")}</svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg"><path d="${MARK_PATHS[key]}"/></svg>`
     );
-    cachedShapes = svg.paths.flatMap((p) => p.toShapes());
+    shapes = svg.paths.flatMap((p) => p.toShapes());
+    shapeCache.set(key, shapes);
   }
-  return cachedShapes;
+  return shapes;
 }
 
-function useMarkGeometry(shape: LogoParams["shape"]) {
+function buildPieceGeometry(key: PieceKey, p: PieceParams): THREE.BufferGeometry {
+  // Extrusion params come in normalized (34.4-box) units, so divide back up
+  // into source-artwork units; the merged geometry is scaled down at the end.
+  const geo = new THREE.ExtrudeGeometry(getPieceShapes(key), {
+    depth: p.depth / NORM,
+    steps: 1,
+    bevelEnabled: p.bevelThickness > 0 || p.bevelSize > 0,
+    bevelThickness: p.bevelThickness / NORM,
+    bevelSize: p.bevelSize / NORM,
+    bevelSegments: p.bevelSegments,
+    curveSegments: 24,
+  });
+  // Size/rotate the piece around its own center so it stays put in the
+  // composition, then park it back with the offsets applied.
+  geo.computeBoundingBox();
+  const bb = geo.boundingBox!;
+  const cx = (bb.min.x + bb.max.x) / 2;
+  const cy = (bb.min.y + bb.max.y) / 2;
+  const cz = (bb.min.z + bb.max.z) / 2;
+  geo.translate(-cx, -cy, -cz);
+  geo.scale(p.size, p.size, 1);
+  if (p.rotation) geo.rotateZ((p.rotation * Math.PI) / 180);
+  // Sliders mean +X right, +Y up, +Z toward the viewer; we're still in SVG
+  // space (y down) and the final rotateX(π) flips z, hence the sign flips.
+  geo.translate(cx + p.offsetX / NORM, cy - p.offsetY / NORM, -p.offsetZ / NORM);
+  return geo;
+}
+
+function useMarkGeometry(pieces: LogoParams["pieces"]) {
   const geometry = useMemo(() => {
-    // Extrusion params are given in normalized (34.4-box) units, so divide
-    // back up into source-artwork units before extruding, then scale down.
-    const geo = new THREE.ExtrudeGeometry(getMarkShapes(), {
-      depth: shape.depth / NORM,
-      steps: 1,
-      bevelEnabled: true,
-      bevelThickness: shape.bevelThickness / NORM,
-      bevelSize: shape.bevelSize / NORM,
-      bevelSegments: shape.bevelSegments,
-      curveSegments: 24,
-    });
-    geo.scale(NORM, NORM, NORM);
-    geo.center();
+    const parts = PIECE_KEYS.filter((k) => pieces[k].enabled).map((k) =>
+      buildPieceGeometry(k, pieces[k])
+    );
+    if (parts.length === 0) return null;
+    const merged = mergeGeometries(parts, false);
+    parts.forEach((g) => g.dispose());
+    merged.scale(NORM, NORM, NORM);
+    // Center on the source viewBox (not the live bounding box) so offset
+    // sliders move a piece instead of recentering the whole composition.
+    merged.translate(
+      (-MARK_VIEWBOX_WIDTH / 2) * NORM,
+      (-MARK_VIEWBOX_HEIGHT / 2) * NORM,
+      0
+    );
     // Mark coords are SVG space (y down); a proper rotation (not a mirror,
     // which would flip winding) turns it right-side up in three's y-up world.
-    geo.rotateX(Math.PI);
-    return geo;
-  }, [
-    shape.depth,
-    shape.bevelThickness,
-    shape.bevelSize,
-    shape.bevelSegments,
-  ]);
+    merged.rotateX(Math.PI);
+    return merged;
+  }, [pieces]);
 
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  useEffect(() => () => geometry?.dispose(), [geometry]);
   return geometry;
 }
 
@@ -152,9 +181,10 @@ function Mark({
   params: LogoParams;
   accentColor: string;
 }) {
-  const geometry = useMarkGeometry(params.shape);
+  const geometry = useMarkGeometry(params.pieces);
   const m = params.material;
   const color = m.colorMode === "accent" ? accentColor : m.customColor;
+  if (!geometry) return null;
 
   return (
     <TumbleGroup motion={params.motion}>

@@ -10,9 +10,18 @@ import { useEffect, useState } from "react";
 import {
   DEFAULT_LOGO_PARAMS,
   ENV_PRESETS,
+  PIECE_KEYS,
   type EnvPreset,
   type LogoParams,
+  type PieceKey,
+  type PieceParams,
 } from "./params";
+
+const PIECE_LABELS: Record<PieceKey, string> = {
+  sparkle: "Sparkle ✦",
+  plus: "Plus ˖",
+  dot: "Dot",
+};
 
 // Client-only: R3F needs the DOM, and this keeps the ~1MB three.js chunk out
 // of every other route's JS.
@@ -133,13 +142,18 @@ export default function LogoLab() {
     p: Partial<LogoParams[K]>
   ) => setParams((prev) => ({ ...prev, [key]: { ...prev[key], ...p } }));
 
+  const patchPiece = (key: PieceKey, p: Partial<PieceParams>) =>
+    setParams((prev) => ({
+      ...prev,
+      pieces: { ...prev.pieces, [key]: { ...prev.pieces[key], ...p } },
+    }));
+
   const copySettings = async () => {
     await navigator.clipboard.writeText(JSON.stringify(params, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const s = params.shape;
   const m = params.material;
 
   return (
@@ -177,13 +191,34 @@ export default function LogoLab() {
       {/* z-[140] clears the fixed SiteHeader (z-[130]) */}
       <div className="fixed top-0 right-0 h-screen w-[320px] bg-[#1e1e2f] border-l border-white/10 overflow-y-auto z-[140]">
         <div className="p-4 border-b border-white/10 space-y-3">
-          <SectionTitle>Shape</SectionTitle>
-          <Slider label="Depth" value={s.depth} min={1} max={24} step={0.5} onChange={(v) => patch("shape", { depth: v })} />
-          <Slider label="Bevel thick" value={s.bevelThickness} min={0} max={4} step={0.1} onChange={(v) => patch("shape", { bevelThickness: v })} />
-          <Slider label="Bevel size" value={s.bevelSize} min={0} max={4} step={0.1} onChange={(v) => patch("shape", { bevelSize: v })} />
-          <Slider label="Bevel segs" value={s.bevelSegments} min={1} max={16} step={1} onChange={(v) => patch("shape", { bevelSegments: v })} />
-          <Slider label="Scale" value={s.scale} min={0.04} max={0.24} step={0.005} onChange={(v) => patch("shape", { scale: v })} />
+          <SectionTitle>Composition</SectionTitle>
+          <Slider label="Scale" value={params.shape.scale} min={0.04} max={0.24} step={0.005} onChange={(v) => patch("shape", { scale: v })} />
         </div>
+
+        {PIECE_KEYS.map((key) => {
+          const p = params.pieces[key];
+          return (
+            <div key={key} className="p-4 border-b border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <SectionTitle>{PIECE_LABELS[key]}</SectionTitle>
+                <Toggle label={p.enabled ? "On" : "Off"} value={p.enabled} onChange={(v) => patchPiece(key, { enabled: v })} />
+              </div>
+              {p.enabled && (
+                <>
+                  <Slider label="Depth" value={p.depth} min={0.5} max={24} step={0.5} onChange={(v) => patchPiece(key, { depth: v })} />
+                  <Slider label="Bevel thick" value={p.bevelThickness} min={0} max={3} step={0.05} onChange={(v) => patchPiece(key, { bevelThickness: v })} />
+                  <Slider label="Bevel size" value={p.bevelSize} min={0} max={3} step={0.05} onChange={(v) => patchPiece(key, { bevelSize: v })} />
+                  <Slider label="Bevel segs" value={p.bevelSegments} min={1} max={16} step={1} onChange={(v) => patchPiece(key, { bevelSegments: v })} />
+                  <Slider label="Size" value={p.size} min={0.2} max={3} step={0.05} onChange={(v) => patchPiece(key, { size: v })} />
+                  <Slider label="Rotate °" value={p.rotation} min={-180} max={180} step={5} onChange={(v) => patchPiece(key, { rotation: v })} />
+                  <Slider label="Offset X" value={p.offsetX} min={-12} max={12} step={0.25} onChange={(v) => patchPiece(key, { offsetX: v })} />
+                  <Slider label="Offset Y" value={p.offsetY} min={-12} max={12} step={0.25} onChange={(v) => patchPiece(key, { offsetY: v })} />
+                  <Slider label="Offset Z" value={p.offsetZ} min={-12} max={12} step={0.25} onChange={(v) => patchPiece(key, { offsetZ: v })} />
+                </>
+              )}
+            </div>
+          );
+        })}
 
         <div className="p-4 border-b border-white/10 space-y-3">
           <div className="flex items-center justify-between">
