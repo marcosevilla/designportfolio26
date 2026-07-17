@@ -222,9 +222,11 @@ Each dedicated case study has:
 - Padding: `px-4 sm:px-8` (16px mobile, 32px tablet+)
 - `layout.tsx` no longer constrains `<main>` — each page handles its own width
 
-### Visual Effects
-- **Background**: Perlin noise animated dot grid with wave effect
-- **Cards**: Frosted glass (backdrop-blur), mouse-tracking glow, sharp edges
+### Visual Effects (restored + retuned 2026-07-17 via /dev/effects-lab)
+- **Background**: Perlin noise animated dot grid (`components/BackgroundTexture.tsx`, mounted in HomeLayout — homepage only). Restored from `e78665f` with retuned params; see the component's `PARAMS` const. Diamond dots, spacing 9, slow wave (speed 0.004), subtle cursor halo (radius 90, blend 0.35).
+- **Paper grain**: `--grain-image` SVG tile in globals.css (`body::before`, multiply) — unchanged, matches lab defaults (freq 0.8, strength 0.18).
+- **Cards**: Cursor-tracking rim glow on work-grid media frames — `components/CursorGlowOverlay.tsx`, dropped as last child inside `StudyMediaFrame` in CaseStudyList.tsx. Listens on its parentElement (no wiring on the frame), desktop-only. Radius 170, rim 0.55, inner 0.04, falloff 55%, hover scale 1.005.
+- **Tuning**: `/dev/effects-lab` — prop-driven copies of both effects + grain overrides with a slider panel; its DEFAULT_* consts mirror the applied values (keep in sync when retuning).
 - **Card/List toggle**: Blur in/out transition, localStorage persistence
 - **Sections**: Scroll-triggered fade animations via FadeIn component
 - **Progress**: Reading progress bar at top of case studies
@@ -388,10 +390,7 @@ Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No 
 - **Persistence keys:** `theme-mode`, `theme-family`, `colored-theme-name`, `font-size-offset`
 
 ### Background Texture (BackgroundTexture.tsx)
-- **Config:** `GRID_SPACING: 8`, `DOT_SIZE: 0.5`, `DOT_OPACITY: 0.03`, `HOVER_RADIUS: 200`
-- **Wave:** Perlin noise, ~10s cycle, threshold 0.45, affected dots grow up to 3x
-- **Hover:** Dots near cursor blend 70% toward `--color-glow`
-- **Overlay:** SVG paper grain filter at 12% opacity
+Restored 2026-07-17 (deleted 3d3a14c → recovered from e78665f, retuned in /dev/effects-lab). Params live in the component's `PARAMS` const — the values in "Visual Effects" above are canonical. Colors resolve at runtime: dots `--color-fg-tertiary`, cursor halo `--color-glow`.
 
 ## Dev Server
 ```bash
@@ -423,7 +422,11 @@ Before ending any session:
 ## Current State
 _Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
-- **Latest (2026-07-15 evening, same branch):** Intro/animation session on top of the audit work.
+- **Latest (2026-07-17, main):** Restored effects session.
+  - **`/dev/effects-lab`** built (app/dev/effects-lab/: page + EffectsLab panel + prop-driven BackgroundTexture + GlowCard) — slider playground for grain / dot grid / card rim glow with copy-settings JSON. Like type-lab, NOT NODE_ENV-gated — gate or delete before it matters.
+  - **Applied Marco's tuned settings to the live site:** `components/BackgroundTexture.tsx` (new, tuned diamond-dot build, mounted in HomeLayout after LoadingOverlay) + `components/CursorGlowOverlay.tsx` (new, parent-listening rim-glow overlay, last child of StudyMediaFrame in CaseStudyList.tsx). Grain unchanged (tuned values matched production). Playground cells intentionally have NO glow (they're non-interactive) — extend by dropping `<CursorGlowOverlay />` into PlaygroundMediaFrame if wanted.
+  - Lab DEFAULT_* consts mirror applied values; keep in sync when retuning. Verified in-browser: dot grid renders on home, rim glow + 1.005 scale on study frames, tsc clean.
+- **Earlier (2026-07-15 evening, same branch):** Intro/animation session on top of the audit work.
   - **Load intro ON:** `SKIP_INTRO=false`. Sequence: `*` blinks ×3 → types the wand-kaomoji sparkle trail `(∩ᵔ ᵕ ᵔ )⊃━☆ﾟ…` (the trailing ✧ IS the loader star, not typed text) → holds → CSS fade to page. No backspace. All timings ÷1.5 (~4.5s total). Preview: `?loader=1` in dev.
   - **CRITICAL FIX in LoadingOverlay:** the overlay's fade/unmount is plain CSS now — the old AnimatePresence/animate-opacity exit tween silently stalled (overlay stuck at opacity 1 over the page for first-time visitors, rAF healthy, React state correct). Do not reintroduce framer for the overlay lifecycle. The layoutId `hero-star` morph was removed too (receiver lives in Hero, which never mounts on home — it was a no-op).
   - **CyclingGreeting:** revived from `e59ddb5`, briefly in the h1, then moved to the tagline, then PARKED (Marco: "maybe later") — component lives in `components/CyclingGreeting.tsx` (anchor-phrase cycle, Geist `*` cursor, `start` prop), cursor CSS still in globals.css. Tagline + h1 are static again.

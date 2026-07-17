@@ -20,6 +20,7 @@ import { setCursorLabel } from "@/lib/cursor-label";
 import { TESTIMONIALS } from "@/lib/testimonials";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import DeviceShell from "./DeviceShell";
+import CursorGlowOverlay from "./CursorGlowOverlay";
 import { isLocked } from "@/lib/locked-content";
 
 
@@ -713,6 +714,7 @@ function StudyMediaFrame({
         </div>
       )}
       <LockedFrameBadge locked={locked} />
+      <CursorGlowOverlay />
     </div>
   );
 }

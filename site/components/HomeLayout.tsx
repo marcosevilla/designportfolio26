@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
+import { BackgroundTexture } from "./BackgroundTexture";
 import {
   Tooltip,
   TooltipContent,
@@ -126,6 +127,7 @@ export default function HomeLayout({
       }}
       onStarReleased={() => setLoaderOwnsStar(false)}
     />
+    <BackgroundTexture />
     <div id="home">
       {/* Toolbar + wordmark now live in the global SiteHeader (top-left
           name, top-right controls) — mounted in app/layout.tsx so they
