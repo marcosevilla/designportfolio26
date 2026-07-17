@@ -1,6 +1,6 @@
 "use client";
 
-// The 3D scene for /dev/logo-lab — Geist asterisk extruded + beveled, wearing
+// The 3D scene for /dev/logo-lab — the ✦ ˖ sparkle mark extruded + beveled, wearing
 // drei's MeshTransmissionMaterial ("hard candy" glass), free-tumble drag with
 // inertia (angular velocity + per-frame exponential damping, no physics
 // engine). Loaded ONLY via next/dynamic ssr:false from LogoLab.tsx so the
@@ -15,34 +15,45 @@ import {
   MeshTransmissionMaterial,
 } from "@react-three/drei";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { ASTERISK_PATH } from "./glyph";
+import { MARK_PATHS, MARK_VIEWBOX_HEIGHT } from "./glyph";
 import type { LogoParams } from "./params";
 
-// Parsed once per session — the glyph outline never changes, only the
+// The original Geist * glyph box was 34.4 units; normalizing the current mark
+// to that size keeps depth/bevel slider values (and any tuned settings JSON)
+// meaning the same thing regardless of the source artwork's coordinate scale.
+const NORM = 34.4 / MARK_VIEWBOX_HEIGHT;
+
+// Parsed once per session — the mark outlines never change, only the
 // extrusion params do. (Also keeps Suspense render retries from re-parsing.)
 let cachedShapes: THREE.Shape[] | null = null;
-function getAsteriskShapes(): THREE.Shape[] {
+function getMarkShapes(): THREE.Shape[] {
   if (!cachedShapes) {
     const svg = new SVGLoader().parse(
-      `<svg xmlns="http://www.w3.org/2000/svg"><path d="${ASTERISK_PATH}"/></svg>`
+      `<svg xmlns="http://www.w3.org/2000/svg">${MARK_PATHS.map(
+        (d) => `<path d="${d}"/>`
+      ).join("")}</svg>`
     );
-    cachedShapes = svg.paths.flatMap((p) => p.toShapes(true));
+    cachedShapes = svg.paths.flatMap((p) => p.toShapes());
   }
   return cachedShapes;
 }
 
-function useAsteriskGeometry(shape: LogoParams["shape"]) {
+function useMarkGeometry(shape: LogoParams["shape"]) {
   const geometry = useMemo(() => {
-    const geo = new THREE.ExtrudeGeometry(getAsteriskShapes(), {
-      depth: shape.depth,
+    // Extrusion params are given in normalized (34.4-box) units, so divide
+    // back up into source-artwork units before extruding, then scale down.
+    const geo = new THREE.ExtrudeGeometry(getMarkShapes(), {
+      depth: shape.depth / NORM,
       steps: 1,
       bevelEnabled: true,
-      bevelThickness: shape.bevelThickness,
-      bevelSize: shape.bevelSize,
+      bevelThickness: shape.bevelThickness / NORM,
+      bevelSize: shape.bevelSize / NORM,
       bevelSegments: shape.bevelSegments,
+      curveSegments: 24,
     });
+    geo.scale(NORM, NORM, NORM);
     geo.center();
-    // Glyph coords are SVG space (y down); a proper rotation (not a mirror,
+    // Mark coords are SVG space (y down); a proper rotation (not a mirror,
     // which would flip winding) turns it right-side up in three's y-up world.
     geo.rotateX(Math.PI);
     return geo;
@@ -141,7 +152,7 @@ function Mark({
   params: LogoParams;
   accentColor: string;
 }) {
-  const geometry = useAsteriskGeometry(params.shape);
+  const geometry = useMarkGeometry(params.shape);
   const m = params.material;
   const color = m.colorMode === "accent" ? accentColor : m.customColor;
 

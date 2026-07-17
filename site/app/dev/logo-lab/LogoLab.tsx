@@ -159,7 +159,7 @@ export default function LogoLab() {
           Interactive 3D mark
         </h1>
         <p className="mt-3 max-w-[560px]" style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--color-fg-secondary)" }}>
-          The Geist * extruded and beveled, wearing a transmission material.
+          The ✦ ˖ sparkle mark extruded and beveled, wearing a transmission material.
           Drag it to tumble — flick and it keeps spinning, then settles. Tune
           the panel, then copy the settings when it feels right. Nothing here
           touches the live pages.
