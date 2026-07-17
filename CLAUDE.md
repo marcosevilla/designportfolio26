@@ -423,7 +423,12 @@ Before ending any session:
 ## Current State
 _Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
-- **Latest (2026-07-17, main):** Restored effects session.
+- **Latest (2026-07-17, main):** Logo lab session (docs/LOGO-LAB-HANDOFF.md executed).
+  - **`/dev/logo-lab`** built (app/dev/logo-lab/: page + LogoLab panel + LogoScene + params.ts + glyph.ts) — Geist Medium `*` glyph (pre-extracted outline in glyph.ts, no runtime font parsing) extruded + beveled, drei MeshTransmissionMaterial, Environment presets, ContactShadows, free-tumble drag with inertia (world-axis quaternion premultiply + exponential damping, ~30 lines, no physics engine). Panel is the effects-lab idiom + copy-settings JSON. Decisions: Geist `*`, eventual home = homepage hero, free-tumble. Like other labs, NOT NODE_ENV-gated.
+  - **New deps:** three 0.185 + @react-three/fiber v9 + @react-three/drei v10, installed with `--legacy-peer-deps`. GOTCHA: Next 16 App Router runs vendored React 19 internals regardless of package.json's react 18.3 pin — fiber v8 (React-18 reconciler) crashes with `ReactCurrentOwner` undefined; v9 is required. The 3D chunk stays route-scoped: LogoScene loads only via next/dynamic ssr:false inside LogoLab.
+  - Verified in-browser: renders, drag-flick tumbles with inertia, tsc clean. Env preset HDRIs fetch from drei's CDN at runtime — self-host before any hero integration.
+  - NOT committed: Marco's separate in-flight globals.css page-wash gradient (body background-image keyed off --color-accent) — left uncommitted, not part of this work.
+- **Earlier (2026-07-17, main):** Restored effects session.
   - **`/dev/effects-lab`** built (app/dev/effects-lab/: page + EffectsLab panel + prop-driven BackgroundTexture + GlowCard) — slider playground for grain / dot grid / card rim glow with copy-settings JSON. Like type-lab, NOT NODE_ENV-gated — gate or delete before it matters.
   - **Applied Marco's tuned settings to the live site:** `components/BackgroundTexture.tsx` (new, tuned diamond-dot build, mounted in HomeLayout after LoadingOverlay) + `components/CursorGlowOverlay.tsx` (new, parent-listening rim-glow overlay, last child of StudyMediaFrame in CaseStudyList.tsx). Grain unchanged (tuned values matched production). Playground cells intentionally have NO glow (they're non-interactive) — extend by dropping `<CursorGlowOverlay />` into PlaygroundMediaFrame if wanted.
   - Lab DEFAULT_* consts mirror applied values; keep in sync when retuning. Verified in-browser: dot grid renders on home, rim glow + 1.005 scale on study frames, tsc clean.
