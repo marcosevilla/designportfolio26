@@ -48,6 +48,7 @@ Reference docs live in `docs/`. Read the relevant ones based on the task — don
 | `SALVAGE-REVIEW.md` | What was kept for reuse after the dead-code deletion + recovery commits for everything deleted, incl. the intro/greeting animations |
 | `PORTFOLIO-RESEARCH.md` | Deep research on case study content, homepage strategy, and visual design best practices — sourced from 30+ design leaders and publications |
 | `PORTFOLIO-AUDIT.md` | Full audit of the current site with prioritized recommendations (P0-P3) — covers content, visuals, accessibility, and performance |
+| `LOGO-LAB-HANDOFF.md` | Building the interactive 3D logo (`/dev/logo-lab`) — reverse-engineering findings from opensoftware.co + recipe + open decisions. Read before any 3D logo work. |
 
 ## Case Studies (Markdown Drafts)
 Written case study content lives in `case-studies/`. Each `.md` file contains the narrative draft for a case study. Read the relevant one when working on a specific case study page.
