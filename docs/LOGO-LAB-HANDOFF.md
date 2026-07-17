@@ -71,15 +71,19 @@ Investigated live with a browser + bundle analysis. Findings:
 
 ## Status
 
-- **BUILT 2026-07-17** — `/dev/logo-lab` is live (site/app/dev/logo-lab/:
-  page + LogoLab panel + LogoScene canvas + params + glyph). Decisions made:
-  Geist `*` mark, destined for the homepage hero, free-tumble with inertia.
+- **BUILT 2026-07-17, then PARKED same day** — `/dev/logo-lab` is live
+  (site/app/dev/logo-lab/: page + LogoLab panel + LogoScene canvas + params +
+  glyph). Decisions made: destined for the homepage hero, free-tumble with
+  inertia. Mark changed same-day from Geist `*` to **Marco's ✦ ˖ sparkle
+  composition** (three outlines with independent per-piece shape controls:
+  depth/bevels/size/rotation/XYZ offsets/toggle; merged into one mesh).
 - Stack notes: fiber v9 + drei v10 (`--legacy-peer-deps` — Next 16's App
   Router runs vendored React 19 internals, so fiber v8's React-18 reconciler
   crashes with `ReactCurrentOwner` undefined; package.json's react 18 pin is
   irrelevant at runtime). three 0.185. Glyph outline pre-extracted from
   Geist-Medium.ttf into glyph.ts — no font parsing at runtime.
-- Next: Marco tunes in the lab → paste settings JSON back → bake values +
-  plan the hero integration (perf: self-host the HDRI, lazy-load the chunk).
+- Next when resumed: Marco tunes in the lab → paste settings JSON back →
+  bake values + plan the hero integration (perf: self-host the HDRI,
+  lazy-load the chunk). No settings JSON captured yet.
 - Effects-lab session (2026-07-17, commit 135de51) established the lab-page
   pattern this follows.
