@@ -178,6 +178,17 @@ body {
      proportionally instead of inheriting a pinned pixel value. */
   line-height: 1.6;
   background-color: var(--color-bg);
+  /* Inflight-style page wash (2026-07-17): one two-stop gradient across the
+     whole document — bg at the top fading to the theme accent at a 7% tint.
+     Keys off --color-accent, so mono stays a whisper-neutral fade and the
+     colored themes tint toward their accent. background-color above stays
+     as the overscroll/flash fallback; the grain (body::before) multiplies
+     over this. */
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-bg),
+    color-mix(in oklab, var(--color-accent) 7%, var(--color-bg))
+  );
   color: var(--color-fg);
   transition: background-color 0.3s ease, color 0.3s ease;
   overflow-x: hidden;
