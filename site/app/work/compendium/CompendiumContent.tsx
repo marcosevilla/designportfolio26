@@ -42,7 +42,10 @@ export default function CompendiumContent() {
         <Grid preset="intro-rail">
           <Col>
             <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
-            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>Hotels print their guest guides. Guests never read them. I spent 18 months designing the digital replacement — now the hub 175,000 guests open every month, and a $1M+ product line for Canary.</p>
+            {/* Same intro treatment as F&B: italic tertiary one-liner hook,
+                then body paragraphs at secondary. */}
+            <p className="mt-3 italic text-(--color-fg-tertiary)">Hotels print their guest guides. Guests never read them.</p>
+            <p className="mt-3 text-(--color-fg-secondary)">I spent 18 months designing the digital replacement — now the hub 175,000 guests open every month, and a $1M+ product line for Canary.</p>
           </Col>
           <Col className="mt-8 lg:mt-2">
             <MetaRail items={META} />
@@ -58,7 +61,7 @@ export default function CompendiumContent() {
         </FadeIn>
 
         {/* ── The Problem ── */}
-        <FadeIn as="section" className="scroll-mt-24 pt-24">
+        <FadeIn as="section" className="scroll-mt-24 pt-32">
           <Grid preset="prose">
             <Col>
               <SectionHeading id="problem">The Problem</SectionHeading>
@@ -77,7 +80,7 @@ export default function CompendiumContent() {
           <Grid preset="prose">
             <Col>
               <SectionHeading id="solution">The Solution</SectionHeading>
-              <p className="mb-8">
+              <p className="mb-5">
                 I designed the full Compendium platform end-to-end — a hotel-facing CMS builder for managing content, and a guest-facing mobile web experience for browsing it — then kept extending it for 18 months, from MVP through enterprise-wide release.
               </p>
             </Col>
@@ -168,16 +171,16 @@ export default function CompendiumContent() {
                 <SectionHeading level={3}>Key insights</SectionHeading>
                 <div className="space-y-5">
                   <p>
-                    <strong className="text-(--color-fg)">Hotels think in categories, not pages.</strong> Ask a front-desk manager about their property and you get restaurants, amenities, policies, local attractions — never &ldquo;pages.&rdquo; So the builder is organized around typed sections instead of a generic page editor. Staff recognized the model immediately.
+                    <span className="font-medium text-(--color-fg)">Hotels think in categories, not pages.</span> Ask a front-desk manager about their property and you get restaurants, amenities, policies, local attractions — never &ldquo;pages.&rdquo; So the builder is organized around typed sections instead of a generic page editor. Staff recognized the model immediately.
                   </p>
                   <p>
-                    <strong className="text-(--color-fg)">Content quality varies wildly between properties.</strong> Some hotels have professional photography; plenty have phone photos taken in bad hallway lighting. The image handling had to flatter both — bulk upload without a forced crop step, galleries, layouts that survive mediocre photos. The bulk upload flow alone took 19 rounds to get right.
+                    <span className="font-medium text-(--color-fg)">Content quality varies wildly between properties.</span> Some hotels have professional photography; plenty have phone photos taken in bad hallway lighting. The image handling had to flatter both — bulk upload without a forced crop step, galleries, layouts that survive mediocre photos. The bulk upload flow alone took 19 rounds to get right.
                   </p>
                   <p>
-                    <strong className="text-(--color-fg)">Chains and boutiques pull in opposite directions.</strong> Best Western wants brand consistency across hundreds of properties; a boutique wants its property to feel like nowhere else. Brand-level defaults that individual properties can override served both, along with branded QR templates for the chains.
+                    <span className="font-medium text-(--color-fg)">Chains and boutiques pull in opposite directions.</span> Best Western wants brand consistency across hundreds of properties; a boutique wants its property to feel like nowhere else. Brand-level defaults that individual properties can override served both, along with branded QR templates for the chains.
                   </p>
                   <p>
-                    <strong className="text-(--color-fg)">The polish itself was selling.</strong> Before we had feature parity with competitors, prospects were reacting to how the guest experience looked and felt in demos. Craft was doing sales work — which validated putting the design bar first.
+                    <span className="font-medium text-(--color-fg)">The polish itself was selling.</span> Before we had feature parity with competitors, prospects were reacting to how the guest experience looked and felt in demos. Craft was doing sales work — which validated putting the design bar first.
                   </p>
                 </div>
 
@@ -222,10 +225,10 @@ export default function CompendiumContent() {
 
                 <SectionHeading level={3}>Constraints I designed around</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li><strong className="text-(--color-fg)">No native app</strong> — Everything as mobile web via QR code, SMS link, or Wi-Fi portal redirect</li>
-                  <li><strong className="text-(--color-fg)">Multi-language from day one</strong> — Translation management built into every content field</li>
-                  <li><strong className="text-(--color-fg)">Varied technical sophistication</strong> — Hotel staff range from tech-savvy to barely comfortable with email</li>
-                  <li><strong className="text-(--color-fg)">Platform foundation</strong> — Every pattern needed to be reusable across Canary&apos;s product suite</li>
+                  <li><span className="font-medium text-(--color-fg)">No native app</span> — Everything as mobile web via QR code, SMS link, or Wi-Fi portal redirect</li>
+                  <li><span className="font-medium text-(--color-fg)">Multi-language from day one</span> — Translation management built into every content field</li>
+                  <li><span className="font-medium text-(--color-fg)">Varied technical sophistication</span> — Hotel staff range from tech-savvy to barely comfortable with email</li>
+                  <li><span className="font-medium text-(--color-fg)">Platform foundation</span> — Every pattern needed to be reusable across Canary&apos;s product suite</li>
                 </ul>
           </ExpandableSection>
             </Col>
@@ -238,8 +241,8 @@ export default function CompendiumContent() {
             <Col>
           <ExpandableSection title="Impact & Results" id="impact">
                 <SectionHeading level={3}>A new product line</SectionHeading>
-                <p className="mb-4">
-                  Compendium passed <strong className="text-(--color-fg)">$1M in cumulative CARR</strong> by December 2025 — a brand-new SKU designed from zero, with zero gross churn in the tracked period. And the platform bet paid out: F&amp;B Mobile Ordering launched as the first interactive module inside the same guest experience, no shell redesign required.
+                <p className="mb-5">
+                  Compendium passed <span className="font-medium text-(--color-fg)">$1M in cumulative CARR</span> by December 2025 — a brand-new SKU designed from zero, with zero gross churn in the tracked period. And the platform bet paid out: F&amp;B Mobile Ordering launched as the first interactive module inside the same guest experience, no shell redesign required.
                 </p>
 
             <FadeIn>
@@ -250,8 +253,8 @@ export default function CompendiumContent() {
             </FadeIn>
 
                 <SectionHeading level={3}>Guests and hotels actually use it</SectionHeading>
-                <p className="mb-4">
-                  <strong className="text-(--color-fg)">175K guests</strong> open Compendium every month, averaging 2.5 minutes per session. On the hotel side, <strong className="text-(--color-fg)">82% of active properties</strong> have built custom sections and 72% use custom CTAs — averaging 8.7 items of their own content per property. Hotels aren&apos;t just enabling the product; they&apos;re building on it.
+                <p className="mb-5">
+                  <span className="font-medium text-(--color-fg)">175K guests</span> open Compendium every month, averaging 2.5 minutes per session. On the hotel side, <span className="font-medium text-(--color-fg)">82% of active properties</span> have built custom sections and 72% use custom CTAs — averaging 8.7 items of their own content per property. Hotels aren&apos;t just enabling the product; they&apos;re building on it.
                 </p>
 
             <FadeIn>
@@ -263,10 +266,10 @@ export default function CompendiumContent() {
 
                 <SectionHeading level={3}>Enterprise traction</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-6">
-                  <li><strong className="text-(--color-fg)">Best Western:</strong> The largest rollout, driving the majority of Q4 activations; one property put Compendium QR codes on every guest room TV</li>
-                  <li><strong className="text-(--color-fg)">Wyndham:</strong> Compendium Lite delivered through their Wi-Fi captive portal, scaling to 400+ sites</li>
-                  <li><strong className="text-(--color-fg)">COMO Hotels:</strong> Multi-property deployment across Asia-Pacific</li>
-                  <li><strong className="text-(--color-fg)">Omni Hotels:</strong> Pilot expanded to a full deal, now exploring geofenced QR codes and loyalty integration</li>
+                  <li><span className="font-medium text-(--color-fg)">Best Western:</span> The largest rollout, driving the majority of Q4 activations; one property put Compendium QR codes on every guest room TV</li>
+                  <li><span className="font-medium text-(--color-fg)">Wyndham:</span> Compendium Lite delivered through their Wi-Fi captive portal, scaling to 400+ sites</li>
+                  <li><span className="font-medium text-(--color-fg)">COMO Hotels:</span> Multi-property deployment across Asia-Pacific</li>
+                  <li><span className="font-medium text-(--color-fg)">Omni Hotels:</span> Pilot expanded to a full deal, now exploring geofenced QR codes and loyalty integration</li>
                 </ul>
           </ExpandableSection>
             </Col>
