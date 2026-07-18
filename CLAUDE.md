@@ -65,11 +65,11 @@ Case study critiques, project research, and career strategy context live in Obsi
 A Next.js 14 portfolio site for a product designer, featuring case studies with rich interactive components.
 
 ## Tech Stack
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router, Turbopack)
 - **Styling**: Tailwind CSS with CSS variables for theming
 - **Animations**: Framer Motion (parallax, scroll effects)
 - **Content**: MDX files with gray-matter for frontmatter parsing
-- **Deployment**: Static export (`output: export`)
+- **Deployment**: Vercel server deployment — NOT static export (the `/api/chat` route needs a server; do not add `output: export`, it would break chat). `images.unoptimized: true` in next.config.mjs is a leftover from the export era.
 
 ## Project Structure
 
@@ -423,7 +423,14 @@ Before ending any session:
 ## Current State
 _Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
 
-- **Latest (2026-07-18, main):** Compendium content pass + ungate (commit f54c90f, **LOCAL — not pushed**).
+- **Latest (2026-07-18, main):** Architecture/perf/runtime sweep (commit 4e81a4c, **LOCAL — not pushed**, sits on top of the also-unpushed compendium commit f54c90f). Three-agent audit, high-confidence fixes applied and build-verified:
+  - **Chat content now ships to prod:** `outputFileTracingIncludes` glob was resolving against `site/` so zero case-study .md files were traced into `/api/chat` — prod chat ran metadata-only since launch. Fixed to `../case-studies/**/*.md` (17 files traced, verified in route.js.nft.json). Also: chat study links/unfurls route to `/work/<slug>` again (were `/#projects`), knowledge-base added to chat metadata + content map, route fails open on Upstash errors / 503s on missing API key / aborts the Anthropic stream on client disconnect.
+  - **Homepage prerenders again:** `useSearchParams` isolated into `AboutParamWatcher` (null leaf + own Suspense) in HomeLayout; the page-level Suspense wrapper is gone. The "home markup never appears in static HTML" caveat elsewhere in this file is now obsolete.
+  - **Both queued quick wins done:** `app/icon.svg` favicon (3-stroke asterisk, dark-aware) + all three /dev labs 404 in prod (`notFound()` behind NODE_ENV).
+  - **SEO:** root-layout canonical (pointed every page at the homepage) removed; sitemap trimmed to home + fb-ordering + compendium + ai-workflow.
+  - **Runtime fixes:** template.tsx overlay unmounts post-fade; BackgroundTexture DPR cap 1.5 + reduced-motion; LedMatrix reduced-motion rAF/GL leak; audio next/prev while paused stays paused; PasswordModal focus in/restore; `defaultTheme="light"` (kills dark-OS first-paint flash).
+  - **Known issues NOT fixed (need Marco's calls / media work):** 15MB `guest-experience-dash.mp4` playing in a 323px card + 5 more autoplaying homepage videos with no posters/offscreen-pause; multi-MB case-study PNGs with no lazy/width/height (wants a scripted WebP pass); ~27MB dead videos in public/ (`fb-mobile.mp4`, `fb-guest-flow.mp4`) — deletion left to Marco; framer-motion LazyMotion migration; NavOverlayProvider mounted but `<NavOverlay />` rendered nowhere (drawer nav doesn't exist despite docs above); `/resume` + `/writing` orphaned; stale playground slugs in LOCKED_SLUGS.
+- **Earlier same day (2026-07-18, main):** Compendium content pass + ungate (commit f54c90f, **LOCAL — not pushed**).
   - Executed the critique's priority list (`~/Obsidian/marcowits/portfolio/case-study-critiques/compendium-case-study-critique.md`): hero rewritten as a hook; research insights de-AI'd (arrow formula removed); Process collapsed 5 dated phases → 3 moments led by the Figma-prototype-closed-deals story (engineer quote kept anonymous — Marco can re-add Wenjun's name); Impact clustered with lead metrics and **partner-specific dollar figures removed by Marco's call** ($18M Wyndham, $200K Omni — kept "400+ sites" scale); COMO loss elevated to its own Reflection block ("The customer we lost"); guest-experience-dash.mp4 embedded in Solution (zoom-crop 1.32, same as homepage card). `compendium` removed from LOCKED_SLUGS.
   - Marco reviewed full-page mobile screenshots (remote session) but **has NOT said ship** — get his read before pushing. Pushing main deploys this publicly.
   - **Open threads he owes answers on:** (1) rejected-direction anecdote for the Solution section — was a free-form editor/template approach actually explored before the structured builder? Add 2 sentences if real, skip if not. (2) Stats freshness — page labels stats "Dec '25" which is honest; he said "get back to me later."
