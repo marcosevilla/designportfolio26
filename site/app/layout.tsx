@@ -36,7 +36,6 @@ import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
 import ChatBar from "@/components/chat/ChatBar";
 import SiteHeader from "@/components/SiteHeader";
-import MainBlurLayer from "@/components/MainBlurLayer";
 import { NavOverlayProvider } from "@/lib/NavOverlayContext";
 import { ChatOverlayProvider } from "@/lib/ChatOverlayContext";
 import ChangelogOverlay from "@/components/ChangelogOverlay";
@@ -102,7 +101,7 @@ export default function RootLayout({
                   <main
                     id="main"
                   >
-                    <MainBlurLayer>{children}</MainBlurLayer>
+                    {children}
                   </main>
                   {process.env.NODE_ENV === "development" && (
                     <>
@@ -115,8 +114,10 @@ export default function RootLayout({
                 <ViewportFade />
                 {/* Floating dock — chat FAB + music dock share the
                     bottom-right corner; items-end keeps the chat button
-                    bottom-aligned when the music panel expands. */}
-                <div className="fixed bottom-4 right-4 z-[60] flex items-end gap-3">
+                    bottom-aligned when the music panel expands.
+                    .floating-dock shifts it left of the chat side panel
+                    at lg+ when chat is open (globals.css). */}
+                <div className="floating-dock fixed bottom-4 right-4 z-[60] flex items-end gap-3">
                   <ChatFab />
                   <MusicMiniWidget />
                 </div>

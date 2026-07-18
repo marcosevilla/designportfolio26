@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
 import { HERO_NAME } from "@/lib/bio-content";
-import { useChatOverlay } from "@/lib/ChatOverlayContext";
 
 /** Global site header. Full-width fixed bar at the top with an opaque
  *  page-bg fill so content scrolls cleanly behind it. The wordmark sits
@@ -16,8 +15,9 @@ import { useChatOverlay } from "@/lib/ChatOverlayContext";
  *  boundary against content is legible. Mounted in app/layout.tsx so it
  *  appears on every route. */
 export default function SiteHeader() {
-  const { chatOpen } = useChatOverlay();
-  const headerHidden = chatOpen;
+  // Chat is a side panel now (not a full-screen page), so the header stays
+  // visible while it's open — the mobile sheet covers it via z-index.
+  const headerHidden = false;
   const pathname = usePathname();
 
   // Wordmark is always visible (2026-07-15): the home h1 is now the

@@ -7,22 +7,26 @@
 //   - submit logic against /api/chat
 //   - the morph between toolbar pill (closed) and panel (open)
 //
-// Mounted once globally in app/layout.tsx. The pill is a fixed
-// bottom-right floating primary CTA. When opened, the pill morphs into
-// a right-aligned side panel via shared layoutId="chat-surface".
+// Mounted once globally in app/layout.tsx; ChatFab (floating dock) is the
+// trigger.
 //
-// At lg+ the panel is persistent and pushes <main> left (body reflow via
-// `[data-chat-open="true"]` attr + CSS transition in globals.css). At <lg
-// the panel is a right-side drawer that overlays content via ChatOverlay.
+// At lg+ the panel is a persistent right-side panel that pushes <main>
+// left (body reflow via `[data-chat-open="true"]` attr + CSS transition
+// in globals.css — the page stays visible and interactive beside it). At
+// <lg the panel is a full-screen sheet (.chat-panel-slot mobile rules).
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useReducedMotion,
+  useDragControls,
+} from "framer-motion";
 import ChatPanel from "./ChatPanel";
 import { parseSseStream } from "./parseStream";
 import type { ChatTurn } from "./ChatMessage";
 import { useChatOverlay } from "@/lib/ChatOverlayContext";
-import { ArrowRightIcon } from "@/components/Icons";
 
 const STORAGE_KEY = "chat-transcript";
 // Open morph (pill → panel). Slightly over-critically damped (ratio ≈
@@ -111,6 +115,7 @@ export default function ChatBar() {
   // CSS) so the layoutId morph isn't paired against a display:none source —
   // that produces a 0×0 origin → tiny→fullscreen warp on open.
   const [isMobile, setIsMobile] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const abortRef = useRef<AbortController | null>(null);
   // True once the user has opened the panel at least once. Drives whether
   // the pill's contents fade-blur in on mount: skip on first page load (the
@@ -359,83 +364,144 @@ export default function ChatBar() {
   // restoring the standalone CTA if HeaderToolbar is ever removed.
   void pill;
 
+  // Desktop panel slides in from the right edge on the same duration/easing
+  // as the body-push CSS transition (globals.css) so the panel and <main>
+  // move as one gesture. Reduced motion: opacity only.
+  const desktopMotion = prefersReducedMotion
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const },
+      }
+    : {
+        // 112% ≈ panel width + gutter — fully off-screen incl. shadow.
+        initial: { x: "112%", opacity: 0.6 },
+        animate: { x: 0, opacity: 1 },
+        exit: { x: "112%", opacity: 0.6 },
+        transition: { duration: 0.46, ease: [0.22, 1, 0.36, 1] as const },
+      };
+
+  // Mobile bottom sheet: iOS-style slide-up with a spring settle. Exit is a
+  // quicker tween so dismissal feels immediate.
+  const sheetMotion = prefersReducedMotion
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] as const },
+      }
+    : {
+        initial: { y: "100%" },
+        animate: { y: 0 },
+        exit: {
+          y: "100%",
+          transition: {
+            type: "tween" as const,
+            duration: 0.28,
+            ease: [0.4, 0, 1, 1] as const,
+          },
+        },
+        transition: { type: "spring" as const, stiffness: 420, damping: 42 },
+      };
+
+  // Drag-to-dismiss on the sheet grabber. dragListener is off on the sheet
+  // itself so transcript scrolling never fights the gesture — only the
+  // grabber strip starts a drag (dragControls.start in its onPointerDown).
+  const dragControls = useDragControls();
+
   return (
     <>
       {mounted &&
         createPortal(
           <AnimatePresence>
-            {open && (
+            {open && isMobile && (
               <motion.div
-                key="chat-overlay"
+                key="chat-scrim"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-10"
-                // Solid page-bg so underlying content is fully hidden —
-                // matches the music overlay's treatment.
-                style={{ backgroundColor: "var(--color-bg)" }}
-                aria-modal="true"
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed inset-0 z-[135]"
+                style={{ backgroundColor: "rgba(0, 0, 0, 0.35)" }}
+                onClick={close}
+                aria-hidden
+              />
+            )}
+            {open && isMobile && (
+              <motion.div
+                key="chat-sheet"
+                {...sheetMotion}
+                drag={prefersReducedMotion ? false : "y"}
+                dragListener={false}
+                dragControls={dragControls}
+                dragConstraints={{ top: 0 }}
+                dragSnapToOrigin
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 140 || info.velocity.y > 600) close();
+                }}
+                // Slot geometry (globals.css .chat-panel-slot) tracks
+                // --chat-vh, so the frame — and the bottom-anchored sheet
+                // inside it — shrinks with the iOS keyboard and the
+                // composer stays visible. The transparent frame is
+                // pointer-events-none so taps in the top peek strip land
+                // on the scrim and close the sheet. z ≥ 140 covers the
+                // SiteHeader (z-130).
+                className="chat-panel-slot fixed z-[140] pointer-events-none flex flex-col"
                 role="dialog"
+                aria-modal="true"
                 aria-label="Chat with Marco"
               >
-                <motion.div
-                  initial={{ opacity: 0, y: 16, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: 16, filter: "blur(12px)" }}
-                  transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                  className="w-full max-w-[700px] h-[68vh] max-h-[680px] flex flex-col"
-                  onClick={(e) => e.stopPropagation()}
+                <div
+                  className="pointer-events-auto relative flex flex-col mt-auto w-full"
+                  style={{ height: "calc(100% - 32px)" }}
                 >
-                  {/* Return button — same treatment as the music overlay's,
-                      sits inside the column at the top with breathing room
-                      before the transcript. */}
-                  <div className="flex mb-6">
-                    <button
-                      type="button"
-                      onClick={close}
-                      aria-label="Return to page"
-                      className="group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)"
+                  {/* Grabber — the drag surface for dismissal. touch-none
+                      stops the browser claiming the gesture for scroll. */}
+                  <div
+                    className="absolute top-0 inset-x-0 z-10 flex justify-center pt-2 pb-3 touch-none"
+                    style={{ cursor: "grab" }}
+                    onPointerDown={(e) => dragControls.start(e)}
+                  >
+                    <div
+                      aria-hidden
                       style={{
-                        fontFamily:
-                          "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                        fontSize: 12,
-                        fontWeight: 500,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                        lineHeight: 1,
-                        color: "var(--color-fg-secondary)",
-                        background: "none",
-                        border: 0,
-                        padding: 0,
+                        width: 36,
+                        height: 5,
+                        borderRadius: 999,
+                        background:
+                          "color-mix(in srgb, var(--color-fg) 22%, transparent)",
                       }}
-                    >
-                      <span
-                        aria-hidden
-                        className="inline-flex items-center transition-transform duration-200 ease-out group-hover:-translate-x-1"
-                      >
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            transform: "scaleX(-1)",
-                          }}
-                        >
-                          <ArrowRightIcon size={14} />
-                        </span>
-                      </span>
-                      <span>Return</span>
-                    </button>
+                    />
                   </div>
-
                   <ChatPanel
                     turns={turns}
                     pending={pending}
                     errorLine={errorLine}
                     onSubmit={submit}
                     onClose={close}
-                    headless
                   />
-                </motion.div>
+                </div>
+              </motion.div>
+            )}
+            {open && !isMobile && (
+              <motion.div
+                key="chat-panel"
+                {...desktopMotion}
+                // Slot geometry lives in globals.css: 360px bottom-right
+                // panel at lg+, where the [data-chat-open] body push makes
+                // room beside it. Sits beside content, under the header.
+                className="chat-panel-slot fixed z-[110] flex flex-col"
+                role="dialog"
+                aria-label="Chat with Marco"
+              >
+                <ChatPanel
+                  turns={turns}
+                  pending={pending}
+                  errorLine={errorLine}
+                  onSubmit={submit}
+                  onClose={close}
+                />
               </motion.div>
             )}
           </AnimatePresence>,
