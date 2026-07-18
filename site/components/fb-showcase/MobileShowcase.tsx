@@ -13,28 +13,28 @@ interface MobileScreen {
 
 const SCREENS: MobileScreen[] = [
   {
-    src: "/images/fb-ordering/fb-landing-page.png",
+    src: "/images/fb-ordering/fb-landing-page.webp",
     alt: "Ordering outlet landing page — in-room dining",
     label: "Landing page",
     width: 924,
     height: 1928,
   },
   {
-    src: "/images/fb-ordering/fb-browse-menu.png",
+    src: "/images/fb-ordering/fb-browse-menu.webp",
     alt: "Browse menu — breakfast items and categories",
     label: "Browse menu",
     width: 924,
     height: 1928,
   },
   {
-    src: "/images/fb-ordering/fb-item-detail.png",
+    src: "/images/fb-ordering/fb-item-detail.webp",
     alt: "Item detail — customization and modifiers",
     label: "Item detail",
     width: 924,
     height: 1928,
   },
   {
-    src: "/images/fb-ordering/fb-cart-review.png",
+    src: "/images/fb-ordering/fb-cart-review.webp",
     alt: "Cart review — order summary before submission",
     label: "Cart review",
     width: 924,

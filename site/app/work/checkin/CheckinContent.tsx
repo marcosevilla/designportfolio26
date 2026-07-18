@@ -86,9 +86,12 @@ export default function CheckinContent() {
 
             <FadeIn className="my-8">
               <img
-                src="/images/checkin/dashboard.png"
+                src="/images/checkin/dashboard.webp"
                 alt="Hotel staff-facing dashboard design with guest ID photo for easy recognition"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={900}
               />
             </FadeIn>
 
@@ -102,9 +105,12 @@ export default function CheckinContent() {
 
             <FadeIn className="my-8">
               <img
-                src="/images/checkin/details.png"
+                src="/images/checkin/details.webp"
                 alt="Guest check-in details with ID and payment card side-by-side comparison"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={900}
               />
             </FadeIn>
           </ExpandableSection>
@@ -123,9 +129,12 @@ export default function CheckinContent() {
 
             <FadeIn className="my-8">
               <img
-                src="/images/checkin/compendium-mobile.png"
+                src="/images/checkin/compendium-mobile.webp"
                 alt="Mobile interface — digital directory with amenities, policies, and dining options"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={900}
               />
             </FadeIn>
 
@@ -139,9 +148,12 @@ export default function CheckinContent() {
 
             <FadeIn className="my-8">
               <img
-                src="/images/checkin/compendium-cms.png"
+                src="/images/checkin/compendium-cms.webp"
                 alt="Content management system (CMS) for hotel staff to customize their compendium"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={900}
               />
             </FadeIn>
 

@@ -14,6 +14,8 @@ export const SLUG_TO_FILE: Record<string, string> = {
   "checkin": "app/work/checkin/CheckinContent.tsx",
   "general-task": "app/work/general-task/GeneralTaskContent.tsx",
   "design-system": "app/work/design-system/DesignSystemContent.tsx",
+  "knowledge-base": "app/work/knowledge-base/KnowledgeBaseContent.tsx",
+  "ai-workflow": "app/work/ai-workflow/AIWorkflowContent.tsx",
 };
 
 export const EDITOR_SERVER_URL = "http://localhost:3002";

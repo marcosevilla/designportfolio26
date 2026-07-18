@@ -21,7 +21,7 @@ export default function FBOrderingPage() {
       locked={isLocked("fb-ordering")}
       title="Mobile ordering for hotels"
       subtitle="Designing a 0→1 mobile ordering system for hotels"
-      backHref="/work"
+      backHref="/#projects"
     >
       <div className="pb-20">
         <FBOrderingContent />

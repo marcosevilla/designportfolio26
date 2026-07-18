@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import AutoplayVideo from "@/components/AutoplayVideo";
 import type { CaseStudyMeta } from "@/lib/types";
 import {
   PLAYGROUND_CARDS,
@@ -606,14 +607,9 @@ function StudyMediaFrame({
                   : { width: "78%", aspectRatio: "16 / 10" }
               }
             >
-              <video
+              <AutoplayVideo
                 src={video.video}
                 poster={video.poster}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
                 style={{
                   // 1px overshoot: the shell screen's height is usually
                   // fractional (86% of the band height), and the video's
@@ -631,14 +627,9 @@ function StudyMediaFrame({
             </DeviceShell>
           </div>
         ) : (
-          <video
+          <AutoplayVideo
             src={video.video}
             poster={video.poster}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
             style={{
               position: "absolute",
               inset: 0,
@@ -911,14 +902,9 @@ function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
       }}
     >
       {card.video ? (
-        <video
+        <AutoplayVideo
           src={card.video}
           poster={card.poster}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
           style={{
             position: "absolute",
             inset: 0,

@@ -82,8 +82,8 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
     },
     {
       layers: {
-        bg: "/images/gallery/fb-ordering/food-bg-2.png",
-        ui: "/images/gallery/fb-ordering/mobile-guest-mock.png",
+        bg: "/images/gallery/fb-ordering/food-bg-2.webp",
+        ui: "/images/gallery/fb-ordering/mobile-guest-mock.webp",
         uiHeight: "92%",
         parallax: "bottom",
         uiBorderRadius: "16px",
@@ -113,7 +113,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
     // node 506-10090) floats on it like the other layered cards.
     {
       layers: {
-        ui: "/images/gallery/upsells/upsells-mocks.png",
+        ui: "/images/gallery/upsells/upsells-mocks.webp",
         uiWidth: "88%",
         parallax: "bottom",
         uiShadow:
@@ -124,8 +124,8 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
   checkin: [
     {
       layers: {
-        bg: "/images/gallery/checkin/check-in.png",
-        ui: "/images/gallery/checkin/check-in-dash.png",
+        bg: "/images/gallery/checkin/check-in.webp",
+        ui: "/images/gallery/checkin/check-in-dash.webp",
         uiWidth: "95%",
         parallax: "right",
         uiBorderRadius: "8px",
@@ -146,7 +146,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         // CaseStudyList no longer renders layers.bg, so this slot is
         // unused but kept here to satisfy the layers type.
         bg: "",
-        ui: "/images/gallery/general-task/general-task.png",
+        ui: "/images/gallery/general-task/general-task.webp",
         uiWidth: "98%",
         parallax: "bottom",
         // Same 3-stop ambient lift used on check-in + compendium so the

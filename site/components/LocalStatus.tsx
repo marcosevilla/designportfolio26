@@ -171,7 +171,7 @@ export default function LocalStatus() {
             type="button"
             onClick={toggleTempUnit}
             aria-label={`Temperature in °${tempUnit}. Click to switch to °${tempUnit === "F" ? "C" : "F"}.`}
-            className="cursor-pointer transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
+            className="tap-target cursor-pointer transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
             style={{ font: "inherit", color: "inherit", background: "none", border: 0, padding: 0 }}
           >
             {tempUnit === "F" ? weather.temp : Math.round((weather.temp - 32) * 5 / 9)}°{tempUnit}

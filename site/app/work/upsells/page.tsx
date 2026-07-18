@@ -21,7 +21,7 @@ export default function UpsellsPage() {
       locked={isLocked("upsells")}
       title="Upsells"
       subtitle="A configurable form system for hotel upsell purchases"
-      backHref="/work"
+      backHref="/#projects"
     >
       <div className="pb-20">
         <UpsellsContent />

@@ -93,7 +93,7 @@ export default function SiteHeader() {
                     href="/"
                     onClick={handleWordmarkClick}
                     aria-label="Marco Sevilla — home"
-                    className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
+                    className="tap-target inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
                     style={{
                       fontFamily: "var(--font-baskerville), Georgia, serif",
                       fontSize: 16,

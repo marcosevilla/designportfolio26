@@ -21,7 +21,7 @@ export default function CompendiumPage() {
       locked={isLocked("compendium")}
       title="Hotel guest experience app"
       subtitle="A scalable hotel CMS platform built from scratch"
-      backHref="/work"
+      backHref="/#projects"
     >
       <div className="pb-20">
         <CompendiumContent />

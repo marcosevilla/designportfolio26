@@ -134,9 +134,12 @@ export default function GeneralTaskContent() {
 
             <FadeIn className="my-8">
               <img
-                src="/images/general-task/research.png"
+                src="/images/general-task/research.webp"
                 alt="User research synthesis and key insights"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={2968}
               />
             </FadeIn>
 
@@ -179,9 +182,12 @@ export default function GeneralTaskContent() {
             </TwoCol>
             <FadeIn className="my-8">
               <img
-                src="/images/general-task/sketches.png"
+                src="/images/general-task/sketches.webp"
                 alt="Early paper sketches exploring layout options"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={1934}
               />
             </FadeIn>
 
@@ -195,9 +201,12 @@ export default function GeneralTaskContent() {
             </TwoCol>
             <FadeIn className="my-8">
               <img
-                src="/images/general-task/wireframes-folders.png"
+                src="/images/general-task/wireframes-folders.webp"
                 alt="Wireframes showing folder card components and states"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={985}
               />
             </FadeIn>
 
@@ -214,9 +223,12 @@ export default function GeneralTaskContent() {
             </TwoCol>
             <FadeIn className="my-8">
               <img
-                src="/images/general-task/wireframes-home.png"
+                src="/images/general-task/wireframes-home.webp"
                 alt="Wireframe evolution from grid to two-column layout"
                 className="w-full rounded-lg"
+                loading="lazy"
+                width={1600}
+                height={761}
               />
             </FadeIn>
 
@@ -233,6 +245,7 @@ export default function GeneralTaskContent() {
                 src="/images/general-task/visual-design.png"
                 alt="High fidelity visual design explorations"
                 className="w-full rounded-lg"
+                loading="lazy"
               />
             </FadeIn>
 
@@ -249,6 +262,7 @@ export default function GeneralTaskContent() {
                 src="/images/general-task/final-designs.png"
                 alt="Final design — General Task home page"
                 className="w-full rounded-lg"
+                loading="lazy"
               />
             </FadeIn>
             <FadeIn className="my-8">
@@ -256,6 +270,7 @@ export default function GeneralTaskContent() {
                 src="/images/general-task/final-designs-2.png"
                 alt="Final design — Task detail view"
                 className="w-full rounded-lg"
+                loading="lazy"
               />
             </FadeIn>
           </ExpandableSection>

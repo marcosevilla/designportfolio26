@@ -1,5 +1,6 @@
 "use client";
 
+import AutoplayVideo from "@/components/AutoplayVideo";
 import QuickStats from "@/components/case-study/QuickStats";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import NextProject from "@/components/case-study/NextProject";
@@ -91,13 +92,8 @@ export default function CompendiumContent() {
                 className="w-full overflow-hidden rounded-[10px] border border-border bg-surface-raised"
                 style={{ aspectRatio: "16 / 10" }}
               >
-                <video
+                <AutoplayVideo
                   src="/videos/guest-experience-dash.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
                   className="block h-full w-full object-cover"
                   style={{ transform: "scale(1.32)" }}
                 />

@@ -21,7 +21,7 @@ export default function CheckinPage() {
       locked={isLocked("checkin")}
       title="Hotel Check-in"
       subtitle="Modernizing software for the world's largest hotel chains"
-      backHref="/work"
+      backHref="/#projects"
     >
       <div className="pb-20">
         <CheckinContent />

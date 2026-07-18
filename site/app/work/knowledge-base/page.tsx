@@ -21,7 +21,7 @@ export default function KnowledgeBasePage() {
       locked={isLocked("knowledge-base")}
       title="AI Knowledge Base"
       subtitle="Restructuring the data foundation that powers hotel AI"
-      backHref="/work"
+      backHref="/#projects"
     >
       <div className="pb-20">
         <KnowledgeBaseContent />

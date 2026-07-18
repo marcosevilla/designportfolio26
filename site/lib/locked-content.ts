@@ -12,10 +12,9 @@ export const LOCKED_SLUGS: ReadonlySet<string> = new Set([
   "checkin",
   "general-task",
   "design-system",
-  // Playground subpages
-  "six-degrees",
-  "pajamagrams",
-  "custom-wrapped",
+  // (Playground subpage entries removed 2026-07-18 — the /play subpages
+  // were deleted in May and playground cards are pure-visual now, so
+  // nothing consults these slugs.)
 ]);
 
 export function isLocked(slug: string): boolean {

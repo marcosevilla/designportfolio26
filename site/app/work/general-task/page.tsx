@@ -21,7 +21,7 @@ export default function GeneralTaskPage() {
       locked={isLocked("general-task")}
       title="Unified hub for knowledge work"
       subtitle="Building productivity software for software engineers"
-      backHref="/work"
+      backHref="/#projects"
     >
       <div className="pb-20">
         <GeneralTaskContent />

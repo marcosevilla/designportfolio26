@@ -123,6 +123,7 @@ export default function DesignSystemContent() {
               src="/images/design-system/design-system.png"
               alt="General Task's revamped design system overview"
               className="w-full rounded-lg"
+              loading="lazy"
             />
           </FadeIn>
 
@@ -172,6 +173,7 @@ export default function DesignSystemContent() {
               src="/images/design-system/typography.png"
               alt="Typography scale and type styles"
               className="w-full rounded-lg"
+              loading="lazy"
             />
           </FadeIn>
 
@@ -211,6 +213,7 @@ export default function DesignSystemContent() {
               src="/images/design-system/components.png"
               alt="Component library showcase"
               className="w-full rounded-lg"
+              loading="lazy"
             />
           </FadeIn>
 
@@ -242,6 +245,7 @@ export default function DesignSystemContent() {
               src="/images/design-system/task-items.png"
               alt="Task items redesigned for current and future integrations"
               className="w-full rounded-lg"
+              loading="lazy"
             />
           </FadeIn>
 
@@ -271,6 +275,7 @@ export default function DesignSystemContent() {
               src="/images/design-system/figma-doc.png"
               alt="Figma design document and documentation structure"
               className="w-full rounded-lg"
+              loading="lazy"
             />
           </FadeIn>
 
@@ -279,6 +284,7 @@ export default function DesignSystemContent() {
               src="/images/design-system/tokens.png"
               alt="Design tokens documentation"
               className="w-full rounded-lg"
+              loading="lazy"
             />
           </FadeIn>
         </ExpandableSection>
@@ -339,6 +345,7 @@ export default function DesignSystemContent() {
               src="/images/design-system/audit.png"
               alt="Design library audit findings"
               className="w-full rounded-lg"
+              loading="lazy"
             />
           </FadeIn>
 

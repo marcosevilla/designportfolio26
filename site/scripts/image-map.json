@@ -1,0 +1,219 @@
+{
+  "/images/checkin/compendium-cms.png": {
+    "newPath": "/images/checkin/compendium-cms.webp",
+    "width": 1600,
+    "height": 900,
+    "oldBytes": 1721557,
+    "newBytes": 54238
+  },
+  "/images/checkin/compendium-mobile.png": {
+    "newPath": "/images/checkin/compendium-mobile.webp",
+    "width": 1600,
+    "height": 900,
+    "oldBytes": 2539023,
+    "newBytes": 128808
+  },
+  "/images/checkin/dashboard.png": {
+    "newPath": "/images/checkin/dashboard.webp",
+    "width": 1600,
+    "height": 900,
+    "oldBytes": 2750400,
+    "newBytes": 52272
+  },
+  "/images/checkin/details.png": {
+    "newPath": "/images/checkin/details.webp",
+    "width": 1600,
+    "height": 900,
+    "oldBytes": 3681942,
+    "newBytes": 67938
+  },
+  "/images/checkin/hero.png": {
+    "newPath": "/images/checkin/hero.webp",
+    "width": 1600,
+    "height": 676,
+    "oldBytes": 632005,
+    "newBytes": 66408
+  },
+  "/images/fb-ordering/fb-browse-menu.png": {
+    "newPath": "/images/fb-ordering/fb-browse-menu.webp",
+    "width": 924,
+    "height": 1928,
+    "oldBytes": 562469,
+    "newBytes": 170474
+  },
+  "/images/fb-ordering/fb-cart-review.png": {
+    "newPath": "/images/fb-ordering/fb-cart-review.webp",
+    "width": 924,
+    "height": 1928,
+    "oldBytes": 869145,
+    "newBytes": 163474
+  },
+  "/images/fb-ordering/fb-item-detail.png": {
+    "newPath": "/images/fb-ordering/fb-item-detail.webp",
+    "width": 924,
+    "height": 1928,
+    "oldBytes": 643001,
+    "newBytes": 147590
+  },
+  "/images/fb-ordering/fb-landing-page.png": {
+    "newPath": "/images/fb-ordering/fb-landing-page.webp",
+    "width": 924,
+    "height": 1928,
+    "oldBytes": 418689,
+    "newBytes": 166382
+  },
+  "/images/fb-ordering/fb-ordering-dashboard.png": {
+    "newPath": "/images/fb-ordering/fb-ordering-dashboard.webp",
+    "width": 1600,
+    "height": 936,
+    "oldBytes": 325103,
+    "newBytes": 51054
+  },
+  "/images/gallery/checkin/check-in-dash.png": {
+    "newPath": "/images/gallery/checkin/check-in-dash.webp",
+    "width": 1600,
+    "height": 747,
+    "oldBytes": 2007822,
+    "newBytes": 71152
+  },
+  "/images/gallery/checkin/check-in.png": {
+    "newPath": "/images/gallery/checkin/check-in.webp",
+    "width": 1536,
+    "height": 1024,
+    "oldBytes": 2354962,
+    "newBytes": 146062
+  },
+  "/images/gallery/compendium/guest-experience-app.png": {
+    "newPath": "/images/gallery/compendium/guest-experience-app.webp",
+    "width": 1536,
+    "height": 1024,
+    "oldBytes": 2435656,
+    "newBytes": 169356
+  },
+  "/images/gallery/compendium/guest-experience-mobile.png": {
+    "newPath": "/images/gallery/compendium/guest-experience-mobile.webp",
+    "width": 1401,
+    "height": 3474,
+    "oldBytes": 3136372,
+    "newBytes": 309926
+  },
+  "/images/gallery/fb-ordering/fb-overview.png": {
+    "newPath": "/images/gallery/fb-ordering/fb-overview.webp",
+    "width": 1600,
+    "height": 1075,
+    "oldBytes": 3014008,
+    "newBytes": 139288
+  },
+  "/images/gallery/fb-ordering/food-bg-2.png": {
+    "newPath": "/images/gallery/fb-ordering/food-bg-2.webp",
+    "width": 1544,
+    "height": 1018,
+    "oldBytes": 2481278,
+    "newBytes": 179076
+  },
+  "/images/gallery/fb-ordering/food-bg.png": {
+    "newPath": "/images/gallery/fb-ordering/food-bg.webp",
+    "width": 1544,
+    "height": 1018,
+    "oldBytes": 2481278,
+    "newBytes": 179076
+  },
+  "/images/gallery/fb-ordering/food-prep-bg.png": {
+    "newPath": "/images/gallery/fb-ordering/food-prep-bg.webp",
+    "width": 1536,
+    "height": 1024,
+    "oldBytes": 2532306,
+    "newBytes": 164416
+  },
+  "/images/gallery/fb-ordering/menu-management.raw.png": {
+    "newPath": "/images/gallery/fb-ordering/menu-management.raw.webp",
+    "width": 1600,
+    "height": 1000,
+    "oldBytes": 271456,
+    "newBytes": 24964
+  },
+  "/images/gallery/fb-ordering/mobile-guest-mock.png": {
+    "newPath": "/images/gallery/fb-ordering/mobile-guest-mock.webp",
+    "width": 1242,
+    "height": 2688,
+    "oldBytes": 915414,
+    "newBytes": 163560
+  },
+  "/images/gallery/fb-ordering/mobile-guest.png": {
+    "newPath": "/images/gallery/fb-ordering/mobile-guest.webp",
+    "width": 1242,
+    "height": 2688,
+    "oldBytes": 915414,
+    "newBytes": 163560
+  },
+  "/images/gallery/fb-ordering/order-management-detail.png": {
+    "newPath": "/images/gallery/fb-ordering/order-management-detail.webp",
+    "width": 1600,
+    "height": 1000,
+    "oldBytes": 496032,
+    "newBytes": 52920
+  },
+  "/images/gallery/fb-ordering/order-management-mock.png": {
+    "newPath": "/images/gallery/fb-ordering/order-management-mock.webp",
+    "width": 1600,
+    "height": 1027,
+    "oldBytes": 1356963,
+    "newBytes": 139180
+  },
+  "/images/gallery/fb-ordering/order-management.png": {
+    "newPath": "/images/gallery/fb-ordering/order-management.webp",
+    "width": 1600,
+    "height": 1000,
+    "oldBytes": 326050,
+    "newBytes": 34828
+  },
+  "/images/gallery/general-task/general-task.png": {
+    "newPath": "/images/gallery/general-task/general-task.webp",
+    "width": 1600,
+    "height": 813,
+    "oldBytes": 4240766,
+    "newBytes": 56370
+  },
+  "/images/gallery/upsells/upsells-mocks.png": {
+    "newPath": "/images/gallery/upsells/upsells-mocks.webp",
+    "width": 1600,
+    "height": 812,
+    "oldBytes": 584463,
+    "newBytes": 61006
+  },
+  "/images/gallery/upsells/upsells.png": {
+    "newPath": "/images/gallery/upsells/upsells.webp",
+    "width": 1536,
+    "height": 1024,
+    "oldBytes": 2140650,
+    "newBytes": 121522
+  },
+  "/images/general-task/research.png": {
+    "newPath": "/images/general-task/research.webp",
+    "width": 1600,
+    "height": 2968,
+    "oldBytes": 884745,
+    "newBytes": 581390
+  },
+  "/images/general-task/sketches.png": {
+    "newPath": "/images/general-task/sketches.webp",
+    "width": 1600,
+    "height": 1934,
+    "oldBytes": 609162,
+    "newBytes": 546840
+  },
+  "/images/general-task/wireframes-folders.png": {
+    "newPath": "/images/general-task/wireframes-folders.webp",
+    "width": 1600,
+    "height": 985,
+    "oldBytes": 355198,
+    "newBytes": 253152
+  },
+  "/images/general-task/wireframes-home.png": {
+    "newPath": "/images/general-task/wireframes-home.webp",
+    "width": 1600,
+    "height": 761,
+    "oldBytes": 379191,
+    "newBytes": 178502
+  }
+}

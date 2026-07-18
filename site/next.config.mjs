@@ -15,6 +15,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // /work and /play index pages were removed May 2026 — the homepage owns
+  // both surfaces. Server-side redirects replace the old blank client-side
+  // stub pages (instant, crawler-friendly, no JS needed).
+  async redirects() {
+    return [
+      { source: "/work", destination: "/#projects", permanent: false },
+      { source: "/play", destination: "/#playground", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;

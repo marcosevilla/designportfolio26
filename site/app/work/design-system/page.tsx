@@ -21,7 +21,7 @@ export default function DesignSystemPage() {
       locked={isLocked("design-system")}
       title="Building a visual language 0-1"
       subtitle="Creating a scalable design system for a productivity startup"
-      backHref="/work"
+      backHref="/#projects"
     >
       <div className="pb-20">
         <DesignSystemContent />

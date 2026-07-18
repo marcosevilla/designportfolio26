@@ -472,6 +472,25 @@ body::before {
   inset: -4px -2px;
 }
 
+/* Touch devices: grow interactive hit areas to ~44px (Apple HIG) without
+   any visual change. .tap-target is the generic utility for small text
+   controls (Back link, temperature toggle, wordmark); the toolbar icon
+   buttons get the same treatment via their existing ::after. Overlap with
+   neighbors is fine — the topmost element wins the tap. */
+@media (pointer: coarse) {
+  .bio-toolbar-btn::after {
+    inset: -6px;
+  }
+  .tap-target {
+    position: relative;
+  }
+  .tap-target::after {
+    content: "";
+    position: absolute;
+    inset: -14px -8px;
+  }
+}
+
 .bio-toolbar-btn:active {
   scale: 0.96;
 }
