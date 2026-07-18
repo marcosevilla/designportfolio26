@@ -41,7 +41,7 @@ export default function CompendiumContent() {
         <Grid preset="intro-rail">
           <Col>
             <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
-            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.</p>
+            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>Hotels print their guest guides. Guests never read them. I spent 18 months designing the digital replacement — now the hub 175,000 guests open every month, and a $1M+ product line for Canary.</p>
           </Col>
           <Col className="mt-8 lg:mt-2">
             <MetaRail items={META} />
@@ -77,7 +77,33 @@ export default function CompendiumContent() {
             <Col>
               <SectionHeading id="solution">The Solution</SectionHeading>
               <p className="mb-8">
-                I designed the full Compendium platform end-to-end — a hotel-facing CMS builder for managing content, and a guest-facing mobile web experience for browsing it — and then extended it through six major phases over 18 months, from MVP through enterprise-wide release.
+                I designed the full Compendium platform end-to-end — a hotel-facing CMS builder for managing content, and a guest-facing mobile web experience for browsing it — then kept extending it for 18 months, from MVP through enterprise-wide release.
+              </p>
+            </Col>
+          </Grid>
+
+          {/* Guest dashboard video — the one real asset on the page. Same
+              zoom-crop the homepage card uses so the recording's baked navy
+              backdrop doesn't fight the color themes. */}
+          <Grid preset="prose-wide" className="mt-4">
+            <Col>
+              <div
+                className="w-full overflow-hidden rounded-[10px] border border-border bg-surface-raised"
+                style={{ aspectRatio: "16 / 10" }}
+              >
+                <video
+                  src="/videos/guest-experience-dash.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="block h-full w-full object-cover"
+                  style={{ transform: "scale(1.32)" }}
+                />
+              </div>
+              <p className="mt-3 text-[13px] text-(--color-fg-tertiary)">
+                The guest experience — sections, dining, and property info configured by the hotel in the builder.
               </p>
             </Col>
           </Grid>
@@ -104,7 +130,7 @@ export default function CompendiumContent() {
             <FadeIn>
               <SectionHeading level={4}>2. Custom sections as the extensibility layer</SectionHeading>
               <p className="mb-5">
-                Rather than hard-coding every content type, I designed a custom sections system that lets hotels create their own categories with items, images, descriptions, and call-to-action buttons. This single pattern — adopted by 82% of active properties — solved everything from &ldquo;spa services&rdquo; to &ldquo;local attractions&rdquo; to &ldquo;hotel policies&rdquo; without requiring product-specific development for each use case.
+                Rather than hard-coding every content type, I designed custom sections — hotels create their own categories with items, images, descriptions, and call-to-action buttons. One pattern now covers spa services, local attractions, transportation, house policies, whatever a property needs, with no product work per use case. It became the most-adopted feature in the product: 82% of active properties use it.
               </p>
             </FadeIn>
             </Col>
@@ -113,7 +139,7 @@ export default function CompendiumContent() {
             <FadeIn>
               <SectionHeading level={4}>3. Compendium as the guest journey endpoint</SectionHeading>
               <p className="mb-5">
-                I positioned Compendium as where every guest touchpoint leads. Check-in completes? You land on Compendium. Arrival SMS? Links to Compendium. QR code in the lobby? Compendium. This wasn&apos;t just navigation — it was the product strategy. By making Compendium the hub, every other Canary product (messaging, upsells, tipping, food ordering) gets organic distribution.
+                Every guest touchpoint leads here. Check-in completes? You land on Compendium. Arrival SMS? Links to Compendium. QR code in the lobby? Compendium. That routing is the product strategy: with Compendium as the hub, every other Canary product — messaging, upsells, tipping, food ordering — gets organic distribution to guests who are already looking at their phone.
               </p>
             </FadeIn>
             </Col>
@@ -122,7 +148,7 @@ export default function CompendiumContent() {
             <FadeIn>
               <SectionHeading level={4}>4. Compendium Lite as a freemium growth lever</SectionHeading>
               <p className="mb-5">
-                When we needed to drive cross-sell and deepen the Wyndham relationship, I designed Compendium Lite — a constrained version (2 sections, 4 items per section) that any Canary customer could activate for free. The design challenge was creating clear upgrade triggers without making the free version feel broken. I placed contextual &ldquo;Request Upgrade&rdquo; prompts at natural friction points — when a hotel tries to add a third section or fifth item — so the limitation feels like an invitation, not a wall.
+                When we needed to drive cross-sell and deepen the Wyndham relationship, I designed Compendium Lite — a free tier capped at 2 sections and 4 items each. The hard part: where do the limits live so the free product still feels useful? I put the &ldquo;Request Upgrade&rdquo; prompts at the exact moments a hotel outgrows the cap — trying to add a third section, a fifth item — because that&apos;s when they&apos;re already wanting more. Getting that balance right took 22 iterations.
               </p>
             </FadeIn>
             </Col>
@@ -144,48 +170,25 @@ export default function CompendiumContent() {
                 </ul>
 
                 <SectionHeading level={3}>Key insights</SectionHeading>
-                <div className="space-y-6">
-                  <div>
-                    <p className="mb-2">
-                      <strong className="text-(--color-fg)">1. Hotels think in categories, not pages.</strong> They organize their property as restaurants, amenities, policies, local attractions — not as a generic page hierarchy.
-                    </p>
-                    <p className="text-[15px] text-(--color-fg-tertiary)">
-                      → I designed the builder around typed sections rather than a generic page editor.
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="mb-2">
-                      <strong className="text-(--color-fg)">2. Content quality varies wildly.</strong> Some hotels have professional photography, others have phone photos.
-                    </p>
-                    <p className="text-[15px] text-(--color-fg-tertiary)">
-                      → I designed flexible image handling: bulk upload, image galleries, and layouts that look good with both high- and low-quality imagery. The bulk upload design alone went through 19 iterations.
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="mb-2">
-                      <strong className="text-(--color-fg)">3. Enterprise chains have different needs than boutique hotels.</strong> Brand consistency vs. creative freedom.
-                    </p>
-                    <p className="text-[15px] text-(--color-fg-tertiary)">
-                      → I designed the system to support both: brand-level defaults that individual properties can customize, plus branded QR code templates that maintain corporate identity.
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="mb-2">
-                      <strong className="text-(--color-fg)">4. The visual design was selling the product.</strong> Demo prospects consistently commented on the polish.
-                    </p>
-                    <p className="text-[15px] text-(--color-fg-tertiary)">
-                      → This validated the builder-first approach: even without advanced features, the polished guest experience was closing deals.
-                    </p>
-                  </div>
+                <div className="space-y-5">
+                  <p>
+                    <strong className="text-(--color-fg)">Hotels think in categories, not pages.</strong> Ask a front-desk manager about their property and you get restaurants, amenities, policies, local attractions — never &ldquo;pages.&rdquo; So the builder is organized around typed sections instead of a generic page editor. Staff recognized the model immediately.
+                  </p>
+                  <p>
+                    <strong className="text-(--color-fg)">Content quality varies wildly between properties.</strong> Some hotels have professional photography; plenty have phone photos taken in bad hallway lighting. The image handling had to flatter both — bulk upload without a forced crop step, galleries, layouts that survive mediocre photos. The bulk upload flow alone took 19 rounds to get right.
+                  </p>
+                  <p>
+                    <strong className="text-(--color-fg)">Chains and boutiques pull in opposite directions.</strong> Best Western wants brand consistency across hundreds of properties; a boutique wants its property to feel like nowhere else. Brand-level defaults that individual properties can override served both, along with branded QR templates for the chains.
+                  </p>
+                  <p>
+                    <strong className="text-(--color-fg)">The polish itself was selling.</strong> Before we had feature parity with competitors, prospects were reacting to how the guest experience looked and felt in demos. Craft was doing sales work — which validated putting the design bar first.
+                  </p>
                 </div>
 
             <FadeIn className="mt-8">
               <PullQuote
-                quote="Lots of folks commented about how much they liked the DC: 'It's sleek, this is exactly what I'm looking for.'"
-                attribution="Sales demo review (10 demos analyzed)"
+                quote="It's sleek — this is exactly what I'm looking for."
+                attribution="Prospect feedback, recurring across 10 sales demos"
               />
             </FadeIn>
           </ExpandableSection>
@@ -198,43 +201,25 @@ export default function CompendiumContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Design Process" id="process">
-                <p className="mb-8">
-                  <strong className="text-(--color-fg)">Approach:</strong> Build the foundation right — a structured, extensible CMS that could evolve from informational hub to interactive guest platform — then layer on capabilities phase by phase.
-                </p>
-
                 <div className="space-y-8">
                   <div>
-                    <SectionHeading level={4}>Early prototyping (Jan–Apr 2024)</SectionHeading>
+                    <SectionHeading level={4}>The prototype sold the product</SectionHeading>
                     <p>
-                      Before the builder MVP, I built a CMS Compendium prototype in Figma with interactive previews — sticky mobile previews that scrolled with the builder, clickable navigation across Wi-Fi, service requests, restaurants, and room upgrades. The prototypes were literally closing deals before the product existed.
+                      Before any of it was built, I made a Figma prototype of the whole idea — a CMS builder with a sticky mobile preview that scrolled alongside it, clickable through Wi-Fi, service requests, restaurants, and room upgrades. Sales started showing it to prospects. Deals closed on it. Months later an engineer asked, half-joking, whether we&apos;d sold Compendium entirely over Figma prototypes — and the honest answer was: at first, yes. That set the bar for the real thing.
                     </p>
                   </div>
 
                   <div>
-                    <SectionHeading level={4}>Builder MVP (May–Aug 2024)</SectionHeading>
+                    <SectionHeading level={4}>Building it for real</SectionHeading>
                     <p>
-                      Designed the entire CMS builder from scratch — section management, restaurant/amenity editors, Wi-Fi and reservation info settings, property info, QR code generation, translation picker for multi-language support, photo management, and hours configuration. The engineering design doc I collaborated on defined 27 implementation tickets.
+                      The builder MVP was the whole CMS designed from scratch — section management, restaurant and amenity editors, photo management, hours, QR codes, and a translation picker, with the data model worked out alongside engineering (the design doc we wrote together broke down into 27 implementation tickets). The guest side had the opposite brief: feel like a consumer app, not hotel software. Then, weeks before Best Western would put the product in front of hundreds of properties, I ran a full QA audit of the guest experience myself — documented every rough edge and filed the bugs. Enterprise scale means nobody&apos;s there to explain away a misaligned label.
                     </p>
                   </div>
 
                   <div>
-                    <SectionHeading level={4}>Guest UI Phase 1 & 2 (Jul–Aug 2024)</SectionHeading>
+                    <SectionHeading level={4}>Extending the platform</SectionHeading>
                     <p>
-                      Designed the guest-facing mobile web experience — the welcome screen, section navigation, restaurant and amenity detail views, reservation info display, messaging integration, and Wi-Fi info. The guest experience needed to feel like a consumer app, not hotel software.
-                    </p>
-                  </div>
-
-                  <div>
-                    <SectionHeading level={4}>Custom Sections (Nov 2024–Jun 2025)</SectionHeading>
-                    <p>
-                      I designed the custom sections system that became the product&apos;s most-adopted feature (82%). Walked through the creation flow with stakeholders, raised design questions about section deletion logic and templates, and ran a bug bash before rollout.
-                    </p>
-                  </div>
-
-                  <div>
-                    <SectionHeading level={4}>Compendium Lite (Apr–Jun 2025)</SectionHeading>
-                    <p>
-                      Designed the freemium tier — constrained section/item limits, contextual upgrade prompts, &ldquo;Request Upgrade&rdquo; email flow to sales. 22 iterations to nail the balance between useful free product and clear paid value proposition.
+                      The second year was proving the architecture. Custom sections shipped and became the most-used feature in the product. Carousels and groupings layered onto the same pattern without new plumbing. Compendium Lite turned the platform into a growth lever. And bulk image upload — unglamorous, 19 iterations — removed the single biggest friction point in hotel onboarding by killing the mandatory crop step. None of these required rearchitecting the shell, which was the point of the shell.
                     </p>
                   </div>
                 </div>
@@ -256,14 +241,10 @@ export default function CompendiumContent() {
           <Grid preset="prose">
             <Col>
           <ExpandableSection title="Impact & Results" id="impact">
-                <SectionHeading level={3}>Business impact</SectionHeading>
-                <ul className="list-disc pl-5 space-y-2 mb-8">
-                  <li>Cumulative CARR surpassed $1M by December 2025 — &ldquo;a 25% increase in the pod&apos;s CARR in a single month&rdquo;</li>
-                  <li>CARR booked: $81.5K in Q4 2025 alone (+400% YoY)</li>
-                  <li>ARR activated: $55.3K in Q4 2025 (+400% YoY), with 70% driven by Best Western rollout</li>
-                  <li>Zero gross churn — no Compendium customers churned in the tracked period</li>
-                  <li>F&B Mobile Ordering launched as the first interactive module on the Compendium platform</li>
-                </ul>
+                <SectionHeading level={3}>A new product line</SectionHeading>
+                <p className="mb-4">
+                  Compendium passed <strong className="text-(--color-fg)">$1M in cumulative CARR</strong> by December 2025 — a brand-new SKU designed from zero, with zero gross churn in the tracked period. And the platform bet paid out: F&amp;B Mobile Ordering launched as the first interactive module inside the same guest experience, no shell redesign required.
+                </p>
 
             <FadeIn>
               <PullQuote
@@ -272,27 +253,24 @@ export default function CompendiumContent() {
               />
             </FadeIn>
 
-                <SectionHeading level={3}>User impact</SectionHeading>
-                <ul className="list-disc pl-5 space-y-2 mb-8">
-                  <li>175K monthly active guest users with 2.5 min average session time</li>
-                  <li>Custom Sections adopted by 82% of active properties (+10 percentage points for two consecutive months)</li>
-                  <li>Custom CTAs adopted by 72% of active properties</li>
-                  <li>Average 8.7 items per property — hotels are actively building out their content</li>
-                </ul>
+                <SectionHeading level={3}>Guests and hotels actually use it</SectionHeading>
+                <p className="mb-4">
+                  <strong className="text-(--color-fg)">175K guests</strong> open Compendium every month, averaging 2.5 minutes per session. On the hotel side, <strong className="text-(--color-fg)">82% of active properties</strong> have built custom sections and 72% use custom CTAs — averaging 8.7 items of their own content per property. Hotels aren&apos;t just enabling the product; they&apos;re building on it.
+                </p>
 
             <FadeIn>
               <PullQuote
-                quote="We love that you have added the ability to add sections... the customers love it."
-                attribution="Hotel customer feedback"
+                quote="It's like having your own digital concierge."
+                attribution="Live hotel customer"
               />
             </FadeIn>
 
                 <SectionHeading level={3}>Enterprise traction</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-6">
-                  <li><strong className="text-(--color-fg)">Best Western:</strong> Largest rollout, drove 70% of Q4 ARR activations; one property displayed Compendium QR codes on all guest room TVs</li>
-                  <li><strong className="text-(--color-fg)">Wyndham:</strong> Compendium Lite via wifi captive portal, scaling to 400+ sites; $18M contract that includes Compendium</li>
+                  <li><strong className="text-(--color-fg)">Best Western:</strong> The largest rollout, driving the majority of Q4 activations; one property put Compendium QR codes on every guest room TV</li>
+                  <li><strong className="text-(--color-fg)">Wyndham:</strong> Compendium Lite delivered through their Wi-Fi captive portal, scaling to 400+ sites</li>
                   <li><strong className="text-(--color-fg)">COMO Hotels:</strong> Multi-property deployment across Asia-Pacific</li>
-                  <li><strong className="text-(--color-fg)">Omni Hotels:</strong> $200K Compendium deal closed, now exploring geofenced QR codes and loyalty integration</li>
+                  <li><strong className="text-(--color-fg)">Omni Hotels:</strong> Pilot expanded to a full deal, now exploring geofenced QR codes and loyalty integration</li>
                 </ul>
           </ExpandableSection>
             </Col>
@@ -312,11 +290,16 @@ export default function CompendiumContent() {
                   <li>Close collaboration with engineering on the data model meant the frontend architecture matched the design architecture. Decisions made in that initial design doc carried through 18 months of development.</li>
                 </ul>
 
+                <SectionHeading level={3}>The customer we lost</SectionHeading>
+                <p className="mb-8">
+                  COMO deployed Compendium across their Asia-Pacific properties. I ran their brand workshops, designed around their custom fonts and gradients, and property staff genuinely liked the product. It didn&apos;t matter: their decision-maker saw a native-app gap against competitors, called us &ldquo;behind the curve,&rdquo; and in early 2026 COMO started evaluating a competitor. Two lessons I&apos;m keeping. Staff sentiment isn&apos;t buyer conviction — the people who liked it weren&apos;t the person deciding. And when the retention conversation came, we had no usage data to argue with, because analytics kept losing the prioritization fight. Polish doesn&apos;t beat a roadmap gap.
+                </p>
+
                 <SectionHeading level={3}>Would change</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
-                  <li>I&apos;d invest more in analytics from the start. When a property asked if they could check how the compendium was being used, we didn&apos;t have a good answer.</li>
-                  <li>I should have owned the discovery more independently — running conversations with hotel staff about how they set up and manage their compendium content, not just observing on PM-led calls.</li>
-                  <li>I should have pushed harder on &ldquo;art of the possible&rdquo; concepts. For a platform product like Compendium, having a 6–12 month vision mockup would have helped align the team and sell the roadmap internally.</li>
+                  <li>Analytics from day one — see above. A property once asked if they could check how their compendium was being used, and we didn&apos;t have a good answer for them either.</li>
+                  <li>Owning discovery instead of observing it. I joined 20+ customer calls but they were PM-led; I should have been running my own conversations with the hotel staff who actually maintain this content.</li>
+                  <li>Pushing further ahead of the roadmap. For a platform product, a 6–12 month vision mockup aligns a team faster than any spec — I made one eventually (the North Star brainstorm), but a year later than I should have.</li>
                 </ul>
 
                 <SectionHeading level={3}>What I learned</SectionHeading>
