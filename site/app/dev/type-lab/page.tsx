@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import TypeTuner from "@/components/type-tuner/TypeTuner";
 
 export const metadata = {
@@ -5,5 +6,6 @@ export const metadata = {
 };
 
 export default function TypeLabPage() {
+  if (process.env.NODE_ENV === "production") notFound();
   return <TypeTuner />;
 }

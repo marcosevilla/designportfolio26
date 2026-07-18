@@ -2,8 +2,7 @@
 
 // Card unfurl rendered below an assistant message when the model emits a
 // trailing <artifact slug="..." /> marker. One per message max.
-// Click → in-page navigation to the homepage's projects section
-// (dedicated /work/<slug> routes are gone for now).
+// Click → the study's dedicated /work/<slug> route.
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -21,7 +20,7 @@ export default function CaseStudyCardUnfurl({ slug }: { slug: StudySlug }) {
       className="mt-3"
     >
       <Link
-        href="/#projects"
+        href={`/work/${slug}`}
         className="group flex items-stretch overflow-hidden rounded-xl active:scale-[0.96] transition-transform duration-150 ease-out"
         style={{
           border: "1px solid color-mix(in srgb, var(--color-border) 60%, transparent)",

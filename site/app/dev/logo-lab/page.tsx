@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import LogoLab from "./LogoLab";
 
 export const metadata = {
@@ -5,5 +6,6 @@ export const metadata = {
 };
 
 export default function LogoLabPage() {
+  if (process.env.NODE_ENV === "production") notFound();
   return <LogoLab />;
 }

@@ -63,9 +63,23 @@ export async function POST(req: NextRequest) {
     return Response.json({ reason: "empty" }, { status: 400 });
   }
 
-  // 2. Rate limit
+  // Misconfigured deploy (missing key) → intentional 503 instead of an
+  // unhandled throw from getAnthropic() surfacing as a bare 500.
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("[chat] ANTHROPIC_API_KEY missing — chat unavailable");
+    return Response.json({ reason: "unavailable" }, { status: 503 });
+  }
+
+  // 2. Rate limit. Upstash being down/misconfigured shouldn't take chat down
+  // with a bare 500 — fail open; spend is still capped by the Anthropic
+  // console limit + max_tokens + transcript trim.
   const ip = getIp(req);
-  const rl = await checkRateLimit(ip);
+  let rl: Awaited<ReturnType<typeof checkRateLimit>> = { ok: true };
+  try {
+    rl = await checkRateLimit(ip);
+  } catch (err) {
+    console.error("[chat] rate limit check failed — failing open", err);
+  }
   if (!rl.ok) {
     return Response.json(
       { reason: "rate_limit", retryAfterSec: rl.retryAfterSec },
@@ -96,6 +110,18 @@ export async function POST(req: NextRequest) {
           system: getCachedSystemPrompt(),
           messages: safeMessages,
         });
+
+        // If the visitor closes the chat mid-reply, stop consuming the
+        // Anthropic stream instead of paying for the rest of the tokens.
+        if (req.signal.aborted) {
+          aStream.controller.abort();
+        } else {
+          req.signal.addEventListener(
+            "abort",
+            () => aStream?.controller.abort(),
+            { once: true }
+          );
+        }
 
         for await (const event of aStream) {
           if (event.type === "content_block_delta" && event.delta.type === "text_delta") {

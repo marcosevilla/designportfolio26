@@ -8,7 +8,9 @@ const projectRoot = dirname(__dirname);
 const nextConfig = {
   outputFileTracingRoot: projectRoot,
   outputFileTracingIncludes: {
-    "/api/chat": ["case-studies/**/*.md"],
+    // Glob resolves against the Next project dir (site/), not
+    // outputFileTracingRoot — the drafts live one level up.
+    "/api/chat": ["../case-studies/**/*.md"],
   },
   images: {
     unoptimized: true,

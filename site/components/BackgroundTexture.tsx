@@ -99,6 +99,9 @@ export function BackgroundTexture() {
   const mouseRef = useRef({ x: -1000, y: -1000 });
   const animationRef = useRef<number>(0);
   const timeRef = useRef<number>(0);
+  // When the visitor prefers reduced motion, draw renders one static field
+  // and never re-schedules itself.
+  const reducedMotionRef = useRef(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -150,7 +153,7 @@ export function BackgroundTexture() {
 
     // Skip drawing when tab is hidden
     if (document.hidden) {
-      animationRef.current = requestAnimationFrame(draw);
+      if (!reducedMotionRef.current) animationRef.current = requestAnimationFrame(draw);
       return;
     }
 
@@ -238,7 +241,7 @@ export function BackgroundTexture() {
       ctx.restore();
     }
 
-    animationRef.current = requestAnimationFrame(draw);
+    if (!reducedMotionRef.current) animationRef.current = requestAnimationFrame(draw);
   }, [refreshColors]);
 
   useEffect(() => {
@@ -248,7 +251,9 @@ export function BackgroundTexture() {
     if (!canvas) return;
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
+      // Cap DPR — at 0.5px dot size the difference above 1.5x is invisible,
+      // but the per-frame pixel cost on 2x/3x retina screens is not.
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
       canvas.style.width = `${window.innerWidth}px`;
@@ -257,6 +262,10 @@ export function BackgroundTexture() {
       if (ctx) ctx.scale(dpr, dpr);
       initDots(window.innerWidth, window.innerHeight, PARAMS.wave.gridSpacing);
     };
+
+    reducedMotionRef.current = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
 
     resize();
     window.addEventListener("resize", resize);

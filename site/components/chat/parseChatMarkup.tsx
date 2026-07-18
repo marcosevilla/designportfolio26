@@ -56,10 +56,7 @@ function resolveTarget(target: string): ResolvedTarget {
   if (target.startsWith("study:")) {
     const slug = target.slice("study:".length);
     if (isStudySlug(slug)) {
-      // Dedicated /work/<slug> routes are gone for now — chat
-      // case-study links land on the projects section of the
-      // homepage instead.
-      return { kind: "internal", href: "/#projects" };
+      return { kind: "internal", href: `/work/${slug}` };
     }
     return null;
   }

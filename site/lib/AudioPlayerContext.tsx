@@ -66,6 +66,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   // Spotify-style rewind tracking
   const prevPressedAtRef = useRef<number>(0);
 
+  // True only while an "ended" auto-advance is in flight — distinguishes it
+  // from the user browsing tracks while paused.
+  const autoAdvanceRef = useRef(false);
+
   const currentTrack = PLAYLIST[currentIndex];
 
   // Create the <audio> element once on the client. We attach it to body so
@@ -82,7 +86,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
     const onEnded = () => {
-      // Auto-advance + loop
+      // Auto-advance + loop. Flag it so the index effect below knows this
+      // advance should keep playing — user-initiated next/prev while paused
+      // must NOT force playback.
+      autoAdvanceRef.current = true;
       setCurrentIndex((i) => (i + 1) % PLAYLIST.length);
     };
 
@@ -120,11 +127,12 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, [currentTrack.src]);
 
   // Auto-advance kicks in via the "ended" handler updating currentIndex; the
-  // src effect above will then re-attach the new track. If we were playing
-  // before the previous track ended, keep playing the next one.
+  // src effect above will then re-attach the new track. Only resume playback
+  // for a genuine ended→advance — skipping tracks while paused stays paused.
   useEffect(() => {
+    if (!autoAdvanceRef.current) return;
+    autoAdvanceRef.current = false;
     if (session === "active" && audioRef.current && audioRef.current.paused) {
-      // After auto-advance, attempt to continue playing
       audioRef.current.play().catch(() => {
         /* ignore */
       });

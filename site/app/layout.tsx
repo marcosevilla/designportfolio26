@@ -68,9 +68,6 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  alternates: {
-    canonical: "https://marcosevilla.com",
-  },
 };
 
 export default function RootLayout({
@@ -81,7 +78,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable} ${libreBaskerville.variable}`}>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {/* defaultTheme="light" (not "system"): ThemeStateProvider forces
+            first visits to light anyway, so "system" only produced a dark
+            paint that snapped to light on hydration for dark-OS visitors. */}
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <ThemeStateProvider>
           <AudioPlayerProvider>
           <VisualizerSceneProvider>

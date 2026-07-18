@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Hero from "./Hero";
@@ -47,6 +47,23 @@ function Em({ href, children }: { href?: string; children: React.ReactNode }) {
   return <em style={{ ...base, color: "var(--color-fg)" }}>{children}</em>;
 }
 
+/** Isolates useSearchParams in a null-rendering leaf with its own Suspense
+ *  boundary (see render below) so the hook's client-side deopt doesn't
+ *  swallow the whole homepage — with it inline, `/` prerendered as an empty
+ *  shell. Chat-bar [About me](about) links route here via router.push, so we
+ *  have to observe the params reactively, not read window.location once. */
+function AboutParamWatcher({ onAbout }: { onAbout: () => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get("about") === "1") {
+      onAbout();
+      // Clean the URL so refreshing doesn't re-trigger.
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [searchParams, onAbout]);
+  return null;
+}
+
 export default function HomeLayout({
   work,
 }: {
@@ -65,21 +82,7 @@ export default function HomeLayout({
   const wordmarkElRef = useRef<HTMLDivElement | null>(null);
   const aboutMeHeaderElRef = useRef<HTMLHeadingElement | null>(null);
 
-  // Consume `?about=1` whenever it appears in the URL — chat-bar
-  // [About me](about) links route here via router.push, so we have to
-  // observe the search params (not just read window.location once on
-  // mount) for soft navigations to take effect.
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    if (searchParams?.get("about") === "1") {
-      setAboutMeOpen(true);
-      // Clean the URL so refreshing doesn't re-trigger.
-      if (typeof window !== "undefined") {
-        const next = window.location.pathname;
-        window.history.replaceState(null, "", next);
-      }
-    }
-  }, [searchParams]);
+  const openAbout = useCallback(() => setAboutMeOpen(true), []);
 
   // Callback refs Hero still consumes — kept as no-ops now that the
   // side-nav alignment logic is gone.
@@ -111,6 +114,9 @@ export default function HomeLayout({
 
   return (
     <>
+    <Suspense fallback={null}>
+      <AboutParamWatcher onAbout={openAbout} />
+    </Suspense>
     <LoadingOverlay
       onFade={() => {
         // First-time visitors: the loader has released the star and is

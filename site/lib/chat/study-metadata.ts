@@ -9,6 +9,7 @@ export const STUDY_SLUGS = [
   "compendium",
   "upsells",
   "checkin",
+  "knowledge-base",
   "general-task",
   "design-system",
   "ai-workflow",
@@ -63,6 +64,15 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
     year: "2024",
     metric: "4,500+ hotels",
     gradient: ["#6366F1", "#4F46E5"],
+  },
+  "knowledge-base": {
+    slug: "knowledge-base",
+    title: "AI Knowledge Base",
+    company: "Canary",
+    role: "Lead designer",
+    year: "2024",
+    metric: "2 AI products, one KB",
+    gradient: ["#7C3AED", "#4F46E5"],
   },
   "general-task": {
     slug: "general-task",

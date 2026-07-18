@@ -1492,12 +1492,22 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
 
       gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-      raf = requestAnimationFrame(draw);
+      // Reduced motion renders exactly one frame — never self-reschedule,
+      // or each open/close of the player stacks a permanent render loop.
+      if (!reducedMotion) raf = requestAnimationFrame(draw);
     };
 
     if (reducedMotion) {
       draw(t0 + BOOT_FADE_MS);
-      return () => {};
+      return () => {
+        cancelAnimationFrame(raf);
+        gl.deleteProgram(program);
+        if (feedbackProgram) gl.deleteProgram(feedbackProgram);
+        if (lissajousProgram) gl.deleteProgram(lissajousProgram);
+        cleanupSimPair(feedbackPair);
+        cleanupSimPair(lissajousPair);
+        gl.deleteBuffer(vbo);
+      };
     }
 
     raf = requestAnimationFrame(draw);

@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import CaseStudyList from "@/components/CaseStudyList";
 import HomeLayout from "@/components/HomeLayout";
 import { getCaseStudies } from "@/lib/content";
@@ -6,9 +5,7 @@ import { getCaseStudies } from "@/lib/content";
 export default function Home() {
   const studies = getCaseStudies();
 
-  return (
-    <Suspense fallback={null}>
-      <HomeLayout work={<CaseStudyList studies={studies} />} />
-    </Suspense>
-  );
+  // No Suspense wrapper here — useSearchParams is isolated inside
+  // HomeLayout's AboutParamWatcher so the homepage markup prerenders.
+  return <HomeLayout work={<CaseStudyList studies={studies} />} />;
 }

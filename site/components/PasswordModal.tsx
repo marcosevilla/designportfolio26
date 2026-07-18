@@ -15,15 +15,23 @@ export default function PasswordModal() {
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   // Reset state on open. Don't autofocus the input — primary CTAs are
-  // email/LinkedIn, so initial focus stays on the close button (a11y
-  // default for the dialog).
+  // email/LinkedIn, so initial focus goes to the close button instead;
+  // without moving it, focus stays on the trigger behind the backdrop and
+  // keyboard users tab through the page underneath. Restore on close.
   useEffect(() => {
     if (isModalOpen) {
       setValue("");
       setError(false);
       setSubmitting(false);
+      previousFocusRef.current = document.activeElement as HTMLElement | null;
+      closeButtonRef.current?.focus();
+    } else {
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
     }
   }, [isModalOpen]);
 
@@ -90,6 +98,7 @@ export default function PasswordModal() {
             }}
           >
             <button
+              ref={closeButtonRef}
               onClick={closeModal}
               aria-label="Close"
               className="absolute top-2 right-2 flex items-center justify-center w-10 h-10 rounded-full active:scale-[0.96] transition-[color,transform] duration-150 ease-out"

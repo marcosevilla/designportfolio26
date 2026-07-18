@@ -19,6 +19,7 @@ const FILENAME_BY_SLUG: Record<StudySlug, string | null> = {
   compendium: "compendium",
   upsells: "upsells-forms",
   checkin: "hotel-checkin",
+  "knowledge-base": "knowledge-base-redesign",
   "general-task": "general-task",
   "design-system": "design-system",
   "ai-workflow": null, // no markdown draft yet — metadata block only
