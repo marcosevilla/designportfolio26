@@ -1,5 +1,6 @@
 "use client";
 
+import AutoplayVideo from "@/components/AutoplayVideo";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
 import FadeIn from "@/components/case-study/FadeIn";
@@ -67,6 +68,25 @@ export default function FBOrderingContent() {
             <MetaRail items={META} />
           </Col>
         </Grid>
+
+        {/* ── Guest mobile flow video — full canvas between intro and
+            Solution. Native 4:3, no crop (the phone-shell crop clipped
+            scenes when this ran on the homepage card). */}
+        <FadeIn className="pt-32">
+          <Grid>
+            <Col lg="full">
+              <div
+                className="w-full overflow-hidden rounded-[10px] border border-border bg-surface-raised"
+                style={{ aspectRatio: "4 / 3" }}
+              >
+                <AutoplayVideo
+                  src="/videos/fb-mobile.mp4"
+                  className="block h-full w-full object-cover"
+                />
+              </div>
+            </Col>
+          </Grid>
+        </FadeIn>
 
         {/* ── The Solution ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-32">
