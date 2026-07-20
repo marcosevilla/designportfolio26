@@ -1120,45 +1120,22 @@ body {
 }
 
 /* ── Work marquee ──────────────────────────────────────────────────────
-   neesh.cc-style CSS-only infinite conveyor for the homepage work cards
-   (StudyMarquee in components/CaseStudyList.tsx). The track holds an
-   even number of identical card sets; animating to -50% loops
-   seamlessly because the two halves match. --marquee-duration is set
-   inline and scales with the set count so px/s speed stays constant on
-   ultrawide viewports (where extra sets render to keep a half-track
-   wider than the viewport). */
+   Full-bleed horizontal strip of the homepage work cards (StudyMarquee
+   in components/CaseStudyList.tsx). Statically scrollable — the
+   auto-scroll conveyor was retired 2026-07-20 (Marco's call), so this
+   is a plain overflow-x row with the scrollbar hidden; partially
+   visible cards at the viewport edge afford the scroll. */
 .work-marquee {
-  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.work-marquee::-webkit-scrollbar {
+  display: none;
 }
 
 .work-marquee-track {
   display: flex;
   width: max-content;
-  will-change: transform;
-  animation: work-marquee var(--marquee-duration, 70s) linear infinite;
-}
-
-.work-marquee:hover .work-marquee-track {
-  animation-play-state: paused;
-}
-
-@keyframes work-marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* Static, manually scrollable row instead of a frozen conveyor. */
-  .work-marquee {
-    overflow-x: auto;
-  }
-  .work-marquee-track {
-    animation: none;
-  }
-  /* Duplicate sets exist only to feed the loop — drop them so manual
-     scrolling doesn't run past repeats of the same cards. */
-  .work-marquee-track [data-marquee-dupe] {
-    display: none;
-  }
+  gap: 24px;
 }

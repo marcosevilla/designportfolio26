@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND } from "@/lib/layout-presets";
 import { RESUME_URL } from "@/lib/resume-content";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
@@ -171,14 +172,14 @@ export default function HomeLayout({
           </div>
         )}
 
-        {/* Home content — editorial grid canvas. Intro sits on the
-            intro-rail preset (bio cols 1–7, contact rail 9–12); the
-            Select work section spans the canvas and lays its cells on
-            the same 12-col grid. See docs/LAYOUT-REFERENCE.html */}
+        {/* Home content — editorial grid canvas. Everything sits on the
+            centered middle-6 band (CONTENT_BAND, 2026-07-20 centering
+            pass) except the full-bleed work marquee.
+            See docs/LAYOUT-REFERENCE.html */}
         {!aboutMeOpen && (
           <div className="max-w-(--grid-max) mx-auto w-full px-4 sm:px-8 pb-48">
-            <Grid preset="intro-rail" className="mt-8">
-            <Col>
+            <Grid className="mt-8">
+            <Col lg={CONTENT_BAND}>
             <div className="flex flex-col gap-6">
               {/* Page heading row — body-size bold name reading as a
                   label above the bio, with the site controls (time /

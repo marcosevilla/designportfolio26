@@ -16,6 +16,7 @@ import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
 import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
 import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND } from "@/lib/layout-presets";
 import { galleryContent } from "@/lib/gallery-content";
 import { setCursorLabel } from "@/lib/cursor-label";
 import { TESTIMONIALS } from "@/lib/testimonials";
@@ -358,13 +359,19 @@ function ProjectGrid({
       <Testimonials />
 
       {/* Playground / experiments get their own label so the page reads
-          as two sections: client work above, sidequests below. */}
+          as two sections: client work above, sidequests below. Label +
+          cells stack single-column on the centered middle-6 band
+          (2026-07-20 centering pass). */}
       {PLAYGROUND_CARDS.length > 0 && (
         <>
-          <SectionLabel>Just for fun</SectionLabel>
+          <Grid>
+            <Col lg={CONTENT_BAND}>
+              <SectionLabel>Just for fun</SectionLabel>
+            </Col>
+          </Grid>
           <Grid className="gap-y-16">
-            {PLAYGROUND_CARDS.map((card, i) => (
-              <Col key={`play-${card.slug}`} lg={i % 2 === 0 ? "1-6" : "7-12"}>
+            {PLAYGROUND_CARDS.map((card) => (
+              <Col key={`play-${card.slug}`} lg={CONTENT_BAND}>
                 <PlaygroundCell card={card} />
               </Col>
             ))}
@@ -377,23 +384,11 @@ function ProjectGrid({
 
 // ── Work marquee ──
 
-// neesh.cc-style infinite conveyor: the card set renders an even number
-// of times inside a flex track that animates translateX(0 → -50%) on a
-// linear loop (CSS in globals.css, ".work-marquee"). Identical halves
-// make the loop point invisible. Hovering anywhere on the strip pauses
-// it; under prefers-reduced-motion it degrades to a plain scrollable
-// row with the duplicate sets display:none'd.
-//
-// Only the first set is real to assistive tech and the tab order — the
-// duplicates are aria-hidden + inert. (`inert` isn't in @types/react 18
-// but the vendored React 19 runtime supports it, hence the cast.)
-//
-// A seamless -50% loop needs each half-track to be at least viewport
-// width; on ultrawide screens the set count doubles (2 → 4), and the
-// duration scales with it so the px/s speed stays constant.
-const MARQUEE_BASE_DURATION_S = 70;
-const DUPE_PROPS = { "aria-hidden": true, inert: true } as object;
-
+// Full-bleed horizontal strip of the work cards. Statically scrollable
+// (overflow-x on ".work-marquee" in globals.css, scrollbar hidden) —
+// the neesh.cc-style auto-scroll conveyor was retired 2026-07-20, so
+// there's no track duplication or animation machinery anymore; the
+// partially visible card at the viewport edge affords the scroll.
 function StudyMarquee({
   studies,
   onPreview,
@@ -401,19 +396,6 @@ function StudyMarquee({
   studies: CaseStudyMeta[];
   onPreview: (slug: string) => void;
 }) {
-  const [setCount, setSetCount] = useState(2);
-  const firstSetRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const measure = () => {
-      const setWidth = firstSetRef.current?.offsetWidth ?? 0;
-      setSetCount(setWidth > 0 && setWidth < window.innerWidth ? 4 : 2);
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [studies.length]);
-
   return (
     <div
       className="work-marquee"
@@ -422,48 +404,28 @@ function StudyMarquee({
         // has overflow-x hidden, so 100vw can't cause a page scroll).
         width: "100vw",
         marginLeft: "calc(50% - 50vw)",
-        ["--marquee-duration" as string]: `${
-          MARQUEE_BASE_DURATION_S * (setCount / 2)
-        }s`,
       }}
     >
       <div className="work-marquee-track">
-        {Array.from({ length: setCount }, (_, setIndex) => {
-          const isDupe = setIndex > 0;
-          return (
-            <div
-              key={setIndex}
-              ref={setIndex === 0 ? firstSetRef : undefined}
-              className="flex gap-6 pr-6"
-              data-marquee-dupe={isDupe ? "" : undefined}
-              {...(isDupe ? DUPE_PROPS : undefined)}
-            >
-              {studies.map((study) => (
-                <div
-                  key={study.slug}
-                  className="w-[420px] max-w-[80vw] shrink-0"
-                >
-                  <StudyCell study={study} onPreview={onPreview} />
-                </div>
-              ))}
-            </div>
-          );
-        })}
+        {studies.map((study) => (
+          <div key={study.slug} className="w-[420px] max-w-[80vw] shrink-0">
+            <StudyCell study={study} onPreview={onPreview} />
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-// Testimonials — one quote per colleague, set three-up across the full
-// editorial canvas (cols 1-4 / 5-8 / 9-12 at desktop; stacks on
-// smaller bands like the study cells above). No section label — the
-// bordered cells read as their own organized band (Marco 2026-07-15).
+// Testimonials — one quote per colleague, stacked single-column on the
+// centered middle-6 band (was three-up across the full canvas until the
+// 2026-07-20 centering pass). No section label — the bordered cells
+// read as their own organized band (Marco 2026-07-15).
 function Testimonials() {
-  const lgSpecs = ["1-4", "5-8", "9-12"] as const;
   return (
     <Grid className="gap-y-6">
-      {TESTIMONIALS.map((t, i) => (
-        <Col key={t.author} lg={lgSpecs[i % lgSpecs.length]}>
+      {TESTIMONIALS.map((t) => (
+        <Col key={t.author} lg={CONTENT_BAND}>
           <div
             className="h-full p-6"
             style={{
@@ -621,7 +583,7 @@ function StudyMediaFrame({
     <div
       className="w-full overflow-hidden relative h-[323px]"
       style={{
-        backgroundColor: FRAME_BG,
+        backgroundColor: STUDY_FRAME_BG,
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
       }}
@@ -963,13 +925,19 @@ function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
   );
 }
 
-// Uniform media-frame fill — a hair darker than the page background,
-// theme-aware by construction: mixing 4% ink over the bg tracks
-// light/dark and all colored-theme overrides through the fg/bg vars.
-// Replaces the per-slug brand tints (CARD_TINTS) and the 9% placeholder
-// grey (2026-07-20 pass). Lifestyle/photographic `layers.bg` images are
-// intentionally not rendered; the `layers.ui` overlay, standalone UI
-// screenshots, and product videos render on top of this fill.
+// Media-frame fills — theme-aware by construction: mixing ink over the
+// bg tracks light/dark and all colored-theme overrides through the
+// fg/bg vars. Replaces the per-slug brand tints (CARD_TINTS) and the 9%
+// placeholder grey (2026-07-20 pass). Lifestyle/photographic
+// `layers.bg` images are intentionally not rendered; the `layers.ui`
+// overlay, standalone UI screenshots, and product videos render on top
+// of this fill.
+//
+// Carousel study cards read as distinctly raised panels (10% ink —
+// clearly lighter than the page in dark mode, a clear grey in light);
+// playground frames keep the quieter 4% wash.
+const STUDY_FRAME_BG =
+  "color-mix(in srgb, var(--color-fg) 10%, var(--color-bg))";
 const FRAME_BG = "color-mix(in srgb, var(--color-fg) 4%, var(--color-bg))";
 
 // Slugs hidden from the homepage gallery (in-flight content / not

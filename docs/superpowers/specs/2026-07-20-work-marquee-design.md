@@ -1,7 +1,13 @@
 # Work Marquee + Neutral Card Shade — Design
 
 **Date:** 2026-07-20
-**Status:** Approved (Marco, in-session)
+**Status:** Shipped, then partially superseded same-day (Marco's calls):
+the auto-scroll conveyor became a static user-scrollable strip (no
+duplication/animation), study-card fill went 4% → 10% ink
+(`STUDY_FRAME_BG`; playground frames keep 4%), and all non-marquee home
+content moved to the centered middle-6 band (`CONTENT_BAND` in
+lib/layout-presets.ts). The mechanics below describe the original
+auto-marquee for the record.
 **Reference:** neesh.cc landing gallery — CSS-only infinite marquee (`translateX(0 → −50%)`, ~70s linear infinite, duplicated track)
 
 ## Goal

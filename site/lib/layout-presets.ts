@@ -79,3 +79,9 @@ export const PRESETS: Record<PresetName, ColSpec[]> = {
   /** Pull quote pushed off the left edge for emphasis. */
   "quote-offset": [{ md: "2-11", lg: "3-10" }],
 };
+
+/** The centered middle-6 content band ("4-9") — home page bio,
+ *  testimonials, section labels, and playground cells all sit here so
+ *  the page reads as one centered column (2026-07-20 centering pass).
+ *  Only the full-bleed work marquee escapes it. */
+export const CONTENT_BAND = "4-9";
