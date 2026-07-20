@@ -289,38 +289,35 @@ body::before {
   font-family: var(--font-sans);
   font-weight: 400;
   text-decoration: none;
-  /* Block-swipe hover: layer 1 is a solid accent block that sweeps in
-     left-to-right behind the text (0 → 100% width); layer 2 is the
-     always-visible subtle dotted rest underline. The block paints on
-     top of the dots, so it swallows the underline as it sweeps. */
-  background-image: linear-gradient(
-      var(--color-accent),
-      var(--color-accent)
-    ),
-    repeating-linear-gradient(
-      to right,
-      var(--color-fg-tertiary) 0,
-      var(--color-fg-tertiary) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-  background-repeat: no-repeat, no-repeat;
-  background-position: 0 100%, 0 100%;
-  background-size: 0% 100%, 100% 1px;
+  /* Fade hover (replaced the left-to-right block swipe 2026-07-20):
+     the solid accent block fades in quickly behind the text via
+     background-color; the subtle dotted rest underline is a background
+     image layer that stays put (it disappears against the accent block
+     — fg-tertiary dots have no contrast on the fg-based fill). */
+  background-color: transparent;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-fg-tertiary) 0,
+    var(--color-fg-tertiary) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1px;
   /* Breathing room for the block without shifting inline layout. */
   padding: 1px 3px;
   margin: -1px -3px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  transition: background-size 350ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 180ms ease;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .dotted-link--inline:hover,
 .dotted-link--inline:focus-visible {
   /* Text reverses to contrast against the accent block. */
   color: var(--color-on-accent);
-  background-size: 100% 100%, 100% 1px;
+  background-color: var(--color-accent);
 }
 
 /* Photo stack — hover trigger inside bio paragraph */
@@ -329,28 +326,22 @@ body::before {
   font-family: var(--font-sans);
   font-weight: 500;
   cursor: pointer;
-  background-image: linear-gradient(
-    var(--color-accent),
-    var(--color-accent)
-  );
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  /* Accent block hidden at rest; sweeps in left-to-right on hover/focus,
-     matching the site-wide .dotted-link--inline block-swipe hover. */
-  background-size: 0% 100%;
+  /* Accent block fades in quickly on hover/focus, matching the
+     site-wide .dotted-link--inline fade hover (2026-07-20). */
+  background-color: transparent;
   padding: 1px 3px;
   margin: -1px -3px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   outline: none;
-  transition: background-size 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 180ms ease, opacity 0.15s ease;
+  transition: background-color 120ms ease, color 120ms ease,
+    opacity 0.15s ease;
 }
 
 .photo-stack-trigger:hover,
 .photo-stack-trigger:focus-visible {
   color: var(--color-on-accent);
-  background-size: 100% 100%;
+  background-color: var(--color-accent);
 }
 
 .photo-stack-trigger:focus-visible {

@@ -297,35 +297,28 @@ export default function HomeLayout({
                   side projects.
                 </p>
 
-                {/* Contact links — same dotted-underline treatment as the
-                    inline bio links; email opens in the same tab (mailto). */}
-                <div className="flex items-center gap-5">
-                  <a
-                    href={RESUME_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="dotted-link--inline"
-                    style={{ fontStyle: "normal", fontWeight: 400 }}
+                {/* Learn more — opens the About-me surface (Hero). Took
+                    the contact links' slot 2026-07-20; those moved to
+                    the page footer below the work sections. */}
+                <button
+                  type="button"
+                  onClick={() => setAboutMeOpen(true)}
+                  className="dotted-link--inline group inline-flex items-center gap-1.5 self-start cursor-pointer"
+                  style={{
+                    font: "inherit",
+                    fontStyle: "normal",
+                    fontWeight: 400,
+                    border: 0,
+                  }}
+                >
+                  Learn more
+                  <span
+                    aria-hidden
+                    className="inline-block transition-transform duration-200 ease-out group-hover:translate-x-1"
                   >
-                    Resume
-                  </a>
-                  <a
-                    href="https://www.linkedin.com/in/marcogsevilla/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="dotted-link--inline"
-                    style={{ fontStyle: "normal", fontWeight: 400 }}
-                  >
-                    LinkedIn
-                  </a>
-                  <a
-                    href="mailto:marcogsevilla@gmail.com"
-                    className="dotted-link--inline"
-                    style={{ fontStyle: "normal", fontWeight: 400 }}
-                  >
-                    Email
-                  </a>
-                </div>
+                    →
+                  </span>
+                </button>
               </motion.div>
 
             </div>
@@ -349,6 +342,43 @@ export default function HomeLayout({
                 {work}
               </motion.div>
             </section>
+
+            {/* Footer — contact links, seated below all page content on
+                the centered band (moved here from the bio 2026-07-20;
+                email opens in the same tab via mailto). */}
+            <footer className="mt-[100px]">
+              <Grid>
+                <Col lg={CONTENT_BAND}>
+                  <div className="flex items-center gap-5">
+                    <a
+                      href={RESUME_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="dotted-link--inline"
+                      style={{ fontStyle: "normal", fontWeight: 400 }}
+                    >
+                      Resume
+                    </a>
+                    <a
+                      href="https://www.linkedin.com/in/marcogsevilla/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="dotted-link--inline"
+                      style={{ fontStyle: "normal", fontWeight: 400 }}
+                    >
+                      LinkedIn
+                    </a>
+                    <a
+                      href="mailto:marcogsevilla@gmail.com"
+                      className="dotted-link--inline"
+                      style={{ fontStyle: "normal", fontWeight: 400 }}
+                    >
+                      Email
+                    </a>
+                  </div>
+                </Col>
+              </Grid>
+            </footer>
           </div>
         )}
       </div>

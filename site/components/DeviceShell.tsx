@@ -30,7 +30,13 @@ export default function DeviceShell({
       <div
         style={{
           aspectRatio: "9 / 19",
-          borderRadius: 28,
+          // Corner radius scales with the rendered size so the shell
+          // reads as the same phone at any scale (a fixed 28px was ~21%
+          // of width at card size — cartoonishly round). Real iPhone
+          // body radius ≈ 15% of device width; percentage corners are
+          // elliptical, so the vertical radius is scaled by the 9/19
+          // aspect (15 × 9/19 ≈ 7.1) to keep them circular.
+          borderRadius: "15% / 7.1%",
           padding: 6,
           backgroundColor: "var(--color-surface)",
           border: "1px solid var(--color-border)",
@@ -40,7 +46,12 @@ export default function DeviceShell({
       >
         <div
           className="relative h-full w-full overflow-hidden"
-          style={{ borderRadius: 22, backgroundColor: "var(--color-muted)" }}
+          // Screen corners run concentric inside the 6px bezel: ~11.5%
+          // of the screen's width (vertical scaled by its aspect).
+          style={{
+            borderRadius: "11.5% / 5.2%",
+            backgroundColor: "var(--color-muted)",
+          }}
         >
           {children}
         </div>

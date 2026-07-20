@@ -933,11 +933,11 @@ function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
 // overlay, standalone UI screenshots, and product videos render on top
 // of this fill.
 //
-// Carousel study cards read as distinctly raised panels (10% ink —
+// Carousel study cards read as distinctly raised panels (7% ink —
 // clearly lighter than the page in dark mode, a clear grey in light);
 // playground frames keep the quieter 4% wash.
 const STUDY_FRAME_BG =
-  "color-mix(in srgb, var(--color-fg) 10%, var(--color-bg))";
+  "color-mix(in srgb, var(--color-fg) 7%, var(--color-bg))";
 const FRAME_BG = "color-mix(in srgb, var(--color-fg) 4%, var(--color-bg))";
 
 // Slugs hidden from the homepage gallery (in-flight content / not

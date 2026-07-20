@@ -13,13 +13,15 @@ const PARAMS = {
   wave: {
     gridSpacing: 9,
     dotSize: 0.5,
-    dotOpacity: 0.1,
+    // Opacities halved 2026-07-20 (Marco: more subtlety) from the
+    // 2026-07-17 lab tune (0.1 / 0.3, hover 0.08).
+    dotOpacity: 0.05,
     speed: 0.004,
     threshold: 0.45,
     intensityMax: 0.5,
     noiseScale: 0.0015,
     dotGrowth: 1.3,
-    opacityMax: 0.3,
+    opacityMax: 0.15,
   },
   shape: {
     type: "diamond" as const,
@@ -29,7 +31,7 @@ const PARAMS = {
     radius: 90,
     dotGrowth: 1.4,
     colorBlend: 0.35,
-    opacityMax: 0.08,
+    opacityMax: 0.04,
     falloffPower: 2.5,
   },
 };
