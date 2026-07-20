@@ -41,7 +41,7 @@ export default function AIWorkflowContent() {
               className="text-(--color-fg)"
               style={{
                 ...typescale.display,
-                fontFamily: "var(--font-baskerville), Georgia, serif",
+                fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
                 fontWeight: 700,
                 letterSpacing: "0.02em",
               }}
@@ -51,7 +51,7 @@ export default function AIWorkflowContent() {
             <p
               className="mt-3 text-(--color-fg-secondary)"
               style={{
-                fontFamily: "var(--font-baskerville), Georgia, serif",
+                fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
                 fontStyle: "italic",
                 fontWeight: 400,
                 fontSize: 18,

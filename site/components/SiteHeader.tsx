@@ -95,7 +95,7 @@ export default function SiteHeader() {
                     aria-label="Marco Sevilla — home"
                     className="tap-target inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-(--color-accent)"
                     style={{
-                      fontFamily: "var(--font-baskerville), Georgia, serif",
+                      fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
                       fontSize: 16,
                       fontWeight: 700,
                       letterSpacing: "0.02em",

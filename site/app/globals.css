@@ -196,6 +196,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Paragraph text reads secondary site-wide; titles/headings keep
+   --color-fg (primary ink). Element-level selector, so any utility
+   class or inline color on a <p> still wins. */
+p {
+  color: var(--color-fg-secondary);
+}
+
 /* Shared paper-grain tile. Grayscale fractal noise compressed into a
    light range (~0.74–1.0) so that when it's blended with `multiply`
    over a surface it only ever DARKENS — never adds the light specks
@@ -282,15 +289,13 @@ body::before {
   font-family: var(--font-sans);
   font-weight: 400;
   text-decoration: none;
-  /* Two underline layers at the same baseline position: a bold dashed
-     accent line that draws in on hover (layer 1, 0 → 100%), over an
-     always-visible subtle dotted rest line (layer 2). */
-  background-image: repeating-linear-gradient(
-      to right,
-      currentColor 0,
-      currentColor 4px,
-      transparent 4px,
-      transparent 7px
+  /* Block-swipe hover: layer 1 is a solid accent block that sweeps in
+     left-to-right behind the text (0 → 100% width); layer 2 is the
+     always-visible subtle dotted rest underline. The block paints on
+     top of the dots, so it swallows the underline as it sweeps. */
+  background-image: linear-gradient(
+      var(--color-accent),
+      var(--color-accent)
     ),
     repeating-linear-gradient(
       to right,
@@ -301,14 +306,21 @@ body::before {
     );
   background-repeat: no-repeat, no-repeat;
   background-position: 0 100%, 0 100%;
-  background-size: 0 1.5px, 100% 1px;
-  transition: background-size 350ms cubic-bezier(0.22, 1, 0.36, 1);
+  background-size: 0% 100%, 100% 1px;
+  /* Breathing room for the block without shifting inline layout. */
+  padding: 1px 3px;
+  margin: -1px -3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-size 350ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms ease;
 }
 
 .dotted-link--inline:hover,
 .dotted-link--inline:focus-visible {
-  color: var(--color-accent);
-  background-size: 100% 1.5px, 100% 1px;
+  /* Text reverses to contrast against the accent block. */
+  color: var(--color-on-accent);
+  background-size: 100% 100%, 100% 1px;
 }
 
 /* Photo stack — hover trigger inside bio paragraph */
@@ -317,24 +329,28 @@ body::before {
   font-family: var(--font-sans);
   font-weight: 500;
   cursor: pointer;
-  background-image: repeating-linear-gradient(
-    to right,
-    currentColor 0,
-    currentColor 4px,
-    transparent 4px,
-    transparent 7px
+  background-image: linear-gradient(
+    var(--color-accent),
+    var(--color-accent)
   );
   background-repeat: no-repeat;
   background-position: 0 100%;
-  /* Underline hidden at rest; reveals left-to-right on hover/focus. */
-  background-size: 0% 1.5px;
+  /* Accent block hidden at rest; sweeps in left-to-right on hover/focus,
+     matching the site-wide .dotted-link--inline block-swipe hover. */
+  background-size: 0% 100%;
+  padding: 1px 3px;
+  margin: -1px -3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
   outline: none;
-  transition: background-size 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 0.15s ease;
+  transition: background-size 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms ease, opacity 0.15s ease;
 }
 
 .photo-stack-trigger:hover,
 .photo-stack-trigger:focus-visible {
-  background-size: 100% 1.5px;
+  color: var(--color-on-accent);
+  background-size: 100% 100%;
 }
 
 .photo-stack-trigger:focus-visible {

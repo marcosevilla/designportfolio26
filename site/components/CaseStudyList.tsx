@@ -461,17 +461,18 @@ function Testimonials() {
   );
 }
 
-// Section label — Libre Baskerville italic, the redesign's serif accent
-// for section titles ("Select work", "Just for fun").
+// Section label — Geist Mono at body size, primary ink
+// ("Select work", "Just for fun").
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h2
       style={{
-        fontFamily: "var(--font-baskerville), Georgia, serif",
-        fontStyle: "italic",
+        fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
         fontWeight: 400,
-        fontSize: 20,
-        lineHeight: 1.4,
+        fontSize: "calc(14px + var(--font-size-offset))",
+        lineHeight: "22.4px",
+        textTransform: "uppercase",
+        letterSpacing: "-0.02em",
         color: "var(--color-fg)",
       }}
     >

@@ -41,7 +41,7 @@ export default function CompendiumContent() {
         {/* Title + Subtitle with metadata rail (intro-rail) */}
         <Grid preset="intro-rail">
           <Col>
-            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
+            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
             {/* Same intro treatment as F&B: italic tertiary one-liner hook,
                 then body paragraphs at secondary. */}
             <p className="mt-3 italic text-(--color-fg-tertiary)">Hotels print their guest guides. Guests never read them.</p>

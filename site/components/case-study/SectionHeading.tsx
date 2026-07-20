@@ -4,7 +4,7 @@ interface SectionHeadingProps {
   children: React.ReactNode;
 }
 
-const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
+const BASKERVILLE = "var(--font-geist-sans), system-ui, sans-serif";
 
 /**
  * Standardized case study heading with optional scroll anchor.

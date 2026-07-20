@@ -5,7 +5,7 @@ import { useState } from "react";
 // Matches SectionHeading's h2 (which mirrors the homepage "Select work"
 // label): Libre Baskerville italic, 400/20.
 const H2_STYLE: React.CSSProperties = {
-  fontFamily: "var(--font-baskerville), Georgia, serif",
+  fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
   fontStyle: "italic",
   fontWeight: 400,
   fontSize: 20,

@@ -39,8 +39,8 @@ export default function KnowledgeBaseContent() {
         {/* Title + Subtitle with metadata rail (intro-rail) */}
         <Grid preset="intro-rail">
           <Col>
-            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-baskerville), Georgia, serif", fontWeight: 700, letterSpacing: "0.02em" }}>AI Knowledge Base</h1>
-            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-baskerville), Georgia, serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A ground-up redesign of the information architecture and UI for Canary&apos;s AI knowledge base — the system where hotels enter the property data that powers both the AI chatbot and voice assistant.</p>
+            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontWeight: 700, letterSpacing: "0.02em" }}>AI Knowledge Base</h1>
+            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A ground-up redesign of the information architecture and UI for Canary&apos;s AI knowledge base — the system where hotels enter the property data that powers both the AI chatbot and voice assistant.</p>
           </Col>
           <Col className="mt-8 lg:mt-2">
             <MetaRail items={META} />

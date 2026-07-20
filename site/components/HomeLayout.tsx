@@ -17,7 +17,7 @@ import { RESUME_URL } from "@/lib/resume-content";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
-const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
+const BASKERVILLE = "var(--font-geist-sans), system-ui, sans-serif";
 
 /** Emphasis for inline links and key phrases inside body text — Geist
  *  at body weight, upright (fontStyle normal also cancels the browser's
@@ -178,14 +178,15 @@ export default function HomeLayout({
             <Grid preset="intro-rail" className="mt-8">
             <Col>
             <div className="flex flex-col gap-6">
-              {/* Page heading — Libre Baskerville, the site's new serif. */}
+              {/* Page heading — body-size, bold; reads as a label above
+                  the bio rather than a display heading. */}
               <motion.h1
                 style={{
                   fontFamily: BASKERVILLE,
-                  fontSize: 32,
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
-                  lineHeight: 1.2,
+                  fontSize: "calc(16px + var(--font-size-offset))",
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em",
+                  lineHeight: "24px",
                   color: "var(--color-fg)",
                 }}
                 initial={{ opacity: 0, filter: "blur(12px)" }}
@@ -198,32 +199,9 @@ export default function HomeLayout({
                 Marco Sevilla
               </motion.h1>
 
-              {/* Tagline — serif italic, full-ink. (CyclingGreeting was
-                  mounted here briefly 2026-07-15, then parked — the
-                  component lives on in components/CyclingGreeting.tsx,
-                  swap it back in for the text node to re-enable.) */}
-              <motion.p
-                style={{
-                  fontFamily: BASKERVILLE,
-                  fontStyle: "italic",
-                  fontWeight: 400,
-                  fontSize: 18,
-                  lineHeight: "26px",
-                  letterSpacing: "0.02em",
-                  color: "var(--color-fg)",
-                }}
-                initial={{ opacity: 0, filter: "blur(12px)" }}
-                animate={{
-                  opacity: heroReady ? 1 : 0,
-                  filter: heroReady ? "blur(0px)" : "blur(12px)",
-                }}
-                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.15 }}
-              >
-                Product Designer based in San Francisco, California
-              </motion.p>
-
-              {/* Intro bio — 16px/2 body with Baskerville-italic emphasis
-                  for links and key phrases. */}
+              {/* Intro bio — body text; opens with the role/location line
+                  (formerly the standalone tagline). (CyclingGreeting is
+                  parked in components/CyclingGreeting.tsx.) */}
               <motion.div
                 className="flex flex-col gap-8"
                 style={{
@@ -233,16 +211,19 @@ export default function HomeLayout({
                   fontSize: "calc(14px + var(--font-size-offset))",
                   lineHeight: "22.4px",
                   letterSpacing: "-0.02em",
-                  color: "var(--color-fg)",
+                  // Body reads secondary; Em emphasis + titles keep
+                  // primary ink.
+                  color: "var(--color-fg-secondary)",
                 }}
                 initial={{ opacity: 0, filter: "blur(12px)" }}
                 animate={{
                   opacity: heroReady ? 1 : 0,
                   filter: heroReady ? "blur(0px)" : "blur(12px)",
                 }}
-                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.2 }}
+                transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.15 }}
               >
                 <p>
+                  Product Designer based in San Francisco, California.
                   Currently at{" "}
                   <Em href="https://www.canarytechnologies.com/">
                     Canary Technologies

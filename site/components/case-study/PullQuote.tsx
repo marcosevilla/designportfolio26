@@ -13,7 +13,7 @@ export default function PullQuote({
         className="text-(--color-fg) italic"
         style={{
           ...typescale.pullQuote,
-          fontFamily: "var(--font-baskerville), Georgia, serif",
+          fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
           letterSpacing: "0.01em",
         }}
       >
