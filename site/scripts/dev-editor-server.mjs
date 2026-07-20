@@ -2,6 +2,10 @@ import { createServer } from "node:http";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const SITE_ROOT = resolve(__dirname, "..");
@@ -13,6 +17,20 @@ function safePath(relativePath) {
     throw new Error("Path outside site directory");
   }
   return full;
+}
+
+async function git(...args) {
+  const { stdout } = await execFileAsync("git", args, { cwd: SITE_ROOT });
+  return stdout.trim();
+}
+
+/** Commits ahead of origin (0 if no upstream). */
+async function aheadCount() {
+  try {
+    return parseInt(await git("rev-list", "--count", "@{upstream}..HEAD"), 10) || 0;
+  } catch {
+    return 0;
+  }
 }
 
 function collectBody(req) {
@@ -63,6 +81,47 @@ createServer(async (req, res) => {
       await writeFile(safePath(file), content, "utf-8");
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ ok: true }));
+      return;
+    }
+
+    // Unpublished state for a file: uncommitted edits + local commits not yet pushed
+    if (req.method === "GET" && url.pathname === "/status") {
+      const file = url.searchParams.get("file");
+      if (!file) {
+        res.writeHead(400);
+        res.end("Missing file param");
+        return;
+      }
+      safePath(file);
+      const dirty = (await git("status", "--porcelain", "--", file)) !== "";
+      const ahead = await aheadCount();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ dirty, ahead }));
+      return;
+    }
+
+    // Publish: commit ONLY the given file, then push (Vercel deploys on push)
+    if (req.method === "POST" && url.pathname === "/publish") {
+      const body = await collectBody(req);
+      const { file, message } = JSON.parse(body);
+      if (!file) {
+        res.writeHead(400);
+        res.end("Missing file");
+        return;
+      }
+      safePath(file);
+      const dirty = (await git("status", "--porcelain", "--", file)) !== "";
+      if (dirty) {
+        await git("add", "--", file);
+        // Pathspec scopes the commit to this file — other staged/dirty files stay untouched
+        await git("commit", "-m", message || `Content: edit ${file}`, "--", file);
+      }
+      const ahead = await aheadCount();
+      if (ahead > 0) {
+        await git("push");
+      }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, committed: dirty, pushed: ahead > 0 }));
       return;
     }
 

@@ -18,6 +18,9 @@ export default function FloatingToolbar() {
     save,
     revert,
     pendingEdits,
+    unpublished,
+    publishState,
+    publish,
   } = useInlineEditor();
 
   const [placeholderCount, setPlaceholderCount] = useState(0);
@@ -100,6 +103,26 @@ export default function FloatingToolbar() {
             >
               {saving ? "Saving..." : "Save"}
             </button>
+
+            {/* Publish button — commit + push, Vercel deploys. Save first (disabled while dirty). */}
+            {(unpublished || publishState !== "idle") && (
+              <button
+                onClick={publish}
+                disabled={isDirty || saving || publishState === "publishing"}
+                className="px-3 py-1 text-[12px] font-medium border transition-colors disabled:opacity-30"
+                style={{
+                  color: publishState === "published" ? "var(--color-fg-secondary)" : "var(--color-accent)",
+                  borderColor: "var(--color-accent)",
+                }}
+                title={isDirty ? "Save your edits first (Cmd+S)" : "Commit + push — live in ~1 min"}
+              >
+                {publishState === "publishing"
+                  ? "Publishing..."
+                  : publishState === "published"
+                    ? "Live in ~1 min"
+                    : "Publish"}
+              </button>
+            )}
 
             {/* Revert button */}
             <button

@@ -1,3 +1,5 @@
+export type PublishState = "idle" | "publishing" | "published" | "error";
+
 export interface EditEntry {
   /** Identifier for the edit location, e.g. "section:problem.p:0" */
   path: string;

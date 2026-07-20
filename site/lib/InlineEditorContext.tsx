@@ -5,10 +5,17 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
-import { SLUG_TO_FILE, EDITOR_SERVER_URL, type EditEntry } from "./editor-types";
+import {
+  SLUG_TO_FILE,
+  EDITOR_SERVER_URL,
+  type EditEntry,
+  type PublishState,
+} from "./editor-types";
 
 interface InlineEditorContextValue {
   editMode: boolean;
@@ -23,6 +30,10 @@ interface InlineEditorContextValue {
   lastError: string | null;
   save: () => Promise<void>;
   revert: () => void;
+  /** Saved-to-disk edits (or local commits) not yet pushed to production */
+  unpublished: boolean;
+  publishState: PublishState;
+  publish: () => Promise<void>;
 }
 
 const InlineEditorContext = createContext<InlineEditorContextValue>({
@@ -38,6 +49,9 @@ const InlineEditorContext = createContext<InlineEditorContextValue>({
   lastError: null,
   save: async () => {},
   revert: () => {},
+  unpublished: false,
+  publishState: "idle",
+  publish: async () => {},
 });
 
 /** Normalize JSX entities to Unicode for matching */
@@ -73,12 +87,33 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
   const [pendingEdits, setPendingEdits] = useState<Map<string, EditEntry>>(new Map());
   const [saving, setSaving] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [unpublished, setUnpublished] = useState(false);
+  const [publishState, setPublishState] = useState<PublishState>("idle");
+  const publishedResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Extract slug from pathname: /work/fb-ordering → fb-ordering
   const slug = pathname.startsWith("/work/")
     ? pathname.split("/")[2] || null
     : null;
   const filePath = slug ? SLUG_TO_FILE[slug] ?? null : null;
+
+  // On landing on a case study, check for edits saved earlier but never published.
+  // Fails silently — the editor server may simply not be running.
+  useEffect(() => {
+    if (!filePath) return;
+    let cancelled = false;
+    fetch(`${EDITOR_SERVER_URL}/status?file=${encodeURIComponent(filePath)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((status) => {
+        if (!cancelled && status) {
+          setUnpublished(status.dirty || status.ahead > 0);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [filePath]);
 
   const toggleEditMode = useCallback(() => {
     setEditMode((m) => !m);
@@ -210,12 +245,42 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
 
       // Clear edits on success
       setPendingEdits(new Map());
+      setUnpublished(true);
+      setPublishState("idle");
     } catch (err) {
       setLastError(err instanceof Error ? err.message : "Save failed");
     } finally {
       setSaving(false);
     }
   }, [filePath, pendingEdits]);
+
+  const publish = useCallback(async () => {
+    if (!filePath) return;
+
+    setPublishState("publishing");
+    setLastError(null);
+    if (publishedResetTimer.current) clearTimeout(publishedResetTimer.current);
+
+    try {
+      const res = await fetch(`${EDITOR_SERVER_URL}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file: filePath,
+          message: `Content: edit ${slug}`,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error((await res.text()) || `Publish failed: ${res.statusText}`);
+      }
+      setUnpublished(false);
+      setPublishState("published");
+      publishedResetTimer.current = setTimeout(() => setPublishState("idle"), 5000);
+    } catch (err) {
+      setPublishState("error");
+      setLastError(err instanceof Error ? err.message : "Publish failed");
+    }
+  }, [filePath, slug]);
 
   return (
     <InlineEditorContext.Provider
@@ -232,6 +297,9 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
         lastError,
         save,
         revert,
+        unpublished,
+        publishState,
+        publish,
       }}
     >
       {children}
