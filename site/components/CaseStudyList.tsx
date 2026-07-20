@@ -330,19 +330,7 @@ function SectionLinkButton({
   );
 }
 
-// ── Project grid (Linear-style bordered cells) ──
-
-// Unified grid that renders case studies and playground items together
-// in a 2-column bordered layout inspired by linear.app's product
-// section. Each cell has a small mono "FIG. 1.x" label at the top, a
-// centered media area, and (for case studies) a title + description
-// block at the bottom. Playground cells skip the caption to read as
-// media-only thumbnails. Hairline borders between cells; the outer
-// container carries a rounded border + overflow clip so the grid reads
-// as a single framed object.
-type GridItem =
-  | { type: "study"; key: string; study: CaseStudyMeta }
-  | { type: "playground"; key: string; card: PlaygroundCard };
+// ── Project sections (work marquee + playground grid) ──
 
 function ProjectGrid({
   studies,
@@ -351,63 +339,119 @@ function ProjectGrid({
   studies: CaseStudyMeta[];
   onPreview: (slug: string) => void;
 }) {
-  const items: GridItem[] = [
-    ...studies.map<GridItem>((s) => ({
-      type: "study",
-      key: s.slug,
-      study: s,
-    })),
-    ...PLAYGROUND_CARDS.map<GridItem>((c) => ({
-      type: "playground",
-      key: `play-${c.slug}`,
-      card: c,
-    })),
-  ];
-
-  if (items.length === 0) return null;
-
-  const studyItems = items.filter((it) => it.type === "study");
-  const playItems = items.filter((it) => it.type === "playground");
+  if (studies.length === 0 && PLAYGROUND_CARDS.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-16">
-      <SectionLabel>Select work</SectionLabel>
-      {/* Editorial placement: the first study is the featured cell and
-          spans the full canvas; everything after runs 2-up at desktop.
-          Cells stay chromeless (2026-07-14 pass) — the media frames
-          carry the only framing. */}
-      <Grid className="gap-y-16">
-        {studyItems.map((item, i) => {
-          const lg = i === 0 ? "full" : (i - 1) % 2 === 0 ? "1-6" : "7-12";
-          return (
-            <Col key={item.key} lg={lg}>
-              {item.type === "study" && (
-                <StudyCell study={item.study} onPreview={onPreview} featured={i === 0} />
-              )}
-            </Col>
-          );
-        })}
-      </Grid>
+      {studies.length > 0 && (
+        <>
+          <SectionLabel>Select work</SectionLabel>
+          {/* Work cards run as a full-bleed auto-scrolling marquee
+              (2026-07-20, spec: docs/superpowers/specs/
+              2026-07-20-work-marquee-design.md). Cells stay chromeless —
+              the media frames carry the only framing. */}
+          <StudyMarquee studies={studies} onPreview={onPreview} />
+        </>
+      )}
 
       {/* Testimonials — colleague quotes as full paragraphs, seated
-          between the work grid and the playground section (2026-07-15,
+          between the work marquee and the playground section (2026-07-15,
           copy lifted from the retired Marquee). */}
       <Testimonials />
 
-      {/* Playground / experiments get their own label so the grid reads
+      {/* Playground / experiments get their own label so the page reads
           as two sections: client work above, sidequests below. */}
-      {playItems.length > 0 && (
+      {PLAYGROUND_CARDS.length > 0 && (
         <>
           <SectionLabel>Just for fun</SectionLabel>
           <Grid className="gap-y-16">
-            {playItems.map((item, i) => (
-              <Col key={item.key} lg={i % 2 === 0 ? "1-6" : "7-12"}>
-                {item.type === "playground" && <PlaygroundCell card={item.card} />}
+            {PLAYGROUND_CARDS.map((card, i) => (
+              <Col key={`play-${card.slug}`} lg={i % 2 === 0 ? "1-6" : "7-12"}>
+                <PlaygroundCell card={card} />
               </Col>
             ))}
           </Grid>
         </>
       )}
+    </div>
+  );
+}
+
+// ── Work marquee ──
+
+// neesh.cc-style infinite conveyor: the card set renders an even number
+// of times inside a flex track that animates translateX(0 → -50%) on a
+// linear loop (CSS in globals.css, ".work-marquee"). Identical halves
+// make the loop point invisible. Hovering anywhere on the strip pauses
+// it; under prefers-reduced-motion it degrades to a plain scrollable
+// row with the duplicate sets display:none'd.
+//
+// Only the first set is real to assistive tech and the tab order — the
+// duplicates are aria-hidden + inert. (`inert` isn't in @types/react 18
+// but the vendored React 19 runtime supports it, hence the cast.)
+//
+// A seamless -50% loop needs each half-track to be at least viewport
+// width; on ultrawide screens the set count doubles (2 → 4), and the
+// duration scales with it so the px/s speed stays constant.
+const MARQUEE_BASE_DURATION_S = 70;
+const DUPE_PROPS = { "aria-hidden": true, inert: true } as object;
+
+function StudyMarquee({
+  studies,
+  onPreview,
+}: {
+  studies: CaseStudyMeta[];
+  onPreview: (slug: string) => void;
+}) {
+  const [setCount, setSetCount] = useState(2);
+  const firstSetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      const setWidth = firstSetRef.current?.offsetWidth ?? 0;
+      setSetCount(setWidth > 0 && setWidth < window.innerWidth ? 4 : 2);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [studies.length]);
+
+  return (
+    <div
+      className="work-marquee"
+      style={{
+        // Full-bleed breakout from the 1128px editorial canvas (body
+        // has overflow-x hidden, so 100vw can't cause a page scroll).
+        width: "100vw",
+        marginLeft: "calc(50% - 50vw)",
+        ["--marquee-duration" as string]: `${
+          MARQUEE_BASE_DURATION_S * (setCount / 2)
+        }s`,
+      }}
+    >
+      <div className="work-marquee-track">
+        {Array.from({ length: setCount }, (_, setIndex) => {
+          const isDupe = setIndex > 0;
+          return (
+            <div
+              key={setIndex}
+              ref={setIndex === 0 ? firstSetRef : undefined}
+              className="flex gap-6 pr-6"
+              data-marquee-dupe={isDupe ? "" : undefined}
+              {...(isDupe ? DUPE_PROPS : undefined)}
+            >
+              {studies.map((study) => (
+                <div
+                  key={study.slug}
+                  className="w-[420px] max-w-[80vw] shrink-0"
+                >
+                  <StudyCell study={study} onPreview={onPreview} />
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -555,11 +599,9 @@ function CellCaption({
 function StudyMediaFrame({
   study,
   locked,
-  featured = false,
 }: {
   study: CaseStudyMeta;
   locked: boolean;
-  featured?: boolean;
 }) {
   const items = galleryContent[study.slug] ?? [];
   const item = items[0] ?? null;
@@ -577,18 +619,11 @@ function StudyMediaFrame({
     item && typeof item === "object" && "src" in item ? (item.objectPosition ?? "center") : "center";
   const hasMedia = Boolean(video || layers || image);
 
-  // Brand tint behind composites/contained images; neutral grey for the
-  // empty placeholder state.
-  const tint = CARD_TINTS[study.slug];
-  const mediaBg = tint
-    ? `color-mix(in srgb, ${tint} ${CARD_TINT_AMOUNT}%, ${CARD_BG})`
-    : CARD_BG;
-
   return (
     <div
-      className={`w-full overflow-hidden relative ${featured ? "h-[323px] md:h-[480px] lg:h-[560px]" : "h-[323px]"}`}
+      className="w-full overflow-hidden relative h-[323px]"
       style={{
-        backgroundColor: hasMedia ? mediaBg : PLACEHOLDER_BG,
+        backgroundColor: FRAME_BG,
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
       }}
@@ -714,13 +749,9 @@ function StudyMediaFrame({
 function StudyCell({
   study,
   onPreview,
-  featured = false,
 }: {
   study: CaseStudyMeta;
   onPreview: (slug: string) => void;
-  /** Full-canvas first cell — gets a taller media frame so cover-fit
-   *  video isn't cropped to a sliver at canvas width. */
-  featured?: boolean;
 }) {
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
@@ -731,7 +762,7 @@ function StudyCell({
   // aria-label still carries the study title for screen readers, and
   // the lock affordances live on the frame (LockedFrameBadge + LockGate
   // hover badge).
-  const cellInner = <StudyMediaFrame study={study} locked={locked} featured={featured} />;
+  const cellInner = <StudyMediaFrame study={study} locked={locked} />;
 
   // Studies with a dedicated route link out; the rest are static media
   // cells (the fullscreen gallery carousel was removed 2026-07-14).
@@ -897,7 +928,7 @@ function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
         isWide(card) ? "h-[323px]" : "h-[560px] lg:h-[640px]"
       }`}
       style={{
-        backgroundColor: PLACEHOLDER_BG,
+        backgroundColor: FRAME_BG,
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
       }}
@@ -933,20 +964,14 @@ function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
   );
 }
 
-// Card surface fill — theme-aware via --color-card-bg defined in
-// globals.css (#fafafa light, #141414 dark). Lifestyle/photographic
-// `layers.bg` images are intentionally not rendered (see below); the
-// `layers.ui` overlay, standalone UI screenshots, and product videos
-// still render on top of this fill.
-const CARD_BG = "var(--color-card-bg)";
-
-// TEMPORARY: uniform grey fill rendered inside every cell's media
-// frame while the per-slug imagery is re-cropped to the new 1:1
-// frame. Composites to ~#d5d5d5 in light / ~#333 in dark, distinct
-// from the near-white card surface so each cell reads as a deliberate
-// placeholder.
-const PLACEHOLDER_BG =
-  "color-mix(in srgb, var(--color-fg) 9%, var(--color-bg))";
+// Uniform media-frame fill — a hair darker than the page background,
+// theme-aware by construction: mixing 4% ink over the bg tracks
+// light/dark and all colored-theme overrides through the fg/bg vars.
+// Replaces the per-slug brand tints (CARD_TINTS) and the 9% placeholder
+// grey (2026-07-20 pass). Lifestyle/photographic `layers.bg` images are
+// intentionally not rendered; the `layers.ui` overlay, standalone UI
+// screenshots, and product videos render on top of this fill.
+const FRAME_BG = "color-mix(in srgb, var(--color-fg) 4%, var(--color-bg))";
 
 // Slugs hidden from the homepage gallery (in-flight content / not
 // ready to show). Removing a slug from this set re-enables the card
@@ -967,24 +992,4 @@ const STUDY_ROUTES: Record<string, string> = {
   "design-system": "/work/design-system",
 };
 
-// Per-card accent tint, blended at low opacity over CARD_BG so each
-// card reads as branded without overwhelming the imagery. The Canary
-// trio is intentionally three distinct hue families (blue / teal /
-// amber) so the cards read as differentiated at a glance — at 10%
-// opacity the original compendium-blue + checkin-indigo blended into
-// near-identical pale blues, so checkin was shifted to a warm amber.
-// Slugs missing from this map (fb-ordering — has a video that would
-// clash with a tinted bg; ai-workflow — no hero gradient defined) fall
-// back to the neutral CARD_BG.
-const CARD_TINTS: Record<string, string> = {
-  "fb-ordering": "#EF5A3C", // brand orange — themed wash behind the phone shell
-  compendium: "#2563EB", // blue
-  upsells: "#0D9488", // teal
-  checkin: "#D97706", // amber (was #6366F1 indigo — too close to compendium)
-  "general-task": "#334155", // slate
-  "design-system": "#8B5CF6", // violet
-};
-// Tint strength — 10% accent over the base card bg. Light enough to
-// read as a wash, not a saturated panel.
-const CARD_TINT_AMOUNT = 10;
 
