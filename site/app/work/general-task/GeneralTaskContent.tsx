@@ -30,11 +30,11 @@ const TOC_ITEMS = [
 
 export default function GeneralTaskContent() {
   return (
-    <CaseStudyShell tocItems={TOC_ITEMS}>
+    <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Building Productivity Software for Engineers</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
+          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
         </div>
 
         {/* Hero Image */}

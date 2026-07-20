@@ -9,6 +9,7 @@ import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const META = [
@@ -39,7 +40,7 @@ export default function KnowledgeBaseContent() {
         {/* Title + Subtitle with metadata rail (intro-rail) */}
         <Grid preset="intro-rail">
           <Col>
-            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontWeight: 700, letterSpacing: "0.02em" }}>AI Knowledge Base</h1>
+            <h1 className="text-(--color-fg)" style={typescale.display}>AI Knowledge Base</h1>
             <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A ground-up redesign of the information architecture and UI for Canary&apos;s AI knowledge base — the system where hotels enter the property data that powers both the AI chatbot and voice assistant.</p>
           </Col>
           <Col className="mt-8 lg:mt-2">
@@ -87,7 +88,7 @@ export default function KnowledgeBaseContent() {
 
           {/* Alternating 2-col spread at desktop (5 blocks, last sits left) */}
           <Grid className="mt-6 gap-y-14">
-            <Col lg="1-6">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>1. Categorized subjects instead of flat custom statements</SectionHeading>
               <p className="mb-5">
@@ -96,7 +97,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg="7-12">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>2. Platform-level navigation, not product-specific</SectionHeading>
               <p className="mb-5">
@@ -105,7 +106,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg="1-6">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>3. Completion metrics to drive adoption</SectionHeading>
               <p className="mb-5">
@@ -114,7 +115,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg="7-12">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>4. Progressive disclosure with AI-aware branching</SectionHeading>
               <p className="mb-5">
@@ -123,7 +124,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg="1-6">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>5. &ldquo;Any added friction for the hotel is awful&rdquo; as a design principle</SectionHeading>
               <p className="mb-5">

@@ -17,22 +17,23 @@ function scaledClamp(min: string, preferred: string, max: string): string {
 }
 
 export const typescale = {
-  /** Hero H1 (homepage statement) + DynamicBio H1 */
+  /** Hero H1 — matches the homepage "Marco Sevilla" h1: body-scale
+   *  bold label, not display type (2026-07-20 case-study alignment). */
   display: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaledClamp("28px", "3vw", "32px"),
+    fontSize: scaled("16px"),
     fontWeight: 600,
-    lineHeight: 1.2,
-    letterSpacing: "-0.01em",
+    lineHeight: "24px",
+    letterSpacing: "-0.02em",
   } as CSSProperties,
 
-  /** Case Study Hero title */
+  /** Case Study Hero title — same body-scale label as `display`. */
   caseStudyHero: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaledClamp("28px", "3vw", "32px"),
+    fontSize: scaled("16px"),
     fontWeight: 600,
-    lineHeight: 1.15,
-    letterSpacing: "-0.01em",
+    lineHeight: "24px",
+    letterSpacing: "-0.02em",
   } as CSSProperties,
 
   /** Page titles — /work, /writing, /play */

@@ -8,6 +8,7 @@ import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const TOC_ITEMS = [
@@ -34,7 +35,7 @@ export default function FBOrderingContent() {
             title (Marco's 2026-07-15 feedback pass). */}
         <FadeIn>
           <Grid className="mb-20">
-            <Col lg="full">
+            <Col lg={CONTENT_BAND}>
               {/* Bottom corners rounder than the top — the shot's own
                   baked corner radius peeks past an even 8px clip. */}
               <img
@@ -57,7 +58,7 @@ export default function FBOrderingContent() {
         {/* Title + subtitle with metadata rail (intro-rail) */}
         <Grid preset="intro-rail">
           <Col>
-            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontWeight: 700, letterSpacing: "0.02em" }}>F&B Mobile Ordering</h1>
+            <h1 className="text-(--color-fg)" style={typescale.display}>F&B Mobile Ordering</h1>
             <p className="mt-3 italic text-(--color-fg-tertiary)">Warning: this case study may induce hunger.</p>
             <p className="mt-3 text-(--color-fg-secondary)">I designed a 0-to-1 food &amp; beverage ordering platform for hotels, the newest addition to Canary&#39;s suite of revenue products. Guests&#39; late-night munchies were increasingly going to DoorDash instead of the front desk, so we rebuilt room service to be modern, convenient, and visually enticing. Four months to MVP, $23K in committed ARR five weeks after launch.</p>
             {/* Problem section folded into the intro (Marco 2026-07-15) */}
@@ -74,7 +75,7 @@ export default function FBOrderingContent() {
             scenes when this ran on the homepage card). */}
         <FadeIn className="pt-32">
           <Grid>
-            <Col lg="full">
+            <Col lg={CONTENT_BAND}>
               <div
                 className="w-full overflow-hidden rounded-[10px] border border-border bg-surface-raised"
                 style={{ aspectRatio: "4 / 3" }}
@@ -117,7 +118,7 @@ export default function FBOrderingContent() {
         {/* ── Object flow diagram ── */}
         <FadeIn className="pt-16">
           <Grid>
-            <Col lg="full">
+            <Col lg={CONTENT_BAND}>
               <ObjectFlowDiagram />
             </Col>
           </Grid>

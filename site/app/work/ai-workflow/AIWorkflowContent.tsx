@@ -39,12 +39,7 @@ export default function AIWorkflowContent() {
             <Col>
             <h1
               className="text-(--color-fg)"
-              style={{
-                ...typescale.display,
-                fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-                fontWeight: 700,
-                letterSpacing: "0.02em",
-              }}
+              style={typescale.display}
             >
               How I Work with AI
             </h1>

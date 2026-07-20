@@ -28,11 +28,11 @@ const TOC_ITEMS = [
 
 export default function CheckinContent() {
   return (
-    <CaseStudyShell tocItems={TOC_ITEMS}>
+    <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Modernizing Hotel Software</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
+          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
         </div>
 
         {/* Hero Image */}

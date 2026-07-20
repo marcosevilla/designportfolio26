@@ -31,11 +31,11 @@ const TOC_ITEMS = [
 
 export default function DesignSystemContent() {
   return (
-    <CaseStudyShell tocItems={TOC_ITEMS}>
+    <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Creating a Design System for a Productivity Startup</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>Championing and executing a design system and visual language overhaul by securing leadership approval, facilitating design sprints, and collaborating with developers for implementation.</p>
+          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>Championing and executing a design system and visual language overhaul by securing leadership approval, facilitating design sprints, and collaborating with developers for implementation.</p>
         </div>
 
         {/* Hero Image */}

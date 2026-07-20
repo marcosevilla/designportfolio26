@@ -11,6 +11,7 @@ import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const META = [
@@ -41,7 +42,7 @@ export default function CompendiumContent() {
         {/* Title + Subtitle with metadata rail (intro-rail) */}
         <Grid preset="intro-rail">
           <Col>
-            <h1 className="text-(--color-fg)" style={{ ...typescale.display, fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontWeight: 700, letterSpacing: "0.02em" }}>Digital Compendium</h1>
+            <h1 className="text-(--color-fg)" style={typescale.display}>Digital Compendium</h1>
             {/* Same intro treatment as F&B: italic tertiary one-liner hook,
                 then body paragraphs at secondary. */}
             <p className="mt-3 italic text-(--color-fg-tertiary)">Hotels print their guest guides. Guests never read them.</p>
@@ -116,7 +117,7 @@ export default function CompendiumContent() {
 
           {/* 2×2 at desktop — the four decisions read as a composed spread */}
           <Grid className="mt-6 gap-y-14">
-            <Col lg="1-6">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>1. Builder-first architecture</SectionHeading>
               <p className="mb-5">
@@ -125,7 +126,7 @@ export default function CompendiumContent() {
             </FadeIn>
             </Col>
 
-            <Col lg="7-12">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>2. Custom sections as the extensibility layer</SectionHeading>
               <p className="mb-5">
@@ -134,7 +135,7 @@ export default function CompendiumContent() {
             </FadeIn>
             </Col>
 
-            <Col lg="1-6">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>3. Compendium as the guest journey endpoint</SectionHeading>
               <p className="mb-5">
@@ -143,7 +144,7 @@ export default function CompendiumContent() {
             </FadeIn>
             </Col>
 
-            <Col lg="7-12">
+            <Col lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>4. Compendium Lite as a freemium growth lever</SectionHeading>
               <p className="mb-5">

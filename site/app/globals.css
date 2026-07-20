@@ -1097,13 +1097,16 @@ body {
    property — Tailwind's mx-auto (logical margin-inline) loses to any
    physical lg:ml-* utility in the cascade, so don't mix them here. */
 .case-canvas {
-  /* width stays auto — with the fixed lg margins the box must shrink
-     to the leftover space (width:100% would overflow to the right on
-     1200–1360px viewports). */
+  /* Centered like the homepage canvas (2026-07-20 alignment) — content
+     sits on the middle-6 CONTENT_BAND at desktop, which naturally
+     clears the fixed InlineTOC at ≥1200 (band starts ~300px in). */
   max-width: var(--grid-max);
   margin-inline: auto;
 }
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (max-width: 1199px) {
+  /* In the window where the fixed TOC is visible but the desktop band
+     specs aren't active yet (content runs full canvas width), keep the
+     old left offset so text doesn't run under the TOC. */
   .case-canvas {
     margin-left: max(200px, calc((100vw - var(--grid-max)) / 2));
     margin-right: 32px;

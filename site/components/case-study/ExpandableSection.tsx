@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 
-// Matches SectionHeading's h2 (which mirrors the homepage "Select work"
-// label): Libre Baskerville italic, 400/20.
+// Matches SectionHeading's h2, which mirrors the homepage section
+// labels: Geist Mono, ALL-CAPS, body size, primary ink (2026-07-20).
 const H2_STYLE: React.CSSProperties = {
-  fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-  fontStyle: "italic",
+  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
   fontWeight: 400,
-  fontSize: 20,
-  lineHeight: 1.4,
+  fontSize: "calc(14px + var(--font-size-offset))",
+  lineHeight: "22.4px",
+  textTransform: "uppercase",
+  letterSpacing: "-0.02em",
   color: "var(--color-fg)",
 };
 

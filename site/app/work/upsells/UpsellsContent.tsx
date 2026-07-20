@@ -31,12 +31,12 @@ const TOC_ITEMS = [
 
 export default function UpsellsContent() {
   return (
-    <CaseStudyShell tocItems={TOC_ITEMS}>
+    <CaseStudyShell tocItems={TOC_ITEMS} band>
 
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Upsells Forms</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={{ ...typescale.subtitle, maxWidth: "66%" }}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
+          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
         </div>
 
         {/* Hero Image */}
