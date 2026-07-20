@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/tooltip";
 import Grid, { Col } from "@/components/layout/Grid";
 import { RESUME_URL } from "@/lib/resume-content";
+import HeaderToolbar from "./HeaderToolbar";
+import LocalStatus from "./LocalStatus";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -178,17 +180,13 @@ export default function HomeLayout({
             <Grid preset="intro-rail" className="mt-8">
             <Col>
             <div className="flex flex-col gap-6">
-              {/* Page heading — body-size, bold; reads as a label above
-                  the bio rather than a display heading. */}
-              <motion.h1
-                style={{
-                  fontFamily: BASKERVILLE,
-                  fontSize: "calc(16px + var(--font-size-offset))",
-                  fontWeight: 600,
-                  letterSpacing: "-0.02em",
-                  lineHeight: "24px",
-                  color: "var(--color-fg)",
-                }}
+              {/* Page heading row — body-size bold name reading as a
+                  label above the bio, with the site controls (time /
+                  weather, light-dark toggle, palette picker) flush right
+                  on the same line. These moved here from the retired
+                  fixed SiteHeader (2026-07-20). */}
+              <motion.div
+                className="flex items-center justify-between gap-4"
                 initial={{ opacity: 0, filter: "blur(12px)" }}
                 animate={{
                   opacity: heroReady ? 1 : 0,
@@ -196,8 +194,23 @@ export default function HomeLayout({
                 }}
                 transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.1 }}
               >
-                Marco Sevilla
-              </motion.h1>
+                <h1
+                  style={{
+                    fontFamily: BASKERVILLE,
+                    fontSize: "calc(16px + var(--font-size-offset))",
+                    fontWeight: 600,
+                    letterSpacing: "-0.02em",
+                    lineHeight: "24px",
+                    color: "var(--color-fg)",
+                  }}
+                >
+                  Marco Sevilla
+                </h1>
+                <div className="flex items-center gap-3">
+                  <LocalStatus />
+                  <HeaderToolbar />
+                </div>
+              </motion.div>
 
               {/* Intro bio — body text; opens with the role/location line
                   (formerly the standalone tagline). (CyclingGreeting is

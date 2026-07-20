@@ -343,15 +343,13 @@ function ProjectGrid({
 
   return (
     <div className="flex flex-col gap-16">
+      {/* Work cards run as a full-bleed auto-scrolling marquee with no
+          section label — the strip leads the section on its own
+          (2026-07-20, spec: docs/superpowers/specs/
+          2026-07-20-work-marquee-design.md). Cells stay chromeless —
+          the media frames carry the only framing. */}
       {studies.length > 0 && (
-        <>
-          <SectionLabel>Select work</SectionLabel>
-          {/* Work cards run as a full-bleed auto-scrolling marquee
-              (2026-07-20, spec: docs/superpowers/specs/
-              2026-07-20-work-marquee-design.md). Cells stay chromeless —
-              the media frames carry the only framing. */}
-          <StudyMarquee studies={studies} onPreview={onPreview} />
-        </>
+        <StudyMarquee studies={studies} onPreview={onPreview} />
       )}
 
       {/* Testimonials — colleague quotes as full paragraphs, seated
@@ -793,6 +791,7 @@ function StudyCell({
       mode="card"
       locked={locked}
       onActivate={() => onPreview(study.slug)}
+      cursorLabel={study.title}
     >
       {cell}
     </LockGate>

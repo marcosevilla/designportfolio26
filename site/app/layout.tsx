@@ -35,7 +35,6 @@ import CustomCursor from "@/components/CustomCursor";
 import { PasswordGateProvider } from "@/lib/PasswordGateContext";
 import PasswordModal from "@/components/PasswordModal";
 import ChatBar from "@/components/chat/ChatBar";
-import SiteHeader from "@/components/SiteHeader";
 import { NavOverlayProvider } from "@/lib/NavOverlayContext";
 import { ChatOverlayProvider } from "@/lib/ChatOverlayContext";
 import ChangelogOverlay from "@/components/ChangelogOverlay";
@@ -93,7 +92,10 @@ export default function RootLayout({
                   Skip to content
                 </a>
                 <MobileNav />
-                <SiteHeader />
+                {/* SiteHeader unmounted 2026-07-20 — the fixed top bar is
+                    gone site-wide; time/weather + theme controls moved
+                    beside the homepage h1 (HomeLayout). Component kept
+                    for salvage at components/SiteHeader.tsx. */}
                 <InlineEditorProvider>
                   {/* No width cap here — each page owns its measure. Case
                       studies use the editorial grid canvas (CaseStudyShell),

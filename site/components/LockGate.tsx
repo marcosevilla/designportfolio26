@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { usePasswordGate } from "@/lib/PasswordGateContext";
 import { LockIcon, BackChevronIcon, EmailIcon, LinkedInIcon } from "./Icons";
 import { typescale } from "@/lib/typography";
+import { setCursorLabel } from "@/lib/cursor-label";
 
 const EMAIL = "marcogsevilla@gmail.com";
 const LINKEDIN_URL = "https://www.linkedin.com/in/marcogsevilla/";
@@ -24,6 +25,13 @@ type CardModeProps = {
    * opener instead.
    */
   onActivate?: () => void;
+  /**
+   * Title shown in the cursor chat-bubble label while hovering the
+   * locked card. The click-trap overlay swallows pointer events before
+   * they reach the card's own hover handlers, so the wrapper has to
+   * set the label itself for locked cards to match unlocked ones.
+   */
+  cursorLabel?: string;
   children: React.ReactNode;
 };
 
@@ -52,6 +60,7 @@ export default function LockGate(props: LockGateProps) {
       <LockedCardWrapper
         onClick={props.onActivate ?? requestUnlock}
         cardRadius={props.cardRadius ?? "rounded-2xl"}
+        cursorLabel={props.cursorLabel}
       >
         {props.children}
       </LockedCardWrapper>
@@ -83,13 +92,19 @@ function LockedCardWrapper({
   children,
   onClick,
   cardRadius,
+  cursorLabel,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   cardRadius: string;
+  cursorLabel?: string;
 }) {
   return (
-    <div className="relative group">
+    <div
+      className="relative group"
+      onMouseEnter={cursorLabel ? () => setCursorLabel(cursorLabel) : undefined}
+      onMouseLeave={cursorLabel ? () => setCursorLabel(null) : undefined}
+    >
       {/* Original card — unmodified. The transparent button below sits
           above it and intercepts pointer events when locked, so the
           underlying card's hover effects (bento glow, scale) never fire
