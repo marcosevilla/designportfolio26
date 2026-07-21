@@ -23,6 +23,7 @@ import { TESTIMONIALS } from "@/lib/testimonials";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import DeviceShell from "./DeviceShell";
 import CursorGlowOverlay from "./CursorGlowOverlay";
+import FnbDitherFrame from "./FnbDitherFrame";
 import { isLocked } from "@/lib/locked-content";
 
 
@@ -588,7 +589,12 @@ function StudyMediaFrame({
         borderRadius: 4,
       }}
     >
+      {/* F&B gets the Paper dither-card treatment (design node 2DW-0):
+          animated accent dither behind a top-pinned phone mock showing
+          the static Lunch-menu screen from the Paper file. */}
+      {study.slug === "fb-ordering" && <FnbDitherFrame />}
       {video &&
+        study.slug !== "fb-ordering" &&
         (video.shell ? (
           // Specimen system (prototype): the video renders as a contained
           // artifact inside a DeviceShell on the themed canvas, never
