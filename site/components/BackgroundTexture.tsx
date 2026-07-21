@@ -174,7 +174,13 @@ export function BackgroundTexture() {
     const dotColor = cachedColorsRef.current!.dot;
     const glowColor = cachedColorsRef.current!.glow;
 
+    // Clear in device pixels, ignoring the DPR transform — with the ctx
+    // scaled, clearRect(0,0,canvas.width,canvas.height) under-clears when
+    // dpr < 1 (browser zoomed out), leaving dot trails at the right/bottom.
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     for (const dot of dotsRef.current) {
       const dx = mouse.x - dot.x;

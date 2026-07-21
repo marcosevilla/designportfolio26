@@ -229,7 +229,12 @@ export function BackgroundTexture({ params }: { params: TextureParams }) {
     const dotColor = cachedColorsRef.current!.dot;
     const glowColor = cachedColorsRef.current!.glow;
 
+    // Clear in device pixels, ignoring the DPR transform (matches
+    // components/BackgroundTexture.tsx — under-clears when dpr < 1).
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     for (const dot of dotsRef.current) {
       const dx = mouse.x - dot.x;

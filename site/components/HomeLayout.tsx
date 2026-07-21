@@ -137,7 +137,9 @@ export default function HomeLayout({
       onStarReleased={() => setLoaderOwnsStar(false)}
     />
     <BackgroundTexture />
-    <div id="home">
+    {/* min-h-dvh: the page must cover the viewport even when content is
+        short, else the body background cuts off in a visible seam. */}
+    <div id="home" className="min-h-dvh">
       {/* Toolbar + wordmark now live in the global SiteHeader (top-left
           name, top-right controls) — mounted in app/layout.tsx so they
           appear on every route, including this one. */}
