@@ -412,25 +412,24 @@ export default function Hero({
                 ref={setAboutMeHeaderRef}
                 className="mt-16"
                 style={{
-                  fontFamily: "var(--font-sans)",
-                  // Sized smaller than the wordmark so the home/about
-                  // hierarchy stays distinct. Line-height 1 puts the cap
-                  // top flush with the box top so it visually top-aligns
-                  // with the side-nav Return button.
+                  // Matches the home-page "Marco Sevilla" h1 (body-scale
+                  // label, 2026-07-20 alignment system).
                   //
                   // mt-16 (64px) matches the home page's toolbar (≈32px)
                   // + mb-8 (32px) stack so this header lands at roughly
                   // the same y as "Marco Sevilla". The side nav's
                   // setAboutMeHeaderRef callback re-measures off this
                   // h1's bounding rect, so the Return button follows.
-                  fontSize: "calc(var(--wordmark-fontsize, 48px) * 0.85)",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "calc(16px + var(--font-size-offset))",
                   fontWeight: 600,
-                  lineHeight: 1,
-                  letterSpacing: "-0.025em",
+                  lineHeight: "24px",
+                  letterSpacing: "-0.02em",
                   color: "var(--color-fg)",
                 }}
               >
-                About me
+                Hello, I&apos;m Marco. Product designer by day, occasionally
+                a music photographer by night.
               </h1>
 
               <div

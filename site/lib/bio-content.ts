@@ -8,22 +8,23 @@ export const HERO_NAME = "Marco Sevilla";
 
 export const PARAGRAPHS: Paragraph[] = [
   [
-    { text: "Currently at" },
-    { text: "Canary Technologies", href: "https://www.canarytechnologies.com/" },
-    { text: ", building software for the world's largest enterprises in hospitality — Marriott, Wyndham, and IHG. I've led design for several 0→1 products: a guest experience platform, a hotel CMS, mobile food and beverage ordering, and the knowledge base that powers our AI-native products." },
+    { text: "I was born and raised in the San Francisco Bay Area. My work blends a life-long enthusiasm for technology, a love of visual craft, and a keen interest in human psychology. I think of myself as a creative generalist. I'm always eager to try new things, throw things at the wall, and find connections between seemingly disparate things." },
   ],
   [
-    { text: "In the past, I built scalable brand systems as a marketing designer at" },
-    { text: "Vivino", href: "https://www.vivino.com/" },
-    { text: "and" },
-    { text: "Vyond", href: "https://www.vyond.com/" },
-    { text: ", and founded product design at" },
-    { text: "General Task", href: "https://www.generaltask.com/" },
-    { text: ", where we built productivity tooling for knowledge workers." },
+    { text: "I discovered software as a creative medium early. As a kid, I spent countless hours on PCs my dad custom-built. These were the digital playgrounds that shaped my love for creating. Between simulation games, Windows Movie Maker, and Adobe Flash, designing software ended up feeling like the natural path." },
   ],
   [
-    { text: "I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. Outside of work, you'll find me" },
-    { text: "taking photos at concerts", href: "photo-stack" },
-    { text: ", developing websites, or tinkering on design side projects." },
+    { text: "Since then, I've collaborated with the" },
+    { text: "world's largest hotel enterprises", href: "https://www.canarytechnologies.com/" },
+    { text: "on software used by millions of guests, built an" },
+    { text: "all-in-one productivity tool", href: "https://www.generaltask.com/" },
+    { text: "for software engineers, helped" },
+    { text: "democratize wine shopping", href: "https://www.vivino.com/" },
+    { text: ", and worked to make" },
+    { text: "animated video production", href: "https://www.vyond.com/" },
+    { text: "accessible to anyone." },
+  ],
+  [
+    { text: "Ultimately, my goal is to continuously improve my craft and build equally useful and beautiful products that improve people's lives. Thanks for checking out my website!" },
   ],
 ];

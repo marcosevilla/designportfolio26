@@ -8,11 +8,13 @@ prompts:
   - What do you do outside of work?
   - How can I reach you?
 ---
-Currently at [Canary Technologies](https://www.canarytechnologies.com/), building software for the world's largest enterprises in hospitality — Marriott, Wyndham, and IHG. I've led design for several 0→1 products: a guest experience platform, a hotel CMS, mobile food and beverage ordering, and the knowledge base that powers our AI-native products.
+I was born and raised in the San Francisco Bay Area. My work blends a life-long enthusiasm for technology, a love of visual craft, and a keen interest in human psychology. I think of myself as a creative generalist. I'm always eager to try new things, throw things at the wall, and find connections between seemingly disparate things.
 
-In the past, I built scalable brand systems as a marketing designer at [Vivino](https://www.vivino.com/) and [Vyond](https://www.vyond.com/), and founded product design at [General Task](https://www.generaltask.com/), where we built productivity tooling for knowledge workers.
+I discovered software as a creative medium early. As a kid, I spent countless hours on PCs my dad custom-built. These were the digital playgrounds that shaped my love for creating. Between simulation games, Windows Movie Maker, and Adobe Flash, designing software ended up feeling like the natural path.
 
-I'm an AI-native designer driven by curiosity, craft, and deep care for the humans I build for. Outside of work, you'll find me [taking photos at concerts](photo-stack), developing websites, or tinkering on design side projects.
+Since then, I've collaborated with the [world's largest hotel enterprises](https://www.canarytechnologies.com/) on software used by millions of guests, built an [all-in-one productivity tool](https://www.generaltask.com/) for software engineers, helped [democratize wine shopping](https://www.vivino.com/), and worked to make [animated video production](https://www.vyond.com/) accessible to anyone.
+
+Ultimately, my goal is to continuously improve my craft and build equally useful and beautiful products that improve people's lives. Thanks for checking out my website!
 
 ----
 
