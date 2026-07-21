@@ -54,7 +54,14 @@ export function HighlightableBio({ paragraphs }: { paragraphs: Paragraph[] }) {
 
   return (
     <div className={active ? "bio-highlight-mode" : undefined}>
-      <div className="bio-text" onMouseUp={handleMouseUp}>
+      <div
+        className="bio-text"
+        onMouseUp={handleMouseUp}
+        // Dev inline editor: text-run edits write back to the bio source
+        {...(process.env.NODE_ENV === "development"
+          ? { "data-editable-source": "content/bio.md" }
+          : {})}
+      >
         {paragraphs.map((para, i) => (
           <p
             key={i}

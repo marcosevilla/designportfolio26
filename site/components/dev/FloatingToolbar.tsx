@@ -25,8 +25,9 @@ export default function FloatingToolbar() {
 
   const [placeholderCount, setPlaceholderCount] = useState(0);
 
-  // Only show on case study pages
+  // Case studies + the homepage (intro paragraphs, About bio)
   const isCaseStudy = pathname.startsWith("/work/");
+  const isEditablePage = isCaseStudy || pathname === "/";
 
   // Count image placeholders when edit mode is toggled
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function FloatingToolbar() {
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (!isCaseStudy) return;
+      if (!isEditablePage) return;
 
       // Cmd+E to toggle edit mode
       if ((e.metaKey || e.ctrlKey) && e.key === "e") {
@@ -55,9 +56,9 @@ export default function FloatingToolbar() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isCaseStudy, editMode, toggleEditMode, save]);
+  }, [isEditablePage, editMode, toggleEditMode, save]);
 
-  if (!isCaseStudy) return null;
+  if (!isEditablePage) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-200">

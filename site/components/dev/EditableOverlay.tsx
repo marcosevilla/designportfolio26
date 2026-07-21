@@ -34,6 +34,7 @@ export default function EditableOverlay() {
   const { editMode, addEdit } = useInlineEditor();
   const activeElementRef = useRef<HTMLElement | null>(null);
   const originalTextRef = useRef<string>("");
+  const editCounterRef = useRef(0);
 
   // Generate a path identifier for an element based on its position
   const getElementPath = useCallback((el: HTMLElement): string => {
@@ -86,36 +87,69 @@ export default function EditableOverlay() {
     return `section:${sectionId}.${tag}:${index}`;
   }, []);
 
+  const beginEditing = useCallback((el: HTMLElement) => {
+    activeElementRef.current = el;
+    originalTextRef.current = el.textContent || "";
+    el.contentEditable = "true";
+    el.style.outline = "2px solid var(--color-accent)";
+    el.style.outlineOffset = "2px";
+    el.style.borderRadius = "2px";
+    el.focus();
+
+    // Select all text
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }, []);
+
   const handleClick = useCallback((e: MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (!target.matches(EDITABLE_SELECTOR)) return;
 
-    // Skip non-content elements
-    if (SKIP_CLASSES.some((cls) => target.classList.contains(cls))) return;
+    if (target.matches?.(EDITABLE_SELECTOR)) {
+      // Skip non-content elements
+      if (SKIP_CLASSES.some((cls) => target.classList.contains(cls))) return;
 
-    // Skip if already editing this element
-    if (activeElementRef.current === target) return;
+      // Skip if already editing this element
+      if (activeElementRef.current === target) return;
 
-    // Finish editing previous element
+      // Finish editing previous element
+      if (activeElementRef.current) {
+        finishEditing(activeElementRef.current);
+      }
+
+      beginEditing(target);
+      return;
+    }
+
+    // Text-run editing inside data-editable-source surfaces (home intro,
+    // About bio): edit just the clicked text node so links/tooltips around
+    // it survive. The node is wrapped in a temp span, unwrapped on blur.
+    const scope = target.closest?.("[data-editable-source]") as HTMLElement | null;
+    if (!scope) return;
+    if (activeElementRef.current?.contains(target)) return;
+
+    e.preventDefault(); // links inside the scope shouldn't navigate in edit mode
+
+    const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+    const node = range?.startContainer;
+    if (!node || node.nodeType !== Node.TEXT_NODE || !node.textContent?.trim()) return;
+
     if (activeElementRef.current) {
       finishEditing(activeElementRef.current);
     }
 
-    // Start editing
-    activeElementRef.current = target;
-    originalTextRef.current = target.textContent || "";
-    target.contentEditable = "true";
-    target.style.outline = "2px solid var(--color-accent)";
-    target.style.outlineOffset = "2px";
-    target.style.borderRadius = "2px";
-    target.focus();
+    const span = document.createElement("span");
+    span.setAttribute("data-editor-temp", "1");
+    span.setAttribute(
+      "data-editor-file",
+      scope.getAttribute("data-editable-source") || ""
+    );
+    node.parentNode?.insertBefore(span, node);
+    span.appendChild(node);
 
-    // Select all text
-    const range = document.createRange();
-    range.selectNodeContents(target);
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(range);
+    beginEditing(span);
   }, []);
 
   const finishEditing = useCallback((el: HTMLElement) => {
@@ -128,8 +162,19 @@ export default function EditableOverlay() {
     el.style.borderRadius = "";
 
     if (newText !== oldText && newText.trim() !== "") {
-      const path = getElementPath(el);
-      addEdit(path, oldText, newText);
+      if (el.hasAttribute("data-editor-temp")) {
+        const file = el.getAttribute("data-editor-file") || undefined;
+        editCounterRef.current += 1;
+        addEdit(`text:${file}:${editCounterRef.current}`, oldText, newText, file);
+      } else {
+        const path = getElementPath(el);
+        addEdit(path, oldText, newText);
+      }
+    }
+
+    // Unwrap temp spans — leave the (possibly edited) text in place
+    if (el.hasAttribute("data-editor-temp")) {
+      el.replaceWith(document.createTextNode(el.textContent || ""));
     }
 
     activeElementRef.current = null;
@@ -177,7 +222,8 @@ export default function EditableOverlay() {
       [data-editable-stat-value]:hover,
       [data-editable-stat-label]:hover,
       [data-editable="hero-title"]:hover,
-      [data-editable="hero-subtitle"]:hover {
+      [data-editable="hero-subtitle"]:hover,
+      [data-editable-source] p:hover {
         outline: 1px dashed var(--color-accent) !important;
         outline-offset: 2px !important;
         cursor: text !important;

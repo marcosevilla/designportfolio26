@@ -218,6 +218,10 @@ export default function HomeLayout({
                   parked in components/CyclingGreeting.tsx.) */}
               <motion.div
                 className="flex flex-col gap-8"
+                // Dev inline editor: text-run edits here write back to this file
+                {...(process.env.NODE_ENV === "development"
+                  ? { "data-editable-source": "components/HomeLayout.tsx" }
+                  : {})}
                 style={{
                   fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
                   // Site-wide body standard: 14/22.4 (matches typescale.body

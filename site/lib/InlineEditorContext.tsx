@@ -13,6 +13,8 @@ import { usePathname } from "next/navigation";
 import {
   SLUG_TO_FILE,
   EDITOR_SERVER_URL,
+  HOME_SOURCE_FILES,
+  flexSourcePattern,
   type EditEntry,
   type PublishState,
 } from "./editor-types";
@@ -23,7 +25,7 @@ interface InlineEditorContextValue {
   slug: string | null;
   filePath: string | null;
   pendingEdits: Map<string, EditEntry>;
-  addEdit: (path: string, oldText: string, newText: string) => void;
+  addEdit: (path: string, oldText: string, newText: string, file?: string) => void;
   removeEdit: (path: string) => void;
   isDirty: boolean;
   saving: boolean;
@@ -97,12 +99,21 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
     : null;
   const filePath = slug ? SLUG_TO_FILE[slug] ?? null : null;
 
-  // On landing on a case study, check for edits saved earlier but never published.
-  // Fails silently — the editor server may simply not be running.
+  // Every source file this page can edit: case studies have one mapped file,
+  // the homepage has the intro (HomeLayout) + About bio (bio.md).
+  const sourceFiles = filePath
+    ? [filePath]
+    : pathname === "/"
+      ? HOME_SOURCE_FILES
+      : [];
+  const sourceFilesKey = sourceFiles.join(",");
+
+  // On landing on an editable page, check for edits saved earlier but never
+  // published. Fails silently — the editor server may simply not be running.
   useEffect(() => {
-    if (!filePath) return;
+    if (!sourceFilesKey) return;
     let cancelled = false;
-    fetch(`${EDITOR_SERVER_URL}/status?file=${encodeURIComponent(filePath)}`)
+    fetch(`${EDITOR_SERVER_URL}/status?files=${encodeURIComponent(sourceFilesKey)}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((status) => {
         if (!cancelled && status) {
@@ -113,7 +124,7 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [filePath]);
+  }, [sourceFilesKey]);
 
   const toggleEditMode = useCallback(() => {
     setEditMode((m) => !m);
@@ -123,11 +134,11 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
     }
   }, [editMode]);
 
-  const addEdit = useCallback((path: string, oldText: string, newText: string) => {
+  const addEdit = useCallback((path: string, oldText: string, newText: string, file?: string) => {
     if (oldText === newText) return;
     setPendingEdits((prev) => {
       const next = new Map(prev);
-      next.set(path, { path, oldText, newText });
+      next.set(path, { path, oldText, newText, file });
       return next;
     });
   }, []);
@@ -145,16 +156,62 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const save = useCallback(async () => {
-    if (!filePath || pendingEdits.size === 0) return;
+    if (pendingEdits.size === 0) return;
 
     setSaving(true);
     setLastError(null);
 
     try {
-      // Read current source
-      const res = await fetch(
-        `${EDITOR_SERVER_URL}/read?file=${encodeURIComponent(filePath)}`
-      );
+      // Text-run edits carry their own source file; the rest are case-study
+      // edits applied to this page's mapped file.
+      const textEditsByFile = new Map<string, EditEntry[]>();
+      const caseStudyEdits: EditEntry[] = [];
+      for (const edit of pendingEdits.values()) {
+        if (edit.file) {
+          const list = textEditsByFile.get(edit.file) ?? [];
+          list.push(edit);
+          textEditsByFile.set(edit.file, list);
+        } else {
+          caseStudyEdits.push(edit);
+        }
+      }
+
+      // Text-run edits: whitespace/entity-tolerant search & replace per file
+      for (const [file, edits] of textEditsByFile) {
+        const res = await fetch(
+          `${EDITOR_SERVER_URL}/read?file=${encodeURIComponent(file)}`
+        );
+        if (!res.ok) throw new Error(`Failed to read ${file}: ${res.statusText}`);
+        let source = await res.text();
+        const isMarkdown = file.endsWith(".md");
+
+        for (const edit of edits) {
+          const pattern = flexSourcePattern(edit.oldText);
+          if (!pattern.test(source)) {
+            console.warn(`Could not find text in ${file}: "${edit.oldText.substring(0, 50)}..."`);
+            continue;
+          }
+          const replacement = isMarkdown
+            ? edit.newText.trim()
+            : denormalizeEntities(edit.newText.trim());
+          source = source.replace(pattern, () => replacement);
+        }
+
+        const writeRes = await fetch(`${EDITOR_SERVER_URL}/write`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ file, content: source }),
+        });
+        if (!writeRes.ok) throw new Error(`Failed to write ${file}: ${writeRes.statusText}`);
+      }
+
+      if (caseStudyEdits.length > 0) {
+        if (!filePath) throw new Error("No source file mapped for this page");
+
+        // Read current source
+        const res = await fetch(
+          `${EDITOR_SERVER_URL}/read?file=${encodeURIComponent(filePath)}`
+        );
       if (!res.ok) throw new Error(`Failed to read file: ${res.statusText}`);
       let source = await res.text();
 
@@ -163,7 +220,7 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
       const statsEdits: EditEntry[] = [];
       const heroEdits: EditEntry[] = [];
 
-      for (const edit of pendingEdits.values()) {
+      for (const edit of caseStudyEdits) {
         if (edit.path.startsWith("stats:")) {
           statsEdits.push(edit);
         } else if (edit.path.startsWith("hero.")) {
@@ -242,6 +299,7 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
       });
 
       if (!writeRes.ok) throw new Error(`Failed to write file: ${writeRes.statusText}`);
+      }
 
       // Clear edits on success
       setPendingEdits(new Map());
@@ -255,7 +313,7 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
   }, [filePath, pendingEdits]);
 
   const publish = useCallback(async () => {
-    if (!filePath) return;
+    if (sourceFiles.length === 0) return;
 
     setPublishState("publishing");
     setLastError(null);
@@ -266,8 +324,8 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          file: filePath,
-          message: `Content: edit ${slug}`,
+          files: sourceFiles,
+          message: `Content: edit ${slug ?? "home"}`,
         }),
       });
       if (!res.ok) {
@@ -280,7 +338,7 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
       setPublishState("error");
       setLastError(err instanceof Error ? err.message : "Publish failed");
     }
-  }, [filePath, slug]);
+  }, [sourceFilesKey, slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <InlineEditorContext.Provider
