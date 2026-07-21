@@ -24,6 +24,7 @@ import LockGate, { LockedFrameBadge } from "./LockGate";
 import DeviceShell from "./DeviceShell";
 import CursorGlowOverlay from "./CursorGlowOverlay";
 import FnbDitherFrame from "./FnbDitherFrame";
+import DitherBackdrop from "./DitherBackdrop";
 import { isLocked } from "@/lib/locked-content";
 
 
@@ -589,10 +590,17 @@ function StudyMediaFrame({
         borderRadius: 4,
       }}
     >
-      {/* F&B gets the Paper dither-card treatment (design node 2DW-0):
-          animated accent dither behind a top-pinned phone mock showing
-          the static Lunch-menu screen from the Paper file. */}
-      {study.slug === "fb-ordering" && <FnbDitherFrame />}
+      {/* Every study card gets the animated accent-dither backdrop,
+          seeded by slug so the wave's tempo/phase/position varies card
+          to card (spec: docs/superpowers/specs/
+          2026-07-20-dither-card-backdrops-design.md). F&B composes its
+          own inside FnbDitherFrame (pinned to the original Paper
+          params) along with the phone mock. */}
+      {study.slug === "fb-ordering" ? (
+        <FnbDitherFrame />
+      ) : (
+        <DitherBackdrop seed={study.slug} />
+      )}
       {video &&
         study.slug !== "fb-ordering" &&
         (video.shell ? (
