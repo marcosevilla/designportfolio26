@@ -1132,4 +1132,35 @@ body {
   display: flex;
   width: max-content;
   gap: 24px;
+  /* Rest position aligns card 1 with the bio text's left edge (the
+     content band start: col 4 at lg, col 3 at md, page padding on
+     phone) so the strip has a clear "start". Cards still scroll
+     full-bleed past the padding; the mirrored right padding gives the
+     last card the same resting edge. Mirrors the canvas math in
+     HomeLayout (max-w --grid-max, px-4 sm:px-8). */
+  --mq-pad: 16px;
+  --mq-cols: 0;
+  --mq-canvas: min(var(--grid-max), 100vw);
+  --mq-col: calc(
+    (var(--mq-canvas) - 2 * var(--mq-pad) - 11 * var(--grid-gap)) / 12
+  );
+  padding-inline: calc(
+    (100vw - var(--mq-canvas)) / 2 + var(--mq-pad) +
+      var(--mq-cols) * (var(--mq-col) + var(--grid-gap))
+  );
+}
+@media (min-width: 640px) {
+  .work-marquee-track {
+    --mq-pad: 32px;
+  }
+}
+@media (min-width: 768px) {
+  .work-marquee-track {
+    --mq-cols: 2;
+  }
+}
+@media (min-width: 1200px) {
+  .work-marquee-track {
+    --mq-cols: 3;
+  }
 }
