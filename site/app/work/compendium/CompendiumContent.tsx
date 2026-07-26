@@ -11,7 +11,7 @@ import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
-import { CONTENT_BAND } from "@/lib/layout-presets";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const META = [
@@ -117,7 +117,7 @@ export default function CompendiumContent() {
 
           {/* 2×2 at desktop — the four decisions read as a composed spread */}
           <Grid className="mt-6 gap-y-14">
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>1. Builder-first architecture</SectionHeading>
               <p className="mb-5">
@@ -126,7 +126,7 @@ export default function CompendiumContent() {
             </FadeIn>
             </Col>
 
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>2. Custom sections as the extensibility layer</SectionHeading>
               <p className="mb-5">
@@ -135,7 +135,7 @@ export default function CompendiumContent() {
             </FadeIn>
             </Col>
 
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>3. Compendium as the guest journey endpoint</SectionHeading>
               <p className="mb-5">
@@ -144,7 +144,7 @@ export default function CompendiumContent() {
             </FadeIn>
             </Col>
 
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>4. Compendium Lite as a freemium growth lever</SectionHeading>
               <p className="mb-5">

@@ -9,7 +9,7 @@ import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
-import { CONTENT_BAND } from "@/lib/layout-presets";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const META = [
@@ -88,7 +88,7 @@ export default function KnowledgeBaseContent() {
 
           {/* Alternating 2-col spread at desktop (5 blocks, last sits left) */}
           <Grid className="mt-6 gap-y-14">
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>1. Categorized subjects instead of flat custom statements</SectionHeading>
               <p className="mb-5">
@@ -97,7 +97,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>2. Platform-level navigation, not product-specific</SectionHeading>
               <p className="mb-5">
@@ -106,7 +106,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>3. Completion metrics to drive adoption</SectionHeading>
               <p className="mb-5">
@@ -115,7 +115,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>4. Progressive disclosure with AI-aware branching</SectionHeading>
               <p className="mb-5">
@@ -124,7 +124,7 @@ export default function KnowledgeBaseContent() {
             </FadeIn>
             </Col>
 
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <FadeIn>
               <SectionHeading level={4}>5. &ldquo;Any added friction for the hotel is awful&rdquo; as a design principle</SectionHeading>
               <p className="mb-5">

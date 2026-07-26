@@ -16,7 +16,7 @@ import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
 import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
 import Grid, { Col } from "@/components/layout/Grid";
-import { CONTENT_BAND } from "@/lib/layout-presets";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { galleryContent } from "@/lib/gallery-content";
 import { setCursorLabel } from "@/lib/cursor-label";
 import { TESTIMONIALS } from "@/lib/testimonials";
@@ -367,13 +367,13 @@ function ProjectGrid({
       {PLAYGROUND_CARDS.length > 0 && (
         <>
           <Grid>
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <SectionLabel>Just for fun</SectionLabel>
             </Col>
           </Grid>
           <Grid className="gap-y-16">
             {PLAYGROUND_CARDS.map((card) => (
-              <Col key={`play-${card.slug}`} lg={CONTENT_BAND}>
+              <Col key={`play-${card.slug}`} md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <PlaygroundCell card={card} />
               </Col>
             ))}
@@ -427,7 +427,7 @@ function Testimonials() {
   return (
     <Grid className="gap-y-6">
       {TESTIMONIALS.map((t) => (
-        <Col key={t.author} lg={CONTENT_BAND}>
+        <Col key={t.author} md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
           <div
             className="h-full p-6"
             style={{
@@ -582,7 +582,10 @@ function StudyMediaFrame({
 
   return (
     <div
-      className="w-full overflow-hidden relative h-[400px]"
+      // 13:10 = the desktop 520×400 frame; aspect-ratio (not fixed
+      // height) so the 80vw mobile cells scale down proportionally
+      // instead of going tall-and-narrow.
+      className="w-full overflow-hidden relative aspect-[13/10]"
       style={{
         backgroundColor: STUDY_FRAME_BG,
         border: "0.5px solid var(--color-border)",

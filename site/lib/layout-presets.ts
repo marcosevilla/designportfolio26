@@ -23,6 +23,13 @@ export type ColSpec = {
  *  escapes it. */
 export const CONTENT_BAND = "4-9";
 
+/** Tablet counterpart of CONTENT_BAND ("3-10", 768–1199): keeps the
+ *  page a centered column through the tablet range instead of snapping
+ *  to full width the moment the desktop band cuts out. Slightly wider
+ *  than the desktop band (8 cols vs 6) so the 1200px hand-off is a
+ *  gentle step, not a jump. */
+export const CONTENT_BAND_MD = "3-10";
+
 export type PresetName =
   | "prose"
   | "prose-wide"
@@ -62,7 +69,7 @@ export function parseColSpec(spec: string): string {
  * where it sits); resurrect the old compositions from git if a wider
  * layout ever comes back.
  */
-const BAND: ColSpec = { lg: CONTENT_BAND };
+const BAND: ColSpec = { md: CONTENT_BAND_MD, lg: CONTENT_BAND };
 
 export const PRESETS: Record<PresetName, ColSpec[]> = {
   prose: [BAND],

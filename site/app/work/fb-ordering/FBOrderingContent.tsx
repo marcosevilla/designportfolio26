@@ -9,7 +9,7 @@ import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
-import { CONTENT_BAND } from "@/lib/layout-presets";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const TOC_ITEMS = [
@@ -36,7 +36,7 @@ export default function FBOrderingContent() {
             title (Marco's 2026-07-15 feedback pass). */}
         <FadeIn>
           <Grid className="mb-20">
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               {/* Bottom corners rounder than the top — the shot's own
                   baked corner radius peeks past an even 8px clip. */}
               <img
@@ -76,7 +76,7 @@ export default function FBOrderingContent() {
             scenes when this ran on the homepage card). */}
         <FadeIn className="pt-32">
           <Grid>
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <div
                 className="w-full overflow-hidden rounded-[10px] border border-border bg-surface-raised"
                 style={{ aspectRatio: "4 / 3" }}
@@ -119,7 +119,7 @@ export default function FBOrderingContent() {
         {/* ── Object flow diagram ── */}
         <FadeIn className="pt-16">
           <Grid>
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <ObjectFlowDiagram />
             </Col>
           </Grid>

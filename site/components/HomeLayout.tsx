@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Grid, { Col } from "@/components/layout/Grid";
-import { CONTENT_BAND } from "@/lib/layout-presets";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { RESUME_URL } from "@/lib/resume-content";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
@@ -181,7 +181,7 @@ export default function HomeLayout({
         {!aboutMeOpen && (
           <div className="max-w-(--grid-max) mx-auto w-full px-4 sm:px-8 pb-48">
             <Grid className="mt-8">
-            <Col lg={CONTENT_BAND}>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <div className="flex flex-col gap-6">
               {/* Page heading row — body-size bold name reading as a
                   label above the bio, with the site controls (time /
@@ -354,7 +354,7 @@ export default function HomeLayout({
                 email opens in the same tab via mailto). */}
             <footer className="mt-[100px]">
               <Grid>
-                <Col lg={CONTENT_BAND}>
+                <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                   <div className="flex items-center gap-5">
                     <a
                       href={RESUME_URL}

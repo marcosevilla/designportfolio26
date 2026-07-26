@@ -5,7 +5,7 @@ import TOCObserver from "./TOCObserver";
 import InlineTOC from "./InlineTOC";
 import { typescale } from "@/lib/typography";
 import Grid, { Col } from "@/components/layout/Grid";
-import { CONTENT_BAND } from "@/lib/layout-presets";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import type { TOCItem } from "@/lib/SidebarContext";
 
 export default function CaseStudyShell({
@@ -41,7 +41,7 @@ export default function CaseStudyShell({
         <div className="case-canvas px-4 sm:px-8 pt-24 lg:pt-[18vh]">
           {band ? (
             <Grid>
-              <Col lg={CONTENT_BAND}>{children}</Col>
+              <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>{children}</Col>
             </Grid>
           ) : (
             children
