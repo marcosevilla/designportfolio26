@@ -17,22 +17,25 @@ function scaledClamp(min: string, preferred: string, max: string): string {
 }
 
 export const typescale = {
-  /** Hero H1 — matches the homepage "Marco Sevilla" h1: body-scale
-   *  bold label, not display type (2026-07-20 case-study alignment). */
+  /** Case-study H1 — back at display scale (2026-07-26): long study
+   *  pages need a skimmable skeleton, and a body-scale title gave them
+   *  none. The homepage h1 keeps its own inline 16px spec — this scale
+   *  is for study pages only. */
   display: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaled("16px"),
+    fontSize: scaledClamp("28px", "5vw", "32px"),
     fontWeight: 600,
-    lineHeight: "24px",
+    lineHeight: 1.2,
     letterSpacing: "-0.02em",
   } as CSSProperties,
 
-  /** Case Study Hero title — same body-scale label as `display`. */
+  /** Case Study Hero title — same display scale as `display`
+   *  (LockGate page placeholders share it). */
   caseStudyHero: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaled("16px"),
+    fontSize: scaledClamp("28px", "5vw", "32px"),
     fontWeight: 600,
-    lineHeight: "24px",
+    lineHeight: 1.2,
     letterSpacing: "-0.02em",
   } as CSSProperties,
 

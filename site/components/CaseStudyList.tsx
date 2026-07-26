@@ -410,7 +410,7 @@ function StudyMarquee({
     >
       <div className="work-marquee-track">
         {studies.map((study) => (
-          <div key={study.slug} className="w-[420px] max-w-[80vw] shrink-0">
+          <div key={study.slug} className="w-[520px] max-w-[80vw] shrink-0">
             <StudyCell study={study} onPreview={onPreview} />
           </div>
         ))}
@@ -582,7 +582,7 @@ function StudyMediaFrame({
 
   return (
     <div
-      className="w-full overflow-hidden relative h-[323px]"
+      className="w-full overflow-hidden relative h-[400px]"
       style={{
         backgroundColor: STUDY_FRAME_BG,
         border: "0.5px solid var(--color-border)",
