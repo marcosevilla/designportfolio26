@@ -4,6 +4,7 @@ import AutoplayVideo from "@/components/AutoplayVideo";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
 import FadeIn from "@/components/case-study/FadeIn";
+import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
@@ -178,14 +179,15 @@ export default function FBOrderingContent() {
           </Grid>
         </FadeIn>
 
-        {/* ── Next Project — hidden for now (Marco 2026-07-15) ──
+        {/* ── Next Project — restored 2026-07-26: the flagship study
+            ended with no forward path (reflection bullets, then nothing) ── */}
         <FadeIn>
           <NextProject
-            title="Compendium"
+            title="Digital Compendium"
             subtitle="Building a scalable hotel CMS platform from scratch"
             href="/work/compendium"
           />
-        </FadeIn> */}
+        </FadeIn>
     </CaseStudyShell>
   );
 }

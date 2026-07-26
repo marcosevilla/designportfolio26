@@ -318,10 +318,13 @@ export default function CompendiumContent() {
 
         {/* ── Next Project ── */}
         <FadeIn>
+          {/* Points at F&B (ungated) — Upsells is still password-locked,
+              so readers who finished the study were hitting a wall.
+              Restore the Upsells link when it ships publicly. */}
           <NextProject
-            title="Upsells Forms"
-            subtitle="A configurable form system for hotel upsell purchases"
-            href="/work/upsells"
+            title="F&B Mobile Ordering"
+            subtitle="A 0-to-1 food & beverage ordering platform for hotels"
+            href="/work/fb-ordering"
           />
         </FadeIn>
     </CaseStudyShell>

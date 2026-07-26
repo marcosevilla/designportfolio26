@@ -30,7 +30,10 @@ export default function AutoplayVideo(props: Props) {
           el.pause();
         }
       },
-      { threshold: 0.2 }
+      // rootMargin starts playback ~half a viewport before the video
+      // scrolls in — poster-less videos were painting blank frames for
+      // fast scrollers. Offscreen-pause still kicks in past that band.
+      { threshold: 0.2, rootMargin: "50% 0px 50% 0px" }
     );
     io.observe(el);
     return () => io.disconnect();
