@@ -489,11 +489,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // Shared title + description block — same typography across case
 // studies and playground items so the grid reads as one consistent
-// composition.
-// PARKED 2026-07-15: cards went pure-visual, so nothing renders this
-// right now. Kept intact (with the note slot for locked studies) so
-// captions can come back with one line per cell.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// composition. Remounted 2026-07-26 under the marquee cells: hover-only
+// cursor titles left cards anonymous at scan speed (and untitled on
+// touch, where hover never fires).
 function CellCaption({
   title,
   description,
@@ -508,7 +506,7 @@ function CellCaption({
   return (
     <div className="flex flex-col gap-2">
       <h3
-        className="flex items-baseline gap-2.5"
+        className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1"
         style={{
           fontFamily: "var(--font-sans)",
           fontSize: "calc(16px + var(--font-size-offset))",
@@ -522,6 +520,7 @@ function CellCaption({
         {note && (
           <span
             style={{
+              whiteSpace: "nowrap",
               fontFamily:
                 "var(--font-geist-mono), ui-monospace, Menlo, monospace",
               fontSize: 10,
@@ -730,13 +729,18 @@ function StudyCell({
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
 
-  // Pure-visual cells (2026-07-15 pass): no caption — the media frame
-  // is the whole card. Titles/descriptions are parked in CellCaption
-  // below and the study metadata if we want them back. The link's
-  // aria-label still carries the study title for screen readers, and
-  // the lock affordances live on the frame (LockedFrameBadge + LockGate
-  // hover badge).
-  const cellInner = <StudyMediaFrame study={study} locked={locked} />;
+  // Media frame + persistent caption (title, with the study's outcome
+  // metric as the mono note; locked studies read "Coming soon"). The
+  // cursor chat-bubble still mirrors the title on hover.
+  const cellInner = (
+    <div className="flex flex-col gap-3">
+      <StudyMediaFrame study={study} locked={locked} />
+      <CellCaption
+        title={study.title}
+        note={locked ? "Coming soon" : study.metric}
+      />
+    </div>
+  );
 
   // Studies with a dedicated route link out; the rest are static media
   // cells (the fullscreen gallery carousel was removed 2026-07-14).
