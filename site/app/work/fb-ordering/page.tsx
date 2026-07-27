@@ -4,11 +4,11 @@ import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
 
 export const metadata: Metadata = {
-  title: "F&B Mobile Ordering — Marco Sevilla",
+  title: "Modernizing food & beverage ordering for hotels — Marco Sevilla",
   description:
     "A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.",
   openGraph: {
-    title: "F&B Mobile Ordering — Marco Sevilla",
+    title: "Modernizing food & beverage ordering for hotels — Marco Sevilla",
     description:
       "A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.",
   },

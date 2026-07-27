@@ -9,11 +9,11 @@ import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
-import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const TOC_ITEMS = [
-  { id: "solution", label: "Solution" },
+  { id: "context", label: "Context" },
+  { id: "approach", label: "Approach" },
   { id: "research", label: "Research" },
   { id: "impact", label: "Impact" },
   { id: "reflection", label: "Reflection" },
@@ -36,21 +36,17 @@ export default function FBOrderingContent() {
             title (Marco's 2026-07-15 feedback pass). */}
         <FadeIn>
           <Grid className="mb-20">
-            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-              {/* Bottom corners rounder than the top — the shot's own
-                  baked corner radius peeks past an even 8px clip. */}
+            {/* Two columns wider than the content band on each side —
+                the dashboard shot breaks out of the text measure. */}
+            <Col md="1-12" lg="2-11">
+              {/* The export bakes its own rounded frame + shadow — no CSS
+                  radius, outline, or shadow on top. */}
               <img
                 src="/images/fb-ordering/fb-ordering-dashboard.webp"
-                alt="Staff order detail with approve/deny"
-                className="w-full image-outline"
-                width={1600}
-                height={936}
-                style={{
-                  borderRadius: "8px 8px 18px 18px",
-                  // Same 3-stop ambient lift as the DeviceShell specimens.
-                  boxShadow:
-                    "0 1px 2px rgba(0, 0, 0, 0.05), 0 12px 28px rgba(0, 0, 0, 0.08), 0 32px 56px rgba(0, 0, 0, 0.06)",
-                }}
+                alt="Staff order dashboard with new-order queue and a scheduled order detail panel"
+                className="w-full"
+                width={1920}
+                height={1247}
               />
             </Col>
           </Grid>
@@ -59,12 +55,10 @@ export default function FBOrderingContent() {
         {/* Title + subtitle with metadata rail (intro-rail) */}
         <Grid preset="intro-rail">
           <Col>
-            <h1 className="text-(--color-fg)" style={typescale.display}>F&B Mobile Ordering</h1>
-            <p className="mt-3 italic text-(--color-fg-tertiary)">Warning: this case study may induce hunger.</p>
-            <p className="mt-3 text-(--color-fg-secondary)">I designed a 0-to-1 food &amp; beverage ordering platform for hotels, the newest addition to Canary&#39;s suite of revenue products. Guests&#39; late-night munchies were increasingly going to DoorDash instead of the front desk, so we rebuilt room service to be modern, convenient, and visually enticing. Four months to MVP, $23K in committed ARR five weeks after launch.</p>
-            {/* Problem section folded into the intro (Marco 2026-07-15) */}
-            <p className="mt-3 text-(--color-fg-secondary)">One hotel we spoke to ran breakfast on door hangers. Guests forgot to hang them, staff missed pickups, and complaints piled up. At most properties the alternative was the front desk phone: misheard orders, tied-up staff, and enough friction that guests simply gave up. Meanwhile, Canary was losing deals in APAC markets where mobile ordering is table stakes.</p>
-            <p className="mt-3 text-(--color-fg-secondary)">Canary&#39;s Guest Hub was still a static content product. F&amp;B ordering would make it transactional: a revenue engine, not just an info layer. The discipline was scope: no marketplaces, no kitchen software. Just get a guest&#39;s order to staff efficiently.</p>
+            <h1 className="text-(--color-fg)" style={typescale.display}>Modernizing food &amp; beverage ordering for hotels</h1>
+            <p className="mt-3 text-(--color-fg-secondary)">I designed a 0-1 food &amp; beverage ordering platform specifically for hotels. This was the latest addition to Canary&apos;s suite of products aimed at increasing hotel efficiency and increasing their ancillary revenue. Through a scrappy and highly iterative approach, our team developed launched the MVP in about four months to several pilot customers and over $50k in committed ARR.</p>
+            {/* Solution paragraphs folded into the intro (Marco 2026-07-26) */}
+            <p className="mt-3 text-(--color-fg-secondary)">We built a mobile-first ordering experience for our guests that served as an extension to our existing guest experience platform. Guests can browse available menu items, add to their carts, and then send their orders to hotel staff easily. To manage inbound orders, we built a dashboard and notification system that enabled operators to easily notify their kitchen staff and complete fulfillment.</p>
           </Col>
           <Col className="mt-8 lg:mt-2">
             <MetaRail items={META} />
@@ -76,7 +70,7 @@ export default function FBOrderingContent() {
             scenes when this ran on the homepage card). */}
         <FadeIn className="pt-32">
           <Grid>
-            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+            <Col md="1-12" lg="2-11">
               <div
                 className="w-full overflow-hidden rounded-[10px] border border-border bg-surface-raised"
                 style={{ aspectRatio: "4 / 3" }}
@@ -90,22 +84,58 @@ export default function FBOrderingContent() {
           </Grid>
         </FadeIn>
 
-        {/* ── The Solution ── */}
+        {/* ── Staff dashboard crops — 2-up image grid on the video's
+            band. The exports float on transparency, so each cell gets
+            a themeable surface fill + hairline border. */}
+        <FadeIn className="pt-6">
+          <Grid>
+            <Col md="1-12" lg="2-11">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="overflow-hidden rounded-[10px] border border-border bg-surface-raised">
+                  <img
+                    src="/images/fb-ordering/fb-order-queue.webp"
+                    alt="New-orders queue sorted by expected delivery time with urgency badges"
+                    className="w-full"
+                    width={1200}
+                    height={1200}
+                  />
+                </div>
+                <div className="overflow-hidden rounded-[10px] border border-border bg-surface-raised">
+                  <img
+                    src="/images/fb-ordering/fb-order-details.webp"
+                    alt="Scheduled order detail panel with guest contact info and order items"
+                    className="w-full"
+                    width={1200}
+                    height={1200}
+                  />
+                </div>
+              </div>
+            </Col>
+          </Grid>
+        </FadeIn>
+
+        {/* ── Context — the problem paragraphs, moved out of the intro
+            below the video (Marco 2026-07-26) ── */}
         <FadeIn as="section" className="scroll-mt-24 pt-32">
           <Grid preset="media-right">
             <Col>
-              <SectionHeading id="solution">The Solution</SectionHeading>
+              <SectionHeading id="context">Context</SectionHeading>
+              <p className="mb-5">Guests&#39; late-night munchies were increasingly going to DoorDash instead of the front desk, so we rebuilt room service to be modern, convenient, and visually enticing. One hotel we spoke to ran breakfast on door hangers. Guests forgot to hang them, staff missed pickups, and complaints piled up. At most properties the alternative was the front desk phone: misheard orders, tied-up staff, and enough friction that guests simply gave up. Meanwhile, Canary was losing deals in APAC markets where mobile ordering is table stakes.</p>
+              <p className="mb-5">Canary&#39;s Guest Hub was still a static content product. F&amp;B ordering would make it transactional: a revenue engine, not just an info layer. The discipline was scope: no marketplaces, no kitchen software. Just get a guest&#39;s order to staff efficiently.</p>
+            </Col>
+          </Grid>
+        </FadeIn>
+
+        {/* ── Our approach ── */}
+        <FadeIn as="section" className="scroll-mt-24 pt-32">
+          <Grid preset="media-right">
+            <Col>
+              <SectionHeading id="approach">Our approach</SectionHeading>
               <p className="mb-5">
-                We built a mobile-first ordering experience for our guests that served as an extension to our existing guest experience platform. Guests can browse available menu items, add to their carts, and then send their orders to hotel staff easily.
-              </p>
-              <p className="mb-5">
-                To manage inbound orders, we built a dashboard and notification system that enabled operators to easily notify their kitchen staff and complete fulfillment. There were four major decisions that defined the design:
+                There were four major decisions that defined the design:
               </p>
             </Col>
-            {/* The four decisions run as a numbered list in the media
-                column, top-aligned with the first paragraph (88px =
-                heading mt-12 + 28px line + mb-3). */}
-            <Col className="mt-8 lg:mt-[88px]">
+            <Col>
               <ol className="list-decimal pl-5 space-y-2">
                 <li><span className="font-medium text-(--color-fg)">Built upon our existing infrastructure:</span> fast implementation was important in order to go-to-market quickly. We designed mobile ordering as an extension to our existing guest experience and upselling platforms using similar patterns, but tweaked to match food &amp; beverage use cases.</li>
                 <li><span className="font-medium text-(--color-fg)">Delivery type drives the experience:</span> hotel customers wanted to go beyond in-room dining in order to expand channels for revenue. We had to design a flow that flexibly allowed for alternative locations such as orders delivered poolside, or to the hotel lounge.</li>
@@ -119,7 +149,7 @@ export default function FBOrderingContent() {
         {/* ── Object flow diagram ── */}
         <FadeIn className="pt-16">
           <Grid>
-            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+            <Col md="1-12" lg="2-11">
               <ObjectFlowDiagram />
             </Col>
           </Grid>

@@ -15,6 +15,11 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // The inline-editor toolbar owns the bottom-left corner (Marco 2026-07-26);
+  // Next's dev indicator would sit right under it there.
+  devIndicators: {
+    position: "bottom-right",
+  },
   // /work and /play index pages were removed May 2026 — the homepage owns
   // both surfaces. Server-side redirects replace the old blank client-side
   // stub pages (instant, crawler-friendly, no JS needed).
