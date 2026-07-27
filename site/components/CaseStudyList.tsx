@@ -386,11 +386,68 @@ function ProjectGrid({
 
 // ── Work marquee ──
 
-// Full-bleed horizontal strip of the work cards. Statically scrollable
-// (overflow-x on ".work-marquee" in globals.css, scrollbar hidden) —
-// the neesh.cc-style auto-scroll conveyor was retired 2026-07-20, so
-// there's no track duplication or animation machinery anymore; the
-// partially visible card at the viewport edge affords the scroll.
+// Marquee-only display copy (Paper mockup, "project marquee" page,
+// 2026-07-27) — presentation overrides, the MDX frontmatter and case
+// study pages keep their own titles. `description` is the focused-state
+// reveal: what Marco did, what he produced, and the product's value.
+const MARQUEE_DISPLAY: Record<
+  string,
+  { title: string; org: string; year: string; description: string }
+> = {
+  "fb-ordering": {
+    title: "Food & Beverage Ordering Platform",
+    org: "Canary Technologies",
+    year: "2026",
+    description:
+      "Designed 0-1 food & beverage platform for hotels end-to-end – mobile ordering experience for guests, content management system, and staff order management.",
+  },
+  compendium: {
+    title: "Guest Experience Hub & CMS",
+    org: "Canary Technologies",
+    year: "2025",
+    description:
+      "Designed a hotel CMS platform from scratch – structured content builder for staff, guest-facing mobile hub, and the foundation now driving $1M+ CARR.",
+  },
+  upsells: {
+    title: "Hotel Upsells",
+    org: "Canary Technologies",
+    year: "2026",
+    description:
+      "Redesigned hotel upselling as a configurable form system – flexible offer builder, guest purchase flow, and staff fulfillment workflows driving $3.8M CARR.",
+  },
+  checkin: {
+    title: "Expedited Guest Check-in",
+    org: "Canary Technologies",
+    year: "2024",
+    description:
+      "Modernized digital check-in for the world's largest hotel chains – guest identity verification, payment capture, and front-desk tooling live at 4,500+ hotels.",
+  },
+  "general-task": {
+    title: "Task Management for Knowledge Workers",
+    org: "General Task",
+    year: "2024",
+    description:
+      "Founding designer for a 0-1 productivity tool – unified tasks, calendar, and engineering workflows in one hub for knowledge workers.",
+  },
+  "design-system": {
+    title: "Building a Design System & Visual Language",
+    org: "General Task",
+    year: "2025",
+    description:
+      "Built General Task's visual language from zero – design tokens, a component library, and interaction patterns powering every product surface.",
+  },
+};
+
+// Must match the .work-marquee-track gap in globals.css.
+const MARQUEE_GAP_PX = 24;
+
+// Full-bleed horizontal strip of the work cards. Snap-scroll carousel
+// (2026-07-27, replaces the free overflow-x strip): one "slot" sits at
+// the content-band start — the same rest position the padding math
+// below always produced — and CSS scroll-snap (mandatory + stop:
+// always in globals.css) magnetically pulls the nearest card into it,
+// one card per swipe. The card occupying the slot grows into the
+// focused state (panel chrome + description reveal) via .mq-cell CSS.
 function StudyMarquee({
   studies,
   onPreview,
@@ -398,8 +455,25 @@ function StudyMarquee({
   studies: CaseStudyMeta[];
   onPreview: (slug: string) => void;
 }) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
+  // Which card owns the slot — cells are uniform width, so the nearest
+  // snap index falls straight out of scrollLeft / (cell + gap). Runs on
+  // every scroll frame; React bails out when the index is unchanged.
+  const handleScroll = () => {
+    const scroller = scrollerRef.current;
+    const cell = scroller?.querySelector<HTMLElement>(".work-marquee-cell");
+    if (!scroller || !cell) return;
+    const stride = cell.offsetWidth + MARQUEE_GAP_PX;
+    const idx = Math.round(scroller.scrollLeft / stride);
+    setFocusedIndex(Math.max(0, Math.min(studies.length - 1, idx)));
+  };
+
   return (
     <div
+      ref={scrollerRef}
+      onScroll={handleScroll}
       className="work-marquee"
       style={{
         // Full-bleed breakout from the 1128px editorial canvas (body
@@ -409,9 +483,16 @@ function StudyMarquee({
       }}
     >
       <div className="work-marquee-track">
-        {studies.map((study) => (
-          <div key={study.slug} className="w-[520px] max-w-[80vw] shrink-0">
-            <StudyCell study={study} onPreview={onPreview} />
+        {studies.map((study, i) => (
+          <div
+            key={study.slug}
+            className="work-marquee-cell w-[520px] max-w-[80vw] shrink-0"
+          >
+            <StudyCell
+              study={study}
+              onPreview={onPreview}
+              focused={i === focusedIndex}
+            />
           </div>
         ))}
       </div>
@@ -487,29 +568,26 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Shared title + description block — same typography across case
-// studies and playground items so the grid reads as one consistent
-// composition. Remounted 2026-07-26 under the marquee cells: hover-only
-// cursor titles left cards anonymous at scan speed (and untitled on
-// touch, where hover never fires).
-function CellCaption({
+// Marquee title row (Paper mockup 2026-07-27, moved ABOVE the media
+// frame 2026-07-27 pm): title left, mono COMPANY • YEAR pinned to the
+// right edge. Replaced the title+metric CellCaption of 2026-07-26.
+function MarqueeTitleRow({
   title,
-  description,
-  note,
+  meta,
 }: {
   title: string;
-  description?: string;
-  /** Small mono status label rendered to the right of the title
-   *  (e.g. "Coming soon" on locked studies). */
-  note?: string;
+  /** Mono right-edge label — "Company • Year". */
+  meta?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    // flex-wrap: on narrow (80vw) mobile cells the nowrap meta label
+    // drops to its own line instead of crushing the title into
+    // one-word-per-line wrapping.
+    <div className="flex flex-wrap items-baseline justify-between gap-x-2.5 gap-y-0.5 self-stretch">
       <h3
-        className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1"
         style={{
           fontFamily: "var(--font-sans)",
-          fontSize: "calc(16px + var(--font-size-offset))",
+          fontSize: "calc(14px + var(--font-size-offset))",
           fontWeight: 500,
           letterSpacing: "-0.01em",
           lineHeight: "22px",
@@ -517,38 +595,52 @@ function CellCaption({
         }}
       >
         {title}
-        {note && (
-          <span
-            style={{
-              whiteSpace: "nowrap",
-              fontFamily:
-                "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: 10,
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--color-fg-tertiary)",
-            }}
-          >
-            {note}
-          </span>
-        )}
       </h3>
-      {description && (
+      {meta && (
+        <span
+          style={{
+            whiteSpace: "nowrap",
+            fontFamily:
+              "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+            fontSize: "calc(12px + var(--font-size-offset))",
+            fontWeight: 400,
+            textTransform: "uppercase",
+            letterSpacing: "-0.02em",
+            lineHeight: "22px",
+            color: "color-mix(in srgb, var(--color-fg) 62%, var(--color-bg))",
+          }}
+        >
+          {meta}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// Focused-state description, below the media frame. Rendered collapsed
+// on resting cards so the expand is a pure CSS grid-rows transition (no
+// mount/unmount pop). The media→description gap lives INSIDE the
+// collapsing row as padding — mounted as a flex sibling with the cell's
+// gap, a collapsed row would still leave a dead gap at rest — and
+// matches the .mq-cell gap so all three content rows space equally.
+function MarqueeDescription({ text }: { text: string }) {
+  return (
+    <div className="mq-desc">
+      <div style={{ overflow: "hidden" }}>
         <p
           style={{
+            paddingTop: 16,
             fontFamily: "var(--font-sans)",
             fontSize: "calc(14px + var(--font-size-offset))",
             fontWeight: 400,
             letterSpacing: "-0.01em",
             lineHeight: "22px",
             color: "var(--color-fg-secondary)",
-            textWrap: "balance",
           }}
         >
-          {description}
+          {text}
         </p>
-      )}
+      </div>
     </div>
   );
 }
@@ -582,10 +674,11 @@ function StudyMediaFrame({
 
   return (
     <div
-      // 13:10 = the desktop 520×400 frame; aspect-ratio (not fixed
-      // height) so the 80vw mobile cells scale down proportionally
-      // instead of going tall-and-narrow.
-      className="w-full overflow-hidden relative aspect-[13/10]"
+      // 13:10 aspect so the 80vw mobile cells scale down proportionally
+      // instead of going tall-and-narrow. At ≥768px .mq-frame pins the
+      // height to 400px flat (globals.css) — identical media dimensions
+      // on every card in both marquee states.
+      className="mq-frame w-full overflow-hidden relative aspect-[13/10]"
       style={{
         backgroundColor: STUDY_FRAME_BG,
         border: "0.5px solid var(--color-border)",
@@ -725,48 +818,58 @@ function StudyMediaFrame({
 function StudyCell({
   study,
   onPreview,
+  focused,
 }: {
   study: CaseStudyMeta;
   onPreview: (slug: string) => void;
+  /** True while this card occupies the marquee slot — grows the panel
+   *  chrome + description via the .mq-cell--focused CSS transitions. */
+  focused: boolean;
 }) {
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
+  const display = MARQUEE_DISPLAY[study.slug];
+  const displayTitle = display?.title ?? study.title;
 
-  // Media frame + persistent caption (title, with the study's outcome
-  // metric as the mono note; locked studies read "Coming soon"). The
-  // cursor chat-bubble still mirrors the title on hover.
+  // Three content rows — title/meta ABOVE the media, description below
+  // it — with equal spacing between rows (cell gap + the description's
+  // internal padding both = 16px). Cell geometry is identical in both
+  // states: in the slot only the panel background/border fade in and
+  // the description expands, so media never changes dimensions. The
+  // "Coming soon" note is gone per the 2026-07-27 mock — LockGate's
+  // hover overlay + click gate still carry the locked state. The media
+  // + description share a wrapper so the collapsed description doesn't
+  // eat a flex gap of its own at rest.
   const cellInner = (
-    <div className="flex flex-col gap-3">
-      <StudyMediaFrame study={study} locked={locked} />
-      <CellCaption
-        title={study.title}
-        note={locked ? "Coming soon" : study.metric}
+    <div className={`mq-cell${focused ? " mq-cell--focused" : ""}`}>
+      <MarqueeTitleRow
+        title={displayTitle}
+        meta={display ? `${display.org} • ${display.year}` : study.metric}
       />
+      <div className="flex flex-col self-stretch">
+        <StudyMediaFrame study={study} locked={locked} />
+        {display?.description && (
+          <MarqueeDescription text={display.description} />
+        )}
+      </div>
     </div>
   );
 
   // Studies with a dedicated route link out; the rest are static media
   // cells (the fullscreen gallery carousel was removed 2026-07-14).
-  // Cursor chat-bubble reveal (2026-07-15): the pure-visual cells give
-  // their title back through the cursor label instead of a caption.
-  const labelHandlers = {
-    onMouseEnter: () => setCursorLabel(study.title),
-    onMouseLeave: () => setCursorLabel(null),
-  };
-
+  // Cursor chat-bubble label DISABLED on project cards 2026-07-27
+  // (Marco — the always-visible title row above the media made it
+  // redundant); playground cells still use it.
   const cell = href ? (
     <Link
       href={href}
-      aria-label={`Open case study — ${study.title}`}
+      aria-label={`Open case study — ${displayTitle}`}
       className="flex flex-col h-full w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)"
-      {...labelHandlers}
     >
       {cellInner}
     </Link>
   ) : (
-    <div className="flex flex-col h-full w-full text-left" {...labelHandlers}>
-      {cellInner}
-    </div>
+    <div className="flex flex-col h-full w-full text-left">{cellInner}</div>
   );
 
   return (
@@ -774,7 +877,6 @@ function StudyCell({
       mode="card"
       locked={locked}
       onActivate={() => onPreview(study.slug)}
-      cursorLabel={study.title}
     >
       {cell}
     </LockGate>

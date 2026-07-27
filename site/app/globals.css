@@ -1114,14 +1114,36 @@ body {
 }
 
 /* ── Work marquee ──────────────────────────────────────────────────────
-   Full-bleed horizontal strip of the homepage work cards (StudyMarquee
-   in components/CaseStudyList.tsx). Statically scrollable — the
-   auto-scroll conveyor was retired 2026-07-20 (Marco's call), so this
-   is a plain overflow-x row with the scrollbar hidden; partially
-   visible cards at the viewport edge afford the scroll. */
+   Full-bleed snap-scroll carousel of the homepage work cards
+   (StudyMarquee in components/CaseStudyList.tsx). One "slot" sits at
+   the content-band start (bio text's left edge — col 4 at lg, col 3 at
+   md, page padding on phone): scroll-snap magnetically pulls the
+   nearest card into it on release, one card per swipe (snap-stop), and
+   the slotted card grows into the focused state below. The free
+   overflow-x strip era ended 2026-07-27 (Paper mock, "project marquee"
+   page); the auto-scroll conveyor before it, 2026-07-20. */
 .work-marquee {
   overflow-x: auto;
   scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  /* Slot offset — mirrors the canvas math in HomeLayout (max-w
+     --grid-max, px-4 sm:px-8). Lives here (not on the track) so the
+     track's padding-inline and the scroller's scroll-padding resolve
+     from the same vars: snap position = the old rest position. */
+  --mq-pad: 16px;
+  --mq-cols: 0;
+  --mq-canvas: min(var(--grid-max), 100vw);
+  --mq-col: calc(
+    (var(--mq-canvas) - 2 * var(--mq-pad) - 11 * var(--grid-gap)) / 12
+  );
+  --mq-inset: calc(
+    (100vw - var(--mq-canvas)) / 2 + var(--mq-pad) +
+      var(--mq-cols) * (var(--mq-col) + var(--grid-gap))
+  );
+  scroll-padding-inline: var(--mq-inset);
+  /* Focused-state transitions share one organic curve. */
+  --mq-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --mq-dur: 450ms;
 }
 
 .work-marquee::-webkit-scrollbar {
@@ -1131,36 +1153,96 @@ body {
 .work-marquee-track {
   display: flex;
   width: max-content;
-  gap: 24px;
-  /* Rest position aligns card 1 with the bio text's left edge (the
-     content band start: col 4 at lg, col 3 at md, page padding on
-     phone) so the strip has a clear "start". Cards still scroll
-     full-bleed past the padding; the mirrored right padding gives the
-     last card the same resting edge. Mirrors the canvas math in
-     HomeLayout (max-w --grid-max, px-4 sm:px-8). */
-  --mq-pad: 16px;
-  --mq-cols: 0;
-  --mq-canvas: min(var(--grid-max), 100vw);
-  --mq-col: calc(
-    (var(--mq-canvas) - 2 * var(--mq-pad) - 11 * var(--grid-gap)) / 12
-  );
-  padding-inline: calc(
-    (100vw - var(--mq-canvas)) / 2 + var(--mq-pad) +
-      var(--mq-cols) * (var(--mq-col) + var(--grid-gap))
-  );
+  gap: 24px; /* MARQUEE_GAP_PX in CaseStudyList.tsx must match */
+  /* The mirrored right padding gives the last card the same resting
+     edge, so every card can reach the slot. */
+  padding-inline: var(--mq-inset);
 }
+
+.work-marquee-cell {
+  scroll-snap-align: start;
+  /* The "resistance": a swipe settles on the adjacent card instead of
+     flinging past several. */
+  scroll-snap-stop: always;
+}
+
 @media (min-width: 640px) {
-  .work-marquee-track {
+  .work-marquee {
     --mq-pad: 32px;
   }
 }
 @media (min-width: 768px) {
-  .work-marquee-track {
+  .work-marquee {
     --mq-cols: 2;
   }
 }
 @media (min-width: 1200px) {
-  .work-marquee-track {
+  .work-marquee {
     --mq-cols: 3;
+  }
+}
+
+/* Card states (Paper mock "project marquee", 2026-07-27; geometry
+   unified 2026-07-27 pm — Marco: every card carries the focused
+   padding/gap at rest, so media NEVER changes dimensions). The only
+   focus transforms: panel background/border fading in, and the
+   vertical growth of the description expanding. */
+.mq-cell {
+  display: flex;
+  flex-direction: column;
+  /* Row rhythm — must match MarqueeDescription's internal paddingTop
+     so title→media and media→description gaps stay equal. */
+  gap: 16px;
+  padding: 12px 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background-color: transparent;
+  transition:
+    background-color var(--mq-dur) var(--mq-ease),
+    border-color var(--mq-dur) var(--mq-ease);
+}
+
+.mq-cell--focused {
+  background-color: color-mix(in srgb, var(--color-fg) 5%, var(--color-bg));
+  border-color: var(--color-border);
+}
+
+/* Description reveal — grid-rows 0fr→1fr collapse (the row's 12px top
+   gap is padding inside it, so it collapses too). */
+.mq-desc {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--mq-dur) var(--mq-ease),
+    opacity 350ms var(--mq-ease);
+}
+
+.mq-cell--focused .mq-desc {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* ≥768px the cells are a fixed 520 wide (media 494 inside the uniform
+   panel padding), so pin the media frame to a flat 400px height — every
+   card's media shares identical dimensions and edges in both states.
+   Below 768 the aspect ratio governs (cells are 80vw). */
+@media (min-width: 768px) {
+  .work-marquee-cell .mq-frame {
+    height: 400px;
+    aspect-ratio: auto;
+  }
+  /* Reserve the focused card's expanded height so content below the
+     marquee doesn't bounce mid-transition (both descriptions briefly
+     half-collapsed → track momentarily shorter than either endpoint). */
+  .work-marquee-track {
+    min-height: 550px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq-cell,
+  .mq-desc {
+    transition: none;
   }
 }
