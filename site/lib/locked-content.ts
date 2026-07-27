@@ -6,7 +6,7 @@
  */
 export const LOCKED_SLUGS: ReadonlySet<string> = new Set([
   // Work case studies
-  // "compendium" unlocked 2026-07-18 after content pass
+  "compendium", // re-locked 2026-07-27 (unlocked 2026-07-18, pulled back to in-progress)
   "knowledge-base",
   "upsells",
   "checkin",

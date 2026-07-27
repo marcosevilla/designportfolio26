@@ -6,6 +6,7 @@ import "server-only";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { STUDY_SLUGS, type StudySlug } from "./study-metadata";
+import { isLocked } from "@/lib/locked-content";
 
 // case-studies/ lives at the repo root, not under site/.
 // process.cwd() in a Vercel Node function is the project root (which for
@@ -42,6 +43,9 @@ function stripChatExcluded(md: string, source: string): string {
 }
 
 function readStudy(slug: StudySlug): string {
+  // Locked (in-progress) studies stay metadata-only in chat — the full draft
+  // would leak content the LockGate is holding back.
+  if (isLocked(slug)) return "";
   const filename = FILENAME_BY_SLUG[slug];
   if (!filename) return "";
   try {
