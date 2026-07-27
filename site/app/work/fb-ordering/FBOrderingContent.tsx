@@ -19,6 +19,10 @@ const TOC_ITEMS = [
   { id: "reflection", label: "Reflection" },
 ];
 
+// Mirrors ObjectFlowDiagram's panel fill (3% F&B accent over card-bg)
+// so every dashboard visual on the page shares one surface color.
+const FB_PANEL_BG = "color-mix(in srgb, #EF5A3C 3%, var(--color-card-bg))";
+
 const META = [
   { label: "Year", values: ["2025–2026"] },
   {
@@ -56,7 +60,7 @@ export default function FBOrderingContent() {
         <Grid preset="intro-rail">
           <Col>
             <h1 className="text-(--color-fg)" style={typescale.display}>Modernizing food &amp; beverage ordering for hotels</h1>
-            <p className="mt-3 text-(--color-fg-secondary)">I designed a 0-1 food &amp; beverage ordering platform specifically for hotels. This was the latest addition to Canary&apos;s suite of products aimed at increasing hotel efficiency and increasing their ancillary revenue. Through a scrappy and highly iterative approach, our team developed launched the MVP in about four months to several pilot customers and over $50k in committed ARR.</p>
+            <p className="mt-6 text-(--color-fg-secondary)">I designed a 0-1 food &amp; beverage ordering platform specifically for hotels. This was the latest addition to Canary&apos;s suite of products aimed at increasing hotel efficiency and increasing their ancillary revenue. Through a scrappy and highly iterative approach, our team developed launched the MVP in about four months to several pilot customers and over $50k in committed ARR.</p>
             {/* Solution paragraphs folded into the intro (Marco 2026-07-26) */}
             <p className="mt-3 text-(--color-fg-secondary)">We built a mobile-first ordering experience for our guests that served as an extension to our existing guest experience platform. Guests can browse available menu items, add to their carts, and then send their orders to hotel staff easily. To manage inbound orders, we built a dashboard and notification system that enabled operators to easily notify their kitchen staff and complete fulfillment.</p>
           </Col>
@@ -84,32 +88,45 @@ export default function FBOrderingContent() {
           </Grid>
         </FadeIn>
 
-        {/* ── Staff dashboard crops — 2-up image grid on the video's
-            band. The exports float on transparency, so each cell gets
-            a themeable surface fill + hairline border. */}
+        {/* ── Staff dashboard crops — alternating media rows on the
+            video's band (Marco 2026-07-26: was a 2-up grid). The
+            exports float on transparency; the fill mirrors
+            ObjectFlowDiagram's panel (3% F&B accent over card-bg) so
+            the dashboard visuals read as one family. Caption copy is
+            draft — Marco rewrites via the inline editor. */}
         <FadeIn className="pt-6">
           <Grid>
-            <Col md="1-12" lg="2-11">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="overflow-hidden rounded-[10px] border border-border bg-surface-raised">
-                  <img
-                    src="/images/fb-ordering/fb-order-queue.webp"
-                    alt="New-orders queue sorted by expected delivery time with urgency badges"
-                    className="w-full"
-                    width={1200}
-                    height={1200}
-                  />
-                </div>
-                <div className="overflow-hidden rounded-[10px] border border-border bg-surface-raised">
-                  <img
-                    src="/images/fb-ordering/fb-order-details.webp"
-                    alt="Scheduled order detail panel with guest contact info and order items"
-                    className="w-full"
-                    width={1200}
-                    height={1200}
-                  />
-                </div>
+            <Col className="self-center" md="3-10" lg="2-5">
+              <p className="text-(--color-fg-secondary)">The order queue sorts by time to delivery, not time received. Urgency badges surface anything at risk of slipping during a breakfast rush, so staff never have to triage by memory.</p>
+            </Col>
+            <Col className="mt-6 md:mt-6 lg:mt-0" md="1-12" lg="6-11">
+              <div className="overflow-hidden rounded-[10px] border border-border" style={{ background: FB_PANEL_BG }}>
+                <img
+                  src="/images/fb-ordering/fb-order-queue.webp"
+                  alt="New-orders queue sorted by expected delivery time with urgency badges"
+                  className="w-full"
+                  width={1200}
+                  height={1200}
+                />
               </div>
+            </Col>
+          </Grid>
+        </FadeIn>
+        <FadeIn className="pt-6">
+          <Grid>
+            <Col md="1-12" lg="2-7">
+              <div className="overflow-hidden rounded-[10px] border border-border" style={{ background: FB_PANEL_BG }}>
+                <img
+                  src="/images/fb-ordering/fb-order-details.webp"
+                  alt="Scheduled order detail panel with guest contact info and order items"
+                  className="w-full"
+                  width={1200}
+                  height={1200}
+                />
+              </div>
+            </Col>
+            <Col className="mt-6 self-center md:mt-6 lg:mt-0" md="3-10" lg="8-11">
+              <p className="text-(--color-fg-secondary)">Opening an order shows everything fulfillment needs in one panel: guest contact details, room or delivery location, items with modifiers, and scheduling for orders placed ahead.</p>
             </Col>
           </Grid>
         </FadeIn>
