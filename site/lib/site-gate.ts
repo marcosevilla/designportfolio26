@@ -15,7 +15,7 @@
  * Unrelated to the per-case-study LockGate/PasswordModal system
  * (lib/locked-content.ts), which keeps its own unlock code.
  */
-export const SITE_GATE_ENABLED = true;
+export const SITE_GATE_ENABLED = false;
 
 export const SITE_GATE_COOKIE = "site-gate";
 
