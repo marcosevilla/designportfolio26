@@ -255,8 +255,8 @@ export default function AIWorkflowContent() {
           {/* Next Project */}
           <div className="mt-32 pt-16 border-t border-border">
             <NextProject
-              title="Mobile Ordering for Hotels"
-              subtitle="Designing a 0→1 mobile ordering system for hotel F&B"
+              title="F&B Mobile Ordering"
+              subtitle="A 0-to-1 food & beverage ordering platform for hotels"
               href="/work/fb-ordering"
             />
           </div>
