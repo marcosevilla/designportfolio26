@@ -73,16 +73,22 @@ for (const { w, label } of WIDTHS) {
   // Let entrance animations, blur-ins, and lazy media settle.
   await page.waitForTimeout(1200);
   // Force intersection-observer FadeIns visible by scrolling through the
-  // page slowly enough for each section's entrance to fire, then give the
-  // last animations time to finish before the full-page capture.
+  // page slowly enough for each section's entrance to fire. Two passes +
+  // a hold at the very bottom: on tall pages (compendium at ~8.7k px) a
+  // single pass left the last sections untriggered and the capture showed
+  // a blank tail — Reflection/NextProject at opacity 0 (2026-08-01).
   await page.evaluate(async () => {
     const step = Math.round(window.innerHeight * 0.7);
-    for (let y = 0; y < document.body.scrollHeight; y += step) {
-      window.scrollTo(0, y);
-      await new Promise((r) => setTimeout(r, 150));
+    for (let pass = 0; pass < 2; pass++) {
+      for (let y = 0; y < document.body.scrollHeight; y += step) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, pass === 0 ? 150 : 60));
+      }
+      window.scrollTo(0, document.body.scrollHeight);
+      await new Promise((r) => setTimeout(r, 400));
     }
     window.scrollTo(0, 0);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1800));
   });
   const file = `w${w}.png`;
   await page.screenshot({ path: join(outDir, file), fullPage: true });
