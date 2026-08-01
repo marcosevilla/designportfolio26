@@ -68,3 +68,14 @@ panels render correctly; collapsed mobile sections are the intended
 pattern. Only recurring item is the site-wide ViewportFade fold-dim
 (see the fb-ordering entry). Omni-channel + International sections
 remain text-only — known content thinness, not a rendering defect.
+
+## /work/general-task
+
+### Clean pass
+Sweep at all 5 widths × both modes (2026-08-01): stats (Y Combinator
+W23, 1,000+ signups), research/sketch/FigJam/final-design media all
+render correctly. Notably the best dark-mode page of the TwoCol era —
+its exports have dark-baked backgrounds instead of white slabs. Nit,
+not a defect: the "Visual Design" and "Final Designs" panels use
+near-identical main-screen→task-details compositions and read as
+duplicates at scan speed.
