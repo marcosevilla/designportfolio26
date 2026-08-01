@@ -6,7 +6,7 @@ and the suggested fix if Marco wants it actioned.
 
 ## /work/fb-ordering
 
-### ViewportFade dims the case-study title at rest (desktop)
+### ViewportFade dims the case-study title at rest (desktop) — site-wide class
 At 1440×900 and 1920×~900 (common laptop sizes), the hero dashboard +
 `lg:pt-[18vh]` put the h1 right at the fold, so "ordering for hotels"
 (the h1's second line) sits inside `components/ViewportFade.tsx` — the
@@ -14,6 +14,13 @@ fixed 120px bottom-of-viewport fade — and reads at ~half opacity on
 first paint, in both light and dark. Any scroll resolves it, but it's
 the first thing a recruiter sees. Verified live (not a capture
 artifact): headless Chrome at 1440×900, scrollY=0.
+
+Not fb-specific: the same fade dims whatever text crosses the fold on
+every page at lg+ (checkin's Overview second paragraph, ai-workflow's
+section intros). Worst on fb-ordering because it's the *title* there.
+The fade's terminal stop is 100% `--color-bg`, so text at the very
+bottom edge is fully erased rather than softened — a lighter terminal
+stop (~80–85%) would keep the soft-edge intent without hiding copy.
 
 **Why not fixed:** same phenomenon class as the 07-26 critique item
 ("F&B intro para-3 scroll-fade reads half-opacity in static
@@ -51,3 +58,13 @@ correctly in both layouts, TwoCol band centers, Reflection/quotes fine
 in dark. The page's only visual problem is the known ~17
 ImagePlaceholder frames awaiting Figma exports (the reason it's still
 locked) — media work, not a code defect. No action from the QA loop.
+
+## /work/checkin
+
+### Clean pass
+Sweep at all 5 widths × both modes (2026-08-01): refreshed stats
+(~6,000 Wyndham portfolio), Wenjun Zhao PullQuote, and all five image
+panels render correctly; collapsed mobile sections are the intended
+pattern. Only recurring item is the site-wide ViewportFade fold-dim
+(see the fb-ordering entry). Omni-channel + International sections
+remain text-only — known content thinness, not a rendering defect.
