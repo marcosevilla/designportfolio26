@@ -437,9 +437,9 @@ export default function Hero({
                 style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
-                {/* Source PDF lives in ~/Developer/job-hunt/ — re-copy
-                    Marco-Sevilla-Senior-Product-Designer.pdf into public/
-                    when it changes. */}
+                {/* CTA opens the hosted Drive PDF (RESUME_URL). The local
+                    version archive lives in ~/Documents/Career/Resumes/ —
+                    update the Drive file via Manage versions, not here. */}
                 <a
                   href={RESUME_URL}
                   target="_blank"

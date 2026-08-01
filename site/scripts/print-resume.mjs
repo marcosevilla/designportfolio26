@@ -21,9 +21,12 @@ import { writeFileSync } from "node:fs";
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const URL = process.argv[2] || "http://localhost:3000/resume";
+// Default output joins the resume version archive (see its README).
+// "-site" suffix = printed from the in-app /resume page, as opposed to
+// the canonical Figma-exported PDFs.
 const OUT =
   process.argv[3] ||
-  `${process.env.HOME}/Desktop/Marco-Sevilla-Senior-Product-Designer.pdf`;
+  `${process.env.HOME}/Documents/Career/Resumes/MarcoSevilla_Resume_${new Date().toISOString().slice(0, 7)}-site.pdf`;
 const PORT = 9223;
 const PROFILE = "/tmp/chrome-pdf-profile";
 

@@ -27,20 +27,21 @@ export const RESUME_HEADER = {
 };
 
 export const RESUME_SUMMARY =
-  "Product designer with 7 years across B2B SaaS, AI products, and 0→1, operating at senior scope. Founding designer at General Task (YC W23). At Canary, design ownership on AI products driving $4.8M+ CARR for Marriott, Wyndham, Best Western, and Omni. I prototype in code with Claude as a daily collaborator.";
+  "Product Designer with 7+ years across B2B SaaS, AI, and 0-to-1 products. Former founding designer (YC W23 acceptance) with a foundation in marketing design and meticulous visual craft. Currently lead designer for two of Canary's top-4 revenue products (~22% of Q2 2026 bookings), driving $8.4M+ cumulative CARR across brands like Marriott, Wyndham, and Hyatt.";
 
+// Mirrors the PDF's grouped Tools line: AI / Code / Design.
 export const RESUME_TOOLS = [
-  "Figma",
-  "Figma MCP",
-  "React",
-  "TypeScript",
-  "HTML/CSS",
   "Claude Code",
   "Cursor",
   "v0",
-  "Linear",
-  "Vercel",
-  "Notion",
+  "React",
+  "Next.js",
+  "Tailwind",
+  "HTML/CSS",
+  "Figma",
+  "Framer",
+  "Storybook",
+  "Paper",
 ];
 
 export type ResumeJob = {
@@ -58,11 +59,13 @@ export const RESUME_EXPERIENCE: ResumeJob[] = [
     location: "San Francisco",
     period: "Sept 2023 – Present",
     bullets: [
-      "Led design end-to-end for Compendium, Canary's guest-experience platform — 11 of 11 design files across 18 months. Drove $1M+ cumulative CARR (+141% YoY) and 82% custom-section adoption across 175K monthly active guests at Best Western, Wyndham, Omni, and COMO.",
-      "Designed the foundational architecture and IA for Canary's Knowledge Base — the data model now powering AI Messaging and AI Voice Concierge. Categorized schema (Policies, Amenities, Dining, Location, In-room) replaced free-form fields and scaled to 2,000+ properties including Wyndham's 4,570-site portfolio. One structural call held across two product surfaces and two years to implementation.",
-      "Owned design for F&B Mobile Ordering, Canary's first 0→1 platform of 2025–26 — order management dashboard, menu CMS, guest-side mobile ordering, and Canary's first POS integration. Single architectural call (\"delivery type drives the entire experience\") governed checkout, auth, and staff-handoff flows. Launched to 56% sales win rate.",
-      "Built the F&B prototype in Next.js (v0.dev → Vercel) and turned it into sales' primary demo surface. Cut the validation loop from internal review cycles to 30-minute customer sessions; first LATAM win (Hotel Unique São Paulo) closed off prototype feedback.",
-      "<!-- chat:exclude -->Scaled the product design team from 4 to 14 during Series C; authored design principles and review cadence still in use 2 years later.<!-- /chat:exclude -->",
+      "Designed revamped architecture for Canary's AI Knowledge Base. That data model now powers AI Messaging and AI Voice Concierge. Categorized schema replaced free-form fields, scaling to 2,000+ properties including Wyndham's 4,570-site portfolio.",
+      "Lead design for Upsells, Canary's #3 revenue product ($801K Q2 2026 bookings; $6.94M cumulative CARR, +87% YoY). Redesigned guest purchase flow (+10% conversion lift); live room-inventory design drove a 60% increase in upsell approval rates.",
+      "Primary designer for Digital Tipping (#4 company SKU, $756K Q2 bookings; $1M+/month processing volume). Led the 2026 full-product redesign and field research targeting $1.4M in uncashed staff tips; design work unlocked a $100K ARR rollout across 20+ Pyramid hotels and reduced at-risk properties 40%.",
+      "Led 0-to-1 design for Compendium, Canary's guest experience platform, driving $1.51M cumulative CARR (+230% YoY), growing GMS attach rate from single digits to 44%, and reaching 175k MAU through new Custom Sections feature.",
+      "Led 0-to-1 design for Canary's F&B Mobile Ordering platform including the order management dashboard, menu CMS, guest-side mobile ordering, and POS integrations.",
+      "Developed org's AI-prototyping practice: ~50 working prototypes, replacing Figma as the engineering handoff spec — including a production feature shipped as an 8-PR vertical slice from my prototype, and a CEO-requested 400-hotel-chain demo delivered in 24 hours. Developed Claude prototyping best practices and mentored PMs.",
+      "Key contributor to Check-in 2.0 redesign, activating Wyndham's 6,000-property portfolio (+80% adoption); helped scale the product team 4→30 through Series B/C/D.",
     ],
   },
   {
@@ -71,8 +74,9 @@ export const RESUME_EXPERIENCE: ResumeJob[] = [
     location: "Redwood City",
     period: "Mar 2022 – Apr 2023",
     bullets: [
-      "Founding designer for an AI-native productivity tool for software engineers. Shipped to 1,000+ signups, #2 Product Hunt, 80% 30-day activated retention, and Y Combinator (W23) acceptance.",
-      "Built the company's first design system and product information architecture (folder-based model). Grounded the IA in 20+ research conversations with ICs, EMs, and founders.",
+      "Founding designer for an integrated productivity tool for knowledge workers, owning end-to-end development for AI-native features and drove 80% 30-day activated retention rate through beta.",
+      "Led launch design – website, visual brand, and onboarding – driving 1,000+ signups, #2 Product Hunt placement (Jan 2023), and Y Combinator (W23) acceptance.",
+      "Authored company's first design system and folder-based product information architecture, grounded in 20+ user research conversations with founders, engineering managers, and IC engineers.",
     ],
   },
   {
@@ -90,14 +94,14 @@ export const RESUME_EXPERIENCE: ResumeJob[] = [
     location: "San Mateo",
     period: "Jun 2019 – Jun 2021",
     bullets: [
-      "Redesigned brand and marketing design systems and led UX work for the revenue-generating marketing surfaces. Ran A/B tests across digital channels and represented the company as design speaker (2,000+ webinar attendees).",
+      "Developed and maintained marketing brand guidelines and systems for consistency at scale, driving revenue across every revenue-generating channel. Optimized conversion of our digital channels through A/B experiments.",
     ],
   },
 ];
 
 export const RESUME_EDUCATION = {
   school: "Cal Poly, San Luis Obispo",
-  degree: "B.S. Graphic Communication, Web & Digital Media Concentration",
+  degree: "B.S. Graphic Communication, UI/UX Concentration",
   period: "2015 – 2019",
   coursework:
     "Human–Computer Interaction, Computing Basics, Web Design, Mobile App Design, Advanced Typography, Motion Design, Studio Photography",
@@ -116,9 +120,5 @@ export const RESUME_ACHIEVEMENTS: { label: string; description: string }[] = [
   {
     label: "Product Hunt",
     description: "#2 Product of the Week, Jan 2023 (General Task).",
-  },
-  {
-    label: "Cal Poly",
-    description: "President's Diversity Awards Recipient.",
   },
 ];
