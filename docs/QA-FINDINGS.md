@@ -42,3 +42,12 @@ At 390 the diagram is a horizontal scroll strip (`overflow-x-auto`,
 columns exist is the mid-word cut of the Modifier-group column.
 Low priority; a right-edge fade or partial-column peek would make the
 scroll discoverable.
+
+## /work/upsells
+
+### Structurally clean — placeholder wall is the only visual gap
+Sweep at all 5 widths × both modes (2026-08-01): refreshed stats render
+correctly in both layouts, TwoCol band centers, Reflection/quotes fine
+in dark. The page's only visual problem is the known ~17
+ImagePlaceholder frames awaiting Figma exports (the reason it's still
+locked) — media work, not a code defect. No action from the QA loop.
