@@ -1010,13 +1010,16 @@ function PlaygroundCell({ card }: { card: PlaygroundCard }) {
 // Playground media — autoplay loop of the card's demo video. Landscape
 // cards keep the fixed 323px frame; portrait captures (Pajamagrams,
 // Custom Wrapped) share a taller frame so the phone videos read
-// properly instead of a cover-cropped sliver. "Coming soon" placeholder
-// when no video yet.
+// properly instead of a cover-cropped sliver. Portrait frames are
+// width-capped: at full band width the fixed-height frame goes
+// near-square and object-cover crops the top of the capture out of
+// view (Pajamagrams lost its title through the whole 900–1199 window).
+// "Coming soon" placeholder when no video yet.
 function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
   return (
     <div
       className={`w-full overflow-hidden relative ${
-        isWide(card) ? "h-[323px]" : "h-[560px] lg:h-[640px]"
+        isWide(card) ? "h-[323px]" : "max-w-[420px] mx-auto h-[560px] lg:h-[640px]"
       }`}
       style={{
         backgroundColor: FRAME_BG,

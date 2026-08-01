@@ -5,6 +5,7 @@
  *   npm run sheet -- /work/fb-ordering
  *   npm run sheet -- / --name home
  *   npm run sheet -- /work/compendium --unlock   (see through LockGate)
+ *   npm run sheet -- / --dark                    (capture in dark mode)
  *
  * Output: .sheets/<slug>/{w390,w768,w1024,w1440}.png + sheet.html
  * Requires the dev server running on localhost:3000 and Google Chrome
@@ -30,12 +31,14 @@ if (!route) {
   process.exit(1);
 }
 const nameIdx = args.indexOf("--name");
-const slug =
+const dark = args.includes("--dark");
+const baseSlug =
   nameIdx !== -1
     ? args[nameIdx + 1]
     : route === "/"
       ? "home"
       : route.replace(/^\/|\/$/g, "").replace(/\//g, "-");
+const slug = dark ? `${baseSlug}-dark` : baseSlug;
 
 const outDir = join(process.cwd(), ".sheets", slug);
 mkdirSync(outDir, { recursive: true });
@@ -55,6 +58,14 @@ for (const { w, label } of WIDTHS) {
   if (args.includes("--unlock")) {
     // Pre-seed the LockGate unlock flag (lib/PasswordGateContext.tsx).
     await page.addInitScript(() => localStorage.setItem("portfolio-unlocked", "1"));
+  }
+  if (dark) {
+    // Seed both next-themes' key (first paint) and the site's own
+    // theme-mode key (ThemeStateProvider re-applies it post-hydration).
+    await page.addInitScript(() => {
+      localStorage.setItem("theme", "dark");
+      localStorage.setItem("theme-mode", "dark");
+    });
   }
   await page.goto(BASE + route, { waitUntil: "networkidle" });
   // The dev-only Agentation toolbar photobombs screenshots (known quirk).
