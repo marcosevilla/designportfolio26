@@ -178,7 +178,7 @@ export default function FBOrderingContent() {
             <Col>
               <ExpandableSection title="Research & Discovery" id="research">
                 <p>
-                  Customer interviews with hotel F&amp;B staff, competitive analysis, and usability testing on a fully interactive Next.js prototype I built, which went on to become the primary demo tool for sales calls and GTM enablement. The research drove three calls: no POS requirement (a POS dependency would have blocked 80%+ of potential customers), a staff dashboard sorted by time-elapsed urgency so orders never get missed during peak hours, and a no-download mobile web flow using patterns guests already know.
+                  Customer interviews with hotel F&amp;B staff, competitive analysis, and usability testing on a fully interactive Next.js prototype I built, which went on to become the primary demo tool for sales calls and GTM enablement. The research drove three calls: no POS requirement (a POS dependency would have blocked 80%+ of potential customers), a staff dashboard sorted by time-elapsed urgency so orders never get missed during peak hours, and a no-download mobile web flow using patterns guests already know. Once early adopters went live, I ran the customer feedback calls myself — walking HOMA&apos;s Thailand properties through the product while demoing my own prototype.
                 </p>
               </ExpandableSection>
             </Col>
@@ -195,8 +195,11 @@ export default function FBOrderingContent() {
           <Grid preset="media-right">
             <Col>
               <ExpandableSection title="Impact & Results" id="impact">
-                <p className="mb-8">
+                <p className="mb-5">
                   F&amp;B Ordering hit GA in February 2026 with two verbal commitments from demos alone and 50 pilot orders validating demand before launch. The delivery-type model became the architectural pattern for all future ordering scenarios (spa, activities, table-side), and APAC enterprise interest is building, with $25K+ in potential ARR from interested properties.
+                </p>
+                <p className="mb-8">
+                  The platform also started clearing enterprise deals: my HubOS service-requests design solved Eurostars&apos; #1 deal-blocking feature request — internally the line was &ldquo;no HubOS integration = no deal&rdquo; for the 270-property chain. And at the December 2025 team retro, the note that stuck: &ldquo;Amazed at how we were able to hit our goal!&rdquo;
                 </p>
               </ExpandableSection>
             </Col>

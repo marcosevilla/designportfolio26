@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import AIWorkflowContent from "./AIWorkflowContent";
 
 export const metadata: Metadata = {
-  title: "How I Work with AI — Marco Sevilla",
+  title: "Prototypes as the Spec — Marco Sevilla",
   description:
-    "A designer's daily practice with Claude Code, MCP integrations, and self-improving workflows.",
+    "How working prototypes replaced Figma as the engineering handoff spec — ~50 shipped, an 8-PR production slice, and a 24-hour CEO demo.",
   openGraph: {
-    title: "How I Work with AI — Marco Sevilla",
+    title: "Prototypes as the Spec — Marco Sevilla",
     description:
-      "A designer's daily practice with Claude Code, MCP integrations, and self-improving workflows.",
+      "How working prototypes replaced Figma as the engineering handoff spec — ~50 shipped, an 8-PR production slice, and a 24-hour CEO demo.",
   },
 };
 

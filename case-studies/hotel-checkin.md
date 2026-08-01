@@ -42,10 +42,10 @@ Team             Product Designer, PM, Engineering
 
 ```
 ┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│  $3.5M          │  +80%           │  6,000          │  3              │
-│  Annual         │  Check-in       │  Hotel          │  New product    │
-│  recurring      │  adoption       │  properties     │  SKUs           │
-│  revenue        │  increase       │  worldwide      │  launched       │
+│  $3.5M          │  +80%           │  ~6,000         │  3              │
+│  Annual         │  Check-in       │  Wyndham        │  New product    │
+│  recurring      │  adoption       │  property       │  SKUs           │
+│  revenue        │  increase       │  portfolio      │  launched       │
 └─────────────────┴─────────────────┴─────────────────┴─────────────────┘
 ```
 
@@ -66,6 +66,9 @@ I design across Canary's full suite of products including Mobile Check-in, Check
 As a Product Designer at Canary, I lead projects from concept to execution, partnering closely with PMs and engineering leads to define product requirements, and collaborating with go-to-market teams. My work spans facilitating iterative design sprints, conducting field research with hotels, and presenting design solutions to leadership and executive teams.
 
 Additionally, I help standardize design operations, evangelizing new processes, and enhancing design scalability with our design system, Canary UI, in partnership with engineering.
+
+> "He helped define the new UI patterns for the Check-in 2.0 project, which evolved into more extensible patterns that we can now apply across other Canary products."
+> — Wenjun Zhao, Staff Designer (peer review)
 
 ---
 

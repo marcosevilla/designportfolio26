@@ -13,10 +13,10 @@ import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
 
 const STATS = [
-  { value: "$3.8M", label: "Upsells CARR" },
-  { value: "$2.2M", label: "Approved upsell revenue/mo" },
-  { value: "80%", label: "Upsells approval rate" },
-  { value: "8,325", label: "Hotels using upsells" },
+  { value: "$6.94M", label: "Cumulative CARR (+87% YoY)" },
+  { value: "+10%", label: "Measured conversion lift" },
+  { value: "$5M/mo", label: "GMV all-time high (Jun '26)" },
+  { value: "#3", label: "Canary revenue product" },
 ];
 
 const TOC_ITEMS = [
@@ -286,6 +286,13 @@ export default function UpsellsContent() {
                       Designed guest-facing form submission within the upsell detail view, form response display on the staff dashboard, discard confirmation, and the unified deny button pattern. Re-integrated the dropdown field type after MVP. Forms builder shipped on September 15.
                     </p>
                   </div>
+
+                  <div>
+                    <SectionHeading level={4}>Purchase UI redesign + Segments (2026)</SectionHeading>
+                    <p>
+                      The redesigned guest purchase UI shipped in H1 2026 and delivered a measured +10% conversion lift, while live room-inventory design drove a 60% increase in upsell approval rates. In July 2026 the Segments redesign shipped to production as an 8-PR vertical slice built directly from my working prototype — the PM linked the prototype as engineering&apos;s source of truth. The admin redesign wrapped the same month, and the sort pattern I designed was adopted into Canary&apos;s design system.
+                    </p>
+                  </div>
                 </div>
               </TwoCol.Left>
             </TwoCol>
@@ -315,9 +322,10 @@ export default function UpsellsContent() {
               <TwoCol.Left>
                 <SectionHeading level={3}>Business impact</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-8">
-                  <li>Upsells CARR reached $3.8M (+8.8% MoM), with a year-end target of $4.6M</li>
-                  <li>Approved upsell revenue: $2.2M/month (+9% MoM)</li>
-                  <li>80% upsell approval rate across 8,325 hotels</li>
+                  <li>$6.94M cumulative CARR (+87% YoY) as of July 2026 — Canary&apos;s #3 revenue product with $801K in Q2 2026 bookings</li>
+                  <li>Redesigned guest purchase UI shipped with a measured +10% conversion lift</li>
+                  <li>Live room-inventory design drove a 60% increase in upsell approval rates</li>
+                  <li>GMV hit an all-time high of $5M/month in June 2026 (140K items sold)</li>
                   <li>Upsells Forms launched September 2025 — available to all customers</li>
                   <li>Marriott Upsells RFP leveraged forms designs — dedicated design reviews and presentation materials for enterprise sales</li>
                   <li>Price modifiers for custom questions designed and ready, extending forms into a revenue-impacting feature</li>
@@ -349,6 +357,7 @@ export default function UpsellsContent() {
                 <SectionHeading level={3}>Product impact</SectionHeading>
                 <ul className="list-disc pl-5 space-y-2 mb-6">
                   <li>The full-page creation flow became the new standard for all upsell management</li>
+                  <li>The July 2026 Segments redesign shipped as an 8-PR production vertical slice built directly from my prototype, and the sort pattern was adopted into Canary&apos;s design system</li>
                   <li>Forms architecture designed for extensibility using Canary&apos;s internal schemaform pattern — supports branching questions, additional field types, and reuse across products</li>
                   <li>The live preview component sparked a cross-product design conversation: should we unify preview across Compendium, Upsells, and branding?</li>
                   <li>Forms laid the groundwork for price modifiers (dropdown options with per-option pricing), connecting forms directly to revenue impact</li>

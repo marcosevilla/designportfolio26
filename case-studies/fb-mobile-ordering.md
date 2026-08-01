@@ -152,10 +152,12 @@ I built a fully interactive prototype (Next.js + React, deployed to Vercel) that
 - Q1 2026 Initiative KRs: "Sign one customer on Mobile Ordering with a POS integration" and "Process and send 1 order straight to the POS with Mobile Ordering" — both Active, on track
 - Part of the broader initiative: "Increase average Canary revenue per room per month from $5.10 to $10"
 - 50 F&B orders processed during pilot phase, validating demand before GA
+- The HubOS service-requests design solved Eurostars' #1 deal-blocking feature request ("no HubOS integration = no deal") for the 270-property European chain
+- Dec 2025 team retro: "Big shout out... for all of the great f&b work! Amazed at how we were able to hit our goal!"
 - [TODO: Post-launch metrics — actual order volume, revenue per hotel, adoption rate. Replace Quick Stats process metrics with business metrics when available.]
 
 **User impact:**
-- Hotel staff in HOMA Cherngtalay (Thailand pilot) provided constructive feedback on item remarks discoverability and notification workflows — validated the design was being actively used in a real hotel environment
+- Hotel staff in HOMA Cherngtalay (Thailand pilot) provided constructive feedback on item remarks discoverability and notification workflows — validated the design was being actively used in a real hotel environment. Marco ran these customer feedback calls himself (Feb 2026), demoing his own prototype — authoring the call script and questions
 - Chateau Avalon owner saw "significant value in the bundle, estimating over $2,000/year savings from eliminating physical menus and reducing errors" and planned to present to ownership the following week
 - Crown Resorts (Australia) requested a dedicated demo, signaling enterprise interest in the APAC market
 <!-- chat:exclude -->- Multiple APAC properties (Royal Garden Kowloon East, The Fullerton Ocean Park) expressing interest with combined potential ARR of $25K+<!-- /chat:exclude -->

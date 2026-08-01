@@ -282,7 +282,9 @@ export default function HomeLayout({
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  .
+                  . The two products I&apos;ve designed there became the
+                  company&apos;s #3 and #4 revenue lines — about 22% of Q2
+                  2026 bookings.
                 </p>
                 <p>
                   In the past, I built scalable brand systems as a marketing

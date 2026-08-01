@@ -44,7 +44,7 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
     company: "Canary",
     role: "Product designer",
     year: "2024",
-    metric: "$1M+ CARR",
+    metric: "$1.51M CARR · +230% YoY",
     gradient: ["#2563EB", "#1D4ED8"],
   },
   upsells: {
@@ -53,7 +53,7 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
     company: "Canary",
     role: "Lead designer",
     year: "2025",
-    metric: "$3.8M CARR",
+    metric: "$6.94M CARR · +10% lift",
     gradient: ["#0D9488", "#0F766E"],
   },
   checkin: {
@@ -62,7 +62,7 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
     company: "Canary",
     role: "Product designer",
     year: "2024",
-    metric: "4,500+ hotels",
+    metric: "~6,000 Wyndham properties",
     gradient: ["#6366F1", "#4F46E5"],
   },
   "knowledge-base": {
@@ -94,11 +94,11 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
   },
   "ai-workflow": {
     slug: "ai-workflow",
-    title: "How I Work with AI",
+    title: "Prototypes as the spec",
     company: "Personal",
     role: "Designer + builder",
     year: "2026",
-    metric: "Daily AI practice",
+    metric: "~50 prototypes · 8-PR ship",
     gradient: ["#0F172A", "#1E293B"],
   },
 };

@@ -406,21 +406,21 @@ const MARQUEE_DISPLAY: Record<
     org: "Canary Technologies",
     year: "2025",
     description:
-      "Designed a hotel CMS platform from scratch – structured content builder for staff, guest-facing mobile hub, and the foundation now driving $1M+ CARR.",
+      "Designed a hotel CMS platform from scratch – structured content builder for staff, guest-facing mobile hub, and the foundation now driving $1.51M CARR at +230% YoY.",
   },
   upsells: {
     title: "Hotel Upsells",
     org: "Canary Technologies",
     year: "2026",
     description:
-      "Redesigned hotel upselling as a configurable form system – flexible offer builder, guest purchase flow, and staff fulfillment workflows driving $3.8M CARR.",
+      "Redesigned hotel upselling as a configurable form system – flexible offer builder, guest purchase flow, and staff fulfillment workflows driving $6.94M CARR with a measured +10% conversion lift.",
   },
   checkin: {
     title: "Expedited Guest Check-in",
     org: "Canary Technologies",
     year: "2024",
     description:
-      "Modernized digital check-in for the world's largest hotel chains – guest identity verification, payment capture, and front-desk tooling live at 4,500+ hotels.",
+      "Modernized digital check-in for the world's largest hotel chains – guest identity verification, payment capture, and front-desk tooling across Wyndham's ~6,000-property portfolio.",
   },
   "general-task": {
     title: "Task Management for Knowledge Workers",
@@ -435,6 +435,13 @@ const MARQUEE_DISPLAY: Record<
     year: "2025",
     description:
       "Built General Task's visual language from zero – design tokens, a component library, and interaction patterns powering every product surface.",
+  },
+  "ai-workflow": {
+    title: "Prototypes as the Spec",
+    org: "Personal",
+    year: "2026",
+    description:
+      "How working prototypes replaced Figma as the engineering handoff spec – ~50 shipped on one hub, an 8-PR production slice built from a prototype, and a CEO-requested demo delivered in 24 hours.",
   },
 };
 

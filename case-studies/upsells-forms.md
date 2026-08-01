@@ -42,10 +42,10 @@ Team             1 Designer, 3 Engineers, 1 PM (Becca Aleynik), Tech Lead (Adil 
 
 ```
 ┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│  $3.8M           │  $2.2M          │  80%             │  8,325          │
-│  Upsells CARR    │  Approved       │  Upsells         │  Hotels using   │
-│  (+8.8% MoM)     │  upsell revenue │  approval rate   │  upsells        │
-│                  │  (+9% MoM)      │                  │                 │
+│  $6.94M          │  +10%           │  $5M/mo          │  #3             │
+│  Cumulative CARR │  Measured       │  GMV all-time    │  Canary revenue │
+│  (+87% YoY)      │  conversion     │  high (Jun '26,  │  product        │
+│                  │  lift           │  140K items)     │                 │
 └─────────────────┴─────────────────┴─────────────────┴─────────────────┘
 ```
 
@@ -146,9 +146,10 @@ I built a functional prototype on Vercel (v0-upsell-forms.vercel.app) that evolv
 #### What Happened
 
 **Business impact:**
-- Upsells CARR reached $3.8M in July 2025 (+8.8% MoM), with a year-end target of $4.6M
-- Approved upsell revenue: $2.2M/month (+9% MoM)
-- 80% upsell approval rate across 8,325 hotels
+- $6.94M cumulative CARR (+87% YoY) as of July 2026 — Canary's #3 revenue product with $801K in Q2 2026 bookings
+- Redesigned guest purchase UI shipped in H1 2026 with a measured +10% conversion lift
+- Live room-inventory design drove a 60% increase in upsell approval rates
+- GMV hit an all-time high of $5M/month in June 2026 (140K items sold)
 - Upsells Forms launched September 2025 — status: "Launched (Available to All Customers)"
 - Target: 10% adoption of Upsell Forms for customers onboarded after release
 - Internal beta with key accounts: Hotel Jackson, The Ozarker Lodge, Verdelago
@@ -165,6 +166,7 @@ I built a functional prototype on Vercel (v0-upsell-forms.vercel.app) that evolv
 - Guest form submission eliminated the "5 minutes to 5 days" follow-up cycle Hotel Jackson described
 
 **Product impact:**
+- The July 2026 Segments redesign shipped to production as an 8-PR vertical slice built directly from Marco's working prototype — the PM linked the prototype as engineering's source of truth. The admin redesign wrapped the same month, and the sort pattern was adopted into Canary's design system.
 - The full-page creation flow became the new standard for all upsell management — room upgrades, add-ons, and future variants all use this pattern
 - Forms architecture designed for extensibility: the question schema uses Canary's internal `schemaform` pattern (reused from registration cards), supporting branching questions, additional field types, and reuse across other Canary products. Technical specs: up to 5 fields per upsell, up to 15 options per dropdown, with feature-flagged rollout via GrowthBook.
 - The live preview component sparked a cross-product design conversation: should we unify live preview across Compendium, Upsells, and the branding page? This systems-level thinking was noted positively in my performance review.

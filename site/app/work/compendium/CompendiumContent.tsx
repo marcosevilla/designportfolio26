@@ -21,10 +21,10 @@ const META = [
 ];
 
 const STATS = [
-  { value: "$1M+", label: "Cumulative CARR (Dec '25)" },
+  { value: "$1.51M", label: "Cumulative CARR (Jul '26)" },
+  { value: "+230%", label: "CARR growth YoY" },
+  { value: "44%", label: "GMS attach rate" },
   { value: "82%", label: "Custom section adoption" },
-  { value: "175K", label: "Monthly active guest users" },
-  { value: "100%", label: "Design ownership" },
 ];
 
 const TOC_ITEMS = [
@@ -46,7 +46,7 @@ export default function CompendiumContent() {
             {/* Same intro treatment as F&B: italic tertiary one-liner hook,
                 then body paragraphs at secondary. */}
             <p className="mt-3 italic text-(--color-fg-tertiary)">Hotels print their guest guides. Guests never read them.</p>
-            <p className="mt-3 text-(--color-fg-secondary)">I spent 18 months designing the digital replacement — now the hub 175,000 guests open every month, and a $1M+ product line for Canary.</p>
+            <p className="mt-3 text-(--color-fg-secondary)">I spent 18 months designing the digital replacement — now the hub 175,000 guests open every month, and a $1.51M product line growing 230% year over year for Canary.</p>
           </Col>
           <Col className="mt-8 lg:mt-2">
             <MetaRail items={META} />
@@ -243,8 +243,15 @@ export default function CompendiumContent() {
           <ExpandableSection title="Impact & Results" id="impact">
                 <SectionHeading level={3}>A new product line</SectionHeading>
                 <p className="mb-5">
-                  Compendium passed <span className="font-medium text-(--color-fg)">$1M in cumulative CARR</span> by December 2025 — a brand-new SKU designed from zero, with zero gross churn in the tracked period. And the platform bet paid out: F&amp;B Mobile Ordering launched as the first interactive module inside the same guest experience, no shell redesign required.
+                  Compendium reached <span className="font-medium text-(--color-fg)">$1.51M in cumulative CARR</span> by July 2026, growing <span className="font-medium text-(--color-fg)">+230% year over year</span> — a brand-new SKU designed from zero, with zero gross churn in the tracked period and a GMS attach rate that climbed from single digits to <span className="font-medium text-(--color-fg)">44%</span>. And the platform bet paid out: F&amp;B Mobile Ordering launched as the first interactive module inside the same guest experience, no shell redesign required. When the redesigned guest experience shipped in mid-2026, the PM&apos;s public reaction in the team channel was the kind you keep:
                 </p>
+
+            <FadeIn>
+              <PullQuote
+                quote="So much better. Great design work."
+                attribution="Nicolas Garnier, PM — on the shipped guest experience redesign (Jul 2026)"
+              />
+            </FadeIn>
 
             <FadeIn>
               <PullQuote

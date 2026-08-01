@@ -23,7 +23,7 @@ const FILENAME_BY_SLUG: Record<StudySlug, string | null> = {
   "knowledge-base": "knowledge-base-redesign",
   "general-task": "general-task",
   "design-system": "design-system",
-  "ai-workflow": null, // no markdown draft yet — metadata block only
+  "ai-workflow": "ai-workflow",
 };
 
 // Strips chat:exclude fenced regions so sensitive content in drafts

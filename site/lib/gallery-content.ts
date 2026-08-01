@@ -157,5 +157,5 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
     },
   ],
   "design-system": [],
-  "ai-workflow": [],
+  "ai-workflow": [], // media dropped 2026-08-01 pending portfolio permission — card shows the construction frame for now
 };

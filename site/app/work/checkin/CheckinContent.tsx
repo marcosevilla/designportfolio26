@@ -2,6 +2,7 @@
 
 import QuickStats from "@/components/case-study/QuickStats";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
+import PullQuote from "@/components/case-study/PullQuote";
 import NextProject from "@/components/case-study/NextProject";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -13,7 +14,7 @@ import { typescale } from "@/lib/typography";
 const STATS = [
   { value: "$3.5M", label: "Annual recurring revenue generated" },
   { value: "+80%", label: "Check-in adoption increase" },
-  { value: "6,000", label: "Hotel properties worldwide" },
+  { value: "~6,000", label: "Wyndham property portfolio" },
   { value: "3", label: "New product SKUs launched" },
 ];
 
@@ -71,6 +72,13 @@ export default function CheckinContent() {
               </p>
             </TwoCol.Left>
           </TwoCol>
+
+          <FadeIn>
+            <PullQuote
+              quote="He helped define the new UI patterns for the Check-in 2.0 project, which evolved into more extensible patterns that we can now apply across other Canary products."
+              attribution="Wenjun Zhao, Staff Designer — peer review"
+            />
+          </FadeIn>
         </FadeIn>
 
         {/* Digital Check-in */}

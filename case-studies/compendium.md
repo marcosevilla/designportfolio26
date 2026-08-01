@@ -42,10 +42,10 @@ Team             1 Designer, 3–5 Engineers (Adil Shaikh, Austin Irvine, Tommy 
 
 ```
 ┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│  100%            │  $1M+           │  82%             │  175K           │
-│  Design          │  Cumulative     │  Custom section  │  Monthly active │
-│  ownership       │  CARR (Dec '25) │  adoption rate   │  guest users    │
-│  (11/11 files)   │  (+141% YoY)    │  (+10pts/month)  │                 │
+│  $1.51M          │  +230%          │  44%             │  175K           │
+│  Cumulative      │  CARR growth    │  GMS attach      │  Monthly active │
+│  CARR (Jul '26)  │  YoY            │  rate            │  guest users    │
+│                  │                 │                  │                 │
 └─────────────────┴─────────────────┴─────────────────┴─────────────────┘
 ```
 
@@ -143,7 +143,9 @@ I designed the full Compendium platform end-to-end — a hotel-facing CMS builde
 #### What Happened
 
 **Business impact:**
-- Cumulative CARR surpassed $1M by December 2025<!-- chat:exclude -->, driven by a $200K Omni Hotels deal — Nico announced it as "our 1 million month" with "a 25% increase in the pod's CARR in a single month"
+- Cumulative CARR reached $1.51M by July 2026 (+230% YoY), with the GMS attach rate climbing from single digits to 44%
+- The redesigned guest experience shipped mid-2026; PM Nicolas Garnier's public reaction in the team channel: "So much better. Great design work."
+- Cumulative CARR had surpassed $1M by December 2025<!-- chat:exclude -->, driven by a $200K Omni Hotels deal — Nico announced it as "our 1 million month" with "a 25% increase in the pod's CARR in a single month"
 - CARR booked: $81.5K in Q4 2025 alone (+400% YoY), driven by luxury and resort brands (Castle Resorts $9K, Signature Hotels $4K) and strong EMEA performance matching US ($15K each)
 - ARR activated: $55.3K in Q4 2025 (+400% YoY), with 70% driven by Best Western rollout<!-- /chat:exclude -->
 - Zero gross churn — no Compendium customers churned in the tracked period
