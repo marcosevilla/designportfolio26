@@ -79,3 +79,23 @@ its exports have dark-baked backgrounds instead of white slabs. Nit,
 not a defect: the "Visual Design" and "Final Designs" panels use
 near-identical main-screen→task-details compositions and read as
 duplicates at scan speed.
+
+## /work/design-system
+
+### Clean pass
+Sweep at all 5 widths × both modes (2026-08-01): typography specimen
+collage, component-library before/after, and documentation panels all
+render correctly in both modes. "Color" and "Spacing and Grid System"
+sections are text-only — content thinness (the section prose describes
+visuals that aren't there), not a rendering defect.
+
+---
+
+## Pass 1 summary (2026-08-01, all 8 routes)
+
+Fixed: portrait playground frame crop (de2e14a), ai-workflow
+NextProject title (d78f754). Instrument: sheet --dark flag (de2e14a),
+tall-page deflake (450075a). Everything else above is blocked on
+Marco's ruling (ViewportFade terminal stop) or media work (fb-mobile
+re-export, upsells exports). A second pass would find nothing new —
+loop stopped per its terminal condition.
