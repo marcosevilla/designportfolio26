@@ -1,0 +1,4 @@
+# Specimen visuals kickoff prompt (2026-08-01)
+Paste into a fresh session in ~/Developer/portfolio. Concept from Miguel Santana chat: replace videos with HTML/CSS specimen animations.
+Key points: new Figma page "🎬 Case Study Visuals" in Portfolio Aug 2026 (O9tNG8DqYrpdJmrEGa7Io7); read ~/Obsidian/marcowits/work/canary/accomplishments/ to map projects; prototypes hub = ~/Developer/msevilla-canary-prototypes-1 — ⚠️ MUST `git pull` first (2026-08-01: was 31 commits stale; now synced to f60b34c, the final Jul 29 work-laptop state; mirror copy in ~/Work Laptop Backup/Projects consolidation/msevilla-canary-prototypes is the same commit — treat backup as archive, work in Developer); CSS-only animation, reduced-motion + IO pause; SCOPE CAP: 2-3 specimens for F&B + Compendium shipped before any framework.
+(Full prompt text is in the 2026-08-01 Figma session transcript; this file is the fallback summary.)
