@@ -19,7 +19,6 @@ import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { galleryContent } from "@/lib/gallery-content";
 import { setCursorLabel } from "@/lib/cursor-label";
-import { TESTIMONIALS } from "@/lib/testimonials";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import DeviceShell from "./DeviceShell";
 import CursorGlowOverlay from "./CursorGlowOverlay";
@@ -355,10 +354,8 @@ function ProjectGrid({
         <StudyMarquee studies={studies} onPreview={onPreview} />
       )}
 
-      {/* Testimonials — colleague quotes as full paragraphs, seated
-          between the work marquee and the playground section (2026-07-15,
-          copy lifted from the retired Marquee). */}
-      <Testimonials />
+      {/* Testimonials moved to the About surface, under the bio
+          (2026-08-03) — see components/Testimonials.tsx. */}
 
       {/* Playground / experiments get their own label so the page reads
           as two sections: client work above, sidequests below. Label +
@@ -504,54 +501,6 @@ function StudyMarquee({
         ))}
       </div>
     </div>
-  );
-}
-
-// Testimonials — one quote per colleague, stacked single-column on the
-// centered middle-6 band (was three-up across the full canvas until the
-// 2026-07-20 centering pass). No section label — the bordered cells
-// read as their own organized band (Marco 2026-07-15).
-function Testimonials() {
-  return (
-    <Grid className="gap-y-6">
-      {TESTIMONIALS.map((t) => (
-        <Col key={t.author} md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-          <div
-            className="h-full p-6"
-            style={{
-              border: "0.5px solid var(--color-border)",
-              borderRadius: 4,
-            }}
-          >
-            <p style={{ ...typescale.body, color: "var(--color-fg-secondary)" }}>
-              “{t.text}”
-              <span
-                style={{
-                  display: "block",
-                  marginTop: 8,
-                  color: "var(--color-fg-tertiary)",
-                }}
-              >
-                —{" "}
-                {t.href ? (
-                  <a
-                    href={t.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="dotted-link--inline"
-                  >
-                    {t.author}
-                  </a>
-                ) : (
-                  t.author
-                )}
-                {t.org && ` (${t.org})`}
-              </span>
-            </p>
-          </div>
-        </Col>
-      ))}
-    </Grid>
   );
 }
 

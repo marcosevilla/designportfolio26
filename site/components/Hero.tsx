@@ -7,6 +7,7 @@ import { RESUME_URL } from "@/lib/resume-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
+import Testimonials from "./Testimonials";
 import { HighlighterProvider } from "./HighlighterContext";
 import { ArrowRightIcon } from "./Icons";
 
@@ -458,6 +459,16 @@ export default function Hero({
                 style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
+
+                {/* Colleague recommendations, moved here from the home
+                    work section 2026-08-03. Sits between the bio and the
+                    contact row so the page reads bio → proof → ask. No
+                    Grid wrapper — Testimonials inherits this column, so
+                    the cards match the bio's measure exactly. */}
+                <div className="mt-16">
+                  <Testimonials />
+                </div>
+
                 {/* Contact row. The resume CTA opens the hosted Drive PDF
                     (RESUME_URL) — the local version archive lives in
                     ~/Documents/Career/Resumes/; update the Drive file via
