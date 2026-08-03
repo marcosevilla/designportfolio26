@@ -72,6 +72,25 @@ function ExperienceList() {
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
+/** Shared chrome for the About page's contact row (resume / LinkedIn /
+ *  email). Lives here rather than inline three times so the buttons
+ *  can't drift apart. */
+const CONTACT_CTA_CLASS =
+  "outlined-cta inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)";
+
+const CONTACT_CTA_STYLE: React.CSSProperties = {
+  height: 32,
+  padding: "0 8px",
+  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+  fontSize: 11,
+  fontWeight: 500,
+  lineHeight: 1,
+  textTransform: "uppercase",
+  letterSpacing: "0.04em",
+  textDecoration: "none",
+  whiteSpace: "nowrap",
+};
+
 /**
  * Sets `--wordmark-fontsize` on the wrapper so the wordmark + star group
  * scales to fill `widthFraction` of the column's content width. h1 font-size
@@ -376,15 +395,17 @@ export default function Hero({
               transition={{ duration: 0.4, ease: BLUR_EASE }}
               className="pb-24"
             >
-              {/* Mobile-only Return button. The desktop sidebar (HomeNav) owns
-                  this affordance at lg+; below lg the sidebar is hidden and the
-                  user has no way out otherwise. Sits above the h1 so it's the
-                  first thing thumbs land on. */}
+              {/* Return button — the ONLY way back to home from About.
+                  It used to be `lg:hidden` on the assumption that the
+                  HomeNav left rail owned this affordance at lg+, but
+                  HomeNav is no longer mounted anywhere, so desktop was a
+                  dead end. Shown at every breakpoint now. Sits above the
+                  h1 so it's the first thing thumbs land on. */}
               <button
                 type="button"
                 onClick={() => onAboutMeChange(false)}
                 aria-label="Return to home"
-                className="lg:hidden group inline-flex items-center gap-1.5 mt-6 -ml-2 px-2 py-3 transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
+                className="group inline-flex items-center gap-1.5 mt-6 -ml-2 px-2 py-3 transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                   fontSize: "12px",
@@ -437,30 +458,39 @@ export default function Hero({
                 style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
-                {/* CTA opens the hosted Drive PDF (RESUME_URL). The local
-                    version archive lives in ~/Documents/Career/Resumes/ —
-                    update the Drive file via Manage versions, not here. */}
-                <a
-                  href={RESUME_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="outlined-cta mt-10 inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
-                  style={{
-                    height: 32,
-                    padding: "0 8px",
-                    fontFamily:
-                      "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                    fontSize: 11,
-                    fontWeight: 500,
-                    lineHeight: 1,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  View resume
-                </a>
+                {/* Contact row. The resume CTA opens the hosted Drive PDF
+                    (RESUME_URL) — the local version archive lives in
+                    ~/Documents/Career/Resumes/; update the Drive file via
+                    Manage versions, not here. LinkedIn + email mirror the
+                    home page footer's link set, wearing the shared
+                    .outlined-cta chrome so the three read as one family. */}
+                <div className="mt-10 flex flex-wrap items-center gap-2">
+                  <a
+                    href={RESUME_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={CONTACT_CTA_CLASS}
+                    style={CONTACT_CTA_STYLE}
+                  >
+                    View resume
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/marcogsevilla/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={CONTACT_CTA_CLASS}
+                    style={CONTACT_CTA_STYLE}
+                  >
+                    LinkedIn
+                  </a>
+                  <a
+                    href="mailto:marcogsevilla@gmail.com"
+                    className={CONTACT_CTA_CLASS}
+                    style={CONTACT_CTA_STYLE}
+                  >
+                    Email
+                  </a>
+                </div>
               </div>
             </motion.div>
           )}

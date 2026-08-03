@@ -2,7 +2,8 @@
 
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Hero from "./Hero";
 import LoadingOverlay from "./LoadingOverlay";
 import { BackgroundTexture } from "./BackgroundTexture";
@@ -21,6 +22,44 @@ import LocalStatus from "./LocalStatus";
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
 const BASKERVILLE = "var(--font-geist-sans), system-ui, sans-serif";
+
+/** Home ↔ About page swap. The two surfaces read as neighbours on a
+ *  horizontal axis — About lives to the right of home — so home leaves
+ *  to the left and About arrives from the right, and vice versa. Text
+ *  blurs out as it goes and sharpens as it lands.
+ *
+ *  AnimatePresence runs in mode="wait" (below) so the two never overlap:
+ *  outgoing surface clears, then the incoming one enters. That sidesteps
+ *  the absolute-positioning that mode="popLayout" would need here, since
+ *  both surfaces are full-page columns of wildly different heights. */
+const PAGE_SLIDE_PX = 48;
+
+function pageTransitionProps(direction: -1 | 1, reducedMotion: boolean) {
+  if (reducedMotion) {
+    return {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 0.15 },
+    };
+  }
+  const offset = PAGE_SLIDE_PX * direction;
+  return {
+    initial: { opacity: 0, x: offset, filter: "blur(10px)" },
+    animate: {
+      opacity: 1,
+      x: 0,
+      filter: "blur(0px)",
+      transition: { duration: 0.45, ease: BLUR_EASE },
+    },
+    exit: {
+      opacity: 0,
+      x: offset,
+      filter: "blur(10px)",
+      transition: { duration: 0.26, ease: "easeIn" as const },
+    },
+  };
+}
 
 /** Emphasis for inline links and key phrases inside body text — Geist
  *  at body weight, upright (fontStyle normal also cancels the browser's
@@ -73,6 +112,7 @@ export default function HomeLayout({
   work: React.ReactNode;
 }) {
   const [aboutMeOpen, setAboutMeOpen] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
   // Gates Hero's blur-in animation. Flipped to true either when the
   // LoadingOverlay starts fading (first-time visit) or immediately when
   // the overlay is skipped (repeat visit).
@@ -86,6 +126,16 @@ export default function HomeLayout({
   const aboutMeHeaderElRef = useRef<HTMLHeadingElement | null>(null);
 
   const openAbout = useCallback(() => setAboutMeOpen(true), []);
+
+  // The home surface's staggered blur-in is a load intro, not a page
+  // transition. `initial` is read once at mount, so gating it on
+  // heroReady means: first load (heroReady false) plays the cascade;
+  // returning from About (heroReady already true) mounts straight at the
+  // resting state and lets the page-level slide own the motion instead
+  // of stacking a second 0.9s blur on top of it.
+  const introInitial = heroReady
+    ? false
+    : ({ opacity: 0, filter: "blur(12px)" } as const);
 
   // Callback refs Hero still consumes — kept as no-ops now that the
   // side-nav alignment logic is gone.
@@ -151,34 +201,45 @@ export default function HomeLayout({
           inner wrapper); About mode is a 650px column for the bio read.
           paddingTop = SiteHeader height (~38) + breathing room. */}
       <div
-        className={
-          aboutMeOpen
-            ? "max-w-[650px] mx-auto px-4 sm:px-8 flex flex-col"
-            : "mx-auto"
-        }
+        className="mx-auto"
         style={{
           paddingTop: "clamp(96px, 12vh, 144px)",
         }}
       >
-        {aboutMeOpen && (
-          <div>
-            <Hero
-              aboutMeOpen={aboutMeOpen}
-              onAboutMeChange={setAboutMeOpen}
-              wordmarkRef={setWordmarkRef}
-              aboutMeHeaderRef={setAboutMeHeaderRef}
-              ready={heroReady}
-              hideStarForLoader={loaderOwnsStar}
-              onStarMorphComplete={() => setHeroReady(true)}
-            />
-          </div>
-        )}
-
-        {/* Home content — editorial grid canvas. Everything sits on the
-            centered middle-6 band (CONTENT_BAND, 2026-07-20 centering
-            pass) except the full-bleed work marquee.
-            See docs/LAYOUT-REFERENCE.html */}
-        {!aboutMeOpen && (
+        <AnimatePresence mode="wait" initial={false}>
+        {aboutMeOpen ? (
+          <motion.div key="page-about" {...pageTransitionProps(1, reducedMotion)}>
+            {/* About canvas — deliberately the SAME shell as the home
+                canvas below (--grid-max + px-4 sm:px-8) with the bio on
+                the same CONTENT_BAND columns, so the About measure is
+                pixel-identical to the home intro. It used to be a
+                hardcoded max-w-[650px] column, which read ~66px wider
+                than home at desktop. Padding is pb-24 rather than home's
+                pb-48 because Hero's About branch already carries its own
+                pb-24 — together that's ~192px of tail, enough to keep the
+                contact row clear of the fixed ViewportFade at the fold. */}
+            <div className="max-w-(--grid-max) mx-auto w-full px-4 sm:px-8 pb-24">
+              <Grid>
+                <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+                  <Hero
+                    aboutMeOpen={aboutMeOpen}
+                    onAboutMeChange={setAboutMeOpen}
+                    wordmarkRef={setWordmarkRef}
+                    aboutMeHeaderRef={setAboutMeHeaderRef}
+                    ready={heroReady}
+                    hideStarForLoader={loaderOwnsStar}
+                    onStarMorphComplete={() => setHeroReady(true)}
+                  />
+                </Col>
+              </Grid>
+            </div>
+          </motion.div>
+        ) : (
+          /* Home content — editorial grid canvas. Everything sits on the
+             centered middle-6 band (CONTENT_BAND, 2026-07-20 centering
+             pass) except the full-bleed work marquee.
+             See docs/LAYOUT-REFERENCE.html */
+          <motion.div key="page-home" {...pageTransitionProps(-1, reducedMotion)}>
           <div className="max-w-(--grid-max) mx-auto w-full px-4 sm:px-8 pb-48">
             <Grid className="mt-8">
             <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
@@ -190,7 +251,7 @@ export default function HomeLayout({
                   fixed SiteHeader (2026-07-20). */}
               <motion.div
                 className="flex items-center justify-between gap-4"
-                initial={{ opacity: 0, filter: "blur(12px)" }}
+                initial={introInitial}
                 animate={{
                   opacity: heroReady ? 1 : 0,
                   filter: heroReady ? "blur(0px)" : "blur(12px)",
@@ -235,7 +296,7 @@ export default function HomeLayout({
                   // primary ink.
                   color: "var(--color-fg-secondary)",
                 }}
-                initial={{ opacity: 0, filter: "blur(12px)" }}
+                initial={introInitial}
                 animate={{
                   opacity: heroReady ? 1 : 0,
                   filter: heroReady ? "blur(0px)" : "blur(12px)",
@@ -340,7 +401,7 @@ export default function HomeLayout({
                 the shared 12-col grid (featured first cell, 2-up after). */}
             <section id="projects" className="mt-[100px]">
               <motion.div
-                initial={{ opacity: 0, filter: "blur(12px)" }}
+                initial={introInitial}
                 animate={{
                   opacity: heroReady ? 1 : 0,
                   filter: heroReady ? "blur(0px)" : "blur(12px)",
@@ -388,7 +449,9 @@ export default function HomeLayout({
               </Grid>
             </footer>
           </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </div>
     </>
