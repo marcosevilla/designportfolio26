@@ -4,6 +4,13 @@ Loop memory for the bulk 1:1 extraction of prototype flows → Figma file "Portf
 (https://www.figma.com/design/O9tNG8DqYrpdJmrEGa7Io7), page **🎬 Case Study Visuals** (`50:2`).
 Re-read this file at the start of every iteration; resume from the first non-verified item.
 
+## 2026-08-02 follow-up — sweep + accuracy QA + backup audit (3 parallel agents)
+**Page now holds 72 frames** (64 original + 8 from the sweep). All three passes complete:
+- **Missing-visuals sweep** (`visuals-progress/sweep-missing.md`): all 65 router pages + tab/state variants diffed against the extracted set → ~25 uncaptured found, 8 portfolio-relevant extracted & verified 1:1: Compendium Jul 28 Builder w/ Service Requests settings `193:6` + HotSOS flat list `196:9` · Upsells Manage Items V3 DSN-1707 `203:5` · AI Workflow Canary Copilot lobby `206:4` (⚠️ permission unsecured — Figma-staged only, NOT for the site yet) + B&B Confirmation `210:7` · Tipping Disbursement `199:6` + Tip Settings `202:6` + HRIS Mappings `208:6`. Ranked backlog of deliberately-skipped screens in the sweep file (AI menu parser modal staged, one command away). Section 87:3 widened 7000→9500.
+- **⚠️ Frame 94:5 mislabeled:** the "Builder / 01 Dashboard" capture (`?page=compendium`) is the **Apr 1 editor**, not the Jul 28 redesign — the Jul 28 landing card targets `?page=hotsos-compendium-builder`, now captured as `193:6`. Marco to rule: rename 94:5, or delete in favor of 193:6.
+- **Accuracy QA** (`ACCURACY-QA.md`): all 64 original frames compared side-by-side vs baselines — **55 accurate, 9 fixed in place, 0 recaptures needed**. Fixes: Orders V2 sidebar utensils icon ×3, Statler wordmark font fallback (Georgia→Lora Bold Italic), Language select position (168:6), Order Food button centering (101:6), "$" price prefix ×2 (108:6, 112:6), kudos truncation collision (116:5). Systemic capture lessons (fonts fall back silently, small inline SVGs drop, CSS truncation not captured) logged in that file.
+- **Backup audit** (`FIGMA-BACKUP-AUDIT.md` + Figma page **📁 Backup File Index** `192:8`): ~285 files in `~/Desktop/canary figma` mapped to case studies w/ pull priority. Check-in richest (~35 files); F&B's main file lives in the *compendium/* folder; no coverage for 2022 General Task / Design System.
+
 ## Summary — ✅ EXTRACTION COMPLETE 2026-08-01
 **64 frames** across 5 sections on 🎬 Case Study Visuals (`50:2`), every one side-by-side verified vs a live baseline (agents) + 4 coordinator spot-checks passed:
 - **F&B Ordering (50:3): 26** — guest ordering flow ×6, Orders V2 ×3, Unified Cart DSN-1828 ×8 (canonical cart per Marco), menu management ×6, setup/POS ×3
