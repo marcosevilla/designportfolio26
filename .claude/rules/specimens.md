@@ -28,6 +28,7 @@ Reusable wrapper for any prototype specimen: auto-playing ghost-cursor demo (fro
 4. A CSS transition driven by a mount-time state flip silently never ran (it raced the `fsScale` layout effect) — fullscreen enter/exit are WAAPI, and the scale fit is in `useLayoutEffect`.
 5. The portal stays mounted through a `closing` beat (`onClose` starts the exit, `onClosed` unmounts). The inline copy does NOT go `visibility: hidden`, and resets on UNfreeze instead of freeze, so the page the scrim blurs out still looks whole.
 6. Element screenshots at dpr 0.9 (browser zoom 90%) clip fixed/tall elements — capture artifact, not a bug.
+7. **DemoStage self-pauses off-screen via IntersectionObserver.** A "stalled" demo is usually correct behavior with a drifted scroll anchor (`intersectionRatio: 0`). Before debugging, measure the intersection ratio FIRST, and re-anchor scroll twice with a delay so late layout shifts don't strand it.
 
 **Verification bar for specimen work:** tsc clean, 0 console errors, two full demo loops with `dY: 0` (no scroll-anchoring drift), dark mode, 390px (no page overflow, both pan edges reachable), fullscreen at true 1:1.
 
@@ -45,7 +46,9 @@ Icon paths: fetch from Templarian/MaterialDesign-SVG. **Never hand-author MDI gl
 ## DeviceShell
 Phone/browser specimen shells for card media, one shadow spec. Corners are proportional (`15% / 7.1%` outer, `11.5% / 5.2%` screen — percentage-slash keeps corners circular under the 9/19 aspect).
 
-**Rule:** canvas is live CSS, media is a contained artifact, nothing full-bleed. Render interactive device mocks at a logical size and scale down — building at physical CSS pixels means re-tuning every size when the shell shrinks.
+**Rule:** canvas is live CSS, media is a contained artifact, nothing full-bleed. Render interactive device mocks at the device's **logical** width (390pt iPhone) inside a `transform: scale()` wrapper from the start — one scale constant, then resize the shell freely. Building at physical CSS pixels means re-tuning every size when the shell shrinks.
+
+**Companion bug:** a scaled ancestor plus an unpositioned scroll container breaks `offsetTop` anchor math. Set `position: relative` on the scroll container.
 
 ## Video
 `components/AutoplayVideo.tsx` — ambient video with IntersectionObserver offscreen-pause + reduced-motion gate (`rootMargin: "50% 0px 50% 0px"`). Lightbox playback stays user-initiated.

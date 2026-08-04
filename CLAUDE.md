@@ -23,6 +23,7 @@
 ## Known Gotchas
 - **All code lives in `site/`** — run all npm commands from there, not the project root
 - framer-motion packages have corrupted before — if you see weird build errors after no code changes, try `rm -rf node_modules && npm install` in `site/`
+- Deps installed locally with `--legacy-peer-deps` (e.g. the drei v10 + React 18 pin) break the FIRST Vercel deploy after they land — Vercel's clean `npm install` hits the peer conflict your local install skipped. Commit the flag via `.npmrc` in the app dir at install time, not deploy time
 - The PostToolUse hook runs `tsc --noEmit` after TS/TSX edits — if it reports errors, fix them before continuing
 - If Figma MCP authentication fails, it's likely an account mismatch — don't spend more than 2 attempts debugging, ask the user
 - After config changes (`.claude/settings.json`, hooks, MCP configs), tell the user if a session restart is needed

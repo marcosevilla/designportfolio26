@@ -32,6 +32,7 @@ paths:
 - **Active section tracking:** IntersectionObserver in `HomeNav.useActiveSection()` watches `#home`, `#projects`, `#playground`. Click navigation locks the active section for `SCROLL_LOCK_MS` (900ms) so smooth-scroll doesn't fight the chosen target.
 - **Mobile sticky heading:** `sticky top-14 z-40` with frosted glass bg, releases when parent section scrolls out
 - **Spacing:** `mt-28` (112px) between sections
+- **Scroll restoration across `key`-triggered page unmounts belongs in `useLayoutEffect`**, never `useEffect + requestAnimationFrame`. The rAF path runs after the first animation paint and visibly shifts layout mid-animation.
 
 ## Work marquee (snap carousel, 2026-07-27)
 Redesigned per Marco's Paper mockup. Lives in `CaseStudyList.tsx` + `.work-marquee*` rules in globals.css.
@@ -68,12 +69,14 @@ Redesigned per Marco's Paper mockup. Lives in `CaseStudyList.tsx` + `.work-marqu
 ## Visual Effects
 - **Background dot grid — ⚠️ DISABLED (2026-08-03).** `components/BackgroundTexture.tsx` drew ~16,300 dots per frame at `gridSpacing: 9` (~146k canvas calls/frame at 1440×900), pegging a full CPU core on every visitor's machine, prod included. Disabled behind a `DISABLED = true` kill switch at the top of the file (the `SKIP_INTRO` idiom); the component returns `null`, so `canvasRef` stays null and the rAF effect bails before scheduling. `PARAMS` and the `/dev/effects-lab` copy are untouched — flip the const to restore.
   - Measured after: real Chrome renderer 88%→9%, headless harness 100%→4% of a core, **production 3%**.
-  - ⚠️ **Measurement trap:** removing the canvas from the DOM does NOT stop it — `draw()` holds `canvasRef`, so it keeps rendering into a *detached* bitmap. Isolate these loops via `emulateMedia({ reducedMotion: "reduce" })`, not DOM surgery.
+  - ⚠️ **Measurement trap:** removing the canvas from the DOM does NOT stop it — `draw()` holds `canvasRef`, so it keeps rendering into a *detached* bitmap. Isolate these loops via `emulateMedia({ reducedMotion: "reduce" })` or by cancelling the rAF, not DOM surgery. An A/B done by DOM removal "proves" the wrong thing.
+  - ⚠️ **Second measurement trap:** on a saturated main thread, other rAF loops absorb whatever slack you free. Measure **absolute CPU-time deltas** (CDP `Performance.getMetrics`), not busy-percentage — the percentage barely moves even when the fix works.
   - Params if restored: diamond dots, spacing 9, slow wave (speed 0.004), subtle cursor halo (radius 90, blend 0.35). DPR cap 1.5. Clear must be device-pixel via `setTransform` reset — in CSS units under the DPR transform it under-clears at browser zoom <100% and dots accumulate into bright right/bottom bands.
 - **STILL OPEN:** the 9 always-on `DitherBackdrop` WebGL canvases keep the GPU process ~53% — no IntersectionObserver, they animate even when their marquee card is scrolled off-screen. That's perf-backlog **#6**, which says *6* canvases; the real count is **9**.
 - **Paper grain**: `--grain-image` SVG tile in globals.css (`body::before`, multiply) — freq 0.8, strength 0.18.
 - **Cards**: Cursor-tracking rim glow on work-grid media frames — `components/CursorGlowOverlay.tsx`, dropped as last child inside `StudyMediaFrame` in CaseStudyList.tsx. Listens on its parentElement, desktop-only. Radius 170, rim 0.55, inner 0.04, falloff 55%, hover scale 1.005. Playground cells intentionally have NO glow.
 - **DitherBackdrop**: shared shader identity (wave/4x4/size 2), DITHER_TINT accent-mix + probe-resolver color logic, reduced-motion, slug-seeded variation (FNV-1a → mulberry32 → speed 0.08–0.25, frame phase, offsetX/Y ±0.6, scale 1.3–1.9; draw order is part of the contract). Per-card art direction = pass `overrides`.
+- **Canvas loop integer guard:** a `for` loop started at a non-integer bound (e.g. `for (let y = cy - scaledHeight; ...)`) propagates floats through every iteration and silently breaks downstream lookup-table indexing — `BAYER_4[1.5]` is `undefined`, then `undefined[0]` throws *"Cannot read properties of undefined (reading '0')"*. Floor the loop start explicitly (`Math.floor(cy - scaledHeight)`) **and** have the consumer (dither lookup) floor its inputs defensively. Guard both boundaries in any canvas pixel-rendering code.
 - **Tuning**: `/dev/effects-lab` — prop-driven copies + grain overrides with a slider panel; its `DEFAULT_*` consts mirror the applied values (keep in sync when retuning).
 - **Sections**: Scroll-triggered fade animations via FadeIn component. **BOTH** `components/FadeIn.tsx` AND `components/case-study/FadeIn.tsx` exist — easy to miss one. Both pre-trigger via viewport margin `"0px 0px 480px 0px"`.
 - **Progress**: Reading progress bar at top of case studies.

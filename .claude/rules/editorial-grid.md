@@ -23,6 +23,10 @@ paths:
 - **Per-section grids**: each section wraps itself in `<Grid>`; identical tracks keep columns aligned page-wide. Portrait media never goes media-full — use a narrow explicit span (e.g. `lg="5-8"`).
 - **Contact sheets**: `cd site && npm run sheet -- <route> [--unlock] [--name <slug>] [--dark]` → `.sheets/<slug>/sheet.html` tiling 390/768/1024/1440 full-page screenshots (requires dev server; playwright-core + installed Chrome; hides Agentation). Use after any layout change.
 
+## Margin/positioning traps — do not regress
+- **Never stack logical + physical margin utilities across variants.** `min-[1560px]:mx-auto` (margin-*inline*) silently lost to `lg:ml-[200px]` (margin-*left*) at ALL widths, pinning the "responsive" canvas permanently left — variant order does not make them cascade. For conditional centering, write ONE CSS class with `margin-left: max(Xpx, calc((100vw - var(--max)) / 2))` instead. This is exactly the TOC-clearing + re-centering math on `CaseStudyShell` above.
+- **Percentage-based `bottom` on `position: fixed` is viewport-relative, not content-relative** — it doesn't work for elements meant to sit between content blocks. Render inline for content-flow positioning; reserve `fixed` for genuinely viewport-anchored elements.
+
 ## Band alignment (2026-07-20 fifth pass → 2026-07-26 fourth pass)
 
 ⚠️ **All grid PRESETS now resolve to `CONTENT_BAND`** (lib/layout-presets.ts, `BAND` const) — preset names survive as semantic markers only; multi-slot presets stack as rows. Old compositions are in git. The preset vocabulary above describes the *pre-alignment* system; placement is now single-band.
