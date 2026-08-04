@@ -22,8 +22,11 @@ Thumbs.db
 *.swp
 *.swo
 
-# Claude Code
-.claude/
+# Claude Code — only .claude/rules/ is version-controlled.
+# Anchored to root with a leading slash; nested .claude/ dirs stay fully ignored.
+/.claude/*
+!/.claude/rules/
+site/.claude/
 .superpowers/
 
 # Git worktrees (used by superpowers:using-git-worktrees skill)

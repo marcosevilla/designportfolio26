@@ -1,0 +1,58 @@
+---
+description: Type scale, font stack, and typography tokens for the portfolio site
+paths:
+  - "site/lib/typography.ts"
+  - "site/app/globals.css"
+  - "site/components/case-study/SectionHeading.tsx"
+  - "site/components/case-study/PullQuote.tsx"
+  - "site/components/case-study/QuickStats.tsx"
+  - "site/components/HomeLayout.tsx"
+  - "site/components/type-tuner/**/*.tsx"
+  - "site/app/dev/type-lab/**/*.tsx"
+---
+
+# Typography
+
+Consolidated to single Geist Sans family in April 2026 (see `docs/superpowers/specs/2026-04-18-typography-consolidation-design.md`).
+
+## Font Stack
+Single family. Geist Sans loaded via `next/font/sans` in `layout.tsx`. No self-hosted `.woff2` files. Representational components (URL bar, arch diagrams, teaser) use `var(--font-mono-system)` = `ui-monospace, Menlo, Monaco, monospace`.
+
+## Font CSS Variables
+| Variable | Default |
+|----------|---------|
+| `--font-sans` | `var(--font-geist-sans), system-ui, sans-serif` |
+| `--font-mono-system` | `ui-monospace, Menlo, Monaco, monospace` (representational only) |
+| `--font-size-offset` | `0px` (user adjustable -4px to +4px via Theme Palette) |
+
+## Typescale (defined in `site/lib/typography.ts`)
+Three weights system-wide: 400 body/labels, 500 titles/UI, 600 hero emphasis. All 18px+ elements use `letter-spacing: -0.01em`.
+
+| Element | Weight | Size | Notes |
+|---------|--------|------|-------|
+| Hero statement (h1) — homepage | 600 | clamp(28-32px) | `typescale.display`, streams word-by-word during intro |
+| Hero name label — homepage | 400 | 14px | Inline in Hero.tsx, tertiary color, always visible |
+| Case study hero h1 | 600 | clamp(28-32px) | `typescale.caseStudyHero` |
+| Case study hero subtitle | 400 | 14px / 22 line-height | `typescale.subtitle` |
+| Section h2 (case study) | 500 | 14px | `typescale.sectionLabel` — tertiary color, acts as small label above section content. NOT a large heading. |
+| Section h3 | 500 | 18px | `typescale.h3` |
+| Section h4 | 500 | 16px | `typescale.h4` |
+| Body / case study prose | 400 | 14px / 22.4px line-height | `typescale.body` — SITE-WIDE body standard (2026-07-15): same 14/22.4 on the home bio (inline in HomeLayout) and the `body` element default (globals.css, unitless 1.6). Change all three together. |
+| QuickStats value | 500 | 24px | `typescale.statValue` |
+| PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
+| NextProject title | 500 | 22px | `typescale.nextProjectTitle` |
+| Card title | 500 | 18px | Inline styles in CaseStudyCard.tsx |
+| Card subtitle | 400 | 14-15px | Inline styles |
+| List row title | 500 | 16px | Inline in CaseStudyListRow.tsx |
+| List row meta / year / metric | 400 | 11px | `typescale.label`, tertiary |
+| Nav (desktop) | 400 | 16px | `typescale.nav` |
+| Nav (mobile) | 400 | 14px | `typescale.navMobile` |
+| Page titles (/work, /writing) | 500 | 24px | `typescale.pageTitle` |
+| Marquee | 400 | 14px | inline |
+
+⚠️ **Known naming drift (logged 2026-08-03):** `typography.ts` still says h3=18/h4=16 while the shipped `SectionHeading` renders 16/14 (Figma H3 headings are bound to the token *named* Heading/H4 — metrics right, names disagree). Marquee card title keeps −0.01em at 14px (deliberate, `Heading / Card Title`).
+
+⚠️ **Historical:** several 2026-07-20 passes flattened `typescale.display` / `caseStudyHero` to the home-h1 spec (16/24/600/-0.02em), then the 2026-07-26 pass restored the `scaledClamp(28px, 5vw, 32px)` clamp for **case-study H1s ONLY** — the homepage h1 keeps its inline 16px spec. Check the live component before trusting either row above.
+
+## Theme Palette
+Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No font-pairing picker — removed April 2026.

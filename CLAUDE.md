@@ -1,4 +1,8 @@
-# Marco Sevilla Portfolio - Project Context
+# Marco Sevilla Portfolio — Project Context
+
+> **This file is loaded in full at every session start — keep it under 200 lines.**
+> Detail that only matters when touching specific files lives in `.claude/rules/*.md` (path-scoped,
+> auto-loads on demand). Status and history live in `docs/`. See "Where things live" below.
 
 ## Safety Rules
 - Always commit working state before starting a new feature or risky change
@@ -17,52 +21,19 @@
 - When debugging build failures, check for package corruption (especially framer-motion) before assuming code changes caused the problem
 
 ## Known Gotchas
+- **All code lives in `site/`** — run all npm commands from there, not the project root
 - framer-motion packages have corrupted before — if you see weird build errors after no code changes, try `rm -rf node_modules && npm install` in `site/`
-- All code lives in `site/` — run all npm commands from there, not the project root
-- After making config changes (`.claude/settings.json`, hooks, MCP configs), inform the user if a session restart is needed for changes to take effect
 - The PostToolUse hook runs `tsc --noEmit` after TS/TSX edits — if it reports errors, fix them before continuing
 - If Figma MCP authentication fails, it's likely an account mismatch — don't spend more than 2 attempts debugging, ask the user
-
-## Session Start
-At the start of every session, before doing any work:
-1. Read `docs/PORTFOLIO-PRIORITIES.md` — this is the current task priority list
-2. Scan `site/app/` and `site/components/` to understand what's built
-3. Based on what the user asks, read the relevant docs (see index below)
-
-## Docs Index
-Reference docs live in `docs/`. Read the relevant ones based on the task — don't read all of them every time.
-
-| File | When to read |
-|------|-------------|
-| `PORTFOLIO-PRIORITIES.md` | Always — current priority tiers and next actions |
-| `CASE-STUDY-ASSESSMENT.md` | Working on any case study — gaps and action items per study |
-| `CASE-STUDY-PLAYBOOK.md` | Writing or restructuring case study content |
-| `portfolio_case_study_plan.md` | Deciding which studies to prioritize or reorder |
-| `VISUAL-EXPORT-GUIDE.md` | Adding images/visuals — has Figma specs, aspect ratios, naming |
-| `portfolio_build_context.md` | Technical questions about layout, typography, color, components |
-| `designer-identity.md` | Writing copy, bio, positioning, or "about" content |
-| `marco_canary_portfolio.md` | Needs impact stats or ownership data for case studies |
-| `portfolio-inspiration-analysis.md` | Making design direction decisions or comparing to references |
-| `designer-portfolios.md` | Looking at reference portfolios for inspiration |
-| `DEAD-CODE-AUDIT.md` | Full unused/hidden-code inventory (2026-07-15) — phantom slugs, orphan routes, stale data |
-| `SALVAGE-REVIEW.md` | What was kept for reuse after the dead-code deletion + recovery commits for everything deleted, incl. the intro/greeting animations |
-| `PORTFOLIO-RESEARCH.md` | Deep research on case study content, homepage strategy, and visual design best practices — sourced from 30+ design leaders and publications |
-| `PORTFOLIO-AUDIT.md` | Full audit of the current site with prioritized recommendations (P0-P3) — covers content, visuals, accessibility, and performance |
-| `LOGO-LAB-HANDOFF.md` | Building the interactive 3D logo (`/dev/logo-lab`) — reverse-engineering findings from opensoftware.co + recipe + open decisions. Read before any 3D logo work. |
-
-## Case Studies (Markdown Drafts)
-Written case study content lives in `case-studies/`. Each `.md` file contains the narrative draft for a case study. Read the relevant one when working on a specific case study page.
-
-## Obsidian Vault Boundary
-Case study critiques, project research, and career strategy context live in Obsidian — **do not duplicate here.**
-- **Vault root:** `~/Obsidian/marcowits/`
-- **Portfolio meta-docs:** `~/Obsidian/marcowits/portfolio/` — voice/style references, templates, per-study critiques, `bio.md` (symlinked to repo), `case-study-interview.md` (symlinked to repo)
-- **Per-study critiques:** `~/Obsidian/marcowits/portfolio/case-study-critiques/` — reflective design critiques per case study
-- **Per-project drafts + retrospectives:** `~/Obsidian/marcowits/work/canary/projects/[slug]/` — typically contains `case-study-draft.md` and `retrospective-2026-04-30.md`
-- Read critiques, drafts, and retrospectives for context when refining case study content, but don't copy them into this project.
+- After config changes (`.claude/settings.json`, hooks, MCP configs), tell the user if a session restart is needed
+- `position: fixed` overlays nested under HomeLayout's framer-motion wrappers get trapped by the animated `filter` style (it becomes the containing block) — portal to `document.body`. Overlays that must cover SiteHeader (`z-[130]`) need z ≥ 140. ⚠️ SiteHeader was unmounted site-wide 2026-07-20, so that z-floor may no longer bind — verify. Working example of the portal pattern: `MediaPreviewLightbox`, defined inline in `site/components/CaseStudyList.tsx` (~line 858), not its own file.
+- The Agentation toolbar (dev-only, bottom-right) intercepts clicks during browser automation — hide `[data-agentation-root]` when testing
+- `vercel` CLI is linked to project `marcosevillaportfolio` (`.vercel/` gitignored). `vercel env pull` returns empty strings for the three chat secrets (sensitive) — expected, not a config bug.
+- Apex `marcosevilla.com` 307s to `www` — curl checks must follow redirects
+- Kept-for-salvage files are deliberately unreferenced — don't re-flag them as dead (`docs/DEAD-CODE-AUDIT.md`, `docs/SALVAGE-REVIEW.md`)
 
 ## Project Overview
-A Next.js 14 portfolio site for a product designer, featuring case studies with rich interactive components.
+A Next.js portfolio site for a product designer, featuring case studies with rich interactive components.
 
 ## Tech Stack
 - **Framework**: Next.js 16 (App Router, Turbopack)
@@ -71,495 +42,84 @@ A Next.js 14 portfolio site for a product designer, featuring case studies with 
 - **Content**: MDX files with gray-matter for frontmatter parsing
 - **Deployment**: Vercel server deployment — NOT static export (the `/api/chat` route needs a server; do not add `output: export`, it would break chat). `images.unoptimized: true` in next.config.mjs is a leftover from the export era.
 
-## Project Structure
-
-```
-app/
-├── page.tsx                    # Homepage (renders HomeLayout w/ work as RSC slot)
-├── layout.tsx                  # Root layout — providers, SiteHeader, ChatFab + music dock, PasswordModal
-├── template.tsx                # Page transitions (framer-motion fade-in on route change)
-├── api/
-│   └── chat/                   # Chat-bar server route (Node runtime)
-├── work/
-│   ├── fb-ordering/            # Dedicated case study (editorial grid, public)
-│   ├── compendium/             # Dedicated case study (editorial grid, locked)
-│   ├── knowledge-base/         # Dedicated case study (editorial grid, locked)
-│   ├── ai-workflow/            # "How I Work with AI" (public)
-│   ├── upsells/                # RESTORED 2026-07-15 from May history (TwoCol era, locked)
-│   ├── checkin/                # RESTORED 2026-07-15 (TwoCol era, locked)
-│   ├── general-task/           # RESTORED 2026-07-15 (TwoCol era, locked)
-│   ├── design-system/          # RESTORED 2026-07-15 (TwoCol era, locked)
-│   └── page.tsx                # Redirect stub → /#projects
-├── play/page.tsx               # Redirect stub → /#playground (subpages deleted May 4)
-├── resume/                     # In-app resume w/ print CSS (orphan — links use Drive PDF)
-├── writing/                    # "Coming soon" shell (linked from nothing)
-└── dev/
-    └── type-lab/               # Typography composition tool — NOT NODE_ENV-gated, ships in prod build
-
-components/
-├── case-study/                 # Reusable case study components (TwoCol, CaseStudyHero,
-│                               # CaseStudyShell, QuickStats, ExpandableSection, PullQuote,
-│                               # NextProject, ProgressBar, ImagePlaceholder, FadeIn,
-│                               # SectionHeading, SidebarTOCBridge, TOCObserver)
-├── chat/                       # Chat bar UI (ChatBar, ChatPanel, ChatFab, ChatMessage,
-│                               # ChatMessageActions, ChipPrompt, CaseStudyCardUnfurl,
-│                               # parseChatMarkup, parseStream)
-├── music/                      # MusicMiniWidget (FAB dock) + InsetScrubber + PlayerChip
-├── fb-showcase/                # ObjectFlowDiagram (live on F&B page) + kept-for-salvage:
-│                               # RoadmapEvolution, SystemArchitecture, MobileShowcase,
-│                               # BrowserMockup (see docs/SALVAGE-REVIEW.md)
-├── layout/                     # Grid.tsx — editorial 12-col Grid/Col primitives
-├── type-tuner/                 # Typography composition tool (/dev/type-lab — ships in prod!)
-├── dev/                        # Dev-only inline content editor (EditableOverlay,
-│                               # FloatingToolbar, SectionReorder) — NODE_ENV-gated
-├── ui/                         # Primitives (tooltip — Base UI)
-│
-├── HomeLayout.tsx              # Homepage shell — editorial grid canvas; Hero renders
-│                               # ONLY in About-me mode (intro streaming is About-only)
-├── Hero.tsx                    # About-me surface (bio paragraphs, resume CTA)
-├── SiteHeader.tsx + HeaderToolbar.tsx  # Global top chrome (wordmark, controls)
-├── NavOverlay.tsx + HamburgerMenu.tsx  # Left-edge checkerboard rail → slide drawer nav
-├── MobileNav.tsx               # Case-study-only top bar (Back link via SidebarContext)
-├── LedMatrix.tsx               # LED matrix audio visualizer canvas
-├── LockGate.tsx                # WIP-courtesy gate — `card` / `page` modes
-├── PasswordModal.tsx           # Global unlock modal (mounted in layout.tsx)
-├── PaletteSwatches.tsx / ThemeToggle.tsx  # Theme swatches + applyColoredTheme
-├── HighlightableBio.tsx + HighlighterContext.tsx + PhotoStack.tsx  # About bio surfaces
-├── ConnectLinks.tsx            # Email / LinkedIn / Resume CTA cluster
-├── Resume.tsx                  # In-app resume (route /resume, print CSS)
-├── LocalStatus.tsx             # Time / weather / location strip
-├── LoadingOverlay.tsx          # Load intro: * blink → type "Welcome" → morph to wordmark.
-│                               # OFF via SKIP_INTRO=true (line 12); preview w/ ?loader=1 in dev
-├── CaseStudyList.tsx           # THE homepage work grid (StudyCell media frames, playground
-│                               # cells, lightbox, parked CellCaption + tag filter)
-├── WorkHistory.tsx + case-study/ProjectDetails.tsx  # Kept-for-salvage (unmounted, both work)
-├── DeviceShell.tsx             # Phone/browser specimen shells for card media
-├── StreamingText.tsx           # Character streaming (used by About bio)
-├── TwoCol.tsx                  # RESTORED 2026-07-15 — layout dep of the 4 restored studies only;
-│                               # new work uses the editorial grid
-├── Icons.tsx / ViewportFade.tsx / FadeIn.tsx  # Shared utilities
-
-lib/
-├── locked-content.ts           # Single source of truth for locked slugs (LOCKED_SLUGS Set)
-├── PasswordGateContext.tsx     # Unlocked-state provider (env-hash + multi-tab sync)
-├── SidebarContext.tsx          # Case-study sidebar state + backHref
-├── playground-cards.ts         # Playground roster (homepage cells)
-├── chat/                       # Chat data + prompt + rate-limit + study-metadata
-├── layout-presets.ts           # Editorial grid spec parser + presets
-├── AudioPlayerContext.tsx / VisualizerSceneContext.tsx / visualizer-scenes.ts
-├── audio-analysis.ts / playlist.ts
-├── NavOverlayContext.tsx / ChatOverlayContext.tsx / ChangelogOverlayContext.tsx
-├── carousel-transition.ts      # Kept-for-salvage: gradient-veil route transition
-├── dot-font.ts                 # Kept-for-salvage: 3×5 bitmap pixel font + canvas helpers
-├── bio-content.ts              # Bio paragraphs (generated from content/bio.md)
-├── content.ts / gallery-content.ts / resume-content.ts / changelog.ts
-├── editor-types.ts + InlineEditorContext.tsx  # Dev inline editor
-├── springs.ts / study-tags.ts / typography.ts / types.ts / utils.ts
-
-content/                        # MDX case study metadata (fb-ordering, checkin, general-task,
-                                # design-system, compendium, upsells)
-
-public/images/                  # Per-case-study image folders (checkin/, general-task/,
-                                # design-system/, fb-ordering/, compendium/, upsells/)
-```
-
-## Case Studies
-
-### Dedicated Routes (Custom React Components)
-These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + TOCObserver), expandable sections, stats:
-
-1. **F&B Ordering** (`/work/fb-ordering`) - Canary, 2025
-2. **Digital Compendium** (`/work/compendium`) - Canary, 2024
-3. **Upsells Forms** (`/work/upsells`) - Canary Technologies, 2025
-4. **Hotel Check-in** (`/work/checkin`) - Canary Technologies, 2024
-5. **General Task** (`/work/general-task`) - General Task, 2022
-6. **Design System** (`/work/design-system`) - General Task, 2022
-7. **How I Work with AI** (`/work/ai-workflow`) - Personal, 2026
-
-### Homepage Card Order
-1. F&B Ordering (newest Canary work, 100% ownership)
-2. Digital Compendium ($1M CARR, platform thinking)
-3. Upsells Forms ($3.8M CARR, workflow design)
-4. Hotel Check-in (enterprise scale)
-5. General Task (2022, startup experience)
-6. Design System (2022, foundational work)
-
-## Key Patterns
-
-### Routes ↔ data reconciliation (2026-07-15)
-The dynamic `app/work/[slug]/` route is long gone — every study is a dedicated route. Slug sets that must stay in sync when adding/removing a study: `lib/locked-content.ts` (LOCKED_SLUGS), `CaseStudyList.tsx` (STUDY_ROUTES + HIDDEN_SLUGS), `lib/chat/study-metadata.ts` (STUDY_SLUGS/METADATA), `lib/chat/case-study-content.ts` (FILENAME_BY_SLUG), `lib/editor-types.ts` (SLUG_TO_FILE), `content/*.mdx`. Known gap: `knowledge-base` has a live route but no chat metadata entry; chat study links resolve to `/#projects` (hardcoded in parseChatMarkup + CaseStudyCardUnfurl since May 4) even though routes exist again.
-
-### Case Study Content Component Pattern
-Each dedicated case study has:
-- `page.tsx` - Metadata and wrapper (negative top margin for full-bleed hero)
-- `[Name]Content.tsx` - Rich component: full-bleed gradient hero, then post-hero content in a two-column editorial layout
-
-### Editorial 12-Column Grid (shipped 2026-07-14, replaces TwoCol)
-**Visual reference + prompting vocabulary: `docs/LAYOUT-REFERENCE.html`** (open in a browser). All pages share one 12-col canvas; content is *placed* per band, not wrapped.
-- **Canvas**: `--grid-max: 1128px`, `--grid-gap: 24px` (globals.css). Case studies: `CaseStudyShell` clears the fixed InlineTOC at lg (`lg:ml-[200px]`), re-centers ≥1560px. Home: centered canvas in HomeLayout. Root `<main>` no longer caps width — each page owns its measure.
-- **Bands**: phone <768 / tablet 768–1199 / desktop ≥1200 (custom media queries on `.col-ed`, NOT Tailwind's lg=1024 — desktop compositions only apply with real room). Unset bands inherit downward: `lg → md → base → full`.
-- **Primitives**: `site/components/layout/Grid.tsx` — `<Grid preset?>` + `<Col base? md? lg?>`, spec grammar `"1-6"` (inclusive) / `"full"`. Parser + presets: `site/lib/layout-presets.ts` (tests: `npx tsx scripts/test-grid-spec.ts`).
-- **Presets**: prose (4-9, centered), prose-wide (3-10, centered), intro-rail (1-7 + 9-12 MetaRail), media-right (1-5 + 6-12), media-left (1-7 + 8-12), media-full, duo (1-6 + 7-12, holds on tablet), quote-offset (3-10). Prose is centered by Marco's call 2026-07-14 — left-edge prose read as lopsided on text-heavy pages. Preset assigns specs to `<Col>` children in order; explicit props win.
-- **MetaRail** (`components/case-study/MetaRail.tsx`): Year/Role/Scope rail on every case-study intro + used conceptually by the home contact rail. Horizontal on tablet, vertical column at lg.
-- **Per-section grids**: each section wraps itself in `<Grid>`; identical tracks keep columns aligned page-wide. Portrait media never goes media-full — use a narrow explicit span (e.g. `lg="5-8"`).
-- **Contact sheets**: `cd site && npm run sheet -- <route> [--unlock] [--name <slug>]` → `.sheets/<slug>/sheet.html` tiling 390/768/1024/1440 full-page screenshots (requires dev server; playwright-core + installed Chrome; hides Agentation). Use after any layout change.
-
-### CaseStudyHero Gradient Colors
-| Study | gradient[0] | gradient[1] |
-|-------|-------------|-------------|
-| F&B Ordering | `#EF5A3C` | `#ED4F2F` |
-| Compendium | `#2563EB` | `#1D4ED8` |
-| Upsells | `#0D9488` | `#0F766E` |
-| Check-in | `#6366F1` | `#4F46E5` |
-| General Task | `#334155` | `#1E293B` |
-| Design System | `#8B5CF6` | `#7C3AED` |
-
-### Content Width System (Stripe-inspired)
-- `max-w-content` (650px) — case study body text, /writing, /play
-- `max-w-content-md` (800px) — dialog inner content, case study hero inner
-- `max-w-content-lg` (1060px) — dialog sheet, case study hero outer
-- Homepage bio panel: hardcoded `max-w-[640px]` in SectionSnap
-- Homepage work/cards panel: hardcoded `max-w-[640px]` in SectionSnap
-- Padding: `px-4 sm:px-8` (16px mobile, 32px tablet+)
-- `layout.tsx` no longer constrains `<main>` — each page handles its own width
-
-### Visual Effects (restored + retuned 2026-07-17 via /dev/effects-lab)
-- **Background**: Perlin noise animated dot grid (`components/BackgroundTexture.tsx`, mounted in HomeLayout — homepage only). Restored from `e78665f` with retuned params; see the component's `PARAMS` const. Diamond dots, spacing 9, slow wave (speed 0.004), subtle cursor halo (radius 90, blend 0.35).
-- **Paper grain**: `--grain-image` SVG tile in globals.css (`body::before`, multiply) — unchanged, matches lab defaults (freq 0.8, strength 0.18).
-- **Cards**: Cursor-tracking rim glow on work-grid media frames — `components/CursorGlowOverlay.tsx`, dropped as last child inside `StudyMediaFrame` in CaseStudyList.tsx. Listens on its parentElement (no wiring on the frame), desktop-only. Radius 170, rim 0.55, inner 0.04, falloff 55%, hover scale 1.005.
-- **Tuning**: `/dev/effects-lab` — prop-driven copies of both effects + grain overrides with a slider panel; its DEFAULT_* consts mirror the applied values (keep in sync when retuning).
-- **Card/List toggle**: Blur in/out transition, localStorage persistence
-- **Sections**: Scroll-triggered fade animations via FadeIn component
-- **Progress**: Reading progress bar at top of case studies
-
-### Locked Content Gating (shipped 2026-05-02)
-WIP-courtesy gate on a subset of case studies + Playground subpages. Spec/plan: `docs/superpowers/specs/2026-05-02-locked-content-gating-design.md` + `docs/superpowers/plans/2026-05-02-locked-content-gating.md`.
-- **Single source of truth:** `lib/locked-content.ts` (`LOCKED_SLUGS` Set). Removing a slug from this Set permanently unlocks that page.
-- **Wrapper:** `components/LockGate.tsx` — `card` mode (hover overlay + click intercept on homepage cards, accepts `cardRadius`) and `page` mode (full-screen placeholder with staggered motion + email / LinkedIn / "I have a code" CTAs).
-- **Provider:** `lib/PasswordGateContext.tsx` — env-hash check + multi-tab sync via storage events.
-- **Modal:** `components/PasswordModal.tsx` — global, mounted in `app/layout.tsx`.
-- **Env var:** `NEXT_PUBLIC_UNLOCK_CODE_HASH` in Vercel for a non-default code (default hash accepts `miyagi`). Generator: `npm run hash:code -- <code>`.
-
-### Unified Toolbar (shipped 2026-05-02)
-Replaces the prior split chrome (HeroActions, sticky footer, separate palette button). Single fixed-top bar across the homepage.
-- **Desktop:** `components/HeroToolbar.tsx` — left cluster (HamburgerMenu, palette popover, music expand, LED matrix scene toggles) + right cluster (`LocalStatus` time/weather). Music player surfaces in `components/music/`.
-- **Mobile:** `components/MobileToolbar.tsx` — same content, vertical layout.
-- **Palette popover:** Triggers ThemePalette content; uses `ToolbarIconButton` chrome (hover/active tint via `color-mix(in srgb, var(--color-accent) ...)`, focus ring).
-- **LED matrix:** `components/LedMatrix.tsx` (canvas) + `components/music/LedMatrixUI.tsx` (scene toggles, lifted out of the matrix so they're visible on mobile and against the toolbar bg).
-- **No greeting cycle:** The earlier rotating-greeting variant in the right cluster was removed; right cluster now only carries time/weather/location.
-- **No StickyFooter:** That component is deleted — palette/marquee/email/LinkedIn moved into this bar (or into ConnectLinks where appropriate).
-
-## Design Tokens (CSS Variables)
-
-### Colors — Light Mode (`:root`)
-| Variable | Value |
-|----------|-------|
-| `--color-bg` | `#ffffff` |
-| `--color-fg` | `#1a1a1a` |
-| `--color-fg-secondary` | `rgba(17, 17, 17, 0.6)` |
-| `--color-fg-tertiary` | `rgba(17, 17, 17, 0.35)` |
-| `--color-surface` | `#fbfbfb` |
-| `--color-surface-raised` | `#f5f4f9` |
-| `--color-border` | `#e6e6e6` |
-| `--color-muted` | `#f3f3f3` |
-| `--color-accent` | `var(--color-fg)` (neutral — `mono` theme is default; colored themes override at runtime) |
-
-### Colors — Dark Mode (`.dark`)
-| Variable | Value |
-|----------|-------|
-| `--color-bg` | `#0a0a0a` |
-| `--color-fg` | `#ededed` |
-| `--color-fg-secondary` | `rgba(237, 237, 237, 0.5)` |
-| `--color-fg-tertiary` | `rgba(237, 237, 237, 0.35)` |
-| `--color-surface` | `#141414` |
-| `--color-surface-raised` | `#1a1a1a` |
-| `--color-border` | `#2a2a2a` |
-| `--color-muted` | `#1e1e1e` |
-| `--color-accent` | `var(--color-fg)` (neutral — `mono` theme is default; colored themes override at runtime) |
-
-### Themes
-**11 themes total.** Default is `mono` (pure neutral B&W — accent + glow aliased to `--color-fg`). 10 colored opt-ins: ocean, forest, wine, slate, ember (bold); lavender, mint, rose, butter, sky (soft). Each colored theme overrides all CSS variables at runtime via `applyColoredTheme()` in `ThemeToggle.tsx`. Mono swatch in the palette renders as a 50/50 black/white split circle so its "neutral" identity is legible against any bg. Persists via `theme-mode` + `theme-family` in localStorage.
-
-### Brand mark (May 2026)
-**`*` (Geist Sans, weight 500)** replaces the previous `✸` heavy 8-pointed star and the `✦` six-pointed marquee separator everywhere. Geist's `*` sits high in its em-box, so most surfaces apply `transform: translateY(15%)` to optically center it next to adjacent text. In-flight visual rebrand spec/plan: `docs/superpowers/specs/2026-05-03-visual-rebrand-bw-asterisk-design.md` + `docs/superpowers/plans/2026-05-03-visual-rebrand-bw-asterisk.md`. Surfaces:
-- Hero rest star: 0.62em inner span, slot Y offset `0.08em`
-- Hero loader (LoadingOverlay): 0.42em inner span (kept smaller — slot is 108-168px so absolute size is huge)
-- HomeNav active marker: 18px, `translateY(15%)`, split outer/inner span so `y: starY` motion value doesn't fight the static centering transform
-- ChatBar SparkGlyph: default 22px + `translateY(15%)`; "Ask Marco" pill uses size 22
-- ChatMessage streaming cursor: 1.7em with `verticalAlign: middle`, `lineHeight: 0`
-- MobileToolbar pill: 22px + `translateY(15%)`
-- InlineTOC marker, SeekBar thumb, Marquee separator: same pattern, smaller
-
-## Typography
-
-Consolidated to single Geist Sans family in April 2026 (see `docs/superpowers/specs/2026-04-18-typography-consolidation-design.md`).
-
-### Font Stack
-Single family. Geist Sans loaded via `next/font/sans` in `layout.tsx`. No self-hosted `.woff2` files. Representational components (URL bar, arch diagrams, teaser) use `var(--font-mono-system)` = `ui-monospace, Menlo, Monaco, monospace`.
-
-### Font CSS Variables
-| Variable | Default |
-|----------|---------|
-| `--font-sans` | `var(--font-geist-sans), system-ui, sans-serif` |
-| `--font-mono-system` | `ui-monospace, Menlo, Monaco, monospace` (representational only) |
-| `--font-size-offset` | `0px` (user adjustable -4px to +4px via Theme Palette) |
-
-### Typescale (defined in `site/lib/typography.ts`)
-Three weights system-wide: 400 body/labels, 500 titles/UI, 600 hero emphasis. All 18px+ elements use `letter-spacing: -0.01em`.
-
-| Element | Weight | Size | Notes |
-|---------|--------|------|-------|
-| Hero statement (h1) — homepage | 600 | clamp(28-32px) | `typescale.display`, streams word-by-word during intro |
-| Hero name label — homepage | 400 | 14px | Inline in Hero.tsx, tertiary color, always visible |
-| Case study hero h1 | 600 | clamp(28-32px) | `typescale.caseStudyHero` |
-| Case study hero subtitle | 400 | 14px / 22 line-height | `typescale.subtitle` |
-| Section h2 (case study) | 500 | 14px | `typescale.sectionLabel` — tertiary color, acts as small label above section content. NOT a large heading. |
-| Section h3 | 500 | 18px | `typescale.h3` |
-| Section h4 | 500 | 16px | `typescale.h4` |
-| Body / case study prose | 400 | 14px / 22.4px line-height | `typescale.body` — SITE-WIDE body standard (2026-07-15): same 14/22.4 on the home bio (inline in HomeLayout) and the `body` element default (globals.css, unitless 1.6). Change all three together. |
-| QuickStats value | 500 | 24px | `typescale.statValue` |
-| PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
-| NextProject title | 500 | 22px | `typescale.nextProjectTitle` |
-| Card title | 500 | 18px | Inline styles in CaseStudyCard.tsx |
-| Card subtitle | 400 | 14-15px | Inline styles |
-| List row title | 500 | 16px | Inline in CaseStudyListRow.tsx |
-| List row meta / year / metric | 400 | 11px | `typescale.label`, tertiary |
-| Nav (desktop) | 400 | 16px | `typescale.nav` |
-| Nav (mobile) | 400 | 14px | `typescale.navMobile` |
-| Page titles (/work, /writing) | 500 | 24px | `typescale.pageTitle` |
-| Marquee | 400 | 14px | inline |
-
-### Theme Palette
-Color swatches (10 colored themes + light/dark) and font-size ±/reset only. No font-pairing picker — removed April 2026.
-
-## Component & Interaction Specs
-
-### Homepage Nav (HomeNav.tsx)
-- **Scope:** Rendered inside HomeLayout.tsx, only visible on homepage at lg+
-- **Items:** `HOME_NAV_ITEMS` = Home (`#home`), Work (`#projects`), Playground (`#playground`) — all in-page anchors, no global routes
-- **Font:** 16px weight 500
-- **Active state:** Geist `*` (18px, weight 500, translateY(15%) for optical centering) + text springs 18px right. Active section tracked via IntersectionObserver with a scroll-lock window after click navigation (`SCROLL_LOCK_MS = 900`).
-- **Nav star:** spring stiffness 350, damping 28, y = activeIndex × ROW_HEIGHT
-- **Hover:** Accent color + 8px right slide (spring 400/25)
-- **Mobile (MobileNav.tsx):** Case-study-only top bar — single ← Back link driven by `SidebarContext.backHref`. Not used on homepage. Homepage mobile chrome lives in MobileToolbar.tsx.
-- **No StickyFooter:** The fixed bottom bar was removed in the 2026-05-02 toolbar redesign — email/LinkedIn/palette/marquee moved into the unified top toolbar (see "Unified Toolbar" below).
-
-### Bento Cards (CaseStudyCard)
-- **Hover scale:** `1.01x`, 350ms ease-out in / 400ms ease out (CSS, not Framer Motion)
-- **Border glow:** Mouse-tracking radial gradient, 200px radius, 70% falloff, `var(--color-accent)`, CSS mask-composite
-- **Inner glow:** 5% opacity radial accent gradient at cursor position
-- **No parallax** — simple scroll, no framer-motion transforms
-- **Background:** `var(--color-surface-raised)` (opaque)
-- **Edges:** Sharp (`rounded-none`), 20px padding (`p-5`)
-- **Year labels:** 11px mono, `--color-fg-tertiary`, inside card above title (showYear prop)
-
-### Card/List View Toggle (CaseStudyList)
-- **Two views:** Card (default) and List, toggled via icon buttons on "Work" header row
-- **Toggle buttons:** ViewToggleButton with instant hover color (accent on hover). Active = accent, inactive = fg-secondary.
-- **Transition:** AnimatePresence mode="wait", blur 4px + opacity fade, 200ms easeInOut
-- **Persistence:** localStorage key `work-view-mode`, SSR-safe (hydrated flag)
-- **FadeIn:** Only on initial page load; after first toggle, `hasToggled` ref skips FadeIn
-- **List view rows:** CaseStudyListRow — full-width link, flex items-baseline: year (48px, mono 11px) | title (heading 16px, weight 500, spring nudge 8px on hover) | company · role (mono 11px, hidden <sm) | metric (mono 11px, hidden <md)
-- **Year grouping:** showYear prop controls visibility (first item per year group), currently forced to true for all rows
-- **Dividers:** 1px solid --color-border between rows + top border on container
-
-### MDX Frontmatter Metadata
-| Study | company | role | metric |
-|-------|---------|------|--------|
-| fb-ordering | Canary | Sole designer | 0→1, 100% ownership |
-| compendium | Canary | Product designer | $1M+ CARR |
-| upsells | Canary | Lead designer | $3.8M CARR |
-| checkin | Canary | Product designer | 4,500+ hotels |
-| general-task | General Task | Founding designer | 0→1 product |
-| design-system | General Task | Founding designer | 0→1 system |
-| ai-workflow | Personal | Designer + builder | Daily AI practice |
-
-### Homepage Scroll
-- **Single continuous scroll** — SectionSnap deleted, replaced by normal document flow
-- **Active section tracking:** IntersectionObserver in `HomeNav.useActiveSection()` watches `#home`, `#projects`, `#playground`. Click navigation locks the active section for `SCROLL_LOCK_MS` (900ms) so smooth-scroll doesn't fight the chosen target.
-- **Mobile sticky heading:** `sticky top-14 z-40` with frosted glass bg, releases when parent section scrolls out
-- **Spacing:** `mt-28` (112px) between sections
-
-### Load Intro (LoadingOverlay)
-- **Current sequence (OFF by default):** `*` cursor-blinks ×3 → types "Welcome" (95ms/char) → holds → backspaces → star morphs via layoutId `hero-star` into the wordmark star → bg fade. Once per session (`portfolio-loaded`).
-- **Kill switch:** `SKIP_INTRO = true` at `LoadingOverlay.tsx:12` — flip to `false` to restore. Dev preview without flipping: `?loader=1`.
-- The older 5-phase streaming hero + CyclingGreeting typing header are deleted — recovery commits in `docs/SALVAGE-REVIEW.md`.
-
-### Theme Palette Picker
-- **Surface:** Popover from the unified toolbar's palette button (desktop) / bottom sheet (mobile)
-- **Sections:** Color swatches only (10 colored themes + mono + light/dark) and font-size ±/reset action buttons. Font-pairing picker was removed April 2026.
-- **Persistence keys:** `theme-mode`, `theme-family`, `colored-theme-name`, `font-size-offset`
-
-### Background Texture (BackgroundTexture.tsx)
-Restored 2026-07-17 (deleted 3d3a14c → recovered from e78665f, retuned in /dev/effects-lab). Params live in the component's `PARAMS` const — the values in "Visual Effects" above are canonical. Colors resolve at runtime: dots `--color-fg-tertiary`, cursor halo `--color-glow`.
-
 ## Dev Server
 ```bash
-npm run dev      # Starts on localhost:3000 with 0.0.0.0 binding for mobile preview
+cd site && npm run dev      # localhost:3000, 0.0.0.0 binding for mobile preview
 ```
 
-## Image Strategy
-Images are in `public/images/[case-study]/`. Check-in, Design System, and General Task are fully wired up (no placeholders). F&B has 10 remaining, Compendium 15, Upsells 17 — all need Figma exports.
+## Session Start
+At the start of every session, before doing any work:
+1. Read `docs/PORTFOLIO-PRIORITIES.md` — the current task priority list
+2. Read the top entries of `docs/CURRENT-STATE.md` — what happened most recently and what's in flight
+3. Based on what the user asks, read the relevant docs (see index below)
 
-## Chat bar
-
-- Surface: `site/components/chat/`. Data + prompt + rate-limit: `site/lib/chat/`. Server: `site/app/api/chat/route.ts` (Node runtime).
-- Single source of truth for studies in chat: `site/lib/chat/study-metadata.ts`. Adding a new case study to chat = add an entry here + (optionally) drop a markdown draft at `case-studies/<filename>.md` and map the slug → filename in `site/lib/chat/case-study-content.ts`.
-- Inline link grammar in assistant replies (parser at `site/components/chat/parseChatMarkup.tsx`):
-  - `[label](study:<slug>)`, `[label](about)`, `[label](resume)`, `[label](contact:email)`, `[label](contact:linkedin)`
-  - Unknown slugs degrade to plain label text — safe by design.
-- Trailing `<artifact slug="<slug>" />` marker → `CaseStudyCardUnfurl` (max one per reply).
-- Env vars (Vercel + `.env.local`): `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`.
-- Spend safety: $25/mo cap in Anthropic console. Per-IP: 8/min, 60/day via Upstash. Plus `max_tokens: 1024` and 30-turn transcript cap.
-- Pure-function tests: `site/scripts/test-chat-parser.ts`. Run with `npx tsx scripts/test-chat-parser.ts`.
-- v1 limitation: the chat-bar pill is rendered only in the in-flow HeroToolbar (not the sticky portal variant) to avoid a framer-motion layoutId collision.
+Relevant `.claude/rules/*.md` load automatically when you open a matching file — you don't need to read them up front.
 
 ## Session End
 Before ending any session:
-1. Update the "Current State" section below with: what was accomplished, what's in progress, any known issues
-2. Note exact file paths that were modified
-3. If any features are partially complete, describe what's left
+1. Add a new entry at the **top** of the list in `docs/CURRENT-STATE.md`: what was accomplished, what's in progress, any known issues, exact file paths modified
+2. If any features are partially complete, describe what's left
+3. If you learned a **durable architectural fact** (not status), put it in the matching `.claude/rules/*.md` instead — `CURRENT-STATE.md` is for history, rules are for how the system works
 
-## Current State
-_Updated by Claude at end of each session. Architectural facts get promoted into the relevant Key Patterns section above; this section is for the most recent session + genuinely in-flight work only._
+## Where things live
 
-- **Latest (2026-08-04, main — ORDER-MANAGEMENT DASHBOARD SPECIMEN, committed d9e7de9, DEPLOYED + verified in prod HTML):** Second DemoStage specimen, mounted directly below FnbCartSpecimen on /work/fb-ordering — the staff side of the same product. Four new files: `components/fb-showcase/OrderDashboardSpecimen.tsx` + `order-dashboard-data.ts` + `order-dashboard-icons.ts` (21 MDI paths **fetched from Templarian/MaterialDesign-SVG, never hand-authored** — do the same for new glyphs) + **`canary-polished-tokens.ts`** (Inter ramp / `#2858c4` primary / cool neutrals / space+radius+elevation, transcribed from `docs/figma-migration/POLISHED-TOKENS.md` — this is now SHARED infra, Compendium specimens should import it, not re-transcribe). **Inter is loaded in `app/layout.tsx` as a PRODUCT typeface only** (`--font-inter`); site chrome stays Geist.
-  - **Source:** Figma "Canary Polished Visuals" `OclYC5ytIQc9HAuJMRXUaz`, section `51:6068` → frames `51:5784` (table) + `45:5213` (table + side sheet). Geometry/copy/nav/columns transcribed verbatim. The lifecycle (New → In progress → Past) came from the `orders-v2` prototype; the side sheet + Approve/Deny came from the `order-management` v1 prototype — **neither prototype animated any transition, all motion here is new.**
-  - **Loop (~13s):** open Lucas Martin → sheet slides in (400ms, v1's `cubic-bezier(.25,.46,.45,.94)`) → Approve → row collapses out of New (5→4) → cursor taps In progress, row lands PREPARING under an accent wash → an older order flips DELIVERED and clears itself to Past. Cursor decides, system shows consequence.
-  - **Deliberate deviations from the frame (Marco approved the shape, not each item):** Approve/Deny pair doesn't exist in Figma (taken from v1, restyled — Approve solid `primary/500`, Deny white + danger text); tab counts added (queue hand-off is invisible without them); **the source frame's price breakdown sums only the first of two line items ($124 against a $124+$59 cart) — NOT reproduced, totals are computed ($199.81).**
-  - **DemoStage changed (shared with the cart specimen):** inline stage was hardcoded `scale = 1`, so a 1177px specimen blew out the page. Added an inline fit-scale **floored at `MIN_INLINE_SCALE = 0.7`** — never smaller than its desktop size, pans horizontally below that. The well moved from flex centering to **block + `margin-inline: auto`**, because flex `items-center` pushes overflow off BOTH edges and strands the left half unreachable. No-op for the 300px phone specimen (verified: still 300px, scale 1, centered).
-  - **Verified:** tsc clean, 0 console errors, two full loops with **`dY: 0`** (no scroll-anchoring drift — the bug class that bit the cart specimen), dark mode (panel follows theme, product stays light), 390px (no page overflow, both pan edges reachable), fullscreen at true 1:1.
-  - **⚠️ Noticed in passing, NOT acted on:** the site-wide password gate appears to be OFF in prod — `curl` with no cookie returns the full page, not the 401 gate. Flag is `SITE_GATE_ENABLED` in `site/lib/site-gate.ts`. Marco may have opened it deliberately.
-  - **NEXT: Compendium specimens** — import `canary-polished-tokens.ts`, follow the `OrderDashboardSpecimen` shape (self-contained component that wraps itself in DemoStage; mount that, not DemoStage directly).
-- **Earlier (2026-08-04, main — DemoStage CHOREOGRAPHED DEMO WRAPPER, committed 2f3098b, DEPLOYED to prod 2026-08-04 00:06 PDT):** New reusable `site/components/DemoStage.tsx` wraps any prototype specimen: auto-playing ghost-cursor demo (frosted-glass tap circle) driven by a `script` of steps against `data-demo="…"` attributes — dispatches REAL clicks so the prototype's own state stays the single source of truth; loops via key-remount. Hover anywhere on the panel pauses + shows an "Interact with flow" pill → click hands over control (un-hover resumes); reset button always restarts the auto demo; fullscreen = body-portal copy scaled to viewport (cap 2×) with reset + X + Esc/scrim close — open/close restarts the run (state can't cross the portal, accepted). prefers-reduced-motion ⇒ no auto-play, starts interactive. FnbCartSpecimen adopted it (panel chrome moved into DemoStage; `FNB_DEMO_SCRIPT`: yellowtail add → toro drawer w/ Guacamole radio → edamame add → view cart → remove edamame → continue → type room 412 → submit → toast → loop). **Hard-won gotchas baked into the code — do not regress:** (1) dispatched `el.click()` natively focuses controls (labels forward to their sr-only radios) which trips the keyboard-takeover focus handler → the script flags `scriptFocusRef` around click/focus; (2) all script focus uses `preventScroll` + scrollX/Y pinned around taps; (3) the stage sets `overflow-anchor: none` or Chrome scroll-anchoring jumps the page ±150-250px at drawer/loop remounts (verified: 0 scroll events across a full loop after fix). Verified end-to-end via Playwright: two full loops, takeover, reset, fullscreen (2× on tall viewport), Esc, body scroll lock. Element screenshots at dpr 0.9 (browser zoom 90%) clip fixed/tall elements — capture artifact, not a bug.
-  - **Tuning pass (2026-08-04, committed c5592f4, DEPLOYED to prod — Marco's 6-item list + a follow-up, DemoStage.tsx only):** (1) hover-pause moved off the panel onto the stage div — only the phone mock pauses/offers takeover; (2) pause/play button left of reset (auto mode only, hides the cursor while paused, cleared by reset); (3) cursor fill 28%→16% white, blur 3→1.5px so content reads through; (4) travel 280–700ms → 450–1100ms; (5) motion humanized — WAAPI arc (perpendicular bow, random side) with split accelerate/settle easing + ±2px landing scatter, replacing the single-transition straight line (`CURSOR_EASE` const is gone); (6) fullscreen enter/exit choreography: scrim `backdrop-filter` ramps 0→16px under a darkening tint while the enlarged phone goes blur(14px)+scale(0.86)→sharp over 460ms, reversed over 300ms on close. **Gotchas from this pass:** a CSS transition driven by a mount-time state flip silently never ran (it raced the fsScale layout effect) — enter/exit are WAAPI, and the scale fit moved to `useLayoutEffect`; the portal now stays mounted through a `closing` beat (`onClose` starts the exit, `onClosed` unmounts); the inline copy no longer goes `visibility: hidden` and resets on UNfreeze instead of freeze, so the page the scrim blurs out still looks whole. Settled fullscreen scrim verified pixel-identical to before (92 vs 91 mean) — only the transition is new. Verified: tsc clean, enter/exit sampled frame-by-frame at ~60fps, two open/close cycles + full demo loop with zero console errors, reduced-motion skips both animations.
-  - **NEXT: Marco eyeballs the tuning pass LIVE (it shipped on his "commit and deploy" before he'd seen it in a browser — the site gate password is `marcowits`); then reuse DemoStage for Compendium specimens.**
-- **Earlier (2026-08-03 eve, main — F&B MOCK PROVENANCE + PIPELINE RUN 2 + PASS 5, docs committed 51a22aa, pushed):** (1) **The F&B dashboard mock's home found:** it lives in Marco's personal **Portfolio 2026** Figma file (`tMtelSbr17jopV1EXQWo7q`) → page `-> 🍔 case study: food and beverage` → Section 2 → frame `1` (`532:3119`), siblings `2` + standalone `CanarySideSheet`; NOT in any Canary file or prototype repo (all 284 backup .figs + both repos' full git history swept — zero hits). It's composed from real Canary library instances (CanaryTable/Tag/Button/SideSheet) on a 1177×759 canvas, exported 3x on Jul 26 to `~/Desktop/portfolio graphics/f&b/`. (2) **Polished pipeline run 2:** copy of that mock at `31:3347` in Canary Polished Visuals → clone **`34:245`** ("3 — Polished"), all 5 passes clean (73 text / 138 paints / 166 radii / 244 spacing). (3) **Pass 5 discovered + documented in POLISHED-TOKENS.md:** `setBoundVariableForPaint` silently drops paint opacity (badge slab bug), and applying a text style wipes `textCase` (uppercase labels revert). Both invisible in return values — screenshot QA is mandatory. Also: uppercase Micro labels overflow legacy fixed boxes; in `SPACE_BETWEEN` table rows, widen header + body cells together. **Marco owes: nav-rail ruling (#333333 → cool `neutral/800` — keep or force plain gray), then batch remaining F&B frames → re-export the case-study webps → Compendium/Upsells.**
-- **Earlier (2026-08-03/04, main — F&B UNIFIED CART INTERACTIVE SPECIMEN, committed 8b2445b):** First case-study specimen built: `site/components/fb-showcase/FnbCartSpecimen.tsx` + `fnb-specimen-data.ts` + `public/images/fb-ordering/specimen/` (14 webp, ~412KB) replace the fb-mobile.mp4 block in FBOrderingContent.tsx (video file kept — homepage card uses it). Full interactive flow (browse → drawer w/ RADIO modifiers → variant stepper sheet → review → info → submit/toast/reset), grammar from msevilla-canary-prototypes-1 unified-cart. iPhone shell 300×630, 4px bezel, r32/26; interior renders at 390pt logical scaled by SCREEN_SCALE (resize via SHELL_W/H only); status bar follows screen color (screens tuck -1px under it — scale-transform seam fix); Safari bar shows `dining.canaryhq.com` (invented URL, Marco unobjected), no nav-icon row; panel = fg 7% mix. Tab anchors fixed (scroll container needs position:relative for offsetTop; spy has bottom-edge case). Verified end-to-end in browser incl. dark mode. **NEXT: Marco approves → commit + deploy; then Compendium specimens.**
-- **Perf backlog ON HOLD (Marco's call, 2026-08-01):** `docs/PERF-BACKLOG.md` stays decision-ready but deferred — captured as a parent + 8 subtasks in Todoist ("🎨💼 Portfolio + Job Hunt → Portfolio performance backlog (on hold)"). Don't re-pitch it at session start; he'll pull it from Todoist when ready.
-- **Latest (2026-08-03, main — DOT-GRID BACKGROUND DISABLED, DEPLOYED 565b3cc):** Marco's laptop fan traced to this repo's dev server. `components/BackgroundTexture.tsx` drew **~16,300 dots per frame** at `gridSpacing: 9` (~146k canvas calls/frame at 1440×900 — per dot: `save`/`translate`/`beginPath`/4×`lineTo`/`fill`/`restore` plus a fresh `rgba()` string), pegging **a full CPU core on every visitor's machine**, prod included. Disabled behind a `DISABLED = true` kill switch at the top of the file (the `SKIP_INTRO` idiom); component returns `null`, so `canvasRef` stays null and the rAF effect bails before scheduling — the loop never starts. `PARAMS` and the `/dev/effects-lab` copy are untouched; flip the const to restore.
-  - **Measured, not assumed:** CPU profile put `draw` + its 2D path ops at ~65% of main-thread time; `prefers-reduced-motion` (which both canvas systems honor) idles the page at 0%, proving the loops were the entire cost. After: real Chrome renderer 88%→9%, headless harness 100%→4% of a core, **production 3%** (verified through the site gate, 0 full-viewport canvases in the deployed bundle).
-  - **⚠️ Measurement trap worth remembering:** removing the canvas from the DOM does NOT stop it — `draw()` holds `canvasRef`, so it keeps rendering all 16k dots into a *detached* bitmap. An early A/B this way showed no improvement and was pure noise. Isolate these loops via `emulateMedia({ reducedMotion: "reduce" })`, not DOM surgery.
-  - **STILL OPEN (the fan may not be silent):** the 9 always-on `DitherBackdrop` WebGL canvases keep the GPU process ~53% — no IntersectionObserver, they animate even when their marquee card is scrolled off-screen. That's perf-backlog **#6**, which says *6* canvases; the real count is **9**. Untouched by Marco's scope call.
-  - **Visual consequence:** the animated dot texture is gone from the live homepage. Not eyeballed for aesthetics — worth a look before sharing the link in the Hightouch loop.
-- **Earlier (2026-08-03, main — PORTFOLIO FIGMA TOKEN ATTRIBUTION + TRACKING UNIFY, DEPLOYED 5d0415b):** The **Portfolio Aug 2026** Figma file (`O9tNG8DqYrpdJmrEGa7Io7`) is now fully tokenized, mirroring the Canary Polished pipeline. (1) ~500 text nodes bound across all 6 pages (masters on 🧩 Components first — 🏠 Home inherited 100% via instances); final ramp = **22 text styles** (created 10, then merged 3 away after site unification). New styles cover the mono 11/12 labels + 13px caption the original ramp missed; specs copied verbatim from site code. Spec sheet on 🎨 Foundations updated with specimen rows. (2) New `color/fg-meta` variable (snapshot of the code's `color-mix(fg 62%, bg)` marquee-meta color, per mode) + Resume frame bound to `color/bg`. (3) **182 spacing/radius bindings** (63 gaps, 31 paddings, 88 radius corners); off-scale values (10px micro-gaps, 288px case-study section rhythm, device-shell radii 10/18) deliberately left raw. (4) **Site commit 5d0415b (pushed + deployed):** 14px body tracking unified to 0 — HomeLayout bio dropped −0.02em, MarqueeDescription dropped −0.01em (and lh 22→22.4 to land exactly on Body/Body); LockGate badge 0.06em→0.08em so one mono-11-medium style serves badge + MetaRail. Side effect: Figma resume section headers moved 6%→8% tracking. Intentionally token-free in Figma: `*` brand glyphs, canvas annotations, Foundations swatch chips, resume name `#b4502a` (PDF accent). **Open nits for a future pass:** typography.ts still says h3=18/h4=16 while shipped SectionHeading renders 16/14 (Figma H3 headings are bound to the token *named* Heading/H4 — metrics right, names disagree); marquee card title keeps −0.01em at 14px (deliberate, `Heading / Card Title`).
-- **Earlier (2026-08-02→03, main — POLISHED DESIGN TOKENS + RESTYLE PIPELINE, docs only, no site code):** Built a replacement token system for the Canary design language and proved it on one frame. **Full spec + pipeline: `docs/figma-migration/POLISHED-TOKENS.md` — read that first.** Working file is **Canary Polished Visuals** (`OclYC5ytIQc9HAuJMRXUaz`, Marco's duplicate of the 72 frames): page `🎨 Polished Tokens` `3:2` holds the spec sheet; page `1:2` holds restyle targets. Old system audited from **🧩 Component Library** (`tqv9ywljxiLpBuFPWnDr2b`, 48 pages).
-  - **Diagnosis:** the Canary library has **zero published styles** (0 paint/text/effect) — nothing enforced it. Every type size locked to a rigid 1.5× line-height; Bold carried backwards **+2%** tracking; grays fully hueless; two competing blues. The 72 frames had drifted to 32 font sizes / 90 line heights / 223 colors / 26 radii, largely because **Tailwind v4's palette collided with Canary's**. 51% of nodes are auto-layout, so restyling ≠ rebuilding.
-  - **Marco's decisions (2026-08-02):** typeface **Inter** (over keeping Roboto or matching the portfolio's Geist — keeps product visually distinct from portfolio chrome); primary **`#2858c4`** (dominates real frames 391:16 over Canary Blue `#1c91fa`).
-  - **Built:** 36 color primitives + 23 semantic aliases + 11 space + 6 radius variables, 18 Inter text styles (line-height tightens as size grows, tracking goes negative on large text), 4 elevation styles. Spec-sheet chips are bound to variables, not raw hex.
-  - **Proven on** Compendium Builder `03 Edit Item` — source `1:293` untouched, polished clone **`13:2`** beside it. 324 nodes; 132 fills + 41 strokes + 34 radii + 194 spacing values bound to variables. Only 4 of 66 text nodes needed resizing; zero spacing shifts.
-  - **⚠️ The saturation threshold is the whole ballgame:** classifying <0.35 saturation as neutral. First attempt used 0.12 and six Tailwind grays got pulled into the primary ramp (whole preview panel turned lavender). Tailwind's tinted neutrals measure 0.121–0.200; real brand blues 0.661–1.0. Also: **always clone before restyling** — variable binding overwrites source hex and can't be re-derived. Inter runs ~7% wider than Roboto, so a clip-repair pass is required.
-  - **Awaiting Marco's ruling:** (1) warning ramp `#9a6100` reads brown (desaturated so it passes AA on white — Canary's `#fab541` doesn't) — retune? (2) sidebar hue shift `#333333` warm → `#262c38` cool navy — keep or force chrome neutral? (3) I advised **against adopting shadcn** to rebuild the system — it'd be a second headless lib alongside the Base UI already in the repo, and its default look reads generic; recommended extending Base UI for the ~5 components that need headless logic (Select/Dialog/Dropdown/Tabs/Popover) and hand-writing the rest against tokens. Marco hasn't ruled.
-  - **NEXT:** batch the pipeline across remaining Compendium frames, then pick the first interactive specimen. Reference portfolios for the specimen pattern: rauno.me/craft (mechanics), uilabs.dev (card/grid presentation), paco.me/craft.
-- **Earlier (2026-08-02, main — 🎬 VISUALS: SWEEP + ACCURACY QA + BACKUP AUDIT, 3 parallel agents):** Figma page 🎬 now holds **72 verified frames**. (1) Sweep: all 65 hub routes diffed vs the extracted 64 → 8 portfolio-relevant screens extracted & verified (Compendium Jul-28 builder 193:6 + HotSOS list 196:9, Upsells Manage Items V3 203:5, Copilot lobby 206:4 + B&B confirmation 210:7, Tipping 199:6/202:6/208:6); ranked skip-backlog in `visuals-progress/sweep-missing.md`. (2) Accuracy QA of all 64 originals vs baselines: 55 accurate / 9 fixed in Figma / 0 recaptures (`ACCURACY-QA.md` — capture lessons: fonts fall back silently, small SVGs drop, CSS truncation not captured). (3) `~/Desktop/canary figma` backup audit: ~285 files mapped by case study → Figma page 📁 Backup File Index (192:8) + `FIGMA-BACKUP-AUDIT.md`; Check-in richest (~35 files), F&B's main .fig lives in the *compendium/* folder. **Marco's open calls:** frame 94:5 is the Apr-1 editor mislabeled as Jul-28 builder (rename or delete for 193:6?); Copilot lobby is Figma-staged only (permission unsecured — NOT for the site); legacy cart 70:5 superseded by Unified Cart (delete?). Hub dev server left running on :3001 (nohup, log `/tmp/proto-hub-dev.log`). NEXT unchanged: Marco polishes frames → compose specimens → 2–3 CSS specimens for F&B + Compendium. No site code touched.
-- **Earlier (2026-08-01→02, main — 🎬 CASE STUDY VISUALS EXTRACTION, docs committed 28d4f57):** 64 verified 1:1 frames extracted from the prototype hub into Figma "Portfolio Aug 2026" → page 🎬 Case Study Visuals (5 sections: F&B 26 incl. Unified Cart ×8 = Marco's canonical cart for all mobile purchasing, Compendium 11, Upsells 15, AI Workflow 5 incl. hub landing + B&B Hôtels, Digital Tipping 7 incl. Staff Wallets P0). Pipeline (generate_figma_design capture → extract → side-by-side verify) + per-screen node IDs + deviations: `docs/figma-migration/VISUALS-EXTRACTION-PROGRESS.md` + `EXTRACTION-PLAYBOOK.md` + `visuals-progress/*.md`. ⚠️ Mid-session source correction: `~/Developer/msevilla-canary-prototypes-1` was 31 commits stale — pulled to f60b34c (final Jul 29 state; ALWAYS `git pull` check before sourcing from it; 2026-chrome admin routes are `?page=upsells-admin-redesign` / `?page=tipping-admin-redesign`). NEXT: Marco polishes frames (punch list in progress-file Summary) → compose specimen visuals → build 2–3 CSS specimens for F&B + Compendium and ship (scope cap: no framework first). No site code touched this session.
-- **Earlier (2026-08-01 session, main — VISUAL QA SWEEP, DEPLOYED):** Self-paced /loop QA'd all 8 routes (contact sheets at 390/768/1024/1440/1920, light + dark; locked routes via --unlock). Fixes shipped: portrait playground frames width-capped at 420px (Pajamagrams/Custom Wrapped lost their top — incl. the game title — through the ~900–1199px window, de2e14a); ai-workflow NextProject retitled "F&B Mobile Ordering" (d78f754). Tooling: contact-sheet.mjs gained `--dark` (seeds theme + theme-mode keys) and a tall-page deflake (double scroll pass + bottom hold — single pass left tail FadeIns untriggered on compendium and captured a blank tail that mimicked a real bug). **Findings needing Marco's ruling live in `docs/QA-FINDINGS.md`** — headline: `ViewportFade` (fixed 120px bottom-of-viewport fade, lg+) erases whatever text crosses the fold at rest on ~900px-tall laptops, site-wide; on F&B it half-hides the h1's second line on first paint (verified live, not a capture artifact). Suggested cheap fix: terminal stop 100% → ~80–85% bg. Also logged: fb-mobile.mp4 = white slab in dark (fold into the queued 16MB re-export), object-flow diagram has no scroll affordance <820px. Clean passes: compendium, upsells, checkin, general-task, design-system. All 9 commits pushed on Marco's "commit, deploy".
-- **Earlier same day (2026-08-01, main — STATS REFRESH + "PROTOTYPES AS THE SPEC" + RESUME v2026-08, DEPLOYED):** Executed the Todoist "🔥 This week" batch from `~/Obsidian/marcowits/work/canary/accomplishments/Portfolio & Resume Update Plan.md` (all numbers sourced there). Also this session: the REAL resume (Figma file "Resume") got the Part-1 rewrite in a new frame "MarcoSevilla_Resume_2026-08" + Claude-design-critique pass (4-level type scale, accent on name only, grouped tools); Marco exported + uploaded to Drive via Manage versions (same link), and `lib/resume-content.ts` was synced VERBATIM to that exported PDF (incl. his review edits: "lead designer", "Key contributor" Check-in, 3 GT bullets restored, Cal Poly award dropped, UI/UX Concentration). Local resume PDFs consolidated to `~/Documents/Career/Resumes/` (dated names + README; duplicates deleted hash-verified; `print-resume.mjs` default output now lands there). Known nit: exported PDF's prototyping bullet ends "mentored PMs" without a period — fix in Figma on next export.
-  - **Stats refresh (4 studies, site + chat in sync):** Upsells → $6.94M CARR/+87%, +10% measured lift, 60% approval lift, $5M/mo GMV ATH, new "Purchase UI redesign + Segments (2026)" process phase (8-PR slice from prototype). Compendium → $1.51M/+230%/44% attach + Nicolas Garnier named PullQuote. Check-in → "Wyndham's ~6,000-property portfolio" everywhere (replaces unsourced 4,500+/5,000+) + Wenjun Zhao peer PullQuote. F&B → Eurostars "no HubOS = no deal" + HOMA self-run feedback calls + Dec '25 retro quote, woven into prose (NO PullQuote — Marco removed F&B's before; $72.6K deliberately excluded). Same numbers propagated to: content/*.mdx metric chips, MARQUEE_DISPLAY descriptions, lib/chat/study-metadata.ts, case-studies/*.md chat drafts, lib/resume-content.ts.
-  - **Homepage:** new P&L sentence in the intro ("The two products I've designed there became the company's #3 and #4 revenue lines — about 22% of Q2 2026 bookings.") in HomeLayout.tsx para 1. **REMOVED 2026-08-03 by Marco's call** — para 1 now ends at the "world's largest enterprises in hospitality" tooltip.
-  - **ai-workflow REWRITTEN + published:** now "Prototypes as the spec" (AIWorkflowContent.tsx full rewrite: B&B Hôtels 24-hr open → 8-PR Segments slice → HubOS "code is the design" → playbook/EPD All Hands → condensed practice section). `published: true` in ai-workflow.mdx, page.tsx metadata updated, MARQUEE_DISPLAY entry added, new `case-studies/ai-workflow.md` chat draft + FILENAME_BY_SLUG mapping (was null). **Card media: NONE by Marco's call** — the Canary Copilot capture was wired then dropped (internal UI, portfolio permission unsecured); gallery entry is `[]` so the homepage card shows the "Under construction" frame until media lands.
-  - **⚠️ TEMP LOCAL UNLOCK:** `"upsells"` is commented out of LOCKED_SLUGS (lib/locked-content.ts) so Marco can review the new stats — **re-add before commit unless he decides to ship it ungated** (his plan pairs ungating with the written-permission ask). Unlock code for other gated pages: `miyagi`.
-  - Verified: tsc clean, chat parser 31/31, all routes 200, contact sheets for ai-workflow + unlocked upsells clean at all widths. Todoist tasks completed/commented; progress callout added to the Obsidian plan doc.
-- **Earlier (2026-07-29, main — SITE-WIDE PASSWORD GATE, DEPLOYED):** ⚠️ **The ENTIRE production site is behind a password wall** (password `marcowits`) while Marco updates content. Server-side: `site/proxy.ts` (Next 16 proxy/middleware, returns a standalone 401 gate page for cookie-less requests on every route incl. /api/chat) + `site/app/api/gate/route.ts` (checks password, sets 30-day httpOnly cookie) + `site/lib/site-gate.ts` (**`SITE_GATE_ENABLED` flag — flip to `false` + deploy to REOPEN**; sha256 password hash lives there too). Dev/localhost is never gated (NODE_ENV check), so the inline editor flow is unaffected. Gate page is self-contained inline HTML (light/dark via prefers-color-scheme, noindex). Unrelated to the per-study LockGate system, which still uses its own code. **Remember to reopen before sharing the site with recruiters (Hightouch loop is active).**
-- **Earlier (2026-07-27, main, upsells card corner fix — DEPLOYED, verified live):** The middle phone panel in `public/images/gallery/upsells/upsells-mocks.webp` had white corner wedges: the Figma export masked the panel at ~18px radius while the photo inside has ~40px corners baked in. Fixed the raster directly (sharp, dest-in SVG rounded-rect mask at r=40 on the phone bbox x 659–1033, inset 1px to swallow the photo's old AA fringe against white — without the inset a white hairline shows along the arc in dark mode). Commit 07abdee. **Caveat: the SOURCE mock in Figma (node 506-10090) still has the mismatched radii** — any re-export of that composite reintroduces the wedges unless the frame radius is bumped to 40 in Figma first.
-  - **Open flag Marco hasn't ruled on:** F&B's NextProject points at the now-locked Compendium (visitors finishing F&B hit the gate placeholder — same dead-end shape as the 07-26 Compendium→Upsells fix). Suggested retarget: /work/ai-workflow.
-- **Earlier (2026-07-27, main, compendium re-lock — DEPLOYED, verified live):** Marco pulled Compendium back behind the in-progress gate (commit fedf65d). `"compendium"` re-added to `LOCKED_SLUGS` (page LockGate wrapper was still in place, so card + page re-gated with no other wiring), removed from `public/sitemap.xml`, and **chat no longer injects full markdown drafts for ANY locked slug** (`lib/chat/case-study-content.ts` returns "" via `isLocked()` — locked studies are metadata-only in the system prompt; previously chat would recite locked drafts to anyone, bypassing the gate). Verified live: /work/compendium renders "Under construction", sitemap clean. Left as-is: F&B's NextProject still points at the now-locked Compendium (visitor hits the gate placeholder — same "dead end" shape fixed on 07-26 for Compendium→Upsells; retarget to /work/ai-workflow if Marco wants).
-- **Earlier (2026-07-27, main, marquee snap-carousel session — DEPLOYED):** Homepage work marquee redesigned per Marco's Paper mockup (Paper file "Portfolio" → page "project marquee"; also new F&B content pass shipped earlier same day, commit 017f1e1: retitle to "Modernizing food & beverage ordering for hotels", $50k ARR figure is intentional). Marquee changes (CaseStudyList.tsx + globals.css):
-  - **Snap-scroll slot:** free overflow-x strip → CSS scroll-snap carousel (`mandatory` + `snap-stop: always`); slot = content-band start via `--mq-inset` shared by track padding-inline AND scroll-padding-inline. Scroll listener in StudyMarquee computes `focusedIndex` (uniform stride = cell + 24 gap).
-  - **Focused state:** slotted card fades in panel chrome (5% fg-mix fill, `--color-border` hairline, 8px radius) + expands description (`.mq-desc` grid-rows 0fr→1fr, 450ms `--mq-ease`). Geometry is IDENTICAL in both states (padding 12/12/16, gap 16) — only bg/border + vertical desc growth transform; media fixed 494×400 at ≥768 (`.mq-frame` height pin), aspect 13/10 below.
-  - **Card layout:** title row (title left + mono "COMPANY • YEAR" right, wraps on mobile) ABOVE media, description below, equal 16px row rhythm (desc's gap lives INSIDE the collapsing row as paddingTop — flex gap would leave a dead gap at rest). `MARQUEE_DISPLAY` map = marquee-only display overrides (titles/org/year/descriptions; MDX untouched). Metric + "Coming soon" notes gone; locked state = LockGate hover/click only. Cursor chat-bubble label REMOVED from project cards (playground cells keep it).
-  - Track `min-height: 550px` at ≥768 stops below-content bounce mid-transition. Verified via playwright-core: snap stride exact, focusedIndex follows, gaps 16/16, media dims uniform, mobile 390 clean.
-- **Earlier (2026-07-26, main, design-critique fix session — DEPLOYED on Marco's "deploy to prod"):** Fresh-eyes critique of the live site (interface-craft methodology, Playwright captures of home/F&B/Compendium/About at desktop+390, light+dark) → Marco locked 4 fixes, then added 3 more live. Six commits (977425e → ef19118):
-  - **Work cards have captions again (977425e):** `CellCaption` remounted under every marquee cell — title + `metric` as the mono note, "Coming soon" on locked studies. h3 got `flex-wrap` + nowrap note so mobile stacks cleanly. Cards were anonymous at scan speed (hover-only cursor titles; NO titles at all on touch).
-  - **Dead ends + pop-in (50de549):** Compendium NextProject → F&B (was pointing at password-locked Upsells); F&B NextProject restored (→ Compendium; page previously just stopped after Reflection). BOTH `FadeIn` variants (components/FadeIn.tsx AND components/case-study/FadeIn.tsx — easy to miss one) now pre-trigger via `viewport margin "0px 0px 480px 0px"`; `AutoplayVideo` IO got `rootMargin: "50% 0px 50% 0px"`. Fast flick-scrollers saw whole-viewport blanks (my first automated captures rendered Compendium's entire bottom half empty — capture artifact for slow humans, real for fast ones).
-  - **Work enlarged + H1s back at display scale (2784f83):** marquee cells 420×323 → 520 wide; `typescale.display`/`caseStudyHero` restored to `scaledClamp(28px, 5vw, 32px)` w/ lineHeight 1.2 — reverses the 2026-07-20 "everything 16px" flattening for CASE-STUDY H1s ONLY (homepage h1 keeps its inline 16px spec; Marco's explicit call: "H1 only", playground untouched).
-  - **Mobile-proportional cards + tablet band (fdddb70):** study frame fixed `h-[400px]` → `aspect-[13/10]` (desktop pixel-identical 520×400; 80vw phone cells now ~312×240, were tall-and-narrow). New **`CONTENT_BAND_MD = "3-10"`** in lib/layout-presets.ts: preset `BAND` is now `{ md: CONTENT_BAND_MD, lg: CONTENT_BAND }` AND every explicit `lg={CONTENT_BAND}` call site (3 Content files, CaseStudyList, HomeLayout, CaseStudyShell) gained `md={CONTENT_BAND_MD}` — content stays a centered column through 768–1199 instead of snapping to full width below 1200 (Marco's complaint: harsh jump). 8-col md band is deliberately one step wider than the 6-col lg band so the 1200 hand-off is a gentle step.
-  - **Marquee rest position (ef19118):** `.work-marquee-track` gained `padding-inline` mirroring the canvas math (col-4 start at lg / col-3 at md / page padding on phone, breakpoints 640/768/1200) so card 1 rests flush with the bio text's left edge; scroll still runs full-bleed; last card gets the mirrored right stop.
-  - **Critique items NOT actioned (Marco saw the list, didn't lock them):** testimonials' bordered-box styling (only bordered chrome on the page), About surface has no visible Return/theme controls (pre-existing known gap), F&B intro para-3 scroll-fade reads half-opacity in static captures/link previews.
-  - **NEXT = the LAYOUT-REFERENCE capture session** (~35 prototype captures, F&B first) — was planned as part two of this session, deferred; feeds the media-starved case studies (F&B has 3 visuals, Compendium 2).
-- **Earlier (2026-07-20, main, ninth pass — ALL DEPLOYED, verified live on www.marcosevilla.com):** Everything through b9495d6 pushed via the editor's new /publish endpoint (its first live run: committed:false, pushed:true — the edit→save→publish loop is now proven end-to-end). Two passes on top of the editor + dither work:
-  - **About page copy replaced (592ae8b):** h1 is the greeting "Hello, I'm Marco. Product designer by day, occasionally a music photographer by night." at the home-h1 spec (16/24/600/-0.02em; the "About me" heading is gone); bio.md body = Marco's four new paragraphs (Bay Area/generalist, dad's PCs/Flash, career list, craft+thanks). Company links carried onto phrases: hotel enterprises→Canary, all-in-one productivity tool→General Task, democratize wine shopping→Vivino, animated video production→Vyond. **PhotoStack lost its trigger** — the old "taking photos at concerts" phrase is gone and the h1 isn't link-rendered; re-wire to a body phrase if wanted.
-  - **Background seam fix (b9495d6):** BackgroundTexture's clearRect ran in CSS units under the DPR transform — at browser zoom <100% (dpr 0.9) it under-cleared, so dots accumulated into bright right/bottom bands (Marco's Agentation report read as "#home cut short"). Clear is now device-pixel via setTransform reset (effects-lab copy patched in sync). Plus `min-h-dvh` on #home so the body wash gradient can't end in a visible seam on short pages (About view). Verified at 1059×1074.
-- **Earlier (2026-07-20, main, eighth pass):** Dither backdrops on ALL work-marquee cards (spec: `docs/superpowers/specs/2026-07-20-dither-card-backdrops-design.md`). New `components/DitherBackdrop.tsx` = the single home for the accent-dither wave: shared shader identity (wave/4x4/size 2), the DITHER_TINT accent-mix + probe-resolver color logic, reduced-motion, and slug-seeded variation (FNV-1a → mulberry32 → speed 0.08–0.25, frame phase, offsetX/Y ±0.6, scale 1.3–1.9; draw order is part of the contract). `FnbDitherFrame` now composes it with pinned Paper params (anchor card unchanged); `StudyMediaFrame` renders it under every other study card's media. Per-card art direction = pass `overrides` (no per-slug override map wired yet). Perf accepted: 6 small WebGL canvases; IO speed-0 pause is the follow-up if needed. Verified via playwright-core screenshots (all 7 cards, variation confirmed); tsc clean.
-- **Earlier (2026-07-20, main, seventh pass):** Inline editor extended to the **homepage intro + About bio** via text-run editing: click any text stretch inside a `data-editable-source` container (HomeLayout intro div, HighlightableBio) and only that DOM text node becomes editable — links/tooltips around it survive, and link *labels* are editable too (matched inside `[label](url)` / `<Em>` markup). Saves resolve per-node source files (`EditEntry.file`), matched with `flexSourcePattern` in editor-types.ts (whitespace runs ≈ newlines/indent/`{" "}` joins; entity-alternation for &apos; etc). **bio.md writes auto-run build-bio.mjs** so lib/bio-content.ts hot-reloads; publish of bio.md always commits the generated file with it. `/status` + `/publish` are multi-file now; homepage editor state covers `HOME_SOURCE_FILES` (HomeLayout.tsx + content/bio.md); FloatingToolbar shows on `/`. Verified end-to-end via Playwright on localhost: link-label edit in HomeLayout JSX and plain-run edit in bio.md both patched surgically, then reverted. Case-study flow untouched (whole-element editing as before).
-- **Earlier (2026-07-20, main, sixth pass — commit fcb6021):** Dev inline editor grew one-click **Publish** (edit → Cmd+S → Publish button = commit + push → Vercel deploys). `dev-editor-server.mjs` gained `GET /status?file=` (dirty + ahead count) and `POST /publish` (git add/commit **pathspec-scoped to the one edited file** — other dirty/staged files never ride along — then `git push` only if ahead). `InlineEditorContext` tracks `unpublished` (checked via /status on landing on a case study, set after save) + `publishState`; FloatingToolbar shows Publish when unpublished, disabled until unsaved edits are saved, "Live in ~1 min" flash on success. Caveat by design: push ships ALL local commits on main, so keep main shippable. Verified: tsc clean, /status + validation live-tested; the actual publish path (commit+push) NOT yet fired — first real use will also push whatever main is ahead by.
-- **Earlier (2026-07-20, main, fifth pass):** Case studies aligned to the homepage system (all 8). (1) `typescale.display` + `caseStudyHero` are now the home-h1 style (16/24/600/-0.02em — the 28-32 clamp era is over; LockGate page placeholders + Hero shrink too). (2) **All grid PRESETS resolve to CONTENT_BAND** (lib/layout-presets.ts, `BAND` const) — preset names survive as semantic markers only; multi-slot presets stack as rows. Old compositions in git. The "Editorial 12-Column Grid" section above describes the pre-alignment vocabulary — placement is now single-band. (3) `.case-canvas` centered like home; the 200px TOC offset survives ONLY in the 1024-1199 window (where the fixed InlineTOC shows but desktop band specs aren't active). (4) SectionHeading h2 + ExpandableSection h2 = homepage mono ALL-CAPS label (Geist Mono 14/400/-0.02em primary); h3 16 / h4 14 sans 500. (5) Editorial content files: h1 700-weight overrides stripped, every explicit wide Col spec → `lg={CONTENT_BAND}`. (6) TwoCol-era pages (checkin/upsells/general-task/design-system) opt into a new `band` prop on CaseStudyShell (wraps children in one band Col — editorial pages must NOT set it, nested grids would double-narrow); their `maxWidth: "66%"` subtitle caps dropped. Verified in-browser: fb-ordering + checkin (unlocked) at 1400 + 390, all 8 routes 200, h1s/columns centered.
-- **Earlier (2026-07-20, main, fourth pass):** Subtlety + About entry. (1) Perlin dot-grid opacities halved (BackgroundTexture PARAMS: dotOpacity 0.05, wave opacityMax 0.15, hover opacityMax 0.04; effects-lab defaults synced). (2) `STUDY_FRAME_BG` 10% → 7% ink. (3) Link hover is now a quick 120ms background-color fade to the accent block (`.dotted-link--inline` + `.photo-stack-trigger` in globals.css) — the block-swipe background-size animation is gone; rest-state dotted underline unchanged. (4) DeviceShell phone corners are proportional (`15% / 7.1%` outer, `11.5% / 5.2%` screen — percentage-slash keeps corners circular under the 9/19 aspect; was fixed 28px ≈ cartoonish 21% of width at card scale). (5) Bio contact links (Resume/LinkedIn/Email) moved to a home-page `<footer>` below the playground grid on CONTENT_BAND; their old slot has a "Learn more →" button that opens the existing About-me surface (`setAboutMeOpen(true)` — same Hero view the chat's about links use; Hero's own "Return" button is the way back, verified round-trip in-browser).
-- **Earlier (2026-07-20, main, third pass):** Centering + static strip. (1) All home content except the marquee now sits on the centered middle-6 band — `CONTENT_BAND = "4-9"` exported from `lib/layout-presets.ts` (~520px at full canvas): bio/h1 row (HomeLayout, intro-rail preset dropped), testimonials (stacked single-column, was 3-up), "Just for fun" label + playground cells (stacked, was 2-up). (2) Marquee auto-scroll RETIRED — `.work-marquee` is a plain `overflow-x: auto` strip, scrollbar hidden (`scrollbar-width: none` + webkit), no track duplication/keyframes/inert machinery; StudyMarquee is now a dumb single-set row. Mouse-only users scroll via trackpad/shift-wheel — no visible scrollbar or arrows (flag if discoverability complaints come in). (3) Study-card fill split from playground: `STUDY_FRAME_BG` = fg 10% mix (distinctly lighter panel in dark, clear grey in light); playground/empty frames keep `FRAME_BG` 4%. Spec updated with a superseded note.
-- **Earlier (2026-07-20, main, follow-up):** Header removal + marquee polish. (1) "Select work" SectionLabel removed — the marquee leads the section (the "Just for fun" label stays). (2) Locked cards now show the cursor chat-bubble title on hover: LockGate card mode grew a `cursorLabel` prop (the click-trap overlay swallows the card's own hover handlers, so the wrapper sets the label). (3) **SiteHeader unmounted site-wide** (layout.tsx; component kept for salvage at components/SiteHeader.tsx — wordmark `home:return` dispatch went with it, HomeLayout's listener is now vestigial). Time/weather (LocalStatus) + theme toggle + palette (HeaderToolbar) moved into HomeLayout's h1 row, flush right of the name. Case studies keep Back nav (desktop InlineTOC / MobileNav). KNOWN GAP: About mode (`aboutMeOpen`) renders Hero instead of the h1 row, so it has no theme/status controls. Verified in-browser: home + fb-ordering, desktop + 390px, cursor label on locked card.
-- **Earlier (2026-07-20, main):** Work marquee + neutral card shade (spec: `docs/superpowers/specs/2026-07-20-work-marquee-design.md`). "Select work" grid → full-bleed neesh.cc-style CSS marquee (`StudyMarquee` in CaseStudyList.tsx + `.work-marquee` rules in globals.css): uniform 420×323 cells (80vw clamp on mobile), 70s linear infinite to −50%, pause on hover, duplicates aria-hidden+inert, reduced-motion → static scrollable row with dupes hidden, set count doubles on ultrawide (>~3.1k px). Featured F&B full-canvas treatment retired. `CARD_TINTS`/`CARD_BG`/`PLACEHOLDER_BG` deleted → single `FRAME_BG = color-mix(fg 4%, bg)` on study + playground frames (the "Bento Cards" background note above is historical). `--color-card-bg` var kept — still used by ObjectFlowDiagram. Verified in-browser: light/dark/mobile, animation, a11y attrs, no x-overflow, tsc clean. Tuning knobs if wanted: `MARQUEE_BASE_DURATION_S`, cell width, `FRAME_BG` mix %.
-- **Earlier (2026-07-19→20, committed 4d688f9):** Homepage typography/link redesign pass, driven live via Agentation feedback. NOT committed or deployed — commit before further work.
-  - **Baskerville is gone site-wide:** every `var(--font-baskerville), Georgia, serif` → `var(--font-geist-sans), system-ui, sans-serif` (HomeLayout, CaseStudyList, SiteHeader, SectionHeading, PullQuote, ExpandableSection + the 4 case-study Content files). The `Libre_Baskerville` next/font load in `app/layout.tsx` is INTENTIONALLY still mounted for easy revert — remove it once Marco commits to Geist. Former italic-serif spots now synthesize oblique from Geist (no true italic); flagged, Marco hasn't objected yet.
-  - **Home intro restructured (HomeLayout):** h1 "Marco Sevilla" is now 16px/24 weight 600, −0.02em (a body-scale label, not display type). The standalone italic tagline is DELETED — "Product Designer based in San Francisco, California." is now the opening sentence of the first bio paragraph. Bio blur-in delay 0.2 → 0.15. Bio container color → `--color-fg-secondary`. NOTE: About-page bio (`content/bio.md`) does NOT open with the role/location line — mirror there if wanted.
-  - **SectionLabel (CaseStudyList, "Select work"/"Just for fun"):** Geist Mono, ALL-CAPS (textTransform), body size 14/22.4, weight 400, −0.02em, primary ink.
-  - **Paragraphs read secondary site-wide:** new `p { color: var(--color-fg-secondary) }` element-rule in globals.css (utilities/inline styles still win); titles keep explicit `--color-fg`. Chat messages/tooltips/pull quotes dim too — Marco hasn't reviewed those surfaces yet.
-  - **Link hover = block swipe (globals.css):** `.dotted-link--inline` dashed-underline hover replaced by a solid `--color-accent` block sweeping left→right (background-size 0%→100% full-height, 350ms) with text flipping to `--color-on-accent`; dotted rest underline kept; 3px padding offset by negative margin (no layout shift) + `box-decoration-break: clone`. `.photo-stack-trigger` matched (220ms). Plain `.dotted-link` class is dead CSS (zero TSX usages) — delete candidate. Offered crisper clip-path text reveal if the mid-swipe color fade bothers him.
-- **Earlier (2026-07-19, main, DEPLOYED):** Two follow-ups, both live: (1) **Compendium text alignment to F&B** (94c6760) — intro subtitle now the F&B pattern (italic tertiary hook + secondary body; the 18px Baskerville italic para is gone), `<strong>` → font-medium spans site-scale-wise, Problem pt-24 → pt-32, mb-4 → mb-5. (2) **F&B guest mobile-flow video** (a86682d) — fb-mobile.mp4 full-canvas between intro and Solution, native 4:3 uncropped, AutoplayVideo; **fb-guest-flow.mp4 DELETED** (was unreferenced; recoverable from git). NOTE: fb-mobile.mp4 is still the 16MB original — re-export at lower bitrate when Marco gets to it (drop-in replace, no code change). Compendium hero slot still renders an empty placeholder (needs real export or removal).
-- **Earlier (2026-07-18, main, DEPLOYED):** Perf + mobile batch (b9a59f5), pushed together with the whole local stack (compendium ungate f54c90f, sweep 4e81a4c, chat panel 304f393) on Marco's "commit and deploy". Images: 20 PNGs → WebP ≤1600w (~41MB saved, originals deleted from tree; 11 unreferenced gallery PNGs kept pending delete call; script at site/scripts/optimize-images.mjs). New `components/AutoplayVideo.tsx` = ambient video with IO offscreen-pause + reduced-motion gate (all 4 ambient sites; lightbox left user-initiated). /work + /play are now next.config redirects (stub pages deleted; backHrefs → /#projects). Touch targets: `.tap-target` utility + bigger .bio-toolbar-btn hit area, @media(pointer:coarse) only. Mobile audit at 390px was clean otherwise (no overflow, no tiny text; MetaRail info glyph already had ::before expansion). Still open from this batch: two dead videos in public/videos (fb-mobile, fb-guest-flow, ~27MB) + guest-experience-dash.mp4 re-export + NavOverlay mount-or-delete.
-- **Earlier (2026-07-18, main):** Chat migrated from full-screen page → **right side panel** (commit 304f393). Desktop lg+: panel in the existing `.chat-panel-slot` (360px, bottom-right), slides in on the same 0.46s curve as the `[data-chat-open]` body push — content stays visible/interactive and narrows via grid band inheritance; SiteHeader stays visible; floating dock shifts left (`.floating-dock` rule). Mobile <lg: iOS bottom sheet — 32px top peek, rounded corners, grabber (drag-down dismiss via useDragControls, threshold 140px/600 velocity, snap-back below), scrim tap closes, keyboard via existing `--chat-vh`. MainBlurLayer DELETED. ChatPanel non-headless everywhere (its own .chat-surface + X). Verified in-browser both breakpoints + gestures; tsc/build clean. NOTE: the "v1 limitation" line under "Chat bar" above (pill only in in-flow toolbar) predates this — ChatFab is the trigger now.
-- **Earlier (2026-07-18, main, since DEPLOYED):** Architecture/perf/runtime sweep (commit 4e81a4c). Three-agent audit, high-confidence fixes applied and build-verified:
-  - **Chat content now ships to prod:** `outputFileTracingIncludes` glob was resolving against `site/` so zero case-study .md files were traced into `/api/chat` — prod chat ran metadata-only since launch. Fixed to `../case-studies/**/*.md` (17 files traced, verified in route.js.nft.json). Also: chat study links/unfurls route to `/work/<slug>` again (were `/#projects`), knowledge-base added to chat metadata + content map, route fails open on Upstash errors / 503s on missing API key / aborts the Anthropic stream on client disconnect.
-  - **Homepage prerenders again:** `useSearchParams` isolated into `AboutParamWatcher` (null leaf + own Suspense) in HomeLayout; the page-level Suspense wrapper is gone. The "home markup never appears in static HTML" caveat elsewhere in this file is now obsolete.
-  - **Both queued quick wins done:** `app/icon.svg` favicon (3-stroke asterisk, dark-aware) + all three /dev labs 404 in prod (`notFound()` behind NODE_ENV).
-  - **SEO:** root-layout canonical (pointed every page at the homepage) removed; sitemap trimmed to home + fb-ordering + compendium + ai-workflow.
-  - **Runtime fixes:** template.tsx overlay unmounts post-fade; BackgroundTexture DPR cap 1.5 + reduced-motion; LedMatrix reduced-motion rAF/GL leak; audio next/prev while paused stays paused; PasswordModal focus in/restore; `defaultTheme="light"` (kills dark-OS first-paint flash).
-  - **Known issues NOT fixed (need Marco's calls / media work):** 15MB `guest-experience-dash.mp4` playing in a 323px card + 5 more autoplaying homepage videos with no posters/offscreen-pause; multi-MB case-study PNGs with no lazy/width/height (wants a scripted WebP pass); ~27MB dead videos in public/ (`fb-mobile.mp4`, `fb-guest-flow.mp4`) — deletion left to Marco; framer-motion LazyMotion migration; NavOverlayProvider mounted but `<NavOverlay />` rendered nowhere (drawer nav doesn't exist despite docs above); `/resume` + `/writing` orphaned; stale playground slugs in LOCKED_SLUGS.
-- **Earlier same day (2026-07-18, main, since DEPLOYED):** Compendium content pass + ungate (commit f54c90f).
-  - Executed the critique's priority list (`~/Obsidian/marcowits/portfolio/case-study-critiques/compendium-case-study-critique.md`): hero rewritten as a hook; research insights de-AI'd (arrow formula removed); Process collapsed 5 dated phases → 3 moments led by the Figma-prototype-closed-deals story (engineer quote kept anonymous — Marco can re-add Wenjun's name); Impact clustered with lead metrics and **partner-specific dollar figures removed by Marco's call** ($18M Wyndham, $200K Omni — kept "400+ sites" scale); COMO loss elevated to its own Reflection block ("The customer we lost"); guest-experience-dash.mp4 embedded in Solution (zoom-crop 1.32, same as homepage card). `compendium` removed from LOCKED_SLUGS.
-  - Shipped publicly 2026-07-18 as part of the batch deploy (Marco's "commit and deploy").
-  - **Open threads he owes answers on:** (1) rejected-direction anecdote for the Solution section — was a free-form editor/template approach actually explored before the structured builder? Add 2 sentences if real, skip if not. (2) Stats freshness — page labels stats "Dec '25" which is honest; he said "get back to me later."
-  - **Quick wins queued:** favicon 404 on prod; NODE_ENV-gate the three /dev labs (now carrying a ~1MB three.js chunk). Next study for the ungate train after compendium: pick between upsells/checkin.
-- **Earlier (2026-07-17, main):** Logo lab session (docs/LOGO-LAB-HANDOFF.md executed) — PARKED, resume later.
-  - **`/dev/logo-lab`** built (app/dev/logo-lab/: page + LogoLab panel + LogoScene + params.ts + glyph.ts) — extruded + beveled mark, drei MeshTransmissionMaterial, Environment presets, ContactShadows, free-tumble drag with inertia (world-axis quaternion premultiply + exponential damping, ~30 lines, no physics engine). Panel is the effects-lab idiom + copy-settings JSON. Decisions: eventual home = homepage hero, free-tumble. Like other labs, NOT NODE_ENV-gated.
-  - **Mark = Marco's ✦ ˖ sparkle composition** (SVG from Desktop, baked into glyph.ts; replaced the initial Geist `*`, which lives in git history at d2e014c). Three outlines — sparkle / plus / dot — each with **independent shape controls** (depth, bevels, size, rotation, XYZ offsets, on/off) merged into one mesh so the transmission material renders once. Geometry normalized to the old 34.4-unit glyph box so slider units stay comparable.
-  - **New deps:** three 0.185 + @react-three/fiber v9 + @react-three/drei v10, installed with `--legacy-peer-deps`. GOTCHA: Next 16 App Router runs vendored React 19 internals regardless of package.json's react 18.3 pin — fiber v8 (React-18 reconciler) crashes with `ReactCurrentOwner` undefined; v9 is required. The 3D chunk stays route-scoped: LogoScene loads only via next/dynamic ssr:false inside LogoLab.
-  - Verified in-browser: renders, drag-flick tumbles with inertia, tsc clean. Env preset HDRIs fetch from drei's CDN at runtime — self-host before any hero integration.
-  - **Next when resumed:** Marco tunes in the lab → paste settings JSON → bake values → hero integration perf pass (self-host HDRI, lazy chunk). No settings JSON captured yet.
-  - NOT committed: Marco's separate in-flight globals.css page-wash gradient (body background-image keyed off --color-accent) — left uncommitted, not part of this work.
-- **Earlier (2026-07-17, main):** Restored effects session.
-  - **`/dev/effects-lab`** built (app/dev/effects-lab/: page + EffectsLab panel + prop-driven BackgroundTexture + GlowCard) — slider playground for grain / dot grid / card rim glow with copy-settings JSON. Like type-lab, NOT NODE_ENV-gated — gate or delete before it matters.
-  - **Applied Marco's tuned settings to the live site:** `components/BackgroundTexture.tsx` (new, tuned diamond-dot build, mounted in HomeLayout after LoadingOverlay) + `components/CursorGlowOverlay.tsx` (new, parent-listening rim-glow overlay, last child of StudyMediaFrame in CaseStudyList.tsx). Grain unchanged (tuned values matched production). Playground cells intentionally have NO glow (they're non-interactive) — extend by dropping `<CursorGlowOverlay />` into PlaygroundMediaFrame if wanted.
-  - Lab DEFAULT_* consts mirror applied values; keep in sync when retuning. Verified in-browser: dot grid renders on home, rim glow + 1.005 scale on study frames, tsc clean.
-- **Earlier (2026-07-15 evening, same branch):** Intro/animation session on top of the audit work.
-  - **Load intro ON:** `SKIP_INTRO=false`. Sequence: `*` blinks ×3 → types the wand-kaomoji sparkle trail `(∩ᵔ ᵕ ᵔ )⊃━☆ﾟ…` (the trailing ✧ IS the loader star, not typed text) → holds → CSS fade to page. No backspace. All timings ÷1.5 (~4.5s total). Preview: `?loader=1` in dev.
-  - **CRITICAL FIX in LoadingOverlay:** the overlay's fade/unmount is plain CSS now — the old AnimatePresence/animate-opacity exit tween silently stalled (overlay stuck at opacity 1 over the page for first-time visitors, rAF healthy, React state correct). Do not reintroduce framer for the overlay lifecycle. The layoutId `hero-star` morph was removed too (receiver lives in Hero, which never mounts on home — it was a no-op).
-  - **CyclingGreeting:** revived from `e59ddb5`, briefly in the h1, then moved to the tagline, then PARKED (Marco: "maybe later") — component lives in `components/CyclingGreeting.tsx` (anchor-phrase cycle, Geist `*` cursor, `start` prop), cursor CSS still in globals.css. Tagline + h1 are static again.
-  - **SiteHeader wordmark always visible** (scroll threshold removed).
-  - **Testimonials:** "Kind words" section between Select work and Just for fun — 3 condensed quotes (one per person), three equal lg columns (1-4/5-8/9-12), data in `lib/testimonials.ts`.
-  - **Marco's parallel WIP committed as checkpoint:** CustomCursor + `lib/cursor-label.ts`, fb-guest-ordering + photography-portfolio videos, upsells mock PNG, content passes on bio/knowledge-base/gallery/playground/ObjectFlowDiagram/MetaRail.
-- **Earlier same day (2026-07-15, branch `feat/restore-studies-and-cleanup`, off `feat/object-flow-dual-view`):** Dead-code audit follow-up session.
-  - **Restored** the four May-era case studies (`/work/upsells`, `/work/checkin`, `/work/general-task`, `/work/design-system`) from pre-`7bfb4ff` history + `TwoCol.tsx` as their layout dep. Home cards re-enabled (HIDDEN_SLUGS emptied, all four in STUDY_ROUTES); still in LOCKED_SLUGS — unlock once (default code) and cards click through. design-system has no gallery media → renders the "Under construction" frame.
-  - **Deleted ~5,700 lines of dead code** (old toolbars, HomeMiniPlayer/SeekBar/LedMatrixUI, CaseStudyCard/Carousel/ListRow + carousel stubs, FBCardPreview, Marquee+MarqueeContext, ChatOverlay, Playground.tsx, InlineChip, MobileSectionNav, TextureDivider, ui/button+slider, useMediaQuery, lib/_archive) + 4 npm deps (lucide-react, next-mdx-remote, class-variance-authority, dialkit). Kept-for-salvage list + recovery commits: `docs/SALVAGE-REVIEW.md`.
-  - **Pruned stale docs** (jellyfish ×4, carousel ×2, TEXTURE_FEATURE_NOTES) and reconciled this file's structure section.
-  - **Open decisions for Marco:** re-enable load intro (`SKIP_INTRO=false`)? revive CyclingGreeting from `e59ddb5`? chat phantom-study links (see Routes ↔ data reconciliation above)? gate `/dev/type-lab`? surface `/writing` + in-app `/resume`?
+**Path-scoped rules** (`.claude/rules/` — auto-load when you touch matching files):
 
-- **Later same session (2026-07-15, same branch):** Homepage grid: "Just for fun" label above playground cards (shared SectionLabel); cards went PURE-VISUAL (CellCaption parked in CaseStudyList.tsx, copy still in study metadata + playground-cards.ts). **Specimen-system prototype** for theme-cohesive card media: `DeviceShell.tsx` (phone/browser shells, one shadow spec), gallery video schema gains `shell`/`zoom`, applied to fb-mobile (phone) + guest-experience-dash (browser, zoom crops baked navy); fb-ordering added to CARD_TINTS. Rule: canvas is live CSS, media is a contained artifact, nothing full-bleed. KNOWN LIMIT: fb-mobile.mp4 changes composition mid-loop so the crop clips some scenes — needs a tight screen-only re-export (spec for all future recordings). F&B page: fulfillment-table mock removed; ObjectFlowDiagram wrapped in hairline container stroke + padding (no fill — cards are surface-filled).
-- **Also this session (2026-07-15, same branch):** (1) F&B lone-text sections (Problem/Solution/Research/Impact/Reflection) moved to `media-right` with ImagePlaceholders whose descriptions double as the Figma-export shot list. (2) Homepage feedback pass: featured work-grid cell media frame now 323/480/560 by band (video no longer cover-cropped); contact rail REMOVED — Resume/LinkedIn/Email are plain dotted-underline text links directly under the bio (Marco reversed an intermediate header placement, commit 9424b6f → a115e0b); Ask me anything is now `ChatFab`, a round FAB matching the music dock, both in a shared fixed container in `app/layout.tsx` (MusicMiniWidget no longer self-positions). `AskMeAnythingButton.tsx` + `SocialLinks.tsx` deleted.
-- **Last worked on (2026-07-15):** F&B object-flow diagram **dual view** on branch **`feat/object-flow-dual-view`** (NOT merged) — segmented control toggles "System composition" (Items→Mods→Menus→Outlets) vs "Guest ordering flow" (Outlets→Menus→Items→Mods, direct menu→item edges). Cards glide between column orders, connectors crossfade, route engine + hover/pin anchor flips to the view's leftmost column. Per-view caption replaces the static figure caption in `FBOrderingContent.tsx`. Spec: `docs/superpowers/specs/2026-07-15-object-flow-dual-view-design.md`. Verified both views + pinning + round-trip in browser. **Caption copy is placeholder — Marco wants a pass.** Origin: external feedback on the diagram; "labels" from that feedback = per-view captions (confirmed). Also note: main has 2 unpushed diagram commits (b0f1ef2, 14d5758) predating this branch.
-- **Earlier (2026-07-14, evening session):** Editorial 12-column grid system — full layout restructure on branch **`feat/editorial-grid`** (NOT yet merged to main or deployed). See "Editorial 12-Column Grid" in Key Patterns above and `docs/LAYOUT-REFERENCE.html` for the authoring vocabulary. Plan doc: `docs/superpowers/plans/2026-07-14-editorial-grid-system.md`.
-- **Completed this session (2026-07-14 evening, branch feat/editorial-grid):**
-  - Grid/Col primitives + 8 named presets + spec parser w/ tests; `.grid-ed`/`.col-ed` CSS in globals.css (bands 768/1200).
-  - All 4 case studies migrated: intro-rail title blocks with MetaRail (Year/Role/Scope), prose sections, key-decision 2-col spreads (compendium 2×2, KB alternating ×5), F&B portrait video at `lg="5-8"`, dashboards full-canvas. TwoCol.tsx DELETED (all usages stripped).
-  - Homepage: bio 1–7 + contact rail 9–12 (intro-rail), work grid featured-first (F&B full canvas) then 2-up; CaseStudyList's ProjectGrid places cells on the shared grid.
-  - Root `layout.tsx`: `<main>` max-w-[960px] cap REMOVED — pages own their width.
-  - Contact-sheet tooling: `npm run sheet -- <route> [--unlock]` (playwright-core, channel chrome).
-  - `docs/LAYOUT-REFERENCE.html` — visual reference for the whole system (Marco's authoring doc).
-- **Earlier same day (deployed to prod on main):**
-  - Homepage bio rewritten + condensed to 3 paragraphs: "Currently at Canary… world's largest enterprises in hospitality" (that phrase is a shadcn/Base-UI tooltip trigger carrying the Marriott/Wyndham/IHG + 0→1 products detail), "In the past…", "I'm an AI-native designer… (of course) caffeine". Source is `content/bio.md` → `scripts/build-bio.mjs` → `lib/bio-content.ts`; HomeLayout has a hardcoded copy — edit both.
-  - Inline link style unified (`.dotted-link--inline` + `Em` in HomeLayout): rest = subtle dotted underline (fg-tertiary 1px layer), hover = dashed accent underline draws in over it (two background layers, same position), Geist upright (fontStyle normal), weight 400, letter-spacing inherits body. Applies to bio, About, chat links.
-  - Work grid (`CaseStudyList.tsx`): cards are chromeless (no bg/border/padding, flush with "Select work", `gap-16`), captions are title-only for studies (playground keeps descriptions), locked studies get a mono "COMING SOON" label beside the title. GalleryMode carousel DELETED — locked cards now open `MediaPreviewLightbox` (full-res first gallery media, dark backdrop, portal to body, Esc/backdrop-click closes); LockGate card mode has `onActivate` override, badge says "In progress — click to preview" (no lock icon). Routeless+unlocked studies are static cells.
-  - F&B case study: ProjectDetails accordion removed from page (component lives on, restyled to 16px body + bordered Scope groups, still used by WorkHistory); Solution copy rewritten (two paragraphs + new first two bullets); all em dashes removed from content; guest-flow video full-width; Impact pull quote removed; `SectionHeading` (all levels) + `ExpandableSection` h2s now wear the homepage "Select work" style (Baskerville italic 400, h2 20px); `InlineTOC` links align flush with "Back" (16px indent = 12px star slot + 4px gap).
-  - Music dock (`MusicMiniWidget.tsx`): notes emit from the collapsed FAB while playing, scrubber always visible (RevealRow deleted), LED corner controls show on whole-player hover, `LedMatrix` `CORNER_RADIUS = 0` so dots reach the corners.
-  - SocialLinks: X/Twitter removed (LinkedIn + email remain).
-  - `fb-ordering` removed from `LOCKED_SLUGS` — publicly viewable for recruiters.
-  - **Chat fixed in prod:** the three Vercel env vars (`ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL/TOKEN`) existed but decrypted empty → `TypeError: fetch failed` 500s. Marco re-entered values + redeployed; verified working end-to-end live. Local `.env.local` still lacks these keys, so chat 500s on localhost until added.
-- **In flight:** None. `feat/editorial-grid` MERGED to main + deployed 2026-07-15 (merge `d0a24f2`), verified live on www.marcosevilla.com in-browser (grid hydrates on home; case-study canvas centers correctly at wide viewports). Note: apex marcosevilla.com 307s to www — curl checks must follow redirects; home renders inside a Suspense boundary (useSearchParams) so its markup never appears in static HTML, verify with a browser. The old May "CaseStudyHero gradient" and "Content Width System" sections above predate both July redesigns — treat as historical.
-- **Known issues / quirks:**
-  - `position: fixed` overlays nested under HomeLayout's framer-motion wrappers get trapped by the animated `filter` style (it becomes the containing block) — portal to `document.body` (see `MediaPreviewLightbox`). SiteHeader is `z-[130]`; overlays that must cover it need z ≥ 140.
-  - Agentation toolbar (dev-only, bottom-right) intercepts clicks on the music dock in that corner during browser automation — hide `[data-agentation-root]` when testing.
-  - `vercel` CLI is now linked to project `marcosevillaportfolio` (`.vercel/` gitignored). `vercel env pull` returns empty strings for the three chat secrets (sensitive) — that's expected, not a config bug.
-  - Dead-code cleanup shipped 2026-07-15 (branch `feat/restore-studies-and-cleanup`): see `docs/DEAD-CODE-AUDIT.md` + `docs/SALVAGE-REVIEW.md`. Kept-for-salvage files are deliberately unreferenced — don't re-flag them as dead.
-- **Open loops:**
-  - Hightouch referral blurb finalized in `~/Developer/job-hunt/hightouch-application.md` — Marco still needs to send it to Erika.
-  - Remaining locked studies (compendium, knowledge-base, upsells, checkin, general-task, design-system) still need content passes before ungating.
-  - Playground card descriptions could get the title-only treatment for consistency if desired (currently kept).
+| Rule | Covers |
+|------|--------|
+| `typography.md` | Type scale, font stack, Geist, `typography.ts` |
+| `design-tokens.md` | Color CSS variables, 11-theme system, `*` brand mark |
+| `editorial-grid.md` | 12-col grid, bands, presets, `CONTENT_BAND`, contact sheets |
+| `case-studies.md` | Route↔data sync, content component pattern, hero gradients, MDX metadata |
+| `homepage.md` | HomeNav, work marquee, card/list toggle, load intro, background effects |
+| `chat.md` | Chat bar architecture, link grammar, env vars, spend safety |
+| `access-gating.md` | Per-study LockGate **and** the site-wide password wall |
+| `specimens.md` | DemoStage, product specimens, DeviceShell, Canary polished tokens |
+| `toolbar-chrome.md` | Header chrome, theme palette, music dock, LED matrix |
+| `images-media.md` | Asset layout, optimization, export gotchas |
+| `inline-editor.md` | Dev-only inline content editor + publish loop |
+
+**Non-loaded docs** (read on demand):
+- `docs/CURRENT-STATE.md` — session-by-session history and in-flight work
+- `docs/PROJECT-STRUCTURE.md` — annotated directory map (snapshot; filesystem wins on conflict)
+
+## Docs Index
+Reference docs live in `docs/`. Read the relevant ones based on the task — don't read all of them every time.
+
+| File | When to read |
+|------|-------------|
+| `PORTFOLIO-PRIORITIES.md` | Always — current priority tiers and next actions |
+| `CURRENT-STATE.md` | Session history, what's in flight, open loops |
+| `PROJECT-STRUCTURE.md` | Orienting in the tree |
+| `CASE-STUDY-ASSESSMENT.md` | Working on any case study — gaps and action items per study |
+| `CASE-STUDY-PLAYBOOK.md` | Writing or restructuring case study content |
+| `portfolio_case_study_plan.md` | Deciding which studies to prioritize or reorder |
+| `VISUAL-EXPORT-GUIDE.md` | Adding images/visuals — Figma specs, aspect ratios, naming |
+| `portfolio_build_context.md` | Technical questions about layout, typography, color, components |
+| `designer-identity.md` | Writing copy, bio, positioning, or "about" content |
+| `marco_canary_portfolio.md` | Needs impact stats or ownership data for case studies |
+| `portfolio-inspiration-analysis.md` | Making design direction decisions or comparing to references |
+| `designer-portfolios.md` | Looking at reference portfolios for inspiration |
+| `DEAD-CODE-AUDIT.md` | Full unused/hidden-code inventory (2026-07-15) |
+| `SALVAGE-REVIEW.md` | What was kept for reuse after the dead-code deletion + recovery commits |
+| `PORTFOLIO-RESEARCH.md` | Deep research on case study content, homepage strategy, visual design |
+| `PORTFOLIO-AUDIT.md` | Full site audit with prioritized recommendations (P0-P3) |
+| `QA-FINDINGS.md` | Open visual-QA findings awaiting Marco's ruling |
+| `PERF-BACKLOG.md` | Performance backlog — **ON HOLD** by Marco's call, don't re-pitch at session start |
+| `LOGO-LAB-HANDOFF.md` | Building the interactive 3D logo (`/dev/logo-lab`) — read before any 3D logo work |
+| `LAYOUT-REFERENCE.html` | Visual reference for the grid system (open in a browser) |
+| `figma-migration/POLISHED-TOKENS.md` | Canary polished token system + restyle pipeline |
+
+## Case Studies (Markdown Drafts)
+Written case study content lives in `case-studies/`. Each `.md` file is the narrative draft for a case study, and doubles as chat's source. Read the relevant one when working on a specific study. Route/slug wiring: `.claude/rules/case-studies.md`.
+
+## Obsidian Vault Boundary
+Case study critiques, project research, and career strategy context live in Obsidian — **do not duplicate here.**
+- **Vault root:** `~/Obsidian/marcowits/`
+- **Portfolio meta-docs:** `~/Obsidian/marcowits/portfolio/` — voice/style references, templates, per-study critiques, `bio.md` (symlinked to repo), `case-study-interview.md` (symlinked to repo)
+- **Per-study critiques:** `~/Obsidian/marcowits/portfolio/case-study-critiques/`
+- **Per-project drafts + retrospectives:** `~/Obsidian/marcowits/work/canary/projects/[slug]/` — typically `case-study-draft.md` and `retrospective-2026-04-30.md`
+- Read critiques, drafts, and retrospectives for context when refining case study content, but don't copy them into this project.
+
+## Dev labs
+`/dev/type-lab`, `/dev/effects-lab`, `/dev/logo-lab` — all three `notFound()` in prod behind a NODE_ENV check.
