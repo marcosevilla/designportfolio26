@@ -3,6 +3,7 @@
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
 import FnbCartSpecimen from "@/components/fb-showcase/FnbCartSpecimen";
+import OrderDashboardSpecimen from "@/components/fb-showcase/OrderDashboardSpecimen";
 import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -78,6 +79,19 @@ export default function FBOrderingContent() {
           <Grid>
             <Col md="1-12" lg="2-11">
               <FnbCartSpecimen />
+            </Col>
+          </Grid>
+        </FadeIn>
+
+        {/* ── Staff order queue — the other half of the same product
+            (Marco 2026-08-04). Rebuilt from the polished Figma frames
+            (Canary Polished Visuals, section 51:6068) and styled from
+            canary-polished-tokens. Same DemoStage chrome as the cart
+            above: pause/play, restart, fullscreen. */}
+        <FadeIn className="pt-10">
+          <Grid>
+            <Col md="1-12" lg="2-11">
+              <OrderDashboardSpecimen />
             </Col>
           </Grid>
         </FadeIn>

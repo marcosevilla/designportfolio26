@@ -42,6 +42,8 @@ export type DemoStep =
   | { type: "wait"; ms: number };
 
 const CURSOR_SIZE = 36;
+/** Smallest the inline stage may shrink before the well pans instead. */
+const MIN_INLINE_SCALE = 0.7;
 const DEFAULT_SETTLE = 650;
 const TARGET_TIMEOUT = 4000;
 const SCRIM_BLUR = 16;
@@ -171,7 +173,9 @@ function StageCore({
   const [cursorOn, setCursorOn] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [fsScale, setFsScale] = useState(1);
+  const [fitScale, setFitScale] = useState(1);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const wellRef = useRef<HTMLDivElement | null>(null);
   const growRef = useRef<HTMLDivElement | null>(null);
   const chromeRef = useRef<HTMLDivElement | null>(null);
 
@@ -184,7 +188,7 @@ function StageCore({
   // Script-driven focus() must not trip the keyboard-takeover handler.
   const scriptFocusRef = useRef(false);
 
-  const scale = variant === "fullscreen" ? fsScale : 1;
+  const scale = variant === "fullscreen" ? fsScale : fitScale;
   const cursorSize = Math.round(CURSOR_SIZE * scale);
 
   // Reduced motion ⇒ hand the prototype over immediately, never auto-play.
@@ -218,6 +222,36 @@ function StageCore({
     window.addEventListener("resize", compute);
     return () => window.removeEventListener("resize", compute);
   }, [variant, stageWidth, stageHeight]);
+
+  // Inline: shrink a stage wider than its column down to fit. Phone-sized
+  // specimens always land at 1; a desktop-width one would otherwise push the
+  // page into horizontal scroll on narrow viewports. Never scales UP — the
+  // artifact keeps its authored size wherever there's room.
+  //
+  // Floored, because "fits" and "readable" diverge: a 1177px dashboard on a
+  // 390px phone would fit at 0.27, rendering 11px type at 3px. Below the floor
+  // the stage keeps a legible size and the well pans horizontally instead.
+  useLayoutEffect(() => {
+    if (variant !== "inline") return;
+    const el = wellRef.current;
+    if (!el) return;
+    const compute = () => {
+      const cs = getComputedStyle(el);
+      const inner =
+        el.clientWidth -
+        parseFloat(cs.paddingLeft) -
+        parseFloat(cs.paddingRight);
+      setFitScale(
+        inner > 0
+          ? Math.max(MIN_INLINE_SCALE, Math.min(1, inner / stageWidth))
+          : 1,
+      );
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [variant, stageWidth]);
 
   // Fullscreen enter: the page behind blurs out (backdrop-filter radius ramps
   // up under a darkening tint) while the enlarged prototype blurs in and grows
@@ -749,8 +783,18 @@ function StageCore({
           <StageButton glyph="expand" label="View fullscreen" onClick={onExpand} />
         )}
       </div>
-      <div className="flex flex-col items-center gap-6 px-4 py-12 sm:py-16">
-        {stage}
+      {/* Block + `margin-inline: auto` rather than flex centering: when the
+          stage is wider than the well, flex `items-center` pushes overflow off
+          BOTH edges and the left side becomes unreachable, while auto margins
+          collapse to 0 and overflow stays scrollable. */}
+      <div
+        ref={wellRef}
+        className="px-4 py-12 sm:py-16"
+        style={{ overflowX: "auto" }}
+      >
+        <div style={{ width: "fit-content", marginInline: "auto" }}>
+          {stage}
+        </div>
       </div>
     </section>
   );

@@ -2,7 +2,20 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Fraunces, Libre_Baskerville } from "next/font/google";
+import { Fraunces, Libre_Baskerville, Inter } from "next/font/google";
+
+/**
+ * Inter is the PRODUCT typeface, not a site typeface — it exists only so the
+ * Canary specimens (F&B order dashboard, future Compendium pieces) render in
+ * the real type ramp from `docs/figma-migration/POLISHED-TOKENS.md`. Site
+ * chrome stays Geist.
+ */
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -74,7 +87,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable} ${libreBaskerville.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable} ${libreBaskerville.variable} ${inter.variable}`}>
       <body>
         {/* defaultTheme="light" (not "system"): ThemeStateProvider forces
             first visits to light anyway, so "system" only produced a dark
