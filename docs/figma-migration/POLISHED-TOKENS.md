@@ -123,6 +123,13 @@ Wide safe gap. 0.35 sits comfortably in it.
 
 **Pass 4 — Overflow repair.** Inter is ~7% wider than Roboto. For any TEXT whose parent has `clipsContent` and `text.width > parent.width`, widen the parent.
 
+**Pass 5 — Restore what the first two passes silently destroy.** Both of these are invisible in the return values and only show up in a screenshot. Run this every time.
+
+1. **`setBoundVariableForPaint` returns a paint with `opacity: 1`** — the original paint alpha is dropped. A `#666666` fill at 16% comes back as a solid slab. Fix: walk source and clone in lockstep and copy `opacity` / `visible` / `blendMode` back onto each bound paint. On the F&B frame this hit 15 paints — one badge plus every table row rule at 60%.
+2. **Applying a text style wipes `textCase`.** Styles carry `textCase: ORIGINAL`, so `setTextStyleIdAsync` resets any `UPPER` transform and the raw characters surface ("EXPECTED DELIVERY TIME" → "expected Delivery TIME"). Capture `textCase` per segment from the source **before** Pass 1, re-apply after with `setRangeTextCase`.
+
+Lockstep walking works because `clone()` preserves child order — recurse both trees by index.
+
 ---
 
 ## Test result — Compendium Builder / 03 Edit Item
@@ -138,6 +145,21 @@ Source `1:293` (untouched) → polished clone **`13:2`**, sitting 160px to its r
 2. **Inter is wider than Roboto** — "Canary Test Hotel (Demo)" was already clipping by 1px at 162/161 in the source; Inter pushed it to 174/161. Pass 4 widened the parent to 176. Expect a handful per frame.
 3. **Ramp snapping does not preserve contrast relationships** — the sidebar wordmark went from invisible to faintly legible. Two colors 0.05 apart in lightness can land on steps 0.09 apart, amplifying or flattening contrast. Not a bug, but audit dark-on-dark and light-on-light pairs after each frame.
 4. **Sidebar hue shift is a judgment call** — `#333333` (warm neutral) → `#262c38` (cool navy). Reads more designed, less like shipped Canary. Marco to rule.
+
+---
+
+## Test result 2 — F&B Ordering dashboard (2026-08-03)
+
+Source `31:3347` on page `🎨 Polished Tokens` (untouched) → polished clone **`34:245`**, 160px to its right. This frame originates from Marco's personal **Portfolio 2026** file (`tMtelSbr17jopV1EXQWo7q`, page `-> 🍔 case study: food and beverage`, frame `532:3119`) — built in **Geist**, not Roboto, so it exercised a different starting family.
+
+218 nodes: **73 text restyled · 121 fills + 17 strokes bound · 166 radii · 96 gaps + 148 paddings bound · 1 stroke weight normalized · 15 paints repaired · 9 textCase restored · 12 cells widened.** Zero errors.
+
+Type mapping was clean — Geist 10/12/14 landed on Micro / Caption / Body with no ambiguity. Six 105px table-column gaps correctly left raw (layout rhythm, not a token).
+
+### Findings
+1. **Both Pass 5 bugs were found here** — see above. Neither appears in a return value; only the screenshot caught them.
+2. **`SPACE_BETWEEN` rows make Pass 4 non-local.** Uppercase Micro (11/16, +4%) needs ~160px where Geist 10 needed 125, so two header labels wrapped. Because the row distributes free space, widening only the header shifts its columns off the body's. Fix: widen the matching body cell by the same amount in every row — column 1 → 155, column 2 → 120 across all 6 rows. Sub-pixel drift (0.8–2.3px) is pre-existing and unchanged.
+3. **Uppercase micro-labels are the stress case for this ramp.** Micro's +4% tracking is the right call typographically but it is the step most likely to overflow a legacy fixed-width box. Expect Pass 4 work on any frame with uppercase table headers.
 
 ### Open
 - Warning ramp reads brown — retune?
