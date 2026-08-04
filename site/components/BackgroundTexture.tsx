@@ -7,6 +7,14 @@
 
 import { useRef, useEffect, useCallback, useState } from "react";
 
+// Kill switch — flip to false to bring the dot grid back.
+// Disabled 2026-08-03: at gridSpacing 9 this draws ~16,300 dots per frame
+// (~146k canvas calls/frame at 1440x900), which pegs a full CPU core on
+// every visitor's machine. Profiled: ~65% of main-thread time on the
+// homepage. Re-enable only alongside the batched-fill rewrite (bucket
+// dots by waveIntensity, one fill per bucket instead of one per dot).
+const DISABLED = true;
+
 // Tuned 2026-07-17 in /dev/effects-lab. Colors resolve from the theme at
 // runtime (--color-fg-tertiary dots, --color-glow cursor accent).
 const PARAMS = {
@@ -305,7 +313,9 @@ export function BackgroundTexture() {
     };
   }, [mounted]);
 
-  if (!mounted) return null;
+  // Nothing renders, so canvasRef stays null and the rAF effect bails
+  // before scheduling a frame — the loop never starts.
+  if (DISABLED || !mounted) return null;
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden="true">
