@@ -1,1 +1,4 @@
 .sheets/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
