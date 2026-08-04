@@ -1,10 +1,13 @@
 "use client";
 
 /**
- * FnbCartSpecimen — interactive recreation of the F&B in-room dining
- * ordering flow (Unified Cart, DSN-1828). Replaces the fb-mobile.mp4
- * ambient video on the F&B case study: visitors browse the menu, build
- * a cart with modifier choices, and place the order end-to-end.
+ * FnbCartSpecimen — recreation of the F&B in-room dining ordering flow
+ * (Unified Cart, DSN-1828). Replaces the fb-mobile.mp4 ambient video on
+ * the F&B case study. Wrapped in DemoStage: a choreographed ghost-cursor
+ * run plays on loop by default (FNB_DEMO_SCRIPT below); hovering offers
+ * "Interact with flow", which hands visitors the fully interactive
+ * prototype — browse the menu, build a cart with modifier choices, and
+ * place the order end-to-end.
  *
  * Interaction grammar mirrors the production prototype
  * (msevilla-canary-prototypes → unified-cart), with two deliberate
@@ -32,6 +35,7 @@ import {
   type ReactNode,
 } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
+import DemoStage, { type DemoStep } from "@/components/DemoStage";
 import {
   Cart,
   CartLine,
@@ -82,6 +86,7 @@ function SquareIconButton({
   disabled,
   secondary,
   size = 30,
+  demoId,
 }: {
   icon: IconName;
   onClick: () => void;
@@ -89,12 +94,15 @@ function SquareIconButton({
   disabled?: boolean;
   secondary?: boolean;
   size?: number;
+  /** data-demo target name for the DemoStage choreography */
+  demoId?: string;
 }) {
   return (
     <button
       type="button"
       aria-label={ariaLabel}
       disabled={disabled}
+      data-demo={demoId}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -257,6 +265,7 @@ function BrowseItemRow({
             icon="plus"
             onClick={onAdd}
             ariaLabel={`Add ${item.name}`}
+            demoId={`add-${item.id}`}
           />
         )}
       </div>
@@ -303,6 +312,7 @@ function RadioGroup({
           return (
             <label
               key={opt}
+              data-demo={`option-${opt}`}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -572,6 +582,7 @@ function ItemDetailDrawer({
         <button
           type="button"
           disabled={!canAdd}
+          data-demo="drawer-add"
           onClick={() => {
             onAdd(qty, variant, specialRequest.trim() || undefined);
             onClose();
@@ -608,6 +619,7 @@ function ReviewLine({
   onIncrement,
   onDecrement,
   onRemove,
+  removeDemoId,
 }: {
   image: string;
   name: string;
@@ -618,6 +630,7 @@ function ReviewLine({
   onIncrement: () => void;
   onDecrement: () => void;
   onRemove: () => void;
+  removeDemoId?: string;
 }) {
   return (
     <div
@@ -684,6 +697,7 @@ function ReviewLine({
           secondary
           ariaLabel={qty <= 1 ? `Remove ${name}` : "Decrease quantity"}
           size={32}
+          demoId={removeDemoId}
         />
         <span
           style={{
@@ -1402,6 +1416,7 @@ function PhoneApp() {
             >
               <button
                 type="button"
+                data-demo="view-cart"
                 onClick={() => setScreen(1)}
                 style={{
                   width: "100%",
@@ -1555,6 +1570,7 @@ function PhoneApp() {
                 {Object.entries(cart).map(([key, line], idx) => (
                   <ReviewLine
                     key={key}
+                    removeDemoId={`cart-remove-${key}`}
                     image={line.item.image}
                     name={line.item.name}
                     priceLine={`$${formatMoney(line.item.price * line.qty)}`}
@@ -1654,6 +1670,7 @@ function PhoneApp() {
           >
             <button
               type="button"
+              data-demo="continue"
               onClick={() => setScreen(2)}
               style={{
                 width: "100%",
@@ -1790,6 +1807,7 @@ function PhoneApp() {
                     inputMode="numeric"
                     value={guest.room}
                     placeholder="123"
+                    data-demo="room-input"
                     aria-label="Guest room number (required)"
                     onChange={(e) =>
                       setGuest((g) => ({ ...g, room: e.target.value }))
@@ -1825,6 +1843,7 @@ function PhoneApp() {
             <button
               type="button"
               disabled={!canSubmit || submitting}
+              data-demo="submit-order"
               onClick={handleSubmit}
               style={{
                 width: "100%",
@@ -1952,72 +1971,100 @@ const SCREEN_SCALE = (SHELL_W - BEZEL * 2) / LOGICAL_W; // ≈ 0.738
 const LOGICAL_H = Math.round((SHELL_H - BEZEL * 2) / SCREEN_SCALE); // ≈ 837
 
 /**
- * Themeable panel: a shade of the case-study page background (the site's
- * FRAME_BG idiom — fg mixed over bg at 7%, the study-frame contrast step —
- * so it follows light/dark and all palette themes), with the phone specimen
- * centered inside.
- *
- * The shell is bespoke (not DeviceShell): shorter 9/17 ratio, tighter
- * corners, and mobile-web chrome — iOS status bar with dynamic island up
- * top (inside PhoneApp so it can follow the active screen's page color),
- * Safari URL/toolbar + home indicator below.
+ * Choreographed demo run (DemoStage grammar): add a plain item, add a
+ * modifier item through the drawer, review the cart, remove a line, then
+ * fill the room number and submit. All targets stay inside the appetizers
+ * section so no scroll steps are needed. `after` pads for the prototype's
+ * own transitions (drawer 320ms, screen slide 460ms, submit spinner 1600ms
+ * + toast 3500ms).
+ */
+const FNB_DEMO_SCRIPT: DemoStep[] = [
+  { type: "wait", ms: 300 },
+  { type: "tap", target: "add-yellowtail-sashimi", after: 900 },
+  { type: "tap", target: "add-toro-tartare", after: 800 }, // opens drawer
+  { type: "tap", target: "option-Guacamole", after: 650 },
+  { type: "tap", target: "drawer-add", after: 900 },
+  { type: "tap", target: "add-edamame", after: 900 },
+  { type: "tap", target: "view-cart", after: 1100 },
+  { type: "tap", target: "cart-remove-edamame", after: 1000 },
+  { type: "tap", target: "continue", after: 1100 },
+  { type: "tap", target: "room-input", after: 250 },
+  { type: "type", target: "room-input", text: "412", after: 800 },
+  { type: "tap", target: "submit-order", after: 0 },
+  { type: "wait", ms: 4200 }, // spinner + reset-to-menu + toast dwell
+];
+
+/**
+ * The phone shell alone — DemoStage supplies the themeable panel around it.
+ * Bespoke (not DeviceShell): shorter 9/17 ratio, tighter corners, and
+ * mobile-web chrome — iOS status bar with dynamic island up top (inside
+ * PhoneApp so it can follow the active screen's page color), Safari
+ * URL/toolbar + home indicator below.
+ */
+function PhoneShell() {
+  return (
+    <div
+      style={{
+        // ~2.1 ratio (near-iPhone proportions), stated explicitly — as
+        // a flex item the shell's content-derived min-height would
+        // override aspect-ratio.
+        width: SHELL_W,
+        height: SHELL_H,
+        minHeight: 0,
+        flexShrink: 0,
+        borderRadius: 32,
+        padding: BEZEL,
+        backgroundColor: "var(--color-surface)",
+        border: "1px solid var(--color-border)",
+        boxShadow: SHELL_SHADOW,
+      }}
+    >
+      <div
+        style={{
+          height: "100%",
+          width: "100%",
+          borderRadius: 26,
+          overflow: "hidden",
+          position: "relative",
+          backgroundColor: INK.white,
+        }}
+      >
+        {/* iPhone-logical canvas, scaled down into the shell */}
+        <div
+          style={{
+            width: LOGICAL_W,
+            height: LOGICAL_H,
+            transform: `scale(${SCREEN_SCALE})`,
+            transformOrigin: "top left",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: INK.white,
+          }}
+        >
+          <PhoneApp />
+          <SafariBar />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Panel + demo chrome come from DemoStage: auto-playing ghost-cursor run,
+ * hover → "Interact with flow" takeover, reset + fullscreen buttons.
  */
 export default function FnbCartSpecimen() {
   return (
     <MotionConfig reducedMotion="user">
-      <section
-        aria-label="Interactive prototype of the guest in-room dining ordering flow"
-        className="rounded-[10px] border border-border"
-        style={{
-          background: "color-mix(in srgb, var(--color-fg) 7%, var(--color-bg))",
-        }}
+      <DemoStage
+        ariaLabel="Demonstration of the guest in-room dining ordering flow"
+        script={FNB_DEMO_SCRIPT}
+        stageWidth={SHELL_W}
+        stageHeight={SHELL_H}
+        childRadius={32}
       >
-        <div className="flex flex-col items-center gap-6 px-4 py-12 sm:py-16">
-          <div
-            style={{
-              // ~2.1 ratio (near-iPhone proportions), stated explicitly — as
-              // a flex item the shell's content-derived min-height would
-              // override aspect-ratio.
-              width: SHELL_W,
-              height: SHELL_H,
-              minHeight: 0,
-              flexShrink: 0,
-              borderRadius: 32,
-              padding: BEZEL,
-              backgroundColor: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-              boxShadow: SHELL_SHADOW,
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: "100%",
-                borderRadius: 26,
-                overflow: "hidden",
-                position: "relative",
-                backgroundColor: INK.white,
-              }}
-            >
-              {/* iPhone-logical canvas, scaled down into the shell */}
-              <div
-                style={{
-                  width: LOGICAL_W,
-                  height: LOGICAL_H,
-                  transform: `scale(${SCREEN_SCALE})`,
-                  transformOrigin: "top left",
-                  display: "flex",
-                  flexDirection: "column",
-                  backgroundColor: INK.white,
-                }}
-              >
-                <PhoneApp />
-                <SafariBar />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        <PhoneShell />
+      </DemoStage>
     </MotionConfig>
   );
 }
