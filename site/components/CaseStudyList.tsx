@@ -589,8 +589,7 @@ function MarqueeDescription({ text }: { text: string }) {
             fontFamily: "var(--font-sans)",
             fontSize: "calc(14px + var(--font-size-offset))",
             fontWeight: 400,
-            letterSpacing: "-0.01em",
-            lineHeight: "22px",
+            lineHeight: "22.4px",
             color: "var(--color-fg-secondary)",
           }}
         >

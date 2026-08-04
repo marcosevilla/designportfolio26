@@ -142,7 +142,7 @@ export function LockedFrameBadge({ locked }: { locked: boolean }) {
           fontSize: "11px",
           fontWeight: 500,
           textTransform: "uppercase",
-          letterSpacing: "0.06em",
+          letterSpacing: "0.08em",
           color: "var(--color-fg-tertiary)",
         }}
       >

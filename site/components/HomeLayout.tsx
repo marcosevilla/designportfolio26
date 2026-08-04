@@ -291,7 +291,6 @@ export default function HomeLayout({
                   // and the globals.css body default).
                   fontSize: "calc(14px + var(--font-size-offset))",
                   lineHeight: "22.4px",
-                  letterSpacing: "-0.02em",
                   // Body reads secondary; Em emphasis + titles keep
                   // primary ink.
                   color: "var(--color-fg-secondary)",
