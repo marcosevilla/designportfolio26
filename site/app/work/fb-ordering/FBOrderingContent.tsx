@@ -1,8 +1,8 @@
 "use client";
 
-import AutoplayVideo from "@/components/AutoplayVideo";
 import ExpandableSection from "@/components/case-study/ExpandableSection";
 import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
+import FnbCartSpecimen from "@/components/fb-showcase/FnbCartSpecimen";
 import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -69,21 +69,15 @@ export default function FBOrderingContent() {
           </Col>
         </Grid>
 
-        {/* ── Guest mobile flow video — full canvas between intro and
-            Solution. Native 4:3, no crop (the phone-shell crop clipped
-            scenes when this ran on the homepage card). */}
+        {/* ── Guest ordering flow — interactive specimen (replaced the
+            fb-mobile.mp4 ambient video, Marco 2026-08-03). Live recreation
+            of the Unified Cart flow: menu browse → item drawer → review
+            cart → your info. Panel bg is a theme-following shade of the
+            page background. */}
         <FadeIn className="pt-32">
           <Grid>
             <Col md="1-12" lg="2-11">
-              <div
-                className="w-full overflow-hidden rounded-[10px] border border-border bg-surface-raised"
-                style={{ aspectRatio: "4 / 3" }}
-              >
-                <AutoplayVideo
-                  src="/videos/fb-mobile.mp4"
-                  className="block h-full w-full object-cover"
-                />
-              </div>
+              <FnbCartSpecimen />
             </Col>
           </Grid>
         </FadeIn>
