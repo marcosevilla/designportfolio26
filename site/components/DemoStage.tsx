@@ -28,6 +28,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -43,7 +44,10 @@ export type DemoStep =
 const CURSOR_SIZE = 36;
 const DEFAULT_SETTLE = 650;
 const TARGET_TIMEOUT = 4000;
-const CURSOR_EASE = "cubic-bezier(0.3, 0.1, 0.25, 1)";
+const SCRIM_BLUR = 16;
+const SCRIM_TINT = "rgba(8,8,8,0.78)";
+const ENTER_MS = 460;
+const EXIT_MS = 300;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -69,6 +73,8 @@ function GlyphIcon({ d, size = 15 }: { d: string; size?: number }) {
 }
 
 const GLYPHS = {
+  pause: "M10 5v14M14 5v14",
+  play: "m8 5 11 7-11 7V5",
   // rotate-ccw
   reset: "M3 12a9 9 0 1 0 2.64-6.36M3 4v4h4",
   // maximize
@@ -138,6 +144,8 @@ function StageCore({
   frozen = false,
   onExpand,
   onClose,
+  onClosed,
+  closing = false,
 }: {
   variant: "inline" | "fullscreen";
   script: DemoStep[];
@@ -150,14 +158,22 @@ function StageCore({
   /** Inline copy freezes (stops running) while the fullscreen portal is up. */
   frozen?: boolean;
   onExpand?: () => void;
+  /** Fullscreen: start the exit animation. */
   onClose?: () => void;
+  /** Fullscreen: set once the exit animation is done — parent unmounts. */
+  onClosed?: () => void;
+  closing?: boolean;
 }) {
   const [mode, setMode] = useState<StageMode>("auto");
   const [resetKey, setResetKey] = useState(0);
   const [hovered, setHovered] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const [cursorOn, setCursorOn] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [fsScale, setFsScale] = useState(1);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const growRef = useRef<HTMLDivElement | null>(null);
+  const chromeRef = useRef<HTMLDivElement | null>(null);
 
   const stageRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -183,8 +199,9 @@ function StageCore({
     return () => mq.removeEventListener("change", apply);
   }, []);
 
-  // Fullscreen: fit the stage to the viewport.
-  useEffect(() => {
+  // Fullscreen: fit the stage to the viewport. Layout effect so the first
+  // paint is already at the fitted scale (the enter animation runs over it).
+  useLayoutEffect(() => {
     if (variant !== "fullscreen") return;
     const compute = () =>
       setFsScale(
@@ -202,18 +219,95 @@ function StageCore({
     return () => window.removeEventListener("resize", compute);
   }, [variant, stageWidth, stageHeight]);
 
+  // Fullscreen enter: the page behind blurs out (backdrop-filter radius ramps
+  // up under a darkening tint) while the enlarged prototype blurs in and grows
+  // into place. WAAPI on mount — a CSS transition on a state flip races the
+  // scale-fit layout effect and silently never runs.
+  useLayoutEffect(() => {
+    if (variant !== "fullscreen" || closing) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    dialogRef.current?.animate(
+      [
+        {
+          backdropFilter: "blur(0px)",
+          WebkitBackdropFilter: "blur(0px)",
+          backgroundColor: "rgba(8,8,8,0)",
+        },
+        {
+          backdropFilter: `blur(${SCRIM_BLUR}px)`,
+          WebkitBackdropFilter: `blur(${SCRIM_BLUR}px)`,
+          backgroundColor: SCRIM_TINT,
+        },
+      ],
+      { duration: ENTER_MS, easing: "cubic-bezier(0.32, 0.72, 0.3, 1)" },
+    );
+    growRef.current?.animate(
+      [
+        { transform: "scale(0.86)", filter: "blur(14px)", opacity: 0 },
+        { transform: "scale(1)", filter: "blur(0px)", opacity: 1 },
+      ],
+      { duration: ENTER_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    );
+    chromeRef.current?.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: ENTER_MS,
+      easing: "ease",
+    });
+  }, [variant, closing]);
+
+  // Fullscreen exit: run the enter in reverse, then tell the parent to unmount
+  // (fill:forwards holds the end state so nothing snaps back mid-flight).
+  useEffect(() => {
+    if (variant !== "fullscreen" || !closing) return;
+    if (reduced) {
+      onClosed?.();
+      return;
+    }
+    dialogRef.current?.animate(
+      [
+        {
+          backdropFilter: `blur(${SCRIM_BLUR}px)`,
+          WebkitBackdropFilter: `blur(${SCRIM_BLUR}px)`,
+          backgroundColor: SCRIM_TINT,
+        },
+        {
+          backdropFilter: "blur(0px)",
+          WebkitBackdropFilter: "blur(0px)",
+          backgroundColor: "rgba(8,8,8,0)",
+        },
+      ],
+      { duration: EXIT_MS, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
+    );
+    growRef.current?.animate(
+      [
+        { transform: "scale(1)", filter: "blur(0px)", opacity: 1 },
+        { transform: "scale(0.88)", filter: "blur(12px)", opacity: 0 },
+      ],
+      { duration: EXIT_MS, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
+    );
+    chromeRef.current?.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: EXIT_MS * 0.6,
+      easing: "ease",
+      fill: "forwards",
+    });
+    const t = setTimeout(() => onClosed?.(), EXIT_MS);
+    return () => clearTimeout(t);
+  }, [variant, closing, reduced, onClosed]);
+
   // Off-screen ⇒ pause (inline only; the portal is always on screen).
   const hoveredRef = useRef(false);
+  const userPausedRef = useRef(false);
   useEffect(() => {
     hoveredRef.current = hovered;
-    pausedRef.current = hovered || !inViewRef.current;
-  }, [hovered]);
+    userPausedRef.current = userPaused;
+    pausedRef.current = hovered || userPaused || !inViewRef.current;
+  }, [hovered, userPaused]);
   useEffect(() => {
     if (variant === "fullscreen" || !stageRef.current) return;
     const io = new IntersectionObserver(
       ([entry]) => {
         inViewRef.current = entry.isIntersecting;
-        pausedRef.current = hoveredRef.current || !entry.isIntersecting;
+        pausedRef.current =
+          hoveredRef.current || userPausedRef.current || !entry.isIntersecting;
       },
       { threshold: 0.3 },
     );
@@ -221,14 +315,23 @@ function StageCore({
     return () => io.disconnect();
   }, [variant]);
 
-  // Freezing (fullscreen opened over this copy): stop, and queue a fresh
-  // auto run for when we unfreeze — the frozen copy's state is stale.
+  // Fullscreen opened over this copy: it stops (the run effect bails on
+  // `frozen`) but stays on screen, so the page the scrim blurs out still looks
+  // whole. The stale state resets on the way back, not on the way in — a
+  // remount at open would pop behind a scrim that's still clear.
+  const wasFrozen = useRef(false);
   useEffect(() => {
-    if (!frozen) return;
-    setMode("auto");
+    if (frozen) {
+      wasFrozen.current = true;
+      return;
+    }
+    if (!wasFrozen.current) return;
+    wasFrozen.current = false;
+    setMode(reduced ? "manual" : "auto");
+    setUserPaused(false);
     setResetKey((k) => k + 1);
     setHovered(false);
-  }, [frozen]);
+  }, [frozen, reduced]);
 
   // ── Script executor ──────────────────────────────────────────────────────
 
@@ -243,16 +346,42 @@ function StageCore({
     if (!stage || !cursor) return 0;
     const stageRect = stage.getBoundingClientRect();
     const r = el.getBoundingClientRect();
-    const x = r.left + r.width / 2 - stageRect.left - cursorSize / 2;
-    const y = r.top + r.height / 2 - stageRect.top - cursorSize / 2;
+    // Tiny landing scatter — machine-perfect center hits read robotic.
+    const x =
+      r.left + r.width / 2 - stageRect.left - cursorSize / 2 +
+      (Math.random() - 0.5) * 5;
+    const y =
+      r.top + r.height / 2 - stageRect.top - cursorSize / 2 +
+      (Math.random() - 0.5) * 5;
     const prev = cursor.dataset.pos?.split(",").map(Number) ?? [x, y];
     const dist = Math.hypot(x - prev[0], y - prev[1]);
-    const duration = instant ? 0 : Math.min(700, Math.max(280, dist * 0.9));
-    cursor.style.transition = duration
-      ? `transform ${duration}ms ${CURSOR_EASE}`
-      : "none";
+    cursor.style.transition = "none";
     cursor.style.transform = `translate(${x}px, ${y}px)`;
     cursor.dataset.pos = `${x},${y}`;
+    if (instant || dist < 1) return 0;
+    const duration = Math.min(1100, Math.max(450, dist * 1.25));
+    // Bow the path into a gentle arc (perpendicular midpoint offset) and
+    // split easing into accelerate-then-settle — a straight line with one
+    // uniform ease is what made the old motion feel jagged.
+    const bow =
+      Math.min(26, dist * 0.14) * (Math.random() < 0.5 ? -1 : 1);
+    const mx = (prev[0] + x) / 2 - ((y - prev[1]) / dist) * bow;
+    const my = (prev[1] + y) / 2 + ((x - prev[0]) / dist) * bow;
+    cursor.animate(
+      [
+        {
+          transform: `translate(${prev[0]}px, ${prev[1]}px)`,
+          easing: "cubic-bezier(0.5, 0, 0.75, 0.6)",
+        },
+        {
+          transform: `translate(${mx}px, ${my}px)`,
+          offset: 0.5,
+          easing: "cubic-bezier(0.25, 0.4, 0.25, 1)",
+        },
+        { transform: `translate(${x}px, ${y}px)` },
+      ],
+      { duration },
+    );
     return duration;
   };
 
@@ -260,10 +389,10 @@ function StageCore({
     const dot = cursorDotRef.current;
     if (!dot) return;
     dot.style.transform = "scale(0.72)";
-    dot.style.background = "rgba(255,255,255,0.5)";
+    dot.style.background = "rgba(255,255,255,0.34)";
     await sleep(140);
     dot.style.transform = "scale(1)";
-    dot.style.background = "rgba(255,255,255,0.28)";
+    dot.style.background = "rgba(255,255,255,0.16)";
     await sleep(70);
   };
 
@@ -387,8 +516,18 @@ function StageCore({
 
   const handleReset = () => {
     setMode(reduced ? "manual" : "auto");
+    setUserPaused(false);
     setResetKey((k) => k + 1);
   };
+
+  const pausePlayButton = mode === "auto" && !reduced && !frozen && (
+    <StageButton
+      glyph={userPaused ? "play" : "pause"}
+      label={userPaused ? "Resume demo" : "Pause demo"}
+      onClick={() => setUserPaused((p) => !p)}
+      onDark={variant === "fullscreen"}
+    />
+  );
 
   const takeOver = () => {
     setMode("manual");
@@ -413,8 +552,8 @@ function StageCore({
   const interactable = mode === "manual";
   const showHoverOverlay = mode === "auto" && !reduced && hovered && !frozen;
 
-  // Hover-to-pause listens on the whole panel (inline) / the stage
-  // (fullscreen — the scrim is a close target, not part of the demo).
+  // Hover-to-pause listens on the stage only (the phone mock itself) —
+  // panel chrome and padding around it don't pause the demo.
   const hoverHandlers = {
     onPointerEnter: () => setHovered(true),
     onPointerLeave: () => setHovered(false),
@@ -425,7 +564,7 @@ function StageCore({
   const stage = (
     <div
       ref={stageRef}
-      {...(variant === "fullscreen" ? hoverHandlers : {})}
+      {...hoverHandlers}
       onFocusCapture={handleFocusCapture}
       style={{
         position: "relative",
@@ -475,7 +614,8 @@ function StageCore({
           zIndex: 2,
           pointerEvents: "none",
           willChange: "transform",
-          opacity: cursorOn ? 1 : 0,
+          opacity: cursorOn && !userPaused ? 1 : 0,
+          transition: "opacity 200ms ease",
         }}
       >
         <div
@@ -484,12 +624,12 @@ function StageCore({
             width: "100%",
             height: "100%",
             borderRadius: 999,
-            background: "rgba(255,255,255,0.28)",
-            border: "1px solid rgba(255,255,255,0.6)",
-            backdropFilter: "blur(3px)",
-            WebkitBackdropFilter: "blur(3px)",
+            background: "rgba(255,255,255,0.16)",
+            border: "1px solid rgba(255,255,255,0.5)",
+            backdropFilter: "blur(1.5px)",
+            WebkitBackdropFilter: "blur(1.5px)",
             boxShadow:
-              "0 2px 10px rgba(0,0,0,0.28), inset 0 1px 1px rgba(255,255,255,0.45)",
+              "0 2px 10px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35)",
             transition:
               "transform 130ms ease, background 130ms ease, opacity 250ms ease",
           }}
@@ -543,6 +683,7 @@ function StageCore({
   if (variant === "fullscreen") {
     return (
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
@@ -553,15 +694,17 @@ function StageCore({
           position: "fixed",
           inset: 0,
           zIndex: 150,
-          background: "rgba(8,8,8,0.78)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          backgroundColor: SCRIM_TINT,
+          backdropFilter: `blur(${SCRIM_BLUR}px)`,
+          WebkitBackdropFilter: `blur(${SCRIM_BLUR}px)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          pointerEvents: closing ? "none" : "auto",
         }}
       >
         <div
+          ref={chromeRef}
           style={{
             position: "absolute",
             top: 20,
@@ -571,17 +714,17 @@ function StageCore({
             zIndex: 4,
           }}
         >
+          {pausePlayButton}
           <StageButton glyph="reset" label="Restart demo" onClick={handleReset} onDark />
           <StageButton glyph="close" label="Close fullscreen" onClick={() => onClose?.()} onDark />
         </div>
-        {stage}
+        <div ref={growRef}>{stage}</div>
       </div>
     );
   }
 
   const panelStyle: CSSProperties = {
     background: "color-mix(in srgb, var(--color-fg) 7%, var(--color-bg))",
-    visibility: frozen ? "hidden" : "visible",
   };
 
   return (
@@ -589,7 +732,6 @@ function StageCore({
       aria-label={ariaLabel}
       className="relative rounded-[10px] border border-border"
       style={panelStyle}
-      {...hoverHandlers}
     >
       <div
         style={{
@@ -601,6 +743,7 @@ function StageCore({
           zIndex: 4,
         }}
       >
+        {pausePlayButton}
         <StageButton glyph="reset" label="Restart demo" onClick={handleReset} />
         {onExpand && (
           <StageButton glyph="expand" label="View fullscreen" onClick={onExpand} />
@@ -631,8 +774,21 @@ export default function DemoStage({
   childRadius?: number;
 }) {
   const [fullscreen, setFullscreen] = useState(false);
+  // Closing is a separate beat: the portal stays mounted through its exit
+  // animation, then unmounts (and the inline copy unfreezes) on `onClosed`.
+  const [closing, setClosing] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  const open = useCallback(() => {
+    setClosing(false);
+    setFullscreen(true);
+  }, []);
+  const requestClose = useCallback(() => setClosing(true), []);
+  const finishClose = useCallback(() => {
+    setFullscreen(false);
+    setClosing(false);
+  }, []);
 
   // Lock page scroll behind the fullscreen overlay.
   useEffect(() => {
@@ -651,7 +807,7 @@ export default function DemoStage({
       <StageCore
         variant="inline"
         frozen={fullscreen}
-        onExpand={() => setFullscreen(true)}
+        onExpand={open}
         {...shared}
       >
         {children}
@@ -661,7 +817,9 @@ export default function DemoStage({
         createPortal(
           <StageCore
             variant="fullscreen"
-            onClose={() => setFullscreen(false)}
+            closing={closing}
+            onClose={requestClose}
+            onClosed={finishClose}
             {...shared}
           >
             {children}
