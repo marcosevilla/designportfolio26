@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import CompendiumContent from "./CompendiumContent";
 import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Digital Compendium — Marco Sevilla",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function CompendiumPage() {
+  const meta = getStudyMeta("compendium");
+
   return (
     <LockGate
       mode="page"
@@ -24,7 +27,7 @@ export default function CompendiumPage() {
       backHref="/#projects"
     >
       <div className="pb-20">
-        <CompendiumContent />
+        <CompendiumContent meta={meta} />
       </div>
     </LockGate>
   );

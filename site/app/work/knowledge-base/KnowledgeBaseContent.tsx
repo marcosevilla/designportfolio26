@@ -7,16 +7,11 @@ import PullQuote from "@/components/case-study/PullQuote";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
-import MetaRail from "@/components/case-study/MetaRail";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
-
-const META = [
-  { label: "Year", values: ["2024 · shipped 2026"] },
-  { label: "Role", values: ["Product designer"] },
-  { label: "Scope", values: ["Information architecture", "Research & personas", "KB UI"] },
-];
+import type { StudyMeta } from "@/lib/content";
 
 const STATS = [
   { value: "2", label: "AI products powered by one knowledge base" },
@@ -34,17 +29,14 @@ const TOC_ITEMS = [
   { id: "reflection", label: "Reflection" },
 ];
 
-export default function KnowledgeBaseContent() {
+export default function KnowledgeBaseContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
-        {/* Title + Subtitle with metadata rail (intro-rail) */}
-        <Grid preset="intro-rail">
-          <Col>
+        <Grid>
+          <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <h1 className="text-(--color-fg)" style={typescale.display}>AI Knowledge Base</h1>
-            <p className="mt-3 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A ground-up redesign of the information architecture and UI for Canary&apos;s AI knowledge base — the system where hotels enter the property data that powers both the AI chatbot and voice assistant.</p>
-          </Col>
-          <Col className="mt-8 lg:mt-2">
-            <MetaRail items={META} />
+            <StudyMetaRow slug="knowledge-base" {...meta} />
+            <p className="mt-6 text-(--color-fg-secondary)" style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 18, lineHeight: "26px", letterSpacing: "0.02em" }}>A ground-up redesign of the information architecture and UI for Canary&apos;s AI knowledge base — the system where hotels enter the property data that powers both the AI chatbot and voice assistant.</p>
           </Col>
         </Grid>
 

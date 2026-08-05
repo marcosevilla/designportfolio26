@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import KnowledgeBaseContent from "./KnowledgeBaseContent";
 import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "AI Knowledge Base — Marco Sevilla",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function KnowledgeBasePage() {
+  const meta = getStudyMeta("knowledge-base");
+
   return (
     <LockGate
       mode="page"
@@ -24,7 +27,7 @@ export default function KnowledgeBasePage() {
       backHref="/#projects"
     >
       <div className="pb-20">
-        <KnowledgeBaseContent />
+        <KnowledgeBaseContent meta={meta} />
       </div>
     </LockGate>
   );

@@ -9,16 +9,11 @@ import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
-import MetaRail from "@/components/case-study/MetaRail";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
-
-const META = [
-  { label: "Year", values: ["2024–2025"] },
-  { label: "Role", values: ["Product designer", "100% design ownership"] },
-  { label: "Scope", values: ["CMS builder", "Guest experience", "Compendium Lite"] },
-];
+import type { StudyMeta } from "@/lib/content";
 
 const STATS = [
   { value: "$1.51M", label: "Cumulative CARR (Jul '26)" },
@@ -36,20 +31,17 @@ const TOC_ITEMS = [
   { id: "reflection", label: "Reflection" },
 ];
 
-export default function CompendiumContent() {
+export default function CompendiumContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
-        {/* Title + Subtitle with metadata rail (intro-rail) */}
-        <Grid preset="intro-rail">
-          <Col>
+        <Grid>
+          <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <h1 className="text-(--color-fg)" style={typescale.display}>Digital Compendium</h1>
+            <StudyMetaRow slug="compendium" {...meta} />
             {/* Same intro treatment as F&B: italic tertiary one-liner hook,
                 then body paragraphs at secondary. */}
-            <p className="mt-3 italic text-(--color-fg-tertiary)">Hotels print their guest guides. Guests never read them.</p>
+            <p className="mt-6 italic text-(--color-fg-tertiary)">Hotels print their guest guides. Guests never read them.</p>
             <p className="mt-3 text-(--color-fg-secondary)">I spent 18 months designing the digital replacement — now the hub 175,000 guests open every month, and a $1.51M product line growing 230% year over year for Canary.</p>
-          </Col>
-          <Col className="mt-8 lg:mt-2">
-            <MetaRail items={META} />
           </Col>
         </Grid>
 

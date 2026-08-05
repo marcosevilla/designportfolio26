@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AIWorkflowContent from "./AIWorkflowContent";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Prototypes as the Spec — Marco Sevilla",
@@ -13,9 +14,11 @@ export const metadata: Metadata = {
 };
 
 export default function AIWorkflowPage() {
+  const meta = getStudyMeta("ai-workflow");
+
   return (
     <div className="pb-20">
-      <AIWorkflowContent />
+      <AIWorkflowContent meta={meta} />
     </div>
   );
 }

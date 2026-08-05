@@ -5,15 +5,11 @@ import NextProject from "@/components/case-study/NextProject";
 import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
-import MetaRail from "@/components/case-study/MetaRail";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
 import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
-
-const META = [
-  { label: "Year", values: ["2025–2026"] },
-  { label: "Role", values: ["Designer + builder"] },
-  { label: "Stack", values: ["Claude Code", "Next.js", "CanaryUI"] },
-];
+import type { StudyMeta } from "@/lib/content";
 
 const STATS = [
   { value: "~50", label: "Working prototypes shipped" },
@@ -31,20 +27,21 @@ const TOC_ITEMS = [
   { id: "what-ive-learned", label: "What I've Learned" },
 ];
 
-export default function AIWorkflowContent() {
+export default function AIWorkflowContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
-          {/* Title + Subtitle with metadata rail (intro-rail) */}
-          <Grid preset="intro-rail">
-            <Col>
+          {/* Title + Subtitle */}
+          <Grid>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <h1
               className="text-(--color-fg)"
               style={typescale.display}
             >
               Prototypes as the spec
             </h1>
+            <StudyMetaRow slug="ai-workflow" {...meta} />
             <p
-              className="mt-3 text-(--color-fg-secondary)"
+              className="mt-6 text-(--color-fg-secondary)"
               style={{
                 fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
                 fontStyle: "italic",
@@ -57,9 +54,6 @@ export default function AIWorkflowContent() {
               How working prototypes replaced Figma as the engineering
               handoff spec — and closed deals along the way.
             </p>
-            </Col>
-            <Col className="mt-8 lg:mt-2">
-              <MetaRail items={META} />
             </Col>
           </Grid>
 
