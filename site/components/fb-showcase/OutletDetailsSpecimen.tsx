@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
+import DemoStage, { type DemoStep } from "@/components/DemoStage";
 import { ELEV, neutral, primary, RADIUS, TYPE, W } from "./canary-polished-tokens";
 import { ICONS } from "./mdi-icons";
 import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
 import {
-  BASE_DESCRIPTION, DESCRIPTION_MAX, HERO_SRC, OUTLET, PREVIEW,
+  BASE_DESCRIPTION, DESCRIPTION_MAX, FULL_DESCRIPTION, HERO_SRC, OUTLET, PREVIEW,
 } from "./outlet-details-data";
 
 /**
@@ -18,11 +19,10 @@ import {
  * the photo dropzone toggles an "uploaded" hero; Publish fires a loading
  * beat + toast. Sidebar, breadcrumb, Translate, Add Hours stay inert.
  *
- * Task 5 of 6: adds the live guest-phone preview (title, description, phone
- * mirror the form keystroke-by-keystroke; hero starts in the gray "No image
- * available" state). Photo upload choreography, toast, and the DemoStage
- * wrap arrive in later tasks — this file exports the bare `Editor` in a
- * plain fixed-size div for now.
+ * The live guest-phone preview mirrors the form keystroke-by-keystroke
+ * (title, description, phone); the hero starts in the gray "No image
+ * available" state and crossfades to the uploaded photo. Wrapped in the
+ * same DemoStage choreography as the three specimens above it.
  *
  * Deliberate deviations from the frame (Marco's rulings, 2026-08-04):
  * 1. Preview email is dining@thelodgeresort.com — the frame's
@@ -48,6 +48,8 @@ const PHONE_W = 370;
 const APP_H = 982; // header 64 + form stack 898 + 20 bottom pad
 const SHELL_W = APP_W;
 const SHELL_H = APP_H + CHROME_H; // 1018
+
+const EASE = [0.25, 0.46, 0.45, 0.94] as const;
 
 // ─── Primitives ────────────────────────────────────────────────────────────
 
@@ -566,12 +568,39 @@ function Editor() {
                     padding: 0,
                   }}
                 >
-                  {/* Task 6 swaps in the uploaded thumbnail when photo === true */}
-                  <Icon path={ICONS.imagePlus} size={32} color={neutral[400]} />
-                  <span style={{ ...TYPE.body, fontWeight: W.medium, color: neutral[700] }}>
-                    Click to upload photos
-                  </span>
-                  <span style={{ ...TYPE.caption, color: neutral[500] }}>PNG, JPG up to 5MB</span>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {photo ? (
+                      <motion.div
+                        key="uploaded"
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3, ease: EASE }}
+                        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}
+                      >
+                        <img
+                          src={HERO_SRC}
+                          alt="The Lodge Restaurant dining room"
+                          style={{ width: 180, height: 92, objectFit: "cover", borderRadius: RADIUS.md }}
+                        />
+                        <span style={{ ...TYPE.caption, color: neutral[600] }}>the-lodge-restaurant.jpg</span>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}
+                      >
+                        <Icon path={ICONS.imagePlus} size={32} color={neutral[400]} />
+                        <span style={{ ...TYPE.body, fontWeight: W.medium, color: neutral[700] }}>
+                          Click to upload photos
+                        </span>
+                        <span style={{ ...TYPE.caption, color: neutral[500] }}>PNG, JPG up to 5MB</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </button>
               </div>
             </div>
@@ -581,13 +610,69 @@ function Editor() {
             </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              key={toast}
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 12, opacity: 0 }}
+              transition={{ duration: 0.2, ease: EASE }}
+              style={{
+                position: "absolute",
+                bottom: 20,
+                left: "50%",
+                x: "-50%",
+                backgroundColor: neutral[800],
+                color: neutral[0],
+                ...TYPE.body,
+                paddingInline: 16,
+                height: 36,
+                display: "flex",
+                alignItems: "center",
+                borderRadius: RADIUS.md,
+                boxShadow: ELEV.lg,
+              }}
+            >
+              {toast}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
-// ─── Export ─────────────────────────────────────────────────────────────────
+// ─── Choreography ──────────────────────────────────────────────────────────
+
+/**
+ * ~15s loop: extend the description (preview mirrors keystroke-by-keystroke,
+ * counter walks 137→186/500) → "upload" a photo (dropzone thumbnail + hero
+ * crossfade) → Publish (700ms beat, toast). `after` pads cover the crossfade
+ * (450ms), the publish beat (700ms), and toast dwell (2.4s).
+ */
+const OUTLET_DEMO_SCRIPT: DemoStep[] = [
+  { type: "wait", ms: 800 },
+  { type: "tap", target: "field-description", after: 350 },
+  { type: "type", target: "field-description", text: FULL_DESCRIPTION, charMs: 70, after: 1500 },
+  { type: "tap", target: "dropzone", after: 1900 },
+  { type: "tap", target: "publish", after: 1200 },
+  { type: "wait", ms: 2600 },
+];
 
 export default function OutletDetailsSpecimen() {
-  return <Editor />;
+  return (
+    <MotionConfig reducedMotion="user">
+      <DemoStage
+        ariaLabel="Demonstration of the staff outlet-details editor with live guest preview"
+        script={OUTLET_DEMO_SCRIPT}
+        stageWidth={SHELL_W}
+        stageHeight={SHELL_H}
+        childRadius={RADIUS.lg}
+      >
+        <Editor />
+      </DemoStage>
+    </MotionConfig>
+  );
 }

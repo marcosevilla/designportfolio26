@@ -111,9 +111,11 @@ export default function FBOrderingContent() {
           </Grid>
         </FadeIn>
 
-        {/* ── TEMP: Task 4 eyeball mount for the outlet-details specimen
-            (static shell/top-bar/form only — DemoStage wrap + preview
-            land in Tasks 5–6). Remove once the specimen is fully wired. */}
+        {/* ── Staff outlet editor — where the guest-facing outlet page gets
+            written, with a live phone preview (Marco 2026-08-04). Rebuilt
+            from the polished Figma frames (Canary Polished Visuals, frame
+            57:8145) and styled from canary-polished-tokens. Same DemoStage
+            chrome as the three specimens above. */}
         <FadeIn className="pt-10">
           <Grid>
             <Col md="1-12" lg="2-11">
