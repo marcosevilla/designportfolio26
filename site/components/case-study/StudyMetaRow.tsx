@@ -1,7 +1,8 @@
 "use client";
 
 import { STUDY_TAGS } from "@/lib/study-tags";
-import { logoFor } from "@/lib/study-logos";
+import { hasMark } from "@/lib/study-logos";
+import CanaryMark from "@/components/case-study/CanaryMark";
 import { typescale } from "@/lib/typography";
 
 /**
@@ -28,21 +29,14 @@ export default function StudyMetaRow({
   year: string;
 }) {
   const tags = STUDY_TAGS[slug] ?? [];
-  const logo = logoFor(company);
+  const showMark = hasMark(company);
 
   return (
     <div className="mt-6 flex flex-col items-start gap-3 border-y border-(--color-border) py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       {/* Left — company identity */}
       <div className="flex items-center gap-3">
-        {logo ? (
-          <img
-            src={logo}
-            alt=""
-            aria-hidden="true"
-            width={20}
-            height={20}
-            className="h-5 w-5 shrink-0 rounded-[4px] border border-(--color-border) object-contain"
-          />
+        {showMark ? (
+          <CanaryMark className="h-5 w-5 shrink-0 rounded-[4px] border border-(--color-border) text-(--color-fg-secondary)" />
         ) : (
           <span
             aria-hidden="true"
