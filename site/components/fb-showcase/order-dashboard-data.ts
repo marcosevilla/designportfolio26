@@ -338,38 +338,6 @@ export const STAGE_LABEL: Record<Stage, string> = {
   denied: "DENIED",
 };
 
-// ─── Sidebar ───────────────────────────────────────────────────────────────
-
-export const PROPERTY = {
-  name: "Days Inn & Suites by Wyndham Wausau",
-  short: "Days Inn & Suite…",
-  id: "38653",
-};
-
-export type NavItem = { label: string; icon: string };
-
-export const NAV_SECTIONS: NavItem[][] = [
-  [
-    { label: "Upsells", icon: "tag" },
-    { label: "F&B Ordering", icon: "forkKnife" },
-    { label: "Check-in", icon: "login" },
-    { label: "Checkout", icon: "logout" },
-    { label: "Messages", icon: "message" },
-    { label: "Calls", icon: "phone" },
-    { label: "Digital Tips", icon: "cash" },
-  ],
-  [
-    { label: "Authorizations", icon: "shieldCheck" },
-    { label: "Contracts", icon: "fileDocument" },
-    { label: "Guest Verification", icon: "accountCheck" },
-    { label: "Clients on File", icon: "cardAccount" },
-    { label: "Amenities", icon: "storefront" },
-    { label: "Payment Links", icon: "creditCard" },
-  ],
-];
-
-export const ACTIVE_NAV = "F&B Ordering";
-
 export const TABS: { id: Tab; label: string }[] = [
   { id: "new", label: "New orders" },
   { id: "in-progress", label: "In progress" },

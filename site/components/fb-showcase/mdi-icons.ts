@@ -1,5 +1,5 @@
 /**
- * Material Design Icons path data for the order-dashboard specimen.
+ * Material Design Icons path data for the fb-showcase admin specimens.
  *
  * Every `d` string below was fetched verbatim from
  * `Templarian/MaterialDesign-SVG` (24×24 viewBox) — not hand-authored. Add new
