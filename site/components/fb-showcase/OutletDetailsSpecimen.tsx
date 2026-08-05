@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ELEV, neutral, primary, RADIUS, TYPE, W } from "./canary-polished-tokens";
 import { ICONS } from "./mdi-icons";
 import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
 import {
-  BASE_DESCRIPTION, DESCRIPTION_MAX, OUTLET,
+  BASE_DESCRIPTION, DESCRIPTION_MAX, HERO_SRC, OUTLET, PREVIEW,
 } from "./outlet-details-data";
 
 /**
@@ -18,9 +18,11 @@ import {
  * the photo dropzone toggles an "uploaded" hero; Publish fires a loading
  * beat + toast. Sidebar, breadcrumb, Translate, Add Hours stay inert.
  *
- * Task 4 of 6: static shell, top bar, and form column only. Preview,
- * photo/toast choreography, and the DemoStage wrap arrive in later tasks —
- * this file exports the bare `Editor` in a plain fixed-size div for now.
+ * Task 5 of 6: adds the live guest-phone preview (title, description, phone
+ * mirror the form keystroke-by-keystroke; hero starts in the gray "No image
+ * available" state). Photo upload choreography, toast, and the DemoStage
+ * wrap arrive in later tasks — this file exports the bare `Editor` in a
+ * plain fixed-size div for now.
  *
  * Deliberate deviations from the frame (Marco's rulings, 2026-08-04):
  * 1. Preview email is dining@thelodgeresort.com — the frame's
@@ -42,6 +44,7 @@ const CONTENT_W = APP_W - NAV_W; // 961
 const HEADER_H = 64; // frame: 73, compressed with the shell
 const FORM_W = 500; // frame: 582 in a wider canvas
 const FORM_X = 24;
+const PHONE_W = 370;
 const APP_H = 982; // header 64 + form stack 898 + 20 bottom pad
 const SHELL_W = APP_W;
 const SHELL_H = APP_H + CHROME_H; // 1018
@@ -101,6 +104,152 @@ function Field({
           boxSizing: "border-box",
         }}
       />
+    </div>
+  );
+}
+
+function PhonePreview({
+  title, description, phone, photo,
+}: {
+  title: string;
+  description: string;
+  phone: string;
+  photo: boolean;
+}) {
+  return (
+    <div
+      style={{
+        width: PHONE_W,
+        borderRadius: 24,
+        overflow: "hidden",
+        backgroundColor: neutral[0],
+        boxShadow: ELEV.overlay,
+        border: `1px solid ${neutral[100]}`,
+      }}
+    >
+      {/* Hero — crossfades when a photo is "uploaded" (Task 6 wires photo) */}
+      <div style={{ position: "relative", height: 180, backgroundColor: neutral[200] }}>
+        <AnimatePresence>
+          {photo ? (
+            <motion.img
+              key="hero"
+              src={HERO_SRC}
+              alt=""
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
+              style={{
+                position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+              }}
+            />
+          ) : (
+            <motion.span
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                ...TYPE.body,
+                color: neutral[500],
+              }}
+            >
+              {PREVIEW.noImage}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 12 }}>
+        <h3 style={{ ...TYPE.title, fontWeight: W.semibold, color: neutral[900], margin: 0 }}>
+          {title}
+        </h3>
+
+        {/* Order Food CTA */}
+        <div
+          style={{
+            height: 40,
+            borderRadius: RADIUS.md,
+            backgroundColor: "#131822",
+            color: neutral[0],
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+          }}
+        >
+          <span style={{ ...TYPE.body, fontWeight: W.medium }}>{PREVIEW.cta}</span>
+          <span style={{ position: "absolute", right: 12 }}>
+            <Icon path={ICONS.chevronRight} size={16} color={neutral[0]} />
+          </span>
+        </div>
+
+        <p style={{ ...TYPE.body, color: neutral[700], margin: 0, minHeight: 80 }}>{description}</p>
+
+        {/* Contact rows */}
+        <div style={{ border: `1px solid ${neutral[200]}`, borderRadius: RADIUS.md, overflow: "hidden" }}>
+          {[
+            { icon: ICONS.phone, text: phone },
+            { icon: ICONS.email, text: PREVIEW.email },
+          ].map((row, i) => (
+            <div
+              key={i}
+              style={{
+                height: 45,
+                display: "flex",
+                alignItems: "center",
+                paddingInline: 12,
+                gap: 12,
+                borderTop: i > 0 ? `1px solid ${neutral[200]}` : "none",
+              }}
+            >
+              <Icon path={row.icon} size={16} color={neutral[600]} />
+              <span style={{ ...TYPE.body, color: neutral[800] }}>{row.text}</span>
+              <span style={{ marginLeft: "auto" }}>
+                <Icon path={ICONS.chevronRight} size={16} color={neutral[400]} />
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Language + legal footer */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, paddingBlock: 8 }}>
+          <div
+            style={{
+              height: 25,
+              paddingInline: 9,
+              border: `1px solid ${neutral[200]}`,
+              borderRadius: RADIUS.sm,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span style={{ ...TYPE.caption, color: neutral[700] }}>{PREVIEW.language}</span>
+            <Icon path={ICONS.chevronDown} size={12} color={neutral[500]} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <span style={{ ...TYPE.micro, color: neutral[500] }}>{PREVIEW.legal}</span>
+            <span style={{ ...TYPE.micro, color: neutral[400], display: "flex", alignItems: "center", gap: 4 }}>
+              <span
+                style={{
+                  width: 12,
+                  height: 8,
+                  borderRadius: RADIUS.full,
+                  backgroundColor: neutral[300],
+                  display: "inline-block",
+                }}
+              />
+              {PREVIEW.poweredBy}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -240,7 +389,7 @@ function Editor() {
             </div>
           </div>
 
-          {/* Body row — preview column arrives in Task 5 */}
+          {/* Body row */}
           <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
             <div
               style={{
@@ -425,6 +574,10 @@ function Editor() {
                   <span style={{ ...TYPE.caption, color: neutral[500] }}>PNG, JPG up to 5MB</span>
                 </button>
               </div>
+            </div>
+
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <PhonePreview title={title} description={description} phone={phone} photo={photo} />
             </div>
           </div>
         </div>
