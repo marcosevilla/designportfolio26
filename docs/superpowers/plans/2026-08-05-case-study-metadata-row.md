@@ -884,8 +884,10 @@ In the browser, toggle to dark via the theme control and re-check `/work/fb-orde
 
 - [ ] **Step 6: Commit**
 
+`site/next-env.d.ts` is an auto-generated Next file that flip-flops between dev and build runs. It is deliberately left uncommitted — stage explicit paths, never `git add -A`.
+
 ```bash
-git add -A
+git add site/components/case-study/MetaRail.tsx
 git commit -m "refactor: delete MetaRail — superseded by StudyMetaRow
 
 All eight case studies now render the horizontal metadata row."
