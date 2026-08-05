@@ -4,6 +4,7 @@ import ExpandableSection from "@/components/case-study/ExpandableSection";
 import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
 import FnbCartSpecimen from "@/components/fb-showcase/FnbCartSpecimen";
 import OrderDashboardSpecimen from "@/components/fb-showcase/OrderDashboardSpecimen";
+import ItemLibrarySpecimen from "@/components/fb-showcase/ItemLibrarySpecimen";
 import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -92,6 +93,17 @@ export default function FBOrderingContent() {
           <Grid>
             <Col md="1-12" lg="2-11">
               <OrderDashboardSpecimen />
+            </Col>
+          </Grid>
+        </FadeIn>
+
+        {/* ── TEMPORARY mount for visual dev (Task 3, 2026-08-04) — static
+            Item Library specimen (specimen #3). Structure is correct;
+            final caption/polish lands in Task 5. ── */}
+        <FadeIn className="pt-10">
+          <Grid>
+            <Col md="1-12" lg="2-11">
+              <ItemLibrarySpecimen />
             </Col>
           </Grid>
         </FadeIn>
