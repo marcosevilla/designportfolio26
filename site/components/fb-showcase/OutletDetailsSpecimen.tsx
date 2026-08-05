@@ -137,6 +137,7 @@ function Editor() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [descFocused, setDescFocused] = useState(false);
+  const [phoneFocused, setPhoneFocused] = useState(false);
 
   const publish = () => {
     if (publishing) return;
@@ -332,11 +333,13 @@ function Editor() {
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    onFocus={() => setPhoneFocused(true)}
+                    onBlur={() => setPhoneFocused(false)}
                     style={{
                       height: 38,
                       paddingInline: 13,
                       borderRadius: "0 8px 8px 0",
-                      border: `1px solid ${neutral[300]}`,
+                      border: `1px solid ${phoneFocused ? primary[500] : neutral[300]}`,
                       outline: "none",
                       backgroundColor: neutral[0],
                       ...TYPE.body,
