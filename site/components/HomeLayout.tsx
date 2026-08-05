@@ -18,13 +18,11 @@ import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { RESUME_URL } from "@/lib/resume-content";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
-import { typescale } from "@/lib/typography";
-
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
-/** Tertiary site face — the name only. Fraunces' optical-size axis gives
- *  a true display cut at this size; serif fallbacks, never the sans. */
-const FRAUNCES = "var(--font-fraunces), Georgia, serif";
+/** Tertiary site face — the name only. Pixel mono; fallbacks stay mono so
+ *  a failed load degrades to the site's label voice, not the sans. */
+const DEPARTURE_MONO = "var(--font-departure-mono), ui-monospace, monospace";
 
 /** Home ↔ About page swap. The two surfaces read as neighbours on a
  *  horizontal axis — About lives to the right of home — so home leaves
@@ -263,12 +261,12 @@ export default function HomeLayout({
               >
                 <h1
                   style={{
-                    fontFamily: FRAUNCES,
-                    // Size/rhythm from the display token so the name rides
-                    // the ramp and the font-size slider; face/weight/track
-                    // stay inline — Fraunces wants none of Geist's negative
-                    // tracking, and 500 would muddy its thins at this size.
-                    fontSize: typescale.display.fontSize,
+                    fontFamily: DEPARTURE_MONO,
+                    // 44px = 4× Departure Mono's 11px design grid, snapped
+                    // (not the display clamp) so the pixel blocks stay even;
+                    // sits inside the display band's 32–40 neighborhood.
+                    // Zero tracking — extra letter-space breaks the grid.
+                    fontSize: "calc(44px + var(--font-size-offset))",
                     fontWeight: 400,
                     letterSpacing: "0em",
                     lineHeight: 1.1,

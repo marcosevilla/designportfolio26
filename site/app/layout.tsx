@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Fraunces, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 
 /**
  * Inter is the PRODUCT typeface, not a site typeface — it exists only so the
@@ -18,14 +19,14 @@ const inter = Inter({
 });
 
 /**
- * Fraunces is the tertiary SITE face — display serif for the homepage name
- * (HomeLayout h1) only. Loaded as a full variable font so the optical-size
- * axis serves the true display cut at 40px. Keep it off prose and chrome.
+ * Departure Mono is the tertiary SITE face — pixel mono for the homepage
+ * name (HomeLayout h1) only. Single 400 weight, SIL OFL (license sits next
+ * to the file in site/fonts/). Keep it off prose and chrome.
  */
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  variable: "--font-fraunces",
+const departureMono = localFont({
+  src: "../fonts/DepartureMono-Regular.woff2",
+  weight: "400",
+  variable: "--font-departure-mono",
   display: "swap",
 });
 
@@ -85,7 +86,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable} ${inter.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${departureMono.variable} ${inter.variable}`}>
       <body>
         {/* defaultTheme="light" (not "system"): ThemeStateProvider forces
             first visits to light anyway, so "system" only produced a dark
