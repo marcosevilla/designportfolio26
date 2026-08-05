@@ -674,6 +674,38 @@ mark.bio-highlight {
   display: none;
 }
 
+/* DemoStage "Try demo" pill — hidden until the stage is hovered (or the pill
+   itself is keyboard-focused), so an inline demo reads as a figure until the
+   visitor reaches for it. Touch devices never hover, so the pill is pinned
+   visible there or the demo would have no way to open. */
+.demo-try-pill {
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+.demo-stage-root:hover .demo-try-pill,
+.demo-try-pill:focus-visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+@media (hover: none) {
+  .demo-try-pill {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-try-pill {
+    transform: none;
+    transition: opacity 180ms ease;
+  }
+}
+
 /* Subtle 1px outline for raster images / video thumbnails so the edge
    reads cleanly against any surface. Pure black in light / pure white in
    dark — see --color-image-outline (never tinted neutrals). */

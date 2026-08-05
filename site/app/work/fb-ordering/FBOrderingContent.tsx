@@ -8,7 +8,6 @@ import ItemLibrarySpecimen from "@/components/fb-showcase/ItemLibrarySpecimen";
 import OutletDetailsSpecimen from "@/components/fb-showcase/OutletDetailsSpecimen";
 // Hidden 2026-08-05 — see the commented-out mount below.
 // import OutletConfigSpecimen from "@/components/fb-showcase/OutletConfigSpecimen";
-import { DemoGroup, TryDemoButton } from "@/components/DemoStage";
 import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -74,23 +73,21 @@ export default function FBOrderingContent() {
             of the Unified Cart flow: menu browse → item drawer → review
             cart → your info. Panel bg is a theme-following shade of the
             page background. */}
-        {/* Interactive demos keep a wider breakout band (Marco 2026-08-05:
-            the ONE exception to media-matches-text — the staff specimens
-            are 1177px desktop UIs and DemoStage floors inline scale at
-            0.7, so the 676px text band would clip/pan them). "3-10" ≈
-            909px at full canvas, matching their pre-pass width. */}
-        {/* Each demo is a <DemoGroup>: the stage on the wide band, then a
-            caption on the text band whose "Try demo" button opens that
-            demo's hands-on fullscreen copy (Marco 2026-08-05 — the in-page
-            copy is display-only now; no chrome, no panel, no hover state).
-            ⚠️ Caption copy below is DRAFT — Marco rewrites via the inline
-            editor. */}
+        {/* Every demo sits on the text band (Marco 2026-08-05, third pass —
+            they used to break out to "3-10"). DemoStage now fits a stage to
+            its column exactly at tablet and up, so the 1177px staff UIs render
+            near 0.57 and share the body measure; below 768px they floor at 0.7
+            and pan instead. */}
+        {/* Each demo is stage + caption. The "Try demo" CTA that opens the
+            hands-on fullscreen copy is no longer in the caption — it's a pill
+            that fades in over the stage's top-right corner on hover, rendered
+            by DemoStage itself. ⚠️ Caption copy below is DRAFT — Marco
+            rewrites via the inline editor. */}
         {/* The phone is the ONE specimen that keeps a panel (Marco
             2026-08-05): a 360pt device floating on the bare page read as
             unmoored, and unlike the 1177px staff shells it fits the 676px
             text band with room to spare. Same band as the prose, panel fill
             is the old DemoStage panel color. */}
-        <DemoGroup>
           <FadeIn className="pt-32">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
@@ -108,21 +105,18 @@ export default function FBOrderingContent() {
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Ordering from the room</h3>
                 <p className="mt-3">Guests scan a QR code and land in the outlet&apos;s menu — no app, no account. Browsing, modifiers, and the cart all live on one surface, so a guest can go from &ldquo;what&apos;s open&rdquo; to a submitted order in under a minute.</p>
-                <TryDemoButton />
               </Col>
             </Grid>
           </FadeIn>
-        </DemoGroup>
 
         {/* ── Staff order queue — the other half of the same product
             (Marco 2026-08-04). Rebuilt from the polished Figma frames
             (Canary Polished Visuals, section 51:6068) and styled from
             canary-polished-tokens. Same DemoStage chrome as the cart
             above: pause/play, restart, fullscreen. */}
-        <DemoGroup>
           <FadeIn className="pt-16">
             <Grid>
-              <Col md="1-12" lg="3-10">
+              <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <OrderDashboardSpecimen />
               </Col>
             </Grid>
@@ -132,21 +126,18 @@ export default function FBOrderingContent() {
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Working the order queue</h3>
                 <p className="mt-3">Staff see every inbound order in one lane and move it through approve → prepare → deliver. The side sheet carries the full ticket, so nobody has to hold a guest&apos;s modifiers in their head while walking to the kitchen.</p>
-                <TryDemoButton />
               </Col>
             </Grid>
           </FadeIn>
-        </DemoGroup>
 
         {/* ── Staff item library — the menu-CMS half of the same product
             (Marco 2026-08-04). Rebuilt from the polished Figma frames
             (Canary Polished Visuals, frame 56:6548) and styled from
             canary-polished-tokens. Same DemoStage chrome as the two
             specimens above: pause/play, restart, fullscreen. */}
-        <DemoGroup>
           <FadeIn className="pt-16">
             <Grid>
-              <Col md="1-12" lg="3-10">
+              <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <ItemLibrarySpecimen />
               </Col>
             </Grid>
@@ -156,21 +147,18 @@ export default function FBOrderingContent() {
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Keeping the menu honest</h3>
                 <p className="mt-3">The item library is where a property&apos;s menu actually lives. Availability is a single toggle — the fastest edit a kitchen makes during service — and destructive actions stay behind a confirm, because 86&apos;ing an item and deleting it are very different intents.</p>
-                <TryDemoButton />
               </Col>
             </Grid>
           </FadeIn>
-        </DemoGroup>
 
         {/* ── Staff outlet editor — where the guest-facing outlet page gets
             written, with a live phone preview (Marco 2026-08-04). Rebuilt
             from the polished Figma frames (Canary Polished Visuals, frame
             57:8145) and styled from canary-polished-tokens. Same DemoStage
             chrome as the three specimens above. */}
-        <DemoGroup>
           <FadeIn className="pt-16">
             <Grid>
-              <Col md="1-12" lg="3-10">
+              <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <OutletDetailsSpecimen />
               </Col>
             </Grid>
@@ -180,11 +168,9 @@ export default function FBOrderingContent() {
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Writing the outlet page</h3>
                 <p className="mt-3">Every field an operator fills in renders live in the guest preview beside it. Hotel staff aren&apos;t content editors by trade, so the screen shows the consequence of each keystroke instead of asking them to imagine it.</p>
-                <TryDemoButton />
               </Col>
             </Grid>
           </FadeIn>
-        </DemoGroup>
 
         {/* ── Outlet configuration — the settings side of the same product:
             connect menus, pick the delivery type the whole model hangs on,
@@ -197,7 +183,7 @@ export default function FBOrderingContent() {
             by un-commenting this block and its import above. */}
         {/* <FadeIn className="pt-10">
           <Grid>
-            <Col md="1-12" lg="3-10">
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <OutletConfigSpecimen />
             </Col>
           </Grid>

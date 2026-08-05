@@ -12,14 +12,14 @@
  *
  * Behavior contract (Marco 2026-08-03, REVISED 2026-08-05):
  *   - Inline (in the page) is DISPLAY ONLY: auto-plays on view, loops forever,
- *     no chrome, no panel background, no hover state, not interactive. It
- *     reads as a moving figure in the article, not a widget.
+ *     no panel background, not interactive. It reads as a moving figure in the
+ *     article, not a widget.
  *   - Fullscreen is MANUAL ONLY: no ghost cursor, no auto-play — the visitor
  *     drives the real prototype. Chrome is two text+icon buttons: Restart
  *     (remounts the prototype clean) and Close.
- *   - Fullscreen opens from <TryDemoButton />, which can be rendered anywhere
- *     inside the same <DemoGroup> — so the CTA lives in the caption block on
- *     the 676px text band while the stage keeps its own wider band.
+ *   - Fullscreen opens from a "Try demo" pill that fades in over the inline
+ *     stage's top-right corner on hover (Marco 2026-08-05, third pass — it
+ *     used to sit in the caption block below).
  *   - prefers-reduced-motion ⇒ the inline copy never auto-plays (static).
  *
  * Scale note: coordinates come from getBoundingClientRect, so targets inside
@@ -28,14 +28,11 @@
  */
 
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-  type MutableRefObject,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -46,8 +43,23 @@ export type DemoStep =
   | { type: "wait"; ms: number };
 
 const CURSOR_SIZE = 36;
-/** Smallest any stage renders: inline pans below this; fullscreen hard-floors here (no pan container, so narrow viewports can clip). */
+/**
+ * Scale floor. In the desktop band an inline stage fits its column exactly, so
+ * a demo shares the body measure (Marco 2026-08-05 — a 1177px staff UI lands
+ * near 0.57 there: small, but it's a figure, not something you read). Below
+ * PAN_BELOW the column is too narrow for that to mean anything — 1177px into a
+ * 358px phone band is 0.30, i.e. 11px type at 3px — so the stage floors here
+ * and the well pans horizontally instead.
+ * Fullscreen hard-floors here too (no pan container, so it can clip).
+ */
 const MIN_INLINE_SCALE = 0.7;
+/**
+ * VIEWPORT width under which the inline stage stops fitting and starts panning.
+ * Matches the editorial grid's desktop breakpoint (`--grid-max` compositions
+ * apply at ≥1200) — the band below it is narrow enough that fitting a desktop
+ * UI into it produces an unreadable thumbnail.
+ */
+const PAN_BELOW = 1200;
 const DEFAULT_SETTLE = 650;
 const TARGET_TIMEOUT = 4000;
 const SCRIM_BLUR = 16;
@@ -56,25 +68,6 @@ const ENTER_MS = 460;
 const EXIT_MS = 300;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-// ─── Launch context ────────────────────────────────────────────────────────
-// The "Try demo" CTA sits in the caption block (text band), while the stage
-// sits in its own wider band — different <Col>s, so the button can't be a
-// child of DemoStage. A ref-based registry keeps them connected without
-// re-rendering either side.
-
-type LaunchRef = MutableRefObject<(() => void) | null>;
-const DemoLaunchContext = createContext<LaunchRef | null>(null);
-
-/** Wrap ONE demo and its caption so <TryDemoButton /> can open that demo. */
-export function DemoGroup({ children }: { children: ReactNode }) {
-  const launch = useRef<(() => void) | null>(null);
-  return (
-    <DemoLaunchContext.Provider value={launch}>
-      {children}
-    </DemoLaunchContext.Provider>
-  );
-}
 
 // ─── Icons (stroke, matches the site's utilitarian chrome) ─────────────────
 
@@ -152,34 +145,46 @@ function StageTextButton({
 }
 
 /**
- * "Try demo" — the in-prose CTA that opens the fullscreen, hands-on copy.
- * Renders inside a caption block; must be under the same <DemoGroup> as the
- * demo it opens.
+ * "Try demo" — the CTA that opens the fullscreen, hands-on copy. Sits over the
+ * inline stage's top-right corner and fades in on hover (or focus). It floats
+ * on top of live product UI, so it carries its own drop shadow + backdrop blur
+ * for contrast rather than relying on whatever is underneath it.
+ *
+ * Touch devices have no hover: `(hover: none)` pins it visible, otherwise the
+ * demo would have no way to open on a phone.
  */
-export function TryDemoButton({
-  label = "Try demo",
-  className = "",
+function TryDemoOverlayButton({
+  onClick,
+  inset,
 }: {
-  label?: string;
-  className?: string;
+  onClick: () => void;
+  /** Distance from the WELL's right edge in to the stage's — 0 when panning. */
+  inset: number;
 }) {
-  const launch = useContext(DemoLaunchContext);
   return (
     <button
       type="button"
-      onClick={() => launch?.current?.()}
-      className={`mt-5 inline-flex items-center gap-2 rounded-full border border-border text-(--color-fg) transition-colors hover:bg-[color-mix(in_srgb,var(--color-fg)_6%,transparent)] ${className}`}
+      onClick={onClick}
+      className="demo-try-pill absolute top-3 z-3 inline-flex items-center gap-2 rounded-full"
       style={{
-        height: 34,
-        padding: "0 14px",
-        fontSize: 14,
+        right: inset + 12,
+        height: 32,
+        padding: "0 13px",
+        fontSize: 13,
         fontWeight: 500,
         lineHeight: 1,
         cursor: "pointer",
+        color: "#fff",
+        background: "rgba(20,20,22,0.82)",
+        border: "1px solid rgba(255,255,255,0.16)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        boxShadow:
+          "0 1px 2px rgba(0,0,0,0.18), 0 6px 16px rgba(0,0,0,0.24), 0 14px 32px rgba(0,0,0,0.18)",
       }}
     >
-      <GlyphIcon d={GLYPHS.expand} size={14} />
-      {label}
+      <GlyphIcon d={GLYPHS.expand} size={13} />
+      Try demo
     </button>
   );
 }
@@ -197,7 +202,7 @@ function StageCore({
   onClose,
   onClosed,
   closing = false,
-  registerLaunch,
+  onLaunch,
 }: {
   variant: "inline" | "fullscreen";
   script: DemoStep[];
@@ -212,13 +217,17 @@ function StageCore({
   /** Fullscreen: set once the exit animation is done — parent unmounts. */
   onClosed?: () => void;
   closing?: boolean;
-  registerLaunch?: () => void;
+  /** Inline only: opens the fullscreen copy (drives the hover "Try demo" pill). */
+  onLaunch?: () => void;
 }) {
   const [resetKey, setResetKey] = useState(0);
   const [cursorOn, setCursorOn] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [fsScale, setFsScale] = useState(1);
   const [fitScale, setFitScale] = useState(1);
+  const [panning, setPanning] = useState(false);
+  /** Gap between the well's right edge and the (centered) stage's — see the pill. */
+  const [stageInset, setStageInset] = useState(0);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const wellRef = useRef<HTMLDivElement | null>(null);
   const growRef = useRef<HTMLDivElement | null>(null);
@@ -278,14 +287,19 @@ function StageCore({
     return () => window.removeEventListener("resize", compute);
   }, [variant, stageWidth, stageHeight]);
 
-  // Inline: shrink a stage wider than its column down to fit. Phone-sized
-  // specimens always land at 1; a desktop-width one would otherwise push the
-  // page into horizontal scroll on narrow viewports. Never scales UP — the
-  // artifact keeps its authored size wherever there's room.
+  // Inline: shrink a stage wider than its column down to fit it exactly, so a
+  // 1177px desktop UI sits on the same measure as the body text. Phone-sized
+  // specimens always land at 1 — never scales UP, the artifact keeps its
+  // authored size wherever there's room.
   //
-  // Floored, because "fits" and "readable" diverge: a 1177px dashboard on a
-  // 390px phone would fit at 0.27, rendering 11px type at 3px. Below the floor
-  // the stage keeps a legible size and the well pans horizontally instead.
+  // Floored only below PAN_BELOW, where "fits" and "legible" diverge: a 1177px
+  // dashboard on a 390px phone would fit at 0.30, rendering 11px type at 3px.
+  // There the stage keeps a legible size and the well pans horizontally.
+  //
+  // `panning` drives the well's overflow. When the stage fits, the well is
+  // `overflow: visible` — an `overflow-x: auto` well computes overflow-y to
+  // `auto` as well, which clipped the phone shell's ambient drop shadow flat
+  // against the stage box.
   useLayoutEffect(() => {
     if (variant !== "inline") return;
     const el = wellRef.current;
@@ -296,16 +310,24 @@ function StageCore({
         el.clientWidth -
         parseFloat(cs.paddingLeft) -
         parseFloat(cs.paddingRight);
-      setFitScale(
-        inner > 0
-          ? Math.max(MIN_INLINE_SCALE, Math.min(1, inner / stageWidth))
-          : 1,
-      );
+      if (inner <= 0) return;
+      const fit = Math.min(1, inner / stageWidth);
+      // Floor on the VIEWPORT, not the column — the column is the text band at
+      // every width, so keying off it would floor the stage on desktop too.
+      const floored =
+        window.innerWidth < PAN_BELOW ? Math.max(MIN_INLINE_SCALE, fit) : fit;
+      setFitScale(floored);
+      setPanning(stageWidth * floored > inner + 0.5);
+      setStageInset(Math.max(0, (inner - stageWidth * floored) / 2));
     };
     compute();
     const ro = new ResizeObserver(compute);
     ro.observe(el);
-    return () => ro.disconnect();
+    window.addEventListener("resize", compute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", compute);
+    };
   }, [variant, stageWidth]);
 
   // Fullscreen enter: the page behind blurs out (backdrop-filter radius ramps
@@ -617,13 +639,6 @@ function StageCore({
     return () => window.removeEventListener("keydown", onKey);
   }, [variant, onClose]);
 
-  // Register the launcher so a <TryDemoButton /> elsewhere in the group can
-  // open this demo (inline copy only — the portal has nothing to launch).
-  useEffect(() => {
-    if (variant !== "inline") return;
-    registerLaunch?.();
-  }, [variant, registerLaunch]);
-
   // ── Stage (shared between variants) ──────────────────────────────────────
 
   const stage = (
@@ -747,10 +762,11 @@ function StageCore({
     );
   }
 
-  // Inline: no panel, no border, no chrome — the specimen's own shell is the
-  // only container, so the demo sits on the page like any other figure.
+  // Inline: no panel, no border — the specimen's own shell is the only
+  // container, so the demo sits on the page like any other figure. The one
+  // piece of chrome is the "Try demo" pill, which only appears on hover.
   return (
-    <section aria-label={ariaLabel} className="relative">
+    <section aria-label={ariaLabel} className="demo-stage-root relative">
       {/* Block + `margin-inline: auto` rather than flex centering: when the
           stage is wider than the well, flex `items-center` pushes overflow off
           BOTH edges and the left side becomes unreachable, while auto margins
@@ -758,12 +774,18 @@ function StageCore({
       <div
         ref={wellRef}
         className="scrollbar-hide"
-        style={{ overflowX: "auto" }}
+        style={{ overflowX: panning ? "auto" : "visible" }}
       >
         <div style={{ width: "fit-content", marginInline: "auto" }}>
           {stage}
         </div>
       </div>
+      {/* The pill hangs off the SECTION, not the well — a well that pans would
+          carry it out of view. `stageInset` walks it back in to the stage's own
+          right edge whenever the stage is narrower than its column. */}
+      {onLaunch && (
+        <TryDemoOverlayButton onClick={onLaunch} inset={stageInset} />
+      )}
     </section>
   );
 }
@@ -800,12 +822,6 @@ export default function DemoStage({
     setClosing(false);
   }, []);
 
-  // Hand `open` to the group so <TryDemoButton /> can call it.
-  const launch = useContext(DemoLaunchContext);
-  const registerLaunch = useCallback(() => {
-    if (launch) launch.current = open;
-  }, [launch, open]);
-
   // Lock page scroll behind the fullscreen overlay.
   useEffect(() => {
     if (!fullscreen) return;
@@ -823,7 +839,7 @@ export default function DemoStage({
       <StageCore
         variant="inline"
         frozen={fullscreen}
-        registerLaunch={registerLaunch}
+        onLaunch={open}
         {...shared}
       >
         {children}

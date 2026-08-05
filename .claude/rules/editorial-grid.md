@@ -33,7 +33,7 @@ paths:
 
 - `CONTENT_BAND = "4-9"` (676px at full 1440 canvas since 2026-08-05) — the centered middle-6 desktop band.
 - `CONTENT_BAND_MD = "3-10"` — 8-col tablet band, deliberately one step wider than the 6-col lg band so the 1200 hand-off is a gentle step instead of a harsh jump. Every explicit `lg={CONTENT_BAND}` call site also passes `md={CONTENT_BAND_MD}` (3 Content files, CaseStudyList, HomeLayout, CaseStudyShell).
-- **Media matches the text measure** (Marco 2026-08-05): static images/captions sit on `CONTENT_BAND` like prose. The ONE exception: interactive DemoStage specimens + ObjectFlowDiagram use `md="1-12" lg="3-10"` (≈909px) — they're 1177px desktop UIs and DemoStage's 0.7 inline-scale floor would clip/pan them at 676px.
+- **Media matches the text measure** (Marco 2026-08-05): static images/captions sit on `CONTENT_BAND` like prose. **DemoStage specimens too** since the 2026-08-05 third pass — DemoStage now fits a stage to its column in the desktop band, so a 1177px staff UI renders at 0.574 on the 676px measure. The ONE remaining exception is `ObjectFlowDiagram`, still on `md="1-12" lg="3-10"` (≈909px).
 - `.case-canvas` is centered like home; the 200px TOC offset survives ONLY in the 1024–1199 window.
 - **InlineTOC tracks the canvas, not the viewport** (2026-08-05): `left: max(48px, calc((100vw - var(--grid-max)) / 2 + 140px))` puts its right edge ~112px from the text band (openai.com-style proximity); the 48px floor reproduces the old flush-left position in the 1024–1199 window.
 - TwoCol-era pages (checkin/upsells/general-task/design-system) opt into the `band` prop on `CaseStudyShell` (wraps children in one band Col). **Editorial pages must NOT set it** — nested grids would double-narrow.
