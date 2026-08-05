@@ -44,10 +44,9 @@ export const typescale = {
    *  2026-08-05; the OpenAI-pass 48 cap lasted a day, the reference's 64
    *  was never used). Mobile min stays 32 — only the desktop cap moved.
    *  Weight 500 keeps the size from going heavy. The homepage name h1 is
-   *  NOT on this token — it's inline in HomeLayout: Departure Mono at a
-   *  snapped 44px (4× the font's 11px pixel grid; a fluid clamp would
-   *  break the grid). The brief Fraunces-on-display-fontSize era lasted
-   *  one commit, 2026-08-05. */
+   *  NOT on this token — it's inline in HomeLayout: Libre Baskerville
+   *  400/32px per Figma node 243:4032 (Portfolio Aug 2026). The Fraunces
+   *  and Departure Mono eras each lasted one commit, both 2026-08-05. */
   display: {
     fontFamily: "var(--font-sans)",
     fontSize: scaledClamp("32px", "4vw", "40px"),

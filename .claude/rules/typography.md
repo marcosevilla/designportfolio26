@@ -13,10 +13,10 @@ paths:
 
 # Typography
 
-Consolidated to single Geist Sans family in April 2026 (see `docs/superpowers/specs/2026-04-18-typography-consolidation-design.md`). **Departure Mono added as the tertiary site face 2026-08-05** — homepage name h1 ONLY.
+Consolidated to single Geist Sans family in April 2026 (see `docs/superpowers/specs/2026-04-18-typography-consolidation-design.md`). **Libre Baskerville is the tertiary site face (2026-08-05, per the Aug 2026 Figma)** — homepage name h1 ONLY.
 
 ## Font Stack
-Geist Sans (site chrome + prose) + Departure Mono (pixel mono, homepage name only — `site/fonts/DepartureMono-Regular.woff2` via `next/font/local`, single 400 weight, SIL OFL license alongside the file). Representational components (URL bar, arch diagrams, teaser) use `var(--font-mono-system)` = `ui-monospace, Menlo, Monaco, monospace`. Inter is loaded too but is the PRODUCT face (Canary specimens), not site type. Serif history: Libre Baskerville was the homepage serif 2026-07-13→07-20 ("Baskerville out, Geist everywhere"), stayed loaded-but-unused until 2026-08-05; Fraunces replaced it for ONE commit that same day (in git if wanted back), then Marco pivoted to the pixel mono. Both serifs fully removed.
+Geist Sans (site chrome + prose) + Libre Baskerville (display serif, homepage name only — `--font-baskerville`, DELIBERATELY minimal load: 400 normal only, not the 2026-07 era's 400/700+italics). Representational components (URL bar, arch diagrams, teaser) use `var(--font-mono-system)` = `ui-monospace, Menlo, Monaco, monospace`. Inter is loaded too but is the PRODUCT face (Canary specimens), not site type. Tertiary-face history, all 2026-08-05 after the original Baskerville era (2026-07-13→07-20, "Baskerville out, Geist everywhere"): Fraunces (one commit) → Departure Mono pixel mono at 44px (one commit; woff2 was in `site/fonts/`, since deleted) → Libre Baskerville per Figma node 243:4032. Each era is a single `git revert` away.
 
 ## Font CSS Variables
 | Variable | Default |
@@ -38,7 +38,7 @@ The 8 tokens:
 
 | Token | Weight | Size | Used by |
 |-------|--------|------|---------|
-| `display` | 500 | clamp(32px, 4vw, **40px**) / 1.1, −0.02em | Case-study H1s, LockGate placeholder hero. Ramp stepped down late 2026-08-05 (48→40 cap; mobile min 32 unchanged). Homepage name h1 is NOT on this token: inline Departure Mono, snapped 44px (4× its 11px pixel grid — never a fluid clamp), w400, 0em tracking, lh 1.1. Wraps to a two-line stack <~500px (unruled — Marco hasn't judged it; 33px mobile is the fallback if he dislikes the wrap). |
+| `display` | 500 | clamp(32px, 4vw, **40px**) / 1.1, −0.02em | Case-study H1s, LockGate placeholder hero. Ramp stepped down late 2026-08-05 (48→40 cap; mobile min 32 unchanged). Homepage name h1 is NOT on this token: inline Libre Baskerville 400 at fixed 32px, −0.03em (Figma's −0.96px/32px, kept in em for the slider), lh `normal` — all from Figma node 243:4032. Name↔bio gap is `gap-12` (Figma spacing/3xl 48px) on their wrapper in HomeLayout. |
 | `h2` | 500 | **26px** / 1.32 | Case-study section headings (was 30 for a day; mono ALL-CAPS label era is in git history) |
 | `title` | 500 | 24px / 1.2 | /writing page title, QuickStats values (+`tabular-nums` at the call site — stats gained slider scaling in the merge; NextProject title stepped 22 → 24). ⚠️ Only 2px below h2 now. |
 | `h3` | 500 | **16px** / 1.4 | Subsections AND sub-subsections. Marco's spec: a WHISPER above body — one point bigger (16 vs 15), one weight step bolder (500 vs 400), nothing more. `SectionHeading` renders both `level={3}` and `level={4}` with this token (h4 *element* kept for the outline), told apart by margin only. Same px as `subtitle` (different weight/role). ⚠️ see below |

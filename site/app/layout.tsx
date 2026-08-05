@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Inter } from "next/font/google";
-import localFont from "next/font/local";
+import { Inter, Libre_Baskerville } from "next/font/google";
 
 /**
  * Inter is the PRODUCT typeface, not a site typeface — it exists only so the
@@ -19,14 +18,15 @@ const inter = Inter({
 });
 
 /**
- * Departure Mono is the tertiary SITE face — pixel mono for the homepage
- * name (HomeLayout h1) only. Single 400 weight, SIL OFL (license sits next
- * to the file in site/fonts/). Keep it off prose and chrome.
+ * Libre Baskerville is the tertiary SITE face — display serif for the
+ * homepage name (HomeLayout h1) only, per the Aug 2026 Figma. Deliberately
+ * minimal load: 400 normal only (the first Baskerville era shipped
+ * 400/700 + italics for one 16px line). Keep it off prose and chrome.
  */
-const departureMono = localFont({
-  src: "../fonts/DepartureMono-Regular.woff2",
+const libreBaskerville = Libre_Baskerville({
+  subsets: ["latin"],
   weight: "400",
-  variable: "--font-departure-mono",
+  variable: "--font-baskerville",
   display: "swap",
 });
 
@@ -86,7 +86,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${departureMono.variable} ${inter.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${libreBaskerville.variable} ${inter.variable}`}>
       <body>
         {/* defaultTheme="light" (not "system"): ThemeStateProvider forces
             first visits to light anyway, so "system" only produced a dark

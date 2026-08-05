@@ -20,9 +20,9 @@ import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
-/** Tertiary site face — the name only. Pixel mono; fallbacks stay mono so
- *  a failed load degrades to the site's label voice, not the sans. */
-const DEPARTURE_MONO = "var(--font-departure-mono), ui-monospace, monospace";
+/** Tertiary site face — the name only (Figma: Portfolio Aug 2026,
+ *  node 243:4032). Serif fallbacks, never the sans. */
+const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
 
 /** Home ↔ About page swap. The two surfaces read as neighbours on a
  *  horizontal axis — About lives to the right of home — so home leaves
@@ -244,12 +244,15 @@ export default function HomeLayout({
           <div className="max-w-(--grid-max) mx-auto w-full px-4 sm:px-8 pb-48">
             <Grid className="mt-8">
             <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-            <div className="flex flex-col gap-6">
-              {/* Page heading row — body-size bold name reading as a
-                  label above the bio, with the site controls (time /
-                  weather, light-dark toggle, palette picker) flush right
-                  on the same line. These moved here from the retired
-                  fixed SiteHeader (2026-07-20). */}
+            {/* gap-12 = the 48px name↔bio spacing from Figma node
+                243:4030 (spacing/3xl) — the wrapper's only two children
+                are the h1 row and the bio, so the gap IS that spacing. */}
+            <div className="flex flex-col gap-12">
+              {/* Page heading row — display-size serif name above the
+                  bio, with the site controls (time / weather, light-dark
+                  toggle, palette picker) flush right on the same line.
+                  These moved here from the retired fixed SiteHeader
+                  (2026-07-20). */}
               <motion.div
                 className="flex items-center justify-between gap-4"
                 initial={introInitial}
@@ -261,15 +264,14 @@ export default function HomeLayout({
               >
                 <h1
                   style={{
-                    fontFamily: DEPARTURE_MONO,
-                    // 44px = 4× Departure Mono's 11px design grid, snapped
-                    // (not the display clamp) so the pixel blocks stay even;
-                    // sits inside the display band's 32–40 neighborhood.
-                    // Zero tracking — extra letter-space breaks the grid.
-                    fontSize: "calc(44px + var(--font-size-offset))",
+                    fontFamily: BASKERVILLE,
+                    // Figma node 243:4032: Libre Baskerville Regular 32px,
+                    // tracking −0.96px at 32px → −0.03em (em so it holds
+                    // under the font-size slider), leading "normal".
+                    fontSize: "calc(32px + var(--font-size-offset))",
                     fontWeight: 400,
-                    letterSpacing: "0em",
-                    lineHeight: 1.1,
+                    letterSpacing: "-0.03em",
+                    lineHeight: "normal",
                     color: "var(--color-fg)",
                   }}
                 >
