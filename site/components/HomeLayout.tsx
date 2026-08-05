@@ -195,14 +195,15 @@ export default function HomeLayout({
 
       {/* Single centered column layout. Home is a 600px column (see
           inner wrapper); About mode is a 650px column for the bio read.
-          paddingTop is the toolbar→name gap now: the in-flow
-          GlobalToolbar above already spends ~60px (pt-6 + h-9), so this
-          clamp is the old 96/12vh/144 minus that — the name keeps its
-          pre-toolbar optical position. */}
+          paddingTop IS the toolbar→name gap: 48px, deliberately equal to
+          the name↔bio gap-12 so the toolbar / name / bio read as one
+          evenly-spaced header block (Marco, 2026-08-05). The home Grid's
+          old mt-8 was folded in here — don't re-add it, it would break
+          the 48/48 rhythm. */}
       <div
         className="mx-auto"
         style={{
-          paddingTop: "clamp(40px, 7vh, 88px)",
+          paddingTop: "48px",
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -240,7 +241,7 @@ export default function HomeLayout({
              See docs/LAYOUT-REFERENCE.html */
           <motion.div key="page-home" {...pageTransitionProps(-1, reducedMotion)}>
           <div className="max-w-(--grid-max) mx-auto w-full px-4 sm:px-8 pb-48">
-            <Grid className="mt-8">
+            <Grid>
             <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             {/* gap-12 = the 48px name↔bio spacing from Figma node
                 243:4030 (spacing/3xl) — the wrapper's only two children

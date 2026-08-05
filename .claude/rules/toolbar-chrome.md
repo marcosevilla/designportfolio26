@@ -21,7 +21,7 @@ paths:
 `components/GlobalToolbar.tsx`, mounted once in `app/layout.tsx` (before `<main>`). An
 IN-FLOW row at the top of every route — `position: static`, scrolls away with the page.
 The fixed z-150 pointer-transparent era lasted one day; if it ever returns, MobileNav's
-inset coupling returns with it (see Mobile case studies below). Geometry: `pt-6` canvas
+inset coupling returns with it (see Mobile case studies below). Geometry: `pt-12` canvas
 (`max-w-(--grid-max) px-4 sm:px-8`) → `Grid`/`Col` on **`CONTENT_BAND`** (`md
 CONTENT_BAND_MD`) → `h-9` flex row. On the CONTENT_BAND the pixel glyph is left-aligned
 with the "Marco Sevilla" h1 and the right cluster is flush with the bio's right edge
@@ -35,8 +35,13 @@ right 200px for the TOC, but the toolbar (mounted outside it) doesn't follow.
   row per 150ms tick (discrete, no tweening), spawn p=0.45/column/tick ≈ the mock's 16-cell
   density, never draw outside the glyph bounds. Ink = the canvas's computed `color`, read
   per tick — the parent button supplies rest (fg-secondary) / hover (accent) /
-  playing-or-open (accent) without re-rendering. Reduced motion: static seed, ticks still
-  repaint for theme changes. Clicking toggles the music player (starts playback on first
+  playing-or-open (accent) without re-rendering. **Cells carry a per-spawn SHADE**
+  (2026-08-05): light = globalAlpha 0.5, base, dark = double-draw (ink alpha composites
+  0.6 → ~0.84) — three tones of currentColor, no color parsing. **Rendering snaps to
+  integer DEVICE pixels** (no ctx.scale; positions pre-rounded per column/row) — the old
+  fractional-CSS-coordinate path anti-aliased every cell edge and read blurry. Verified:
+  exactly 4 alpha levels in the backing store, zero AA edge pixels. Reduced motion:
+  static seed (deterministic shade cycle), ticks still repaint for theme changes. Clicking toggles the music player (starts playback on first
   open, same contract as the old dock FAB).
 - **Right — HeaderToolbar** (unchanged component): light/dark toggle + palette popover.
   **LocalStatus (time/weather) was DROPPED from the chrome 2026-08-05** — the component
@@ -60,16 +65,19 @@ right 200px for the TOC, but the toolbar (mounted outside it) doesn't follow.
   the `pl-[64px] pr-[92px]` insets unless the toolbar goes fixed again.
 - The h1 rows in HomeLayout and Hero (About) are name-only now — the controls that rode
   there 2026-07-20 → 2026-08-05 moved into this bar.
-- **HomeLayout's paddingTop is coupled to this bar's height**: the wrapper clamp is
-  `clamp(40px, 7vh, 88px)` = the pre-toolbar `clamp(96px, 12vh, 144px)` minus the
-  toolbar's ~60px (pt-6 + h-9), keeping the name at its old optical position. Resize the
-  toolbar and re-derive that clamp.
+- **48/48 header rhythm (Marco, 2026-08-05)**: HomeLayout's wrapper paddingTop is a flat
+  `48px` — deliberately EQUAL to the name↔bio `gap-12` so toolbar → name → bio are
+  equidistant (measured 48/48). The home Grid's old `mt-8` was folded into that 48 —
+  re-adding it breaks the rhythm. The toolbar's own `pt-12` positions the bar; the 48px
+  paddingTop is the bar→name gap. About's header keeps its own internal Hero spacing
+  (not on this rhythm).
 - **Icon ruling (2026-08-05, reverses 2026-06-04)**: control icons are FILLED — Moon
   solid, Sun's core disc solid (rays stroked), transport Play/Pause/Skip solid with rect
   bars, panel carets solid triangles. `PaintBrushIcon` is DELETED from Icons.tsx — the
-  palette trigger is now a 15px disc filled `var(--color-accent)` (+ hairline
+  palette trigger is now a **13px** disc filled `var(--color-accent)` (+ hairline
   `--color-border`): the active theme's own color; mono aliases accent→fg so it always
-  contrasts with the bg.
+  contrasts with the bg. 13 not 15: a solid disc reads optically heavier than the
+  neighboring stroked moon at equal size.
 
 ## ⚠️ Historical below — components that no longer exist
 The "Unified Toolbar" system below was shipped 2026-05-02, but **`HeroToolbar.tsx` and `MobileToolbar.tsx` are both gone from the tree** (verified 2026-08-04). `SiteHeader` was also unmounted site-wide on 2026-07-20 (component kept for salvage); its contents moved into HomeLayout's h1 row. Treat the section below as historical intent and verify against the live components before acting on it.

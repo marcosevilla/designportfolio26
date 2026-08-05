@@ -142,12 +142,14 @@ function PaletteButton({
               selected colored theme's brand color; the mono default
               aliases it to --color-fg, so the disc always contrasts with
               the page bg. Hairline border covers the edge cases. */}
+          {/* 13px, not the moon's 15: a solid disc reads optically
+              heavier than a stroked glyph at equal size. */}
           <span
             aria-hidden
             style={{
               display: "block",
-              width: 15,
-              height: 15,
+              width: 13,
+              height: 13,
               borderRadius: "50%",
               backgroundColor: "var(--color-accent)",
               border: "1px solid var(--color-border)",

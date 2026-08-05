@@ -63,7 +63,7 @@ export default function GlobalToolbar() {
   }, [musicOpen]);
 
   return (
-    <header className="w-full max-w-(--grid-max) mx-auto px-4 sm:px-8 pt-6">
+    <header className="w-full max-w-(--grid-max) mx-auto px-4 sm:px-8 pt-12">
       <Grid>
         <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
           <div className="flex h-9 items-center justify-between">
