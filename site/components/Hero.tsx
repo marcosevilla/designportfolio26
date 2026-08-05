@@ -8,8 +8,6 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { serifName, typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
 import Testimonials from "./Testimonials";
-import HeaderToolbar from "./HeaderToolbar";
-import LocalStatus from "./LocalStatus";
 import { HighlighterProvider } from "./HighlighterContext";
 import { ArrowRightIcon } from "./Icons";
 
@@ -432,26 +430,20 @@ export default function Hero({
                 <span>Return</span>
               </button>
 
-              {/* Page heading row — the same serif name + site controls
-                  as the home page's h1 row (serifName is the one shared
-                  spec, lib/typography.ts). Mounting LocalStatus +
-                  HeaderToolbar here closes the 2026-07-20 KNOWN GAP where
-                  About mode had no theme/status controls — Hero replaces
-                  HomeLayout's h1 row in this mode, so the controls must
-                  ride along.
+              {/* Page heading — the same serif name as the home page's
+                  h1 (serifName is the one shared spec, lib/typography.ts).
+                  The theme/status controls that used to ride on this row
+                  live in the fixed GlobalToolbar now (2026-08-05), so
+                  About keeps them for free.
 
                   mt-16 (64px) keeps the header at roughly the same y as
                   the home page's. The side nav's setAboutMeHeaderRef
                   callback re-measures off this h1's bounding rect, so the
                   Return button follows. */}
-              <div className="mt-16 flex items-center justify-between gap-4">
+              <div className="mt-16">
                 <h1 ref={setAboutMeHeaderRef} style={serifName}>
                   Marco Sevilla
                 </h1>
-                <div className="flex items-center gap-3">
-                  <LocalStatus />
-                  <HeaderToolbar />
-                </div>
               </div>
 
               {/* The old 16px h1 greeting, demoted to a subtitle now that

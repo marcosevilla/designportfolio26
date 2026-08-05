@@ -16,8 +16,6 @@ import {
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { RESUME_URL } from "@/lib/resume-content";
-import HeaderToolbar from "./HeaderToolbar";
-import LocalStatus from "./LocalStatus";
 import { serifName } from "@/lib/typography";
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -245,13 +243,12 @@ export default function HomeLayout({
                 243:4030 (spacing/3xl) — the wrapper's only two children
                 are the h1 row and the bio, so the gap IS that spacing. */}
             <div className="flex flex-col gap-12">
-              {/* Page heading row — display-size serif name above the
-                  bio, with the site controls (time / weather, light-dark
-                  toggle, palette picker) flush right on the same line.
-                  These moved here from the retired fixed SiteHeader
-                  (2026-07-20). */}
+              {/* Page heading — display-size serif name above the bio.
+                  The site controls that used to sit flush right on this
+                  row (time / weather, light-dark toggle, palette picker)
+                  moved into the fixed GlobalToolbar (2026-08-05); this
+                  also un-squeezes the h1 at narrow widths. */}
               <motion.div
-                className="flex items-center justify-between gap-4"
                 initial={introInitial}
                 animate={{
                   opacity: heroReady ? 1 : 0,
@@ -264,10 +261,6 @@ export default function HomeLayout({
                 <h1 style={serifName}>
                   Marco Sevilla
                 </h1>
-                <div className="flex items-center gap-3">
-                  <LocalStatus />
-                  <HeaderToolbar />
-                </div>
               </motion.div>
 
               {/* Intro bio — body text; opens with the role/location line

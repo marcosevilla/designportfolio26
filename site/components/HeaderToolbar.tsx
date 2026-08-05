@@ -152,8 +152,8 @@ function PaletteButton({
  *  drifts up-and-outward, rotates a touch, and fades — staggered so the
  *  button reads as gently "singing" rather than the static bg tint we
  *  used before. Purely decorative; hidden from a11y + reduced-motion. */
-/* Music entrypoint removed from the header — the player now lives in
-   the bottom-right music dock (components/music/MusicMiniWidget.tsx). */
+/* Music entrypoint lives in GlobalToolbar's pixel-rain button (left
+   cluster) — the player card is components/music/MusicPlayerPanel.tsx. */
 
 /** "What's new" button — opens the global ChangelogOverlay (the
  *  month-grouped milestone log parsed from docs/CHANGELOG.md). */

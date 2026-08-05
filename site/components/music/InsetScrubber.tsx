@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 /** Inset timeline scrubber. Thin resting track + thumb-on-hover; meant
  *  to sit between two static time labels in a single bottom row of a
  *  music player surface. Shared by the full-screen MusicOverlay and the
- *  bottom-right MusicMiniWidget. */
+ *  MusicPlayerPanel (the toolbar music card). */
 export default function InsetScrubber({
   value,
   max,

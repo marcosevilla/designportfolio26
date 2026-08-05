@@ -41,7 +41,7 @@ import { Agentation } from "agentation";
 import { AudioPlayerProvider } from "@/lib/AudioPlayerContext";
 import { VisualizerSceneProvider } from "@/lib/VisualizerSceneContext";
 import { ThemeStateProvider } from "@/components/ThemeToggle";
-import MusicMiniWidget from "@/components/music/MusicMiniWidget";
+import GlobalToolbar from "@/components/GlobalToolbar";
 import ChatFab from "@/components/ChatFab";
 import CustomCursor from "@/components/CustomCursor";
 import { PasswordGateProvider } from "@/lib/PasswordGateContext";
@@ -104,10 +104,13 @@ export default function RootLayout({
                   Skip to content
                 </a>
                 <MobileNav />
-                {/* SiteHeader unmounted 2026-07-20 — the fixed top bar is
-                    gone site-wide; time/weather + theme controls moved
-                    beside the homepage h1 (HomeLayout). Component kept
-                    for salvage at components/SiteHeader.tsx. */}
+                {/* Global toolbar (2026-08-05, Aug 2026 Figma) — fixed
+                    top bar on every route, above all content: pixel-rain
+                    music entry left, theme toggle + palette right. It
+                    replaces the per-page h1-row controls (HomeLayout /
+                    Hero) and the bottom-right music dock FAB. The older
+                    SiteHeader stays unmounted (kept for salvage). */}
+                <GlobalToolbar />
                 <InlineEditorProvider>
                   {/* No width cap here — each page owns its measure. Case
                       studies use the editorial grid canvas (CaseStudyShell),
@@ -126,14 +129,12 @@ export default function RootLayout({
                   )}
                 </InlineEditorProvider>
                 <ViewportFade />
-                {/* Floating dock — chat FAB + music dock share the
-                    bottom-right corner; items-end keeps the chat button
-                    bottom-aligned when the music panel expands.
+                {/* Floating dock — chat FAB alone since the music dock
+                    moved into the GlobalToolbar (2026-08-05).
                     .floating-dock shifts it left of the chat side panel
                     at lg+ when chat is open (globals.css). */}
                 <div className="floating-dock fixed bottom-4 right-4 z-[60] flex items-end gap-3">
                   <ChatFab />
-                  <MusicMiniWidget />
                 </div>
                 <ChatBar />
                 <CustomCursor />
