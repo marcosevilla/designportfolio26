@@ -7,8 +7,10 @@ import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
+import type { StudyMeta } from "@/lib/content";
 
 const STATS = [
   { value: "1,000+", label: "User signups at launch" },
@@ -28,13 +30,14 @@ const TOC_ITEMS = [
   { id: "lessons", label: "Lessons" },
 ];
 
-export default function GeneralTaskContent() {
+export default function GeneralTaskContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Building Productivity Software for Engineers</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
+          <StudyMetaRow slug="general-task" {...meta} />
+          <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
         </div>
 
         {/* Hero Image */}

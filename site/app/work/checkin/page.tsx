@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import CheckinContent from "./CheckinContent";
 import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Hotel Check-in — Marco Sevilla",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function CheckinPage() {
+  const meta = getStudyMeta("checkin");
+
   return (
     <LockGate
       mode="page"
@@ -24,7 +27,7 @@ export default function CheckinPage() {
       backHref="/#projects"
     >
       <div className="pb-20">
-        <CheckinContent />
+        <CheckinContent meta={meta} />
       </div>
     </LockGate>
   );

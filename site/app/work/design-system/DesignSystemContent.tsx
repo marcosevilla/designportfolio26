@@ -7,8 +7,10 @@ import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
+import type { StudyMeta } from "@/lib/content";
 
 const STATS = [
   { value: "40%", label: "Faster design-to-dev turnaround" },
@@ -29,13 +31,14 @@ const TOC_ITEMS = [
   { id: "lessons", label: "Lessons" },
 ];
 
-export default function DesignSystemContent() {
+export default function DesignSystemContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Creating a Design System for a Productivity Startup</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>Championing and executing a design system and visual language overhaul by securing leadership approval, facilitating design sprints, and collaborating with developers for implementation.</p>
+          <StudyMetaRow slug="design-system" {...meta} />
+          <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>Championing and executing a design system and visual language overhaul by securing leadership approval, facilitating design sprints, and collaborating with developers for implementation.</p>
         </div>
 
         {/* Hero Image */}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import DesignSystemContent from "./DesignSystemContent";
 import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Design System — Marco Sevilla",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function DesignSystemPage() {
+  const meta = getStudyMeta("design-system");
+
   return (
     <LockGate
       mode="page"
@@ -24,7 +27,7 @@ export default function DesignSystemPage() {
       backHref="/#projects"
     >
       <div className="pb-20">
-        <DesignSystemContent />
+        <DesignSystemContent meta={meta} />
       </div>
     </LockGate>
   );

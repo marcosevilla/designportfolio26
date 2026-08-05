@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import UpsellsContent from "./UpsellsContent";
 import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Upsells Forms — Marco Sevilla",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function UpsellsPage() {
+  const meta = getStudyMeta("upsells");
+
   return (
     <LockGate
       mode="page"
@@ -24,7 +27,7 @@ export default function UpsellsPage() {
       backHref="/#projects"
     >
       <div className="pb-20">
-        <UpsellsContent />
+        <UpsellsContent meta={meta} />
       </div>
     </LockGate>
   );

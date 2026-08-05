@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import GeneralTaskContent from "./GeneralTaskContent";
 import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "General Task — Marco Sevilla",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function GeneralTaskPage() {
+  const meta = getStudyMeta("general-task");
+
   return (
     <LockGate
       mode="page"
@@ -24,7 +27,7 @@ export default function GeneralTaskPage() {
       backHref="/#projects"
     >
       <div className="pb-20">
-        <GeneralTaskContent />
+        <GeneralTaskContent meta={meta} />
       </div>
     </LockGate>
   );

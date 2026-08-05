@@ -8,8 +8,10 @@ import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
+import type { StudyMeta } from "@/lib/content";
 
 const STATS = [
   { value: "$3.5M", label: "Annual recurring revenue generated" },
@@ -27,13 +29,14 @@ const TOC_ITEMS = [
   { id: "international", label: "International" },
 ];
 
-export default function CheckinContent() {
+export default function CheckinContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Modernizing Hotel Software</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
+          <StudyMetaRow slug="checkin" {...meta} />
+          <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
         </div>
 
         {/* Hero Image */}

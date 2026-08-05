@@ -9,8 +9,10 @@ import FadeIn from "@/components/case-study/FadeIn";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyHeroImage from "@/components/case-study/CaseStudyHeroImage";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
 import TwoCol from "@/components/TwoCol";
 import { typescale } from "@/lib/typography";
+import type { StudyMeta } from "@/lib/content";
 
 const STATS = [
   { value: "$6.94M", label: "Cumulative CARR (+87% YoY)" },
@@ -29,14 +31,15 @@ const TOC_ITEMS = [
   { id: "gallery", label: "Gallery" },
 ];
 
-export default function UpsellsContent() {
+export default function UpsellsContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS} band>
 
         {/* Title + Subtitle */}
         <div>
           <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Upsells Forms</h1>
-          <p className="mt-3 text-(--color-fg-secondary)" style={typescale.subtitle}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
+          <StudyMetaRow slug="upsells" {...meta} />
+          <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
         </div>
 
         {/* Hero Image */}
