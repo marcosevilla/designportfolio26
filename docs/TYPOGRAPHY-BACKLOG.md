@@ -111,6 +111,28 @@ Both belong in `app/globals.css` next to the existing `-webkit-font-smoothing` b
 - `components/LoadingOverlay.tsx` — display type (`clamp(72px, 10vw, 112px)`) that exists
   only during the intro sequence.
 
+## Where to do this work
+
+A worktree is **already set up and left in place** for these items:
+
+```
+.claude/worktrees/type-lineheight/    branch: fix/body-lineheight-unitless (off main)
+```
+
+Run everything from `.claude/worktrees/type-lineheight/site/`, not the repo root.
+
+Two things about it that aren't visible from `git status`:
+
+- `site/node_modules` is a **symlink** back to the primary checkout, so `tsc` and `next`
+  work without a second install. `.gitignore` has `node_modules/` with a trailing slash,
+  which only matches directories — a symlink is NOT ignored by it. It is excluded via
+  `.git/info/exclude` instead. Don't remove that line, and never `git add -A` here.
+- Use a non-default port so it can run alongside the primary checkout:
+  `NEXT_PORT=3010 EDITOR_PORT=3012 npm run dev`.
+
+`typography.ts` is untouched on `feature/study-meta-row`, so this branch merges cleanly
+once that lands.
+
 ## Suggested sequence
 
 ④ (delete dead token) → ③ and ⑥ (new tokens, mechanical swaps) → ⑦ (two CSS lines) → ①
