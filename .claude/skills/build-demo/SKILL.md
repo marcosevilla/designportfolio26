@@ -32,14 +32,14 @@ Collect everything in a single AskUserQuestion/message, never piecemeal:
 
 ## Phase B — Choreography → Marco's taste gate
 
-1. Add `data-demo` attributes; wrap the component in DemoStage — the component wraps *itself*; pages mount the component, never DemoStage directly.
+1. Add `data-demo` attributes; wrap the component in DemoStage — the component wraps *itself*; pages mount the component, never DemoStage directly. On the page, wrap the mount + its caption in a `<DemoGroup>` and put a `<TryDemoButton />` in the caption block (h3 + body copy on `CONTENT_BAND`) — that CTA is the only way into the hands-on fullscreen copy.
 2. Script grammar is `tap` / `type` / `wait` only. Timing defaults from shipped demos: `charMs` 70–120, ~2600ms end hold, 12–20s total loop.
 3. Self-check: watch two full loops via browser automation before presenting.
 4. **Commit, then STOP.** Marco reviews the feel.
 
 ## Phase C — Mechanical verification + docs sync
 
-1. Run the verification bar from `.claude/rules/specimens.md` verbatim: tsc clean, 0 console errors, two full loops with `dY: 0`, dark mode, 390px viewport (no page overflow, both pan edges reachable), fullscreen at true 1:1.
+1. Run the verification bar from `.claude/rules/specimens.md` verbatim: tsc clean, 0 console errors, two full loops with `dY: 0`, dark mode, 390px viewport (no page overflow, both pan edges reachable), fullscreen opens manual from "Try demo" (real click reaches the prototype; Restart + Esc/Close work).
 2. Docs sync: new entry at the top of `docs/CURRENT-STATE.md`; add the demo to the existing-demos list in `.claude/rules/specimens.md`. Commit.
 
 ## Tripwires

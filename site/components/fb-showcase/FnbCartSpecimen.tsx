@@ -2050,8 +2050,9 @@ function PhoneShell() {
 }
 
 /**
- * Panel + demo chrome come from DemoStage: auto-playing ghost-cursor run,
- * hover → "Interact with flow" takeover, reset + fullscreen buttons.
+ * DemoStage supplies the choreography: the in-page copy is a display-only
+ * auto-playing ghost-cursor run; the hands-on copy opens fullscreen from a
+ * <TryDemoButton /> in the caption block (2026-08-05).
  */
 export default function FnbCartSpecimen() {
   return (
@@ -2061,7 +2062,6 @@ export default function FnbCartSpecimen() {
         script={FNB_DEMO_SCRIPT}
         stageWidth={SHELL_W}
         stageHeight={SHELL_H}
-        childRadius={32}
       >
         <PhoneShell />
       </DemoStage>

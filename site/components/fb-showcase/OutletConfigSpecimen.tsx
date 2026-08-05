@@ -1004,7 +1004,6 @@ export default function OutletConfigSpecimen() {
       ariaLabel="Canary outlet configuration — menus, delivery type, taxes and fees"
       stageWidth={SHELL_W}
       stageHeight={SHELL_H}
-      childRadius={12}
     >
       <OutletConfigScreen />
     </DemoStage>

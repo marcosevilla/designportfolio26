@@ -693,7 +693,6 @@ export default function ItemLibrarySpecimen() {
         script={LIBRARY_DEMO_SCRIPT}
         stageWidth={SHELL_W}
         stageHeight={SHELL_H}
-        childRadius={RADIUS.lg}
       >
         <Library />
       </DemoStage>

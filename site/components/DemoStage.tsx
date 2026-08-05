@@ -10,15 +10,17 @@
  * dispatches a real click — the prototype's own state logic stays the single
  * source of truth; nothing is simulated twice.
  *
- * Behavior contract (Marco 2026-08-03):
- *   - Auto-plays on view, loops forever (children remount via key = reset).
- *   - Hover pauses + shows an "Interact with flow" overlay; clicking it hands
- *     over control (manual mode). Un-hovering without clicking resumes.
- *   - Reset button always restarts the choreographed run, from any mode.
- *   - Fullscreen renders a scaled-up copy in a body portal (fixed inside the
- *     case-study framer wrappers is a containing-block trap — see CLAUDE.md).
- *     Opening/closing starts a fresh run; inline copy freezes underneath.
- *   - prefers-reduced-motion ⇒ no auto-play at all, prototype starts live.
+ * Behavior contract (Marco 2026-08-03, REVISED 2026-08-05):
+ *   - Inline (in the page) is DISPLAY ONLY: auto-plays on view, loops forever,
+ *     no chrome, no panel background, no hover state, not interactive. It
+ *     reads as a moving figure in the article, not a widget.
+ *   - Fullscreen is MANUAL ONLY: no ghost cursor, no auto-play — the visitor
+ *     drives the real prototype. Chrome is two text+icon buttons: Restart
+ *     (remounts the prototype clean) and Close.
+ *   - Fullscreen opens from <TryDemoButton />, which can be rendered anywhere
+ *     inside the same <DemoGroup> — so the CTA lives in the caption block on
+ *     the 676px text band while the stage keeps its own wider band.
+ *   - prefers-reduced-motion ⇒ the inline copy never auto-plays (static).
  *
  * Scale note: coordinates come from getBoundingClientRect, so targets inside
  * transform-scaled interiors (the phone renders at 390pt logical) need no
@@ -26,12 +28,14 @@
  */
 
 import {
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
-  type CSSProperties,
+  type MutableRefObject,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -53,9 +57,36 @@ const EXIT_MS = 300;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// ─── Launch context ────────────────────────────────────────────────────────
+// The "Try demo" CTA sits in the caption block (text band), while the stage
+// sits in its own wider band — different <Col>s, so the button can't be a
+// child of DemoStage. A ref-based registry keeps them connected without
+// re-rendering either side.
+
+type LaunchRef = MutableRefObject<(() => void) | null>;
+const DemoLaunchContext = createContext<LaunchRef | null>(null);
+
+/** Wrap ONE demo and its caption so <TryDemoButton /> can open that demo. */
+export function DemoGroup({ children }: { children: ReactNode }) {
+  const launch = useRef<(() => void) | null>(null);
+  return (
+    <DemoLaunchContext.Provider value={launch}>
+      {children}
+    </DemoLaunchContext.Provider>
+  );
+}
+
 // ─── Icons (stroke, matches the site's utilitarian chrome) ─────────────────
 
-function GlyphIcon({ d, size = 15 }: { d: string; size?: number }) {
+function GlyphIcon({
+  d,
+  size = 15,
+  strokeWidth = 1.5,
+}: {
+  d: string;
+  size?: number;
+  strokeWidth?: number;
+}) {
   return (
     <svg
       width={size}
@@ -63,7 +94,7 @@ function GlyphIcon({ d, size = 15 }: { d: string; size?: number }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
@@ -75,8 +106,6 @@ function GlyphIcon({ d, size = 15 }: { d: string; size?: number }) {
 }
 
 const GLYPHS = {
-  pause: "M10 5v14M14 5v14",
-  play: "m8 5 11 7-11 7V5",
   // rotate-ccw
   reset: "M3 12a9 9 0 1 0 2.64-6.36M3 4v4h4",
   // maximize
@@ -84,56 +113,78 @@ const GLYPHS = {
   close: "M18 6 6 18M6 6l12 12",
 } as const;
 
-function StageButton({
+/** Fullscreen chrome: icon + label, no chip — reads as a control, not a widget. */
+function StageTextButton({
   glyph,
   label,
   onClick,
-  onDark,
 }: {
   glyph: keyof typeof GLYPHS;
   label: string;
   onClick: () => void;
-  onDark?: boolean;
 }) {
   return (
     <button
       type="button"
-      aria-label={label}
-      title={label}
       onClick={onClick}
-      className={
-        onDark
-          ? "text-white/70 hover:text-white"
-          : "text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]"
-      }
+      className="text-white/70 transition-colors hover:text-white"
       style={{
-        width: 32,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 7,
         height: 32,
+        padding: "0 10px",
         borderRadius: 8,
-        border: onDark
-          ? "1px solid rgba(255,255,255,0.22)"
-          : "1px solid var(--color-border)",
-        background: onDark
-          ? "rgba(255,255,255,0.1)"
-          : "color-mix(in srgb, var(--color-bg) 72%, transparent)",
+        border: "1px solid rgba(255,255,255,0.18)",
+        background: "rgba(255,255,255,0.06)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        fontSize: 13,
+        fontWeight: 500,
+        lineHeight: 1,
         cursor: "pointer",
-        padding: 0,
-        transition: "color 150ms ease",
       }}
     >
-      <GlyphIcon d={GLYPHS[glyph]} />
+      <GlyphIcon d={GLYPHS[glyph]} size={14} />
+      {label}
+    </button>
+  );
+}
+
+/**
+ * "Try demo" — the in-prose CTA that opens the fullscreen, hands-on copy.
+ * Renders inside a caption block; must be under the same <DemoGroup> as the
+ * demo it opens.
+ */
+export function TryDemoButton({
+  label = "Try demo",
+  className = "",
+}: {
+  label?: string;
+  className?: string;
+}) {
+  const launch = useContext(DemoLaunchContext);
+  return (
+    <button
+      type="button"
+      onClick={() => launch?.current?.()}
+      className={`mt-5 inline-flex items-center gap-2 rounded-full border border-border text-(--color-fg) transition-colors hover:bg-[color-mix(in_srgb,var(--color-fg)_6%,transparent)] ${className}`}
+      style={{
+        height: 34,
+        padding: "0 14px",
+        fontSize: 14,
+        fontWeight: 500,
+        lineHeight: 1,
+        cursor: "pointer",
+      }}
+    >
+      <GlyphIcon d={GLYPHS.expand} size={14} />
+      {label}
     </button>
   );
 }
 
 // ─── Stage core (one instance per surface: inline + fullscreen portal) ─────
-
-type StageMode = "auto" | "manual";
 
 function StageCore({
   variant,
@@ -142,12 +193,11 @@ function StageCore({
   ariaLabel,
   stageWidth,
   stageHeight,
-  childRadius = 0,
   frozen = false,
-  onExpand,
   onClose,
   onClosed,
   closing = false,
+  registerLaunch,
 }: {
   variant: "inline" | "fullscreen";
   script: DemoStep[];
@@ -155,21 +205,16 @@ function StageCore({
   ariaLabel: string;
   stageWidth: number;
   stageHeight: number;
-  /** Corner radius of the prototype itself — clips the hover scrim to it. */
-  childRadius?: number;
   /** Inline copy freezes (stops running) while the fullscreen portal is up. */
   frozen?: boolean;
-  onExpand?: () => void;
   /** Fullscreen: start the exit animation. */
   onClose?: () => void;
   /** Fullscreen: set once the exit animation is done — parent unmounts. */
   onClosed?: () => void;
   closing?: boolean;
+  registerLaunch?: () => void;
 }) {
-  const [mode, setMode] = useState<StageMode>("auto");
   const [resetKey, setResetKey] = useState(0);
-  const [hovered, setHovered] = useState(false);
-  const [userPaused, setUserPaused] = useState(false);
   const [cursorOn, setCursorOn] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [fsScale, setFsScale] = useState(1);
@@ -185,23 +230,33 @@ function StageCore({
   const cursorDotRef = useRef<HTMLDivElement | null>(null);
   const pausedRef = useRef(false);
   const inViewRef = useRef(variant === "fullscreen");
-  // Script-driven focus() must not trip the keyboard-takeover handler.
-  const scriptFocusRef = useRef(false);
 
   const scale = variant === "fullscreen" ? fsScale : fitScale;
   const cursorSize = Math.round(CURSOR_SIZE * scale);
 
-  // Reduced motion ⇒ hand the prototype over immediately, never auto-play.
+  /** Fullscreen = the visitor's copy; inline = the demo reel. Never both. */
+  const interactable = variant === "fullscreen";
+  const autoPlay = variant === "inline" && !reduced;
+
+  // Reduced motion ⇒ the inline copy never auto-plays (it renders its
+  // prototype's initial state and holds).
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = () => {
-      setReduced(mq.matches);
-      if (mq.matches) setMode("manual");
-    };
+    const apply = () => setReduced(mq.matches);
     apply();
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
   }, []);
+
+  // Inline is display-only: pointer-events off isn't enough — keyboard users
+  // would still tab into dead controls. `inert` via the DOM (React 18 types
+  // don't know the attribute, and a boolean would render `inert="true"`).
+  useLayoutEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    if (interactable) el.removeAttribute("inert");
+    else el.setAttribute("inert", "");
+  }, [interactable, resetKey]);
 
   // Fullscreen: fit the stage to the viewport. Layout effect so the first
   // paint is already at the fitted scale (the enter animation runs over it).
@@ -328,20 +383,12 @@ function StageCore({
   }, [variant, closing, reduced, onClosed]);
 
   // Off-screen ⇒ pause (inline only; the portal is always on screen).
-  const hoveredRef = useRef(false);
-  const userPausedRef = useRef(false);
-  useEffect(() => {
-    hoveredRef.current = hovered;
-    userPausedRef.current = userPaused;
-    pausedRef.current = hovered || userPaused || !inViewRef.current;
-  }, [hovered, userPaused]);
   useEffect(() => {
     if (variant === "fullscreen" || !stageRef.current) return;
     const io = new IntersectionObserver(
       ([entry]) => {
         inViewRef.current = entry.isIntersecting;
-        pausedRef.current =
-          hoveredRef.current || userPausedRef.current || !entry.isIntersecting;
+        pausedRef.current = !entry.isIntersecting;
       },
       { threshold: 0.3 },
     );
@@ -361,13 +408,10 @@ function StageCore({
     }
     if (!wasFrozen.current) return;
     wasFrozen.current = false;
-    setMode(reduced ? "manual" : "auto");
-    setUserPaused(false);
     setResetKey((k) => k + 1);
-    setHovered(false);
-  }, [frozen, reduced]);
+  }, [frozen]);
 
-  // ── Script executor ──────────────────────────────────────────────────────
+  // ── Script executor (inline only) ────────────────────────────────────────
 
   const findTarget = (name: string) =>
     contentRef.current?.querySelector<HTMLElement>(
@@ -441,9 +485,7 @@ function StageCore({
         ? HTMLTextAreaElement.prototype
         : HTMLInputElement.prototype;
     const setValue = Object.getOwnPropertyDescriptor(proto, "value")!.set!;
-    scriptFocusRef.current = true;
     el.focus({ preventScroll: true });
-    scriptFocusRef.current = false;
     // Append mode: when the field already holds a prefix of the target text
     // (e.g. a pre-filled description the script extends), start after it
     // instead of retyping the whole value.
@@ -487,11 +529,9 @@ function StageCore({
           await pressCursor();
           if (cancelled()) return false;
           // Dispatched clicks can natively focus controls (labels forward to
-          // their inputs), which would both trip the keyboard-takeover
-          // handler and scroll the page — flag the window and pin scroll.
+          // their inputs), which would scroll the page — pin scroll around it.
           const sx = window.scrollX;
           const sy = window.scrollY;
-          scriptFocusRef.current = true;
           el.click();
           if (
             el instanceof HTMLInputElement ||
@@ -499,7 +539,6 @@ function StageCore({
           ) {
             el.focus({ preventScroll: true });
           }
-          scriptFocusRef.current = false;
           window.scrollTo(sx, sy);
         } else {
           await typeInto(
@@ -518,7 +557,7 @@ function StageCore({
   );
 
   useEffect(() => {
-    if (frozen || mode !== "auto" || reduced) {
+    if (frozen || !autoPlay) {
       setCursorOn(false);
       return;
     }
@@ -550,35 +589,12 @@ function StageCore({
     return () => {
       disposed = true;
     };
-  }, [mode, frozen, reduced, resetKey, playScript, cursorSize]);
+  }, [autoPlay, frozen, resetKey, playScript, cursorSize]);
 
   // ── Controls ─────────────────────────────────────────────────────────────
 
-  const handleReset = () => {
-    setMode(reduced ? "manual" : "auto");
-    setUserPaused(false);
-    setResetKey((k) => k + 1);
-  };
-
-  const pausePlayButton = mode === "auto" && !reduced && !frozen && (
-    <StageButton
-      glyph={userPaused ? "play" : "pause"}
-      label={userPaused ? "Resume demo" : "Pause demo"}
-      onClick={() => setUserPaused((p) => !p)}
-      onDark={variant === "fullscreen"}
-    />
-  );
-
-  const takeOver = () => {
-    setMode("manual");
-    setCursorOn(false);
-  };
-
-  // Keyboard users tabbing into the prototype take over too.
-  const handleFocusCapture = () => {
-    if (scriptFocusRef.current) return;
-    if (mode === "auto" && !reduced) takeOver();
-  };
+  /** Fullscreen only: hand the visitor a clean copy of the prototype. */
+  const handleReset = () => setResetKey((k) => k + 1);
 
   useEffect(() => {
     if (variant !== "fullscreen" || !onClose) return;
@@ -589,23 +605,18 @@ function StageCore({
     return () => window.removeEventListener("keydown", onKey);
   }, [variant, onClose]);
 
-  const interactable = mode === "manual";
-  const showHoverOverlay = mode === "auto" && !reduced && hovered && !frozen;
-
-  // Hover-to-pause listens on the stage only (the phone mock itself) —
-  // panel chrome and padding around it don't pause the demo.
-  const hoverHandlers = {
-    onPointerEnter: () => setHovered(true),
-    onPointerLeave: () => setHovered(false),
-  };
+  // Register the launcher so a <TryDemoButton /> elsewhere in the group can
+  // open this demo (inline copy only — the portal has nothing to launch).
+  useEffect(() => {
+    if (variant !== "inline") return;
+    registerLaunch?.();
+  }, [variant, registerLaunch]);
 
   // ── Stage (shared between variants) ──────────────────────────────────────
 
   const stage = (
     <div
       ref={stageRef}
-      {...hoverHandlers}
-      onFocusCapture={handleFocusCapture}
       style={{
         position: "relative",
         width: stageWidth * scale,
@@ -625,7 +636,7 @@ function StageCore({
         }}
       >
         {/* zIndex isolates the prototype's internal stacking (sheets run
-            z-50) so the cursor + overlay always sit above it. */}
+            z-50) so the cursor always sits above it. */}
         <div
           key={resetKey}
           ref={contentRef}
@@ -641,80 +652,42 @@ function StageCore({
         </div>
       </div>
 
-      {/* Ghost cursor — frosted glass tap circle */}
-      <div
-        ref={cursorRef}
-        aria-hidden
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: cursorSize,
-          height: cursorSize,
-          zIndex: 2,
-          pointerEvents: "none",
-          willChange: "transform",
-          opacity: cursorOn && !userPaused ? 1 : 0,
-          transition: "opacity 200ms ease",
-        }}
-      >
+      {/* Ghost cursor — frosted glass tap circle (inline demo reel only) */}
+      {autoPlay && (
         <div
-          ref={cursorDotRef}
+          ref={cursorRef}
+          aria-hidden
           style={{
-            width: "100%",
-            height: "100%",
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.16)",
-            border: "1px solid rgba(255,255,255,0.5)",
-            backdropFilter: "blur(1.5px)",
-            WebkitBackdropFilter: "blur(1.5px)",
-            boxShadow:
-              "0 2px 10px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35)",
-            transition:
-              "transform 130ms ease, background 130ms ease, opacity 250ms ease",
-          }}
-        />
-      </div>
-
-      {/* Hover: pause + take-over affordance */}
-      <button
-        type="button"
-        tabIndex={showHoverOverlay ? 0 : -1}
-        aria-hidden={!showHoverOverlay}
-        onClick={takeOver}
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 3,
-          border: "none",
-          padding: 0,
-          borderRadius: childRadius * scale,
-          background: "rgba(0,0,0,0.3)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          opacity: showHoverOverlay ? 1 : 0,
-          pointerEvents: showHoverOverlay ? "auto" : "none",
-          transition: "opacity 180ms ease",
-        }}
-      >
-        <span
-          style={{
-            padding: "10px 18px",
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.92)",
-            color: "#111111",
-            fontSize: 13,
-            fontWeight: 600,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: cursorSize,
+            height: cursorSize,
+            zIndex: 2,
+            pointerEvents: "none",
+            willChange: "transform",
+            opacity: cursorOn ? 1 : 0,
+            transition: "opacity 200ms ease",
           }}
         >
-          Interact with flow
-        </span>
-      </button>
+          <div
+            ref={cursorDotRef}
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.16)",
+              border: "1px solid rgba(255,255,255,0.5)",
+              backdropFilter: "blur(1.5px)",
+              WebkitBackdropFilter: "blur(1.5px)",
+              boxShadow:
+                "0 2px 10px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35)",
+              transition:
+                "transform 130ms ease, background 130ms ease, opacity 250ms ease",
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 
@@ -754,48 +727,25 @@ function StageCore({
             zIndex: 4,
           }}
         >
-          {pausePlayButton}
-          <StageButton glyph="reset" label="Restart demo" onClick={handleReset} onDark />
-          <StageButton glyph="close" label="Close fullscreen" onClick={() => onClose?.()} onDark />
+          <StageTextButton glyph="reset" label="Restart" onClick={handleReset} />
+          <StageTextButton glyph="close" label="Close" onClick={() => onClose?.()} />
         </div>
         <div ref={growRef}>{stage}</div>
       </div>
     );
   }
 
-  const panelStyle: CSSProperties = {
-    background: "color-mix(in srgb, var(--color-fg) 7%, var(--color-bg))",
-  };
-
+  // Inline: no panel, no border, no chrome — the specimen's own shell is the
+  // only container, so the demo sits on the page like any other figure.
   return (
-    <section
-      aria-label={ariaLabel}
-      className="relative rounded-[10px] border border-border"
-      style={panelStyle}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          display: "flex",
-          gap: 8,
-          zIndex: 4,
-        }}
-      >
-        {pausePlayButton}
-        <StageButton glyph="reset" label="Restart demo" onClick={handleReset} />
-        {onExpand && (
-          <StageButton glyph="expand" label="View fullscreen" onClick={onExpand} />
-        )}
-      </div>
+    <section aria-label={ariaLabel} className="relative">
       {/* Block + `margin-inline: auto` rather than flex centering: when the
           stage is wider than the well, flex `items-center` pushes overflow off
           BOTH edges and the left side becomes unreachable, while auto margins
           collapse to 0 and overflow stays scrollable. */}
       <div
         ref={wellRef}
-        className="scrollbar-hide px-4 py-12 sm:py-16"
+        className="scrollbar-hide"
         style={{ overflowX: "auto" }}
       >
         <div style={{ width: "fit-content", marginInline: "auto" }}>
@@ -814,14 +764,12 @@ export default function DemoStage({
   ariaLabel,
   stageWidth,
   stageHeight,
-  childRadius,
 }: {
   script: DemoStep[];
   children: ReactNode;
   ariaLabel: string;
   stageWidth: number;
   stageHeight: number;
-  childRadius?: number;
 }) {
   const [fullscreen, setFullscreen] = useState(false);
   // Closing is a separate beat: the portal stays mounted through its exit
@@ -840,6 +788,12 @@ export default function DemoStage({
     setClosing(false);
   }, []);
 
+  // Hand `open` to the group so <TryDemoButton /> can call it.
+  const launch = useContext(DemoLaunchContext);
+  const registerLaunch = useCallback(() => {
+    if (launch) launch.current = open;
+  }, [launch, open]);
+
   // Lock page scroll behind the fullscreen overlay.
   useEffect(() => {
     if (!fullscreen) return;
@@ -850,14 +804,14 @@ export default function DemoStage({
     };
   }, [fullscreen]);
 
-  const shared = { script, ariaLabel, stageWidth, stageHeight, childRadius };
+  const shared = { script, ariaLabel, stageWidth, stageHeight };
 
   return (
     <>
       <StageCore
         variant="inline"
         frozen={fullscreen}
-        onExpand={open}
+        registerLaunch={registerLaunch}
         {...shared}
       >
         {children}
