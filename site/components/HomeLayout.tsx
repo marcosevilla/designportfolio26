@@ -345,14 +345,6 @@ export default function HomeLayout({
                   .
                 </p>
                 <p>
-                  In the past, I built scalable brand systems as a marketing
-                  designer at <Em href="https://www.vivino.com/">Vivino</Em>{" "}
-                  and <Em href="https://www.vyond.com/">Vyond</Em>, and founded
-                  product design at{" "}
-                  <Em href="https://www.generaltask.com/">General Task</Em>,
-                  where we built productivity tooling for knowledge workers.
-                </p>
-                <p>
                   I&apos;m an AI-native designer driven by curiosity, quality
                   craft, and (of course) caffeine. Outside of work,
                   you&apos;ll find me{" "}
