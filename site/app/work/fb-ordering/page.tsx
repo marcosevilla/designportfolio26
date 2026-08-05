@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import FBOrderingContent from "./FBOrderingContent";
 import LockGate from "@/components/LockGate";
 import { isLocked } from "@/lib/locked-content";
+import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Modernizing food & beverage ordering for hotels — Marco Sevilla",
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default function FBOrderingPage() {
+  const meta = getStudyMeta("fb-ordering");
+
   return (
     <LockGate
       mode="page"
@@ -24,7 +27,7 @@ export default function FBOrderingPage() {
       backHref="/#projects"
     >
       <div className="pb-20">
-        <FBOrderingContent />
+        <FBOrderingContent meta={meta} />
       </div>
     </LockGate>
   );

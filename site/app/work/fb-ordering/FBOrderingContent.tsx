@@ -12,11 +12,12 @@ import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
-// Hidden 2026-08-05 — see the commented-out MetaRail mount below.
-// import MetaRail from "@/components/case-study/MetaRail";
+import StudyMetaRow from "@/components/case-study/StudyMetaRow";
+import Acknowledgements from "@/components/case-study/Acknowledgements";
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
+import type { StudyMeta } from "@/lib/content";
 
 const TOC_ITEMS = [
   { id: "context", label: "Context" },
@@ -34,38 +35,21 @@ const FB_PANEL_BG = "color-mix(in srgb, #EF5A3C 3%, var(--color-card-bg))";
 // before demos went chrome-less (Marco asked for it back 2026-08-05, phone only).
 const DEMO_PANEL_BG = "color-mix(in srgb, var(--color-fg) 7%, var(--color-bg))";
 
-// Hidden 2026-08-05 (Marco) alongside the MetaRail mount — kept so restoring
-// the rail is a two-line un-comment.
-// const META = [
-//   { label: "Year", values: ["2025–2026"] },
-//   {
-//     label: "Role",
-//     values: ["Sole designer"],
-//     info: "Built with Nico Garnier (PM) and engineers Joanne Chevalier, Andrea Bradshaw & Luciano Guasco",
-//   },
-//   { label: "Scope", values: ["Guest ordering", "Menu CMS", "Staff dashboard"] },
-// ];
-
-export default function FBOrderingContent() {
+export default function FBOrderingContent({ meta }: { meta: StudyMeta }) {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
         {/* The lead dashboard shot was removed 2026-08-05 (Marco) — the page
             now opens on the title, and the live specimens carry the visuals.
             Restore from git if it's ever wanted back. */}
 
-        {/* Title + subtitle. The Year/Role/Scope rail is hidden for now
-            (Marco 2026-08-05) — restore by un-commenting the <Col> below,
-            the META const, and the MetaRail import. */}
-        <Grid preset="intro-rail">
-          <Col>
+        <Grid>
+          <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
             <h1 className="text-(--color-fg)" style={typescale.display}>Modernizing food &amp; beverage ordering for hotels</h1>
+            <StudyMetaRow slug="fb-ordering" {...meta} />
             <p className="mt-6 text-(--color-fg-secondary)">I designed a 0-1 food &amp; beverage ordering platform specifically for hotels. This was the latest addition to Canary&apos;s suite of products aimed at increasing hotel efficiency and increasing their ancillary revenue. Through a scrappy and highly iterative approach, our team developed launched the MVP in about four months to several pilot customers and over $50k in committed ARR.</p>
             {/* Solution paragraphs folded into the intro (Marco 2026-07-26) */}
             <p className="mt-3 text-(--color-fg-secondary)">We built a mobile-first ordering experience for our guests that served as an extension to our existing guest experience platform. Guests can browse available menu items, add to their carts, and then send their orders to hotel staff easily. To manage inbound orders, we built a dashboard and notification system that enabled operators to easily notify their kitchen staff and complete fulfillment.</p>
           </Col>
-          {/* <Col className="mt-8 lg:mt-2">
-            <MetaRail items={META} />
-          </Col> */}
         </Grid>
 
         {/* ── Guest ordering flow — interactive specimen (replaced the
@@ -108,7 +92,7 @@ export default function FBOrderingContent() {
           <FadeIn className="pt-12">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-                <h3 className="text-(--color-fg)" style={typescale.h3}>Ordering from the room</h3>
+                <h3 className="text-(--color-fg)" style={typescale.h3}>Room service, ordered on your phone</h3>
                 <p className="mt-3">Guests scan a QR code and land in the outlet&apos;s menu — no app, no account. Browsing, modifiers, and the cart all live on one surface, so a guest can go from &ldquo;what&apos;s open&rdquo; to a submitted order in under a minute.</p>
               </Col>
             </Grid>
@@ -129,7 +113,7 @@ export default function FBOrderingContent() {
           <FadeIn className="pt-12">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-                <h3 className="text-(--color-fg)" style={typescale.h3}>Working the order queue</h3>
+                <h3 className="text-(--color-fg)" style={typescale.h3}>Bird&apos;s eye view of all your orders</h3>
                 <p className="mt-3">Staff see every inbound order in one lane and move it through approve → prepare → deliver. The side sheet carries the full ticket, so nobody has to hold a guest&apos;s modifiers in their head while walking to the kitchen.</p>
               </Col>
             </Grid>
@@ -334,6 +318,14 @@ export default function FBOrderingContent() {
               <Col className="mt-8 lg:mt-0">
                 <ImagePlaceholder description="Staff notifications concept / HOMA post-launch feedback" aspectRatio="16/10" />
               </Col> */}
+          </Grid>
+        </FadeIn>
+
+        <FadeIn>
+          <Grid>
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+              <Acknowledgements names="Built with Nico Garnier (PM) and engineers Joanne Chevalier, Andrea Bradshaw and Luciano Guasco." />
+            </Col>
           </Grid>
         </FadeIn>
 
