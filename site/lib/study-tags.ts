@@ -3,6 +3,7 @@ export const STUDY_TAGS: Record<string, string[]> = {
   "compendium": ["Enterprise", "Desktop", "Mobile", "CMS", "Revenue Impact", "Design Systems"],
   "upsells": ["Enterprise", "Desktop", "Mobile", "Revenue Impact", "Workflow"],
   "checkin": ["Enterprise", "Mobile", "Desktop", "Revenue Impact", "Workflow", "Design Systems"],
+  "knowledge-base": ["Enterprise", "Desktop", "AI", "CMS"],
   "general-task": ["0→1", "Desktop", "Founding Designer"],
   "design-system": ["0→1", "Desktop", "Design Systems", "Founding Designer"],
   "ai-workflow": ["AI", "Workflow", "Desktop"],

@@ -51,6 +51,13 @@ assertEqual(
   "fb-ordering tags include Desktop in order"
 );
 
+console.log("STUDY_TAGS — knowledge-base tags");
+assertEqual(
+  STUDY_TAGS["knowledge-base"],
+  ["Enterprise", "Desktop", "AI", "CMS"],
+  "knowledge-base tags in order"
+);
+
 console.log("hasMark — company marks and monogram fallback");
 assertEqual(hasMark("Canary"), true, "Canary has an inline mark");
 assertEqual(hasMark("General Task"), false, "General Task has no mark — falls back to a monogram");
