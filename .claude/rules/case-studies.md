@@ -59,15 +59,27 @@ Component is `site/components/case-study/CaseStudyHeroImage.tsx` (older docs cal
 ⚠️ Dates from May 2026 — predates both July redesigns. Verify against the live component.
 
 ## MDX Frontmatter Metadata
-| Study | company | role | metric |
-|-------|---------|------|--------|
-| fb-ordering | Canary | Sole designer | 0→1, 100% ownership |
-| compendium | Canary | Product designer | $1M+ CARR |
-| upsells | Canary | Lead designer | $3.8M CARR |
-| checkin | Canary | Product designer | 4,500+ hotels |
-| general-task | General Task | Founding designer | 0→1 product |
-| design-system | General Task | Founding designer | 0→1 system |
-| ai-workflow | Personal | Designer + builder | Daily AI practice |
+This table is **load-bearing, not descriptive** — it mirrors what `content/*.mdx` frontmatter
+actually contains and what `StudyMetaRow` (`components/case-study/StudyMetaRow.tsx`) renders on
+every case-study page via `getStudyMeta()` (`lib/content.ts`). Reconciled 2026-08-05 as part of the
+metadata-row rollout (`docs/superpowers/specs/2026-08-05-case-study-metadata-row-design.md`);
+pinned by `scripts/test-study-meta.ts`. If you change a study's `company`/`role`/`year` in its MDX,
+update this table in the same commit.
+
+| Study | company | role | year | metric |
+|-------|---------|------|------|--------|
+| fb-ordering | Canary | Sole designer | 2025–2026 | 0→1, 100% ownership |
+| compendium | Canary | Product designer | 2024–2025 | $1.51M CARR · +230% YoY · 44% attach |
+| upsells | Canary | Lead designer | 2025 | $6.94M CARR · +10% measured lift |
+| checkin | Canary | Product designer | 2024 | ~6,000 Wyndham properties |
+| knowledge-base | Canary | Product designer | 2024 · shipped 2026 | 2 AI products, one KB |
+| general-task | General Task | Founding designer | 2022 | 0→1 product |
+| design-system | General Task | Founding designer | 2022 | 0→1 system |
+| ai-workflow | Personal | Designer + builder | 2025–2026 | ~50 prototypes · 8-PR ship |
+
+Four reconciliation rulings landed here (Marco, 2026-08-05): fb-ordering and ai-workflow years use
+the en-dash range; compendium's role drops "100% design ownership"; knowledge-base's role is
+"Product designer" (not "Lead designer") and its year keeps the "shipped 2026" note.
 
 ## Written drafts
 Written case study content lives in `case-studies/` (repo root). Each `.md` file is the narrative draft, and doubles as the chat system-prompt source via `lib/chat/case-study-content.ts`. Read the relevant one when working on a specific case study page.
