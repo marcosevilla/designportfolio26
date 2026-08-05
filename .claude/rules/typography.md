@@ -38,10 +38,10 @@ The 8 tokens:
 
 | Token | Weight | Size | Used by |
 |-------|--------|------|---------|
-| `display` | 500 | clamp(32px, 4vw, 48px) / 1.1, −0.02em | Case-study H1s, LockGate placeholder hero. OpenAI ref is 64/1.0/500; Marco chose the softer 48 cap. Homepage h1 keeps its own inline 16px spec. |
-| `h2` | 500 | 30px / 1.32 | Case-study section headings (mono ALL-CAPS label era is in git history) |
-| `title` | 500 | 24px / 1.2 | /writing page title, QuickStats values (+`tabular-nums` at the call site — stats gained slider scaling in the merge; NextProject title stepped 22 → 24) |
-| `h3` | 500 | 18px / 1.4 | Subsections AND sub-subsections — `SectionHeading` renders both `level={3}` and `level={4}` with this token (h4 *element* kept for the outline), told apart by margin only. ⚠️ see below |
+| `display` | 500 | clamp(32px, 4vw, **40px**) / 1.1, −0.02em | Case-study H1s, LockGate placeholder hero. Ramp stepped down late 2026-08-05 (48→40 cap; mobile min 32 unchanged). Homepage h1 keeps its own inline 16px spec. |
+| `h2` | 500 | **26px** / 1.32 | Case-study section headings (was 30 for a day; mono ALL-CAPS label era is in git history) |
+| `title` | 500 | 24px / 1.2 | /writing page title, QuickStats values (+`tabular-nums` at the call site — stats gained slider scaling in the merge; NextProject title stepped 22 → 24). ⚠️ Only 2px below h2 now. |
+| `h3` | 500 | **16px** / 1.4 | Subsections AND sub-subsections. Marco's spec: a WHISPER above body — one point bigger (16 vs 15), one weight step bolder (500 vs 400), nothing more. `SectionHeading` renders both `level={3}` and `level={4}` with this token (h4 *element* kept for the outline), told apart by margin only. Same px as `subtitle` (different weight/role). ⚠️ see below |
 | `subtitle` | 400 | 16px / 1.625 | Case-study hero subtitle, NextProject description. Correctly larger than the 15px body (the old "subtitle < body" question is closed). |
 | `body` | 400 | 15px / 1.647 (≈24.7px), −0.01em | Case-study prose site-wide. Was 17/28 from the OpenAI pass; Marco dropped it to 15px later that day. Same spec inlined on the home bio (HomeLayout) — change the two together. The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it. Body copy sits 1px above chrome. |
 | `pullQuote` | 400 | clamp(18px, 2.5vw, 22px) / 1.4 | PullQuote |
@@ -51,9 +51,9 @@ Non-token type that's deliberate (inline, not drift): homepage hero statement (s
 
 ### ⚠️ h3 and h4 LEVELS render identically
 
-There is one 18px heading token; `SectionHeading` renders both `level={3}` and `level={4}`
-with it, told apart by margin only (h3 `mt-16 mb-6`, h4 `mb-3`). On a page that nests h4
-under h3 the two levels read as one.
+There is one sub-heading token (`h3`, 16px); `SectionHeading` renders both `level={3}` and
+`level={4}` with it, told apart by margin only (h3 `mt-16 mb-6`, h4 `mb-3`). On a page
+that nests h4 under h3 the two levels read as one.
 
 **This is latent, not live.** The only pages using `level={4}` are `upsells` (10),
 `knowledge-base` (10) and `compendium` (7) — and all three are in `LOCKED_SLUGS`, so they

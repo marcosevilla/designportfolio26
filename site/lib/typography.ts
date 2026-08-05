@@ -40,13 +40,14 @@ export const BODY_LINE_HEIGHT = 1.647;
  */
 export const typescale = {
   /** Display — case-study H1s and the LockGate placeholder hero.
-   *  2026-08-05 OpenAI-blog-scale pass: tops out at 48px (Marco's softer
-   *  call vs the reference's 64px), weight 500 to keep that size from
-   *  going heavy. The homepage h1 keeps its own inline 16px spec — this
-   *  scale is for study pages only. */
+   *  Caps at 40px (Marco stepped the whole heading ramp down late
+   *  2026-08-05; the OpenAI-pass 48 cap lasted a day, the reference's 64
+   *  was never used). Mobile min stays 32 — only the desktop cap moved.
+   *  Weight 500 keeps the size from going heavy. The homepage h1 keeps
+   *  its own inline 16px spec — this scale is for study pages only. */
   display: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaledClamp("32px", "4vw", "48px"),
+    fontSize: scaledClamp("32px", "4vw", "40px"),
     fontWeight: 500,
     lineHeight: 1.1,
     letterSpacing: "-0.02em",
@@ -65,28 +66,32 @@ export const typescale = {
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** H2 — case-study section heading (2026-08-05: real 30px heading,
-   *  OpenAI blog scale — the mono-uppercase label era lives in git
-   *  history). */
+  /** H2 — case-study section heading. 26px (Marco's late-2026-08-05
+   *  ramp-down; the OpenAI-pass 30 lasted a day — the mono-uppercase
+   *  label era lives in git history). */
   h2: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaled("30px"),
+    fontSize: scaled("26px"),
     fontWeight: 500,
     lineHeight: 1.32,
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** H3 — subsections AND sub-subsections. 18px (Marco's call
-   *  2026-08-05, was 20px); the separate `h4` token was absorbed here the
-   *  same day once the sizes converged. `SectionHeading` still renders a
-   *  real `<h4>` element for `level={4}` (document outline is unchanged)
-   *  and tells the levels apart by margin (h3 `mt-16 mb-6`, h4 `mb-3`).
-   *  ⚠️ On a page that nests h4 under h3 the two levels read the same —
-   *  see docs/TYPOGRAPHY-BACKLOG.md open question 1 (latent: every
-   *  `level={4}` consumer is in LOCKED_SLUGS today). */
+  /** H3 — subsections AND sub-subsections. Deliberately only a WHISPER
+   *  above body copy (Marco's spec, late 2026-08-05): body is 15/400,
+   *  h3 is 16/500 — one point bigger, one weight step bolder, nothing
+   *  more. Was 20 → 18 → 16 over the course of 2026-08-05. The separate
+   *  `h4` token was absorbed here once the sizes converged;
+   *  `SectionHeading` still renders a real `<h4>` element for `level={4}`
+   *  (document outline unchanged), told apart by margin (h3 `mt-16 mb-6`,
+   *  h4 `mb-3`). ⚠️ Nested h4-under-h3 reads as one level — see
+   *  docs/TYPOGRAPHY-BACKLOG.md open question 1 (latent: every
+   *  `level={4}` consumer is in LOCKED_SLUGS today).
+   *  ⚠️ Also now equals `subtitle`'s 16px — different weight (500 vs
+   *  400) and role; if subtitle ever gains weight, re-separate. */
   h3: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaled("18px"),
+    fontSize: scaled("16px"),
     fontWeight: 500,
     lineHeight: 1.4,
     letterSpacing: "-0.01em",
