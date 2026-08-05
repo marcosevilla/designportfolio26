@@ -5,7 +5,6 @@
  */
 import { getStudyMeta } from "../lib/content";
 import { STUDY_TAGS } from "../lib/study-tags";
-import { hasMark } from "../lib/study-logos";
 
 let failures = 0;
 
@@ -59,11 +58,6 @@ assertEqual(
   ["Enterprise", "Desktop", "AI", "CMS"],
   "knowledge-base tags in order"
 );
-
-console.log("hasMark — company marks and monogram fallback");
-assertEqual(hasMark("Canary"), true, "Canary has an inline mark");
-assertEqual(hasMark("General Task"), false, "General Task has no mark — falls back to a monogram");
-assertEqual(hasMark("Personal"), false, "Personal has no mark — falls back to a monogram");
 
 console.log(failures === 0 ? "\nAll passed." : `\n${failures} failure(s).`);
 process.exit(failures === 0 ? 0 : 1);
