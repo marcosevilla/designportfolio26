@@ -13,7 +13,8 @@ import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
-import MetaRail from "@/components/case-study/MetaRail";
+// Hidden 2026-08-05 — see the commented-out MetaRail mount below.
+// import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
@@ -30,41 +31,32 @@ const TOC_ITEMS = [
 // so every dashboard visual on the page shares one surface color.
 const FB_PANEL_BG = "color-mix(in srgb, #EF5A3C 3%, var(--color-card-bg))";
 
-const META = [
-  { label: "Year", values: ["2025–2026"] },
-  {
-    label: "Role",
-    values: ["Sole designer"],
-    info: "Built with Nico Garnier (PM) and engineers Joanne Chevalier, Andrea Bradshaw & Luciano Guasco",
-  },
-  { label: "Scope", values: ["Guest ordering", "Menu CMS", "Staff dashboard"] },
-];
+// Panel fill behind the guest phone specimen — the DemoStage panel color from
+// before demos went chrome-less (Marco asked for it back 2026-08-05, phone only).
+const DEMO_PANEL_BG = "color-mix(in srgb, var(--color-fg) 7%, var(--color-bg))";
+
+// Hidden 2026-08-05 (Marco) alongside the MetaRail mount — kept so restoring
+// the rail is a two-line un-comment.
+// const META = [
+//   { label: "Year", values: ["2025–2026"] },
+//   {
+//     label: "Role",
+//     values: ["Sole designer"],
+//     info: "Built with Nico Garnier (PM) and engineers Joanne Chevalier, Andrea Bradshaw & Luciano Guasco",
+//   },
+//   { label: "Scope", values: ["Guest ordering", "Menu CMS", "Staff dashboard"] },
+// ];
 
 export default function FBOrderingContent() {
   return (
     <CaseStudyShell tocItems={TOC_ITEMS}>
-        {/* Full-canvas staff-dashboard shot leads the page, above the
-            title (Marco's 2026-07-15 feedback pass). */}
-        <FadeIn>
-          <Grid className="mb-20">
-            {/* On the content band like everything else — media matches
-                the text measure (Marco's 2026-08-05 OpenAI-scale call;
-                the break-out era is in git history). */}
-            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-              {/* The export bakes its own rounded frame + shadow — no CSS
-                  radius, outline, or shadow on top. */}
-              <img
-                src="/images/fb-ordering/fb-ordering-dashboard.webp"
-                alt="Staff order dashboard with new-order queue and a scheduled order detail panel"
-                className="w-full"
-                width={1920}
-                height={1247}
-              />
-            </Col>
-          </Grid>
-        </FadeIn>
+        {/* The lead dashboard shot was removed 2026-08-05 (Marco) — the page
+            now opens on the title, and the live specimens carry the visuals.
+            Restore from git if it's ever wanted back. */}
 
-        {/* Title + subtitle with metadata rail (intro-rail) */}
+        {/* Title + subtitle. The Year/Role/Scope rail is hidden for now
+            (Marco 2026-08-05) — restore by un-commenting the <Col> below,
+            the META const, and the MetaRail import. */}
         <Grid preset="intro-rail">
           <Col>
             <h1 className="text-(--color-fg)" style={typescale.display}>Modernizing food &amp; beverage ordering for hotels</h1>
@@ -72,9 +64,9 @@ export default function FBOrderingContent() {
             {/* Solution paragraphs folded into the intro (Marco 2026-07-26) */}
             <p className="mt-3 text-(--color-fg-secondary)">We built a mobile-first ordering experience for our guests that served as an extension to our existing guest experience platform. Guests can browse available menu items, add to their carts, and then send their orders to hotel staff easily. To manage inbound orders, we built a dashboard and notification system that enabled operators to easily notify their kitchen staff and complete fulfillment.</p>
           </Col>
-          <Col className="mt-8 lg:mt-2">
+          {/* <Col className="mt-8 lg:mt-2">
             <MetaRail items={META} />
-          </Col>
+          </Col> */}
         </Grid>
 
         {/* ── Guest ordering flow — interactive specimen (replaced the
@@ -93,15 +85,25 @@ export default function FBOrderingContent() {
             copy is display-only now; no chrome, no panel, no hover state).
             ⚠️ Caption copy below is DRAFT — Marco rewrites via the inline
             editor. */}
+        {/* The phone is the ONE specimen that keeps a panel (Marco
+            2026-08-05): a 360pt device floating on the bare page read as
+            unmoored, and unlike the 1177px staff shells it fits the 676px
+            text band with room to spare. Same band as the prose, panel fill
+            is the old DemoStage panel color. */}
         <DemoGroup>
           <FadeIn className="pt-32">
             <Grid>
-              <Col md="1-12" lg="3-10">
-                <FnbCartSpecimen />
+              <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+                <div
+                  className="rounded-[10px] border border-border px-4 py-12 sm:py-16"
+                  style={{ background: DEMO_PANEL_BG }}
+                >
+                  <FnbCartSpecimen />
+                </div>
               </Col>
             </Grid>
           </FadeIn>
-          <FadeIn className="pt-6">
+          <FadeIn className="pt-12">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Ordering from the room</h3>
@@ -125,7 +127,7 @@ export default function FBOrderingContent() {
               </Col>
             </Grid>
           </FadeIn>
-          <FadeIn className="pt-6">
+          <FadeIn className="pt-12">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Working the order queue</h3>
@@ -149,7 +151,7 @@ export default function FBOrderingContent() {
               </Col>
             </Grid>
           </FadeIn>
-          <FadeIn className="pt-6">
+          <FadeIn className="pt-12">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Keeping the menu honest</h3>
@@ -173,7 +175,7 @@ export default function FBOrderingContent() {
               </Col>
             </Grid>
           </FadeIn>
-          <FadeIn className="pt-6">
+          <FadeIn className="pt-12">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
                 <h3 className="text-(--color-fg)" style={typescale.h3}>Writing the outlet page</h3>

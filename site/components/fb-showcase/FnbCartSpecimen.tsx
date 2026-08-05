@@ -1963,12 +1963,16 @@ const SHELL_SHADOW =
  * transform-scaled down into the shell. Everything inside gets
  * proportionally smaller ("device resolution") without retuning each size.
  */
-const SHELL_W = 300;
-const SHELL_H = 630;
+// Scaled up 300→360 (Marco 2026-08-05: the phone read too small inline).
+// SHELL_H is picked so the derived LOGICAL_H lands back on ~831 — the
+// interior layout is unchanged, it just renders at a higher device
+// resolution. Corner radii below scale with it (32→38, 26→31).
+const SHELL_W = 360;
+const SHELL_H = 758;
 const BEZEL = 4;
 const LOGICAL_W = 390;
-const SCREEN_SCALE = (SHELL_W - BEZEL * 2) / LOGICAL_W; // ≈ 0.738
-const LOGICAL_H = Math.round((SHELL_H - BEZEL * 2) / SCREEN_SCALE); // ≈ 837
+const SCREEN_SCALE = (SHELL_W - BEZEL * 2) / LOGICAL_W; // ≈ 0.903
+const LOGICAL_H = Math.round((SHELL_H - BEZEL * 2) / SCREEN_SCALE); // ≈ 831
 
 /**
  * Choreographed demo run (DemoStage grammar): add a plain item, add a
@@ -2012,7 +2016,7 @@ function PhoneShell() {
         height: SHELL_H,
         minHeight: 0,
         flexShrink: 0,
-        borderRadius: 32,
+        borderRadius: 38,
         padding: BEZEL,
         backgroundColor: "var(--color-surface)",
         border: "1px solid var(--color-border)",
@@ -2023,7 +2027,7 @@ function PhoneShell() {
         style={{
           height: "100%",
           width: "100%",
-          borderRadius: 26,
+          borderRadius: 31,
           overflow: "hidden",
           position: "relative",
           backgroundColor: INK.white,

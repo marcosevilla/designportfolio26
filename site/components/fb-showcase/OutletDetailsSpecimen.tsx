@@ -318,7 +318,7 @@ function Editor() {
         overflow: "hidden",
         backgroundColor: neutral[0],
         border: `1px solid ${neutral[200]}`,
-        boxShadow: ELEV.lg,
+        // No elevation on the outer shell — see OrderDashboardSpecimen.
         display: "flex",
         flexDirection: "column",
       }}

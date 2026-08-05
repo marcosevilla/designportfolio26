@@ -592,7 +592,9 @@ function Dashboard() {
         overflow: "hidden",
         backgroundColor: neutral[0],
         border: `1px solid ${neutral[200]}`,
-        boxShadow: ELEV.lg,
+        // No elevation on the outer shell (Marco 2026-08-05): the drop
+        // shadow pooled around the rounded corners and read as a dark
+        // backing plate behind the window. The 1px border carries the edge.
         display: "flex",
         flexDirection: "column",
       }}
