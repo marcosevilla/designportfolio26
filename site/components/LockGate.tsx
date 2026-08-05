@@ -191,7 +191,7 @@ function LockedPagePlaceholder({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
           style={{
-            ...typescale.caseStudyHero,
+            ...typescale.display,
             color: "var(--color-fg)",
             marginBottom: 8,
             maxWidth: 720,

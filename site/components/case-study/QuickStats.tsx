@@ -19,7 +19,7 @@ export default function QuickStats({ items }: { items: Stat[] }) {
           <span
             data-editable-stat-value={i}
             className="text-(--color-accent) tracking-tight shrink-0"
-            style={{ ...typescale.statValue, fontVariantNumeric: "tabular-nums" }}
+            style={{ ...typescale.title, fontVariantNumeric: "tabular-nums" }}
           >
             {item.value}
           </span>

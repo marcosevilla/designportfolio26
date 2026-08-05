@@ -38,8 +38,11 @@ export default function SectionHeading({ id, level = 2, children }: SectionHeadi
     );
   }
 
+  // h4 renders the h3 token since the 2026-08-05 consolidation — the
+  // levels converged at 18px and the separate token was absorbed.
+  // The h4 ELEMENT stays for the document outline.
   return (
-    <h4 className="text-(--color-fg) mb-3" style={typescale.h4}>
+    <h4 className="text-(--color-fg) mb-3" style={typescale.h3}>
       {children}
     </h4>
   );

@@ -28,29 +28,54 @@ Single family. Geist Sans loaded via `next/font/sans` in `layout.tsx`. No self-h
 ## Typescale (defined in `site/lib/typography.ts`)
 Three weights system-wide: 400 body/labels, 500 titles/UI, 600 reserved emphasis. All 18px+ elements use `letter-spacing: -0.01em`.
 
-**2026-08-05 OpenAI-blog-scale pass** (Marco's call, measured live off openai.com/index articles): body 17/28, h2 30/1.32, case-study h1 clamp→48 at weight 500. `SectionHeading` now imports all metrics from `typescale` — no inline copies.
+**CONSOLIDATED 2026-08-05 to 8 tokens** (Marco: "I don't want a dozen styles"). Absorbed:
+`caseStudyHero` → `display` and `h4` → `h3` (both were byte-identical); `pageTitle` +
+`statValue` + `nextProjectTitle` → **`title`**. Deleted dead (0 consumers): `sectionLabel`,
+`nav`, `navMobile`. Before adding a token, check whether an existing one plus a
+one-property override does the job.
 
-| Element | Weight | Size | Notes |
-|---------|--------|------|-------|
-| Hero statement (h1) — homepage | 600 | clamp(28-32px) | `typescale.display`, streams word-by-word during intro |
-| Hero name label — homepage | 400 | 14px | Inline in Hero.tsx, tertiary color, always visible |
-| Case study hero h1 | 500 | clamp(32px, 4vw, 48px) / 1.1 | `typescale.caseStudyHero` (= `display`) — OpenAI ref is 64/1.0/500; Marco chose the softer 48 cap |
-| Case study hero subtitle | 400 | 16px / 26 line-height | `typescale.subtitle` — ⚠️ now SMALLER than 17px body; open question flagged 2026-08-05 |
-| Section h2 (case study) | 500 | 30px / 1.32 | `typescale.h2` — real sentence-case heading (mono ALL-CAPS label era is in git history; `sectionLabel` token still exists for other surfaces) |
-| Section h3 | 500 | 20px / 1.4 | `typescale.h3` |
-| Section h4 | 500 | 18px / 1.4 | `typescale.h4` |
-| Body / case study prose | 400 | 17px / 28px, −0.01em | `typescale.body` — body-content standard (2026-08-05), same spec inlined on the home bio (HomeLayout). The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it; do not bump it with these two. |
-| QuickStats value | 500 | 24px | `typescale.statValue` |
-| PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
-| NextProject title | 500 | 22px | `typescale.nextProjectTitle` |
-| Card title | 500 | 18px | Inline styles in CaseStudyCard.tsx |
-| Card subtitle | 400 | 14-15px | Inline styles |
-| List row title | 500 | 16px | Inline in CaseStudyListRow.tsx |
-| List row meta / year / metric | 400 | 11px | `typescale.label`, tertiary |
-| Nav (desktop) | 400 | 16px | `typescale.nav` |
-| Nav (mobile) | 400 | 14px | `typescale.navMobile` |
-| Page titles (/work, /writing) | 500 | 24px | `typescale.pageTitle` |
-| Marquee | 400 | 14px | inline |
+The 8 tokens:
+
+| Token | Weight | Size | Used by |
+|-------|--------|------|---------|
+| `display` | 500 | clamp(32px, 4vw, **40px**) / 1.1, −0.02em | Case-study H1s, LockGate placeholder hero. Ramp stepped down late 2026-08-05 (48→40 cap; mobile min 32 unchanged). Homepage h1 keeps its own inline 16px spec. |
+| `h2` | 500 | **26px** / 1.32 | Case-study section headings (was 30 for a day; mono ALL-CAPS label era is in git history) |
+| `title` | 500 | 24px / 1.2 | /writing page title, QuickStats values (+`tabular-nums` at the call site — stats gained slider scaling in the merge; NextProject title stepped 22 → 24). ⚠️ Only 2px below h2 now. |
+| `h3` | 500 | **16px** / 1.4 | Subsections AND sub-subsections. Marco's spec: a WHISPER above body — one point bigger (16 vs 15), one weight step bolder (500 vs 400), nothing more. `SectionHeading` renders both `level={3}` and `level={4}` with this token (h4 *element* kept for the outline), told apart by margin only. Same px as `subtitle` (different weight/role). ⚠️ see below |
+| `subtitle` | 400 | 16px / 1.625 | Case-study hero subtitle, NextProject description. Correctly larger than the 15px body (the old "subtitle < body" question is closed). |
+| `body` | 400 | 15px / 1.647 (≈24.7px), −0.01em | Case-study prose site-wide. Was 17/28 from the OpenAI pass; Marco dropped it to 15px later that day. Same spec inlined on the home bio (HomeLayout) — change the two together. The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it. Body copy sits 1px above chrome. |
+| `pullQuote` | 400 | clamp(18px, 2.5vw, 22px) / 1.4 | PullQuote |
+| `label` | 400 | 11px | Year badges, card meta, list rows — deliberately NOT slider-scaled (fixed-geometry chrome, per the 2026-08-05 ruling) |
+
+Non-token type that's deliberate (inline, not drift): homepage hero statement (streams during intro), hero name label 14px, card title 18/subtitle 14-15 in CaseStudyCard, list row title 16, marquee 14 — all inline in their components.
+
+### ⚠️ h3 and h4 LEVELS render identically
+
+There is one sub-heading token (`h3`, 16px); `SectionHeading` renders both `level={3}` and
+`level={4}` with it, told apart by margin only (h3 `mt-16 mb-6`, h4 `mb-3`). On a page
+that nests h4 under h3 the two levels read as one.
+
+**This is latent, not live.** The only pages using `level={4}` are `upsells` (10),
+`knowledge-base` (10) and `compendium` (7) — and all three are in `LOCKED_SLUGS`, so they
+render the LockGate placeholder rather than their headings. It becomes visible the moment
+any of those three is unlocked. Options and the recommendation (differentiate h4 by weight
+at the `SectionHeading` level, no new token needed) are in `docs/TYPOGRAPHY-BACKLOG.md`;
+awaiting Marco's ruling.
+
+### ⚠️ Line-heights in `typescale` must be UNITLESS
+
+`fontSize` in this scale is `calc(Npx + var(--font-size-offset))`, so it moves with the
+Theme Palette font-size slider. A **px** line-height does not — the ratio silently
+collapses as the user drags. `body` was pinned at `"28px"` and `subtitle` at `"26px"`
+until 2026-08-05; at slider +4 that took body from 1.65 → **1.33** (cramped) and at −4 to
+2.15 (airy). Both are now unitless (`BODY_LINE_HEIGHT = 1.647`, `subtitle` 1.625), which
+holds the ratio at every setting. **Never reintroduce a px line-height in `typescale`.**
+
+Anything that measures body text in pixels must derive from the exported
+`BODY_LINE_HEIGHT`, not restate the number — `Testimonials`' line-clamp hard-coded `22.4`
+from the pre-2026-08-05 14/22.4 era and was silently clipping at 4.8 lines instead of 6.
+It now sizes its clamp in `em` (`COLLAPSED_LINES * BODY_LINE_HEIGHT`), which resolves
+against the element's own scaled font-size.
 
 The 2026-08-03 h3/h4 token-vs-component drift was RESOLVED 2026-08-05: `SectionHeading` renders `typescale.h3`/`typescale.h4` directly (20/18). Marquee card title keeps −0.01em at 14px (deliberate, `Heading / Card Title`).
 
