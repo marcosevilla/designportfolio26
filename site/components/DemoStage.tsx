@@ -38,7 +38,7 @@ import { createPortal } from "react-dom";
 
 export type DemoStep =
   | { type: "tap"; target: string; after?: number }
-  | { type: "type"; target: string; text: string; after?: number }
+  | { type: "type"; target: string; text: string; charMs?: number; after?: number }
   | { type: "wait"; ms: number };
 
 const CURSOR_SIZE = 36;
@@ -433,6 +433,7 @@ function StageCore({
   const typeInto = async (
     el: HTMLInputElement | HTMLTextAreaElement,
     text: string,
+    charMs: number,
     cancelled: () => boolean,
   ) => {
     const proto =
@@ -443,11 +444,15 @@ function StageCore({
     scriptFocusRef.current = true;
     el.focus({ preventScroll: true });
     scriptFocusRef.current = false;
-    for (let i = 1; i <= text.length; i++) {
+    // Append mode: when the field already holds a prefix of the target text
+    // (e.g. a pre-filled description the script extends), start after it
+    // instead of retyping the whole value.
+    const start = text.startsWith(el.value) ? el.value.length + 1 : 1;
+    for (let i = start; i <= text.length; i++) {
       if (cancelled()) return;
       setValue.call(el, text.slice(0, i));
       el.dispatchEvent(new Event("input", { bubbles: true }));
-      await sleep(120);
+      await sleep(charMs);
     }
   };
 
@@ -500,6 +505,7 @@ function StageCore({
           await typeInto(
             el as HTMLInputElement | HTMLTextAreaElement,
             step.text,
+            step.charMs ?? 120,
             cancelled,
           );
         }
