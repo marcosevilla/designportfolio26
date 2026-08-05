@@ -42,7 +42,7 @@ export type DemoStep =
   | { type: "wait"; ms: number };
 
 const CURSOR_SIZE = 36;
-/** Smallest the inline stage may shrink before the well pans instead. */
+/** Smallest any stage renders: inline pans below this; fullscreen hard-floors here (no pan container, so narrow viewports can clip). */
 const MIN_INLINE_SCALE = 0.7;
 const DEFAULT_SETTLE = 650;
 const TARGET_TIMEOUT = 4000;
