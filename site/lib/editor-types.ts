@@ -69,4 +69,6 @@ export const SLUG_TO_FILE: Record<string, string> = {
   "ai-workflow": "app/work/ai-workflow/AIWorkflowContent.tsx",
 };
 
-export const EDITOR_SERVER_URL = "http://localhost:3002";
+// Port is inlined at build time by `scripts/dev.mjs` so a second checkout/worktree
+// can run its own editor server without colliding with the primary one.
+export const EDITOR_SERVER_URL = `http://localhost:${process.env.NEXT_PUBLIC_EDITOR_PORT || 3002}`;

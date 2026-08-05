@@ -15,10 +15,14 @@ paths:
 NODE_ENV-gated, dev-only. Components in `site/components/dev/` (`EditableOverlay`, `FloatingToolbar`, `SectionReorder`); server at `site/scripts/dev-editor-server.mjs`.
 
 ## The loop
-Edit in-browser → Cmd+S (save) → **Publish** button = commit + push → Vercel deploys.
+`npm run dev` → click the pencil (bottom-left) → edit → **Save** → **Commit & push** → Vercel deploys.
 
-- `GET /status?file=` returns dirty + ahead count; `POST /publish` does git add/commit **pathspec-scoped to the one edited file** (other dirty/staged files never ride along), then `git push` only if ahead.
-- `InlineEditorContext` tracks `unpublished` (checked via `/status` on landing on a case study, set after save) + `publishState`. FloatingToolbar shows Publish when unpublished, disabled until unsaved edits are saved, "Live in ~1 min" flash on success.
+`npm run dev` runs `scripts/dev.mjs`, which starts **both** Next and the editor server and takes both down on Ctrl+C. If the editor server dies, Next is shut down with it rather than limping along with saves that silently fail. `dev:next` runs Next alone; `dev:editor` runs the editor server alone.
+
+- Ports: `NEXT_PORT` (3000) and `EDITOR_PORT` (3002). `dev.mjs` passes the editor port to the client as `NEXT_PUBLIC_EDITOR_PORT`, which `EDITOR_SERVER_URL` reads — set both to run a second checkout/worktree alongside the primary one.
+- `GET /health` returns `{ok, branch}`; `GET /status?file=` returns dirty + ahead count; `POST /publish` does git add/commit **pathspec-scoped to the one edited file** (other dirty/staged files never ride along), then `git push` only if ahead.
+- `InlineEditorContext` polls `/health` every 10s → `serverOnline` / `serverBranch`, and tracks `unpublished` (via `/status`) + `publishState`.
+- FloatingToolbar always renders **Commit & push** — disabled with a reason in the tooltip (offline / unsaved edits / nothing to publish) rather than vanishing. Amber `editor offline` chip + amber pencil when the server is unreachable; amber branch chip when the working branch isn't `main`, since publishing from there won't deploy.
 - **Caveat by design:** push ships ALL local commits on main, so keep main shippable.
 
 ## Text-run editing (homepage intro + About bio)

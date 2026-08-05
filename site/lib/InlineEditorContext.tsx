@@ -36,6 +36,10 @@ interface InlineEditorContextValue {
   unpublished: boolean;
   publishState: PublishState;
   publish: () => Promise<void>;
+  /** Editor file server reachable? null while the first probe is in flight. */
+  serverOnline: boolean | null;
+  /** Branch the editor server would commit to — surfaced so you never publish blind. */
+  serverBranch: string | null;
 }
 
 const InlineEditorContext = createContext<InlineEditorContextValue>({
@@ -54,6 +58,8 @@ const InlineEditorContext = createContext<InlineEditorContextValue>({
   unpublished: false,
   publishState: "idle",
   publish: async () => {},
+  serverOnline: null,
+  serverBranch: null,
 });
 
 /** Normalize JSX entities to Unicode for matching */
@@ -91,6 +97,8 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
   const [lastError, setLastError] = useState<string | null>(null);
   const [unpublished, setUnpublished] = useState(false);
   const [publishState, setPublishState] = useState<PublishState>("idle");
+  const [serverOnline, setServerOnline] = useState<boolean | null>(null);
+  const [serverBranch, setServerBranch] = useState<string | null>(null);
   const publishedResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Extract slug from pathname: /work/fb-ordering → fb-ordering
@@ -123,6 +131,36 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
       .catch(() => {});
     return () => {
       cancelled = true;
+    };
+  }, [sourceFilesKey]);
+
+  // Probe the editor file server so the toolbar can warn *before* an edit is typed.
+  // Without this, a missing server looks identical to a working one until save fails.
+  useEffect(() => {
+    if (!sourceFilesKey) return;
+    let cancelled = false;
+
+    const probe = () =>
+      fetch(`${EDITOR_SERVER_URL}/health`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((health) => {
+          if (cancelled) return;
+          setServerOnline(Boolean(health?.ok));
+          setServerBranch(health?.branch ?? null);
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setServerOnline(false);
+            setServerBranch(null);
+          }
+        });
+
+    probe();
+    // Cheap enough to re-check, so starting the server mid-session recovers on its own.
+    const interval = setInterval(probe, 10_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
     };
   }, [sourceFilesKey]);
 
@@ -358,6 +396,8 @@ export function InlineEditorProvider({ children }: { children: ReactNode }) {
         unpublished,
         publishState,
         publish,
+        serverOnline,
+        serverBranch,
       }}
     >
       {children}

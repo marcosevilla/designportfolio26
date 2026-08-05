@@ -9,7 +9,8 @@ const execFileAsync = promisify(execFile);
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const SITE_ROOT = resolve(__dirname, "..");
-const PORT = 3002;
+// Overridable so a second checkout/worktree can run alongside the primary one.
+const PORT = Number(process.env.EDITOR_PORT) || 3002;
 
 function safePath(relativePath) {
   const full = resolve(SITE_ROOT, relativePath);
@@ -132,6 +133,14 @@ createServer(async (req, res) => {
       }
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ ok: true, committed: dirty, pushed: ahead > 0 }));
+      return;
+    }
+
+    // Cheap liveness probe — the toolbar polls this so it can warn *before* you
+    // type an edit that would have nowhere to save to.
+    if (req.method === "GET" && url.pathname === "/health") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: true, branch: await git("rev-parse", "--abbrev-ref", "HEAD") }));
       return;
     }
 
