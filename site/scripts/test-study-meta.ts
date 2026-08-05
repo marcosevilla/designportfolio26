@@ -5,6 +5,7 @@
  */
 import { getStudyMeta } from "../lib/content";
 import { STUDY_TAGS } from "../lib/study-tags";
+import { logoFor } from "../lib/study-logos";
 
 let failures = 0;
 
@@ -49,6 +50,11 @@ assertEqual(
   ["0→1", "Mobile", "Desktop", "CMS", "Workflow"],
   "fb-ordering tags include Desktop in order"
 );
+
+console.log("logoFor — company marks and monogram fallback");
+assertEqual(logoFor("Canary"), "/images/inline-chips/canary.svg", "Canary resolves to its inline chip");
+assertEqual(logoFor("General Task"), null, "General Task has no mark — falls back to a monogram");
+assertEqual(logoFor("Personal"), null, "Personal has no mark — falls back to a monogram");
 
 console.log(failures === 0 ? "\nAll passed." : `\n${failures} failure(s).`);
 process.exit(failures === 0 ? 0 : 1);
