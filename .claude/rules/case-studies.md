@@ -13,9 +13,7 @@ paths:
 # Case Studies
 
 ## Routes ↔ data reconciliation (2026-07-15)
-The dynamic `app/work/[slug]/` route is long gone — every study is a dedicated route. Slug sets that must stay in sync when adding/removing a study: `lib/locked-content.ts` (LOCKED_SLUGS), `CaseStudyList.tsx` (STUDY_ROUTES + HIDDEN_SLUGS), `lib/chat/study-metadata.ts` (STUDY_SLUGS/METADATA), `lib/chat/case-study-content.ts` (FILENAME_BY_SLUG), `lib/editor-types.ts` (SLUG_TO_FILE), `content/*.mdx`.
-
-**Known gap:** `knowledge-base` has a live route but no chat metadata entry.
+The dynamic `app/work/[slug]/` route is long gone — every study is a dedicated route. Slug sets that must stay in sync when adding/removing a study: `lib/locked-content.ts` (LOCKED_SLUGS), `CaseStudyList.tsx` (STUDY_ROUTES + HIDDEN_SLUGS), `lib/chat/study-metadata.ts` (STUDY_SLUGS/METADATA), `lib/chat/case-study-content.ts` (FILENAME_BY_SLUG), `lib/editor-types.ts` (SLUG_TO_FILE), `lib/study-tags.ts`, `content/*.mdx`.
 
 ## Dedicated Routes (Custom React Components)
 These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + TOCObserver), expandable sections, stats:
@@ -28,7 +26,7 @@ These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + 
 6. **Design System** (`/work/design-system`) - General Task, 2022
 7. **How I Work with AI** (`/work/ai-workflow`) - Personal, 2026
 
-(`knowledge-base` also has a route — see the gap note above.)
+(`knowledge-base` also has a route.)
 
 ## Homepage Card Order
 1. F&B Ordering (newest Canary work, 100% ownership)
