@@ -1,16 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { typescale } from "@/lib/typography";
 
-// Matches SectionHeading's h2, which mirrors the homepage section
-// labels: Geist Mono, ALL-CAPS, body size, primary ink (2026-07-20).
+// Matches SectionHeading's h2 (30px sans heading since the 2026-08-05
+// OpenAI-scale pass — the mono ALL-CAPS label era is in git history).
 const H2_STYLE: React.CSSProperties = {
-  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-  fontWeight: 400,
-  fontSize: "calc(14px + var(--font-size-offset))",
-  lineHeight: "22.4px",
-  textTransform: "uppercase",
-  letterSpacing: "-0.02em",
+  ...typescale.h2,
   color: "var(--color-fg)",
 };
 

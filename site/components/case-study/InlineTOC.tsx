@@ -54,7 +54,18 @@ export default function InlineTOC() {
   return (
     <nav
       className="chat-cmp-hide hidden lg:block fixed top-[18vh]"
-      style={{ width: "130px", left: "48px" }}
+      // Track the centered case-canvas instead of the viewport edge
+      // (2026-08-05, OpenAI-blog layout): at full canvas width the
+      // content band's text edge sits at canvasLeft + 382px, so
+      // canvasLeft + 140px puts the TOC's right edge ~112px from the
+      // text — close to the body like openai.com. The max() floor
+      // degrades to the old 48px flush-left position in the
+      // 1024–1199 window, where .case-canvas still force-clears it
+      // with a 200px margin (globals.css).
+      style={{
+        width: "130px",
+        left: "max(48px, calc((100vw - var(--grid-max)) / 2 + 140px))",
+      }}
     >
       <Link
         href={backHref ?? "/#projects"}

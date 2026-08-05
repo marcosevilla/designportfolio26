@@ -26,18 +26,20 @@ Single family. Geist Sans loaded via `next/font/sans` in `layout.tsx`. No self-h
 | `--font-size-offset` | `0px` (user adjustable -4px to +4px via Theme Palette) |
 
 ## Typescale (defined in `site/lib/typography.ts`)
-Three weights system-wide: 400 body/labels, 500 titles/UI, 600 hero emphasis. All 18px+ elements use `letter-spacing: -0.01em`.
+Three weights system-wide: 400 body/labels, 500 titles/UI, 600 reserved emphasis. All 18px+ elements use `letter-spacing: -0.01em`.
+
+**2026-08-05 OpenAI-blog-scale pass** (Marco's call, measured live off openai.com/index articles): body 17/28, h2 30/1.32, case-study h1 clamp→48 at weight 500. `SectionHeading` now imports all metrics from `typescale` — no inline copies.
 
 | Element | Weight | Size | Notes |
 |---------|--------|------|-------|
 | Hero statement (h1) — homepage | 600 | clamp(28-32px) | `typescale.display`, streams word-by-word during intro |
 | Hero name label — homepage | 400 | 14px | Inline in Hero.tsx, tertiary color, always visible |
-| Case study hero h1 | 600 | clamp(28-32px) | `typescale.caseStudyHero` |
-| Case study hero subtitle | 400 | 14px / 22 line-height | `typescale.subtitle` |
-| Section h2 (case study) | 500 | 14px | `typescale.sectionLabel` — tertiary color, acts as small label above section content. NOT a large heading. |
-| Section h3 | 500 | 18px | `typescale.h3` |
-| Section h4 | 500 | 16px | `typescale.h4` |
-| Body / case study prose | 400 | 14px / 22.4px line-height | `typescale.body` — SITE-WIDE body standard (2026-07-15): same 14/22.4 on the home bio (inline in HomeLayout) and the `body` element default (globals.css, unitless 1.6). Change all three together. |
+| Case study hero h1 | 500 | clamp(32px, 4vw, 48px) / 1.1 | `typescale.caseStudyHero` (= `display`) — OpenAI ref is 64/1.0/500; Marco chose the softer 48 cap |
+| Case study hero subtitle | 400 | 16px / 26 line-height | `typescale.subtitle` — ⚠️ now SMALLER than 17px body; open question flagged 2026-08-05 |
+| Section h2 (case study) | 500 | 30px / 1.32 | `typescale.h2` — real sentence-case heading (mono ALL-CAPS label era is in git history; `sectionLabel` token still exists for other surfaces) |
+| Section h3 | 500 | 20px / 1.4 | `typescale.h3` |
+| Section h4 | 500 | 18px / 1.4 | `typescale.h4` |
+| Body / case study prose | 400 | 17px / 28px, −0.01em | `typescale.body` — body-content standard (2026-08-05), same spec inlined on the home bio (HomeLayout). The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it; do not bump it with these two. |
 | QuickStats value | 500 | 24px | `typescale.statValue` |
 | PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
 | NextProject title | 500 | 22px | `typescale.nextProjectTitle` |
@@ -50,7 +52,7 @@ Three weights system-wide: 400 body/labels, 500 titles/UI, 600 hero emphasis. Al
 | Page titles (/work, /writing) | 500 | 24px | `typescale.pageTitle` |
 | Marquee | 400 | 14px | inline |
 
-⚠️ **Known naming drift (logged 2026-08-03):** `typography.ts` still says h3=18/h4=16 while the shipped `SectionHeading` renders 16/14 (Figma H3 headings are bound to the token *named* Heading/H4 — metrics right, names disagree). Marquee card title keeps −0.01em at 14px (deliberate, `Heading / Card Title`).
+The 2026-08-03 h3/h4 token-vs-component drift was RESOLVED 2026-08-05: `SectionHeading` renders `typescale.h3`/`typescale.h4` directly (20/18). Marquee card title keeps −0.01em at 14px (deliberate, `Heading / Card Title`).
 
 ⚠️ **Historical:** several 2026-07-20 passes flattened `typescale.display` / `caseStudyHero` to the home-h1 spec (16/24/600/-0.02em), then the 2026-07-26 pass restored the `scaledClamp(28px, 5vw, 32px)` clamp for **case-study H1s ONLY** — the homepage h1 keeps its inline 16px spec. Check the live component before trusting either row above.
 

@@ -14,6 +14,7 @@ import SectionHeading from "@/components/case-study/SectionHeading";
 import CaseStudyShell from "@/components/case-study/CaseStudyShell";
 import MetaRail from "@/components/case-study/MetaRail";
 import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { typescale } from "@/lib/typography";
 
 const TOC_ITEMS = [
@@ -45,9 +46,10 @@ export default function FBOrderingContent() {
             title (Marco's 2026-07-15 feedback pass). */}
         <FadeIn>
           <Grid className="mb-20">
-            {/* Two columns wider than the content band on each side —
-                the dashboard shot breaks out of the text measure. */}
-            <Col md="1-12" lg="2-11">
+            {/* On the content band like everything else — media matches
+                the text measure (Marco's 2026-08-05 OpenAI-scale call;
+                the break-out era is in git history). */}
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               {/* The export bakes its own rounded frame + shadow — no CSS
                   radius, outline, or shadow on top. */}
               <img
@@ -79,9 +81,14 @@ export default function FBOrderingContent() {
             of the Unified Cart flow: menu browse → item drawer → review
             cart → your info. Panel bg is a theme-following shade of the
             page background. */}
+        {/* Interactive demos keep a wider breakout band (Marco 2026-08-05:
+            the ONE exception to media-matches-text — the staff specimens
+            are 1177px desktop UIs and DemoStage floors inline scale at
+            0.7, so the 676px text band would clip/pan them). "3-10" ≈
+            909px at full canvas, matching their pre-pass width. */}
         <FadeIn className="pt-32">
           <Grid>
-            <Col md="1-12" lg="2-11">
+            <Col md="1-12" lg="3-10">
               <FnbCartSpecimen />
             </Col>
           </Grid>
@@ -94,7 +101,7 @@ export default function FBOrderingContent() {
             above: pause/play, restart, fullscreen. */}
         <FadeIn className="pt-10">
           <Grid>
-            <Col md="1-12" lg="2-11">
+            <Col md="1-12" lg="3-10">
               <OrderDashboardSpecimen />
             </Col>
           </Grid>
@@ -107,7 +114,7 @@ export default function FBOrderingContent() {
             specimens above: pause/play, restart, fullscreen. */}
         <FadeIn className="pt-10">
           <Grid>
-            <Col md="1-12" lg="2-11">
+            <Col md="1-12" lg="3-10">
               <ItemLibrarySpecimen />
             </Col>
           </Grid>
@@ -120,7 +127,7 @@ export default function FBOrderingContent() {
             chrome as the three specimens above. */}
         <FadeIn className="pt-10">
           <Grid>
-            <Col md="1-12" lg="2-11">
+            <Col md="1-12" lg="3-10">
               <OutletDetailsSpecimen />
             </Col>
           </Grid>
@@ -137,24 +144,25 @@ export default function FBOrderingContent() {
             by un-commenting this block and its import above. */}
         {/* <FadeIn className="pt-10">
           <Grid>
-            <Col md="1-12" lg="2-11">
+            <Col md="1-12" lg="3-10">
               <OutletConfigSpecimen />
             </Col>
           </Grid>
         </FadeIn> */}
 
-        {/* ── Staff dashboard crops — alternating media rows on the
-            video's band (Marco 2026-07-26: was a 2-up grid). The
-            exports float on transparency; the fill mirrors
-            ObjectFlowDiagram's panel (3% F&B accent over card-bg) so
-            the dashboard visuals read as one family. Caption copy is
-            draft — Marco rewrites via the inline editor. */}
+        {/* ── Staff dashboard crops — caption + shot stacked on the
+            content band (2026-08-05 OpenAI-scale pass; the alternating
+            side-by-side rows are in git history). The exports float on
+            transparency; the fill mirrors ObjectFlowDiagram's panel
+            (3% F&B accent over card-bg) so the dashboard visuals read
+            as one family. Caption copy is draft — Marco rewrites via
+            the inline editor. */}
         <FadeIn className="pt-6">
           <Grid>
-            <Col className="self-center" md="3-10" lg="2-5">
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <p className="text-(--color-fg-secondary)">The order queue sorts by time to delivery, not time received. Urgency badges surface anything at risk of slipping during a breakfast rush, so staff never have to triage by memory.</p>
             </Col>
-            <Col className="mt-6 md:mt-6 lg:mt-0" md="1-12" lg="6-11">
+            <Col className="mt-6" md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <div className="overflow-hidden rounded-[10px] border border-border" style={{ background: FB_PANEL_BG }}>
                 <img
                   src="/images/fb-ordering/fb-order-queue.webp"
@@ -169,7 +177,7 @@ export default function FBOrderingContent() {
         </FadeIn>
         <FadeIn className="pt-6">
           <Grid>
-            <Col md="1-12" lg="2-7">
+            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <div className="overflow-hidden rounded-[10px] border border-border" style={{ background: FB_PANEL_BG }}>
                 <img
                   src="/images/fb-ordering/fb-order-details.webp"
@@ -180,7 +188,7 @@ export default function FBOrderingContent() {
                 />
               </div>
             </Col>
-            <Col className="mt-6 self-center md:mt-6 lg:mt-0" md="3-10" lg="8-11">
+            <Col className="mt-6" md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
               <p className="text-(--color-fg-secondary)">Opening an order shows everything fulfillment needs in one panel: guest contact details, room or delivery location, items with modifiers, and scheduling for orders placed ahead.</p>
             </Col>
           </Grid>
@@ -221,7 +229,8 @@ export default function FBOrderingContent() {
         {/* ── Object flow diagram ── */}
         <FadeIn className="pt-16">
           <Grid>
-            <Col md="1-12" lg="2-11">
+            {/* Wide like the demos — the diagram pans below ~820px. */}
+            <Col md="1-12" lg="3-10">
               <ObjectFlowDiagram />
             </Col>
           </Grid>

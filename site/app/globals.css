@@ -1066,7 +1066,11 @@ body {
    Unset bands inherit downward: lg → md → base → full.
    Vocabulary + diagrams: docs/LAYOUT-REFERENCE.html */
 :root {
-  --grid-max: 1128px; /* 12×72px cols + 11×24px gaps */
+  /* 2026-08-05 OpenAI-blog-scale pass: 1440 = 64px page padding
+     (px-8 ×2, border-box) + 12×92.67px cols + 11×24px gaps, sized so
+     the middle-6 CONTENT_BAND ("4-9") computes to exactly 676px —
+     the measured body-column width on openai.com articles. */
+  --grid-max: 1440px;
   --grid-gap: 24px;
 }
 .grid-ed {
@@ -1090,12 +1094,13 @@ body {
   }
 }
 
-/* Case-study canvas. Below lg: a centered padded column. At lg+: clears
-   the 178px fixed InlineTOC (48px left + 130px wide) with a 200px left
-   margin, and re-centers as soon as the viewport is wide enough that
-   true centering clears the TOC anyway. One rule on one physical
-   property — Tailwind's mx-auto (logical margin-inline) loses to any
-   physical lg:ml-* utility in the cascade, so don't mix them here. */
+/* Case-study canvas. Below lg: a centered padded column. In the
+   1024–1199 window the fixed InlineTOC is visible but desktop band
+   specs aren't active, so a 200px left margin keeps content clear of
+   it (the TOC's own left math bottoms out at 48px there — see
+   InlineTOC.tsx). One rule on one physical property — Tailwind's
+   mx-auto (logical margin-inline) loses to any physical lg:ml-*
+   utility in the cascade, so don't mix them here. */
 .case-canvas {
   /* Centered like the homepage canvas (2026-07-20 alignment) — content
      sits on the middle-6 CONTENT_BAND at desktop, which naturally

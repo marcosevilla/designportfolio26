@@ -287,10 +287,12 @@ export default function HomeLayout({
                   : {})}
                 style={{
                   fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-                  // Site-wide body standard: 14/22.4 (matches typescale.body
-                  // and the globals.css body default).
-                  fontSize: "calc(14px + var(--font-size-offset))",
-                  lineHeight: "22.4px",
+                  // Site-wide body standard: 17/28 (matches typescale.body,
+                  // OpenAI blog scale 2026-08-05). The globals.css body
+                  // default stays 14/1.6 — UI chrome inherits it.
+                  fontSize: "calc(17px + var(--font-size-offset))",
+                  lineHeight: "28px",
+                  letterSpacing: "-0.01em",
                   // Body reads secondary; Em emphasis + titles keep
                   // primary ink.
                   color: "var(--color-fg-secondary)",
