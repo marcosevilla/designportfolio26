@@ -31,6 +31,12 @@ const META: React.CSSProperties = {
   color: "var(--color-fg-tertiary)",
 };
 
+/** Same panel chrome as the marquee's focused card (`.mq-cell--focused`
+ *  in globals.css) — the site's one "raised panel" language. The cards
+ *  were unfilled hairline outlines before 2026-08-05; that read as loose
+ *  floating paragraphs once the dot-grid backdrop was disabled. */
+const PANEL_BG = "color-mix(in srgb, var(--color-fg) 5%, var(--color-bg))";
+
 function TestimonialCard({ t }: { t: Testimonial }) {
   const [expanded, setExpanded] = useState(false);
   const [overflows, setOverflows] = useState(false);
@@ -72,8 +78,9 @@ function TestimonialCard({ t }: { t: Testimonial }) {
     <div
       className="p-6"
       style={{
-        border: "0.5px solid var(--color-border)",
-        borderRadius: 4,
+        backgroundColor: PANEL_BG,
+        border: "1px solid var(--color-border)",
+        borderRadius: 8,
       }}
     >
       <div
@@ -86,16 +93,16 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           overflow: "hidden",
           maxHeight: expanded ? undefined : `${COLLAPSED_EM}em`,
           // Fade the clipped edge so a quote cut mid-sentence reads as
-          // truncated rather than broken. This masks the TEXT, not the
-          // backdrop, so it needs no fill to blend into — which matters
-          // because the cards are unfilled and the page's dot-grid shows
-          // straight through them.
+          // truncated rather than broken. Starts at 85% and bottoms out
+          // at 15% opacity — the earlier 72%→transparent ramp faded the
+          // last ~1.7 of 6 lines to fully invisible, so users paid for
+          // six lines of height and got ~4.5 readable ones.
           ...(!expanded && overflows
             ? {
                 maskImage:
-                  "linear-gradient(to bottom, #000 72%, transparent 100%)",
+                  "linear-gradient(to bottom, #000 85%, rgba(0,0,0,0.15) 100%)",
                 WebkitMaskImage:
-                  "linear-gradient(to bottom, #000 72%, transparent 100%)",
+                  "linear-gradient(to bottom, #000 85%, rgba(0,0,0,0.15) 100%)",
               }
             : null),
         }}
@@ -119,10 +126,10 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           aria-controls={quoteId}
           className="mt-4 cursor-pointer transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
           style={{
-            ...META,
-            fontWeight: 500,
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
+            // monoLabel token (12px, −0.02em) — was the legacy 11px/0.08em
+            // spec, one of the call sites queued in TYPOGRAPHY-BACKLOG.
+            ...typescale.monoLabel,
+            color: "var(--color-fg-tertiary)",
             background: "none",
             border: 0,
             padding: 0,
@@ -132,9 +139,19 @@ function TestimonialCard({ t }: { t: Testimonial }) {
         </button>
       )}
 
+      {/* Attribution — the name carries the card's credibility, so it's
+          the one full-contrast element (15/500 fg); the roles stay mono
+          meta below. The em-dash prefix left with the hierarchy flip:
+          once the name is visually distinct from the quote, the dash was
+          pure noise. */}
       <div className="mt-5">
-        <p style={{ ...typescale.body, color: "var(--color-fg-secondary)" }}>
-          —{" "}
+        <p
+          style={{
+            ...typescale.body,
+            fontWeight: 500,
+            color: "var(--color-fg)",
+          }}
+        >
           {t.href ? (
             <a
               href={t.href}

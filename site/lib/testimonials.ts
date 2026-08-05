@@ -5,8 +5,11 @@
 // preserves the original breaks.
 //
 // Source: linkedin.com/in/marcogsevilla → Recommendations (received).
-// When a new recommendation comes in, add it here in reverse-chronological
-// order; components/Testimonials.tsx handles length differences on its own.
+//
+// ORDER IS CURATED, not chronological (2026-08-05 critique pass): array
+// order = display order, leading with the strongest credibility signal
+// (Hans, Netflix) and closing short. When a new recommendation comes in,
+// slot it deliberately rather than prepending.
 
 export type Testimonial = {
   /** Full recommendation text, one entry per paragraph as written. */
@@ -14,20 +17,18 @@ export type Testimonial = {
   author: string;
   /** LinkedIn profile — renders the author name as an inline link. */
   href?: string;
-  /** Roles shown after the name, e.g. "Design @ Netflix, Design @ LinkedIn". */
+  /** Roles shown after the name, e.g. "Design, Netflix · Design, LinkedIn". */
   org?: string;
 };
 
 export const TESTIMONIALS: Testimonial[] = [
   {
     paragraphs: [
-      "Marco is a fantastic designer and a joy to work with. He is curious, thoughtful, resourceful, and has excellent product sense.",
-      "One of the best parts of working with Marco is his initiative. He doesn't wait for permission to start gathering user feedback, proposing improvements, and pitching bigger ideas; our products are richer for that. He eagerly experiments with and adopts new tools for design and prototyping that help us rapidly explore and validate not only look, but feel and flow.",
-      "Marco helps his colleagues sharpen our own thinking with great questions and clarifications, and also brings in his own original research to further all of our understanding of the opportunities we're working on together. He not only does great work himself, but he makes those around him better as well.",
+      "When Marco and I first started working together, I was in disbelief that it was his first Product Design role. He's good. And when the workload got intense, as it often can at a startup, he showed up again and again to ensure things were not only done on time, but that they were done well. He does good work, asks good questions, and provides good feedback — you'd be lucky to have him on your team.",
     ],
-    author: "Quinn Duffy",
-    href: "https://www.linkedin.com/in/quinnduffy/",
-    org: "Product @ Canary, VP of Product @ Alma",
+    author: "Hans van de Bruggen",
+    href: "https://www.linkedin.com/in/verbiate",
+    org: "Design, Netflix · Design, LinkedIn",
   },
   {
     paragraphs: [
@@ -37,15 +38,17 @@ export const TESTIMONIALS: Testimonial[] = [
     ],
     author: "EJ Lee",
     href: "https://www.linkedin.com/in/ejeunjonglee/",
-    org: "Product @ Canary, Director of Product @ Bite",
+    org: "Product, Canary · Director of Product, Bite",
   },
   {
     paragraphs: [
-      "When Marco and I first started working together, I was in disbelief that it was his first Product Design role. He's good. And when the workload got intense, as it often can at a startup, he showed up again and again to ensure things were not only done on time, but that they were done well. He does good work, asks good questions, and provides good feedback — you'd be lucky to have him on your team.",
+      "Marco is a fantastic designer and a joy to work with. He is curious, thoughtful, resourceful, and has excellent product sense.",
+      "One of the best parts of working with Marco is his initiative. He doesn't wait for permission to start gathering user feedback, proposing improvements, and pitching bigger ideas; our products are richer for that. He eagerly experiments with and adopts new tools for design and prototyping that help us rapidly explore and validate not only look, but feel and flow.",
+      "Marco helps his colleagues sharpen our own thinking with great questions and clarifications, and also brings in his own original research to further all of our understanding of the opportunities we're working on together. He not only does great work himself, but he makes those around him better as well.",
     ],
-    author: "Hans van de Bruggen",
-    href: "https://www.linkedin.com/in/verbiate",
-    org: "Design @ Netflix, Design @ LinkedIn",
+    author: "Quinn Duffy",
+    href: "https://www.linkedin.com/in/quinnduffy/",
+    org: "Product, Canary · VP of Product, Alma",
   },
   {
     paragraphs: [
@@ -53,6 +56,6 @@ export const TESTIMONIALS: Testimonial[] = [
     ],
     author: "Kevin Doherty",
     href: "https://www.linkedin.com/in/kpdoh/",
-    org: "Marketing @ Alma, Marketing @ August Health",
+    org: "Marketing, Alma · Marketing, August Health",
   },
 ];
