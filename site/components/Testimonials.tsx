@@ -11,7 +11,7 @@ import { BODY_LINE_HEIGHT, typescale } from "@/lib/typography";
 const COLLAPSED_LINES = 6;
 
 /** Collapsed height, in `em`, so it resolves against the card's own
- *  font-size (`typescale.body` = calc(17px + --font-size-offset)) and
+ *  font-size (`typescale.body` = calc(15px + --font-size-offset)) and
  *  stays exactly COLLAPSED_LINES lines at every slider setting.
  *
  *  This was a hard-coded `22.4` until 2026-08-05 — a leftover from the

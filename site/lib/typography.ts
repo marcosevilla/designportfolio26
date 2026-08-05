@@ -17,12 +17,15 @@ function scaledClamp(min: string, preferred: string, max: string): string {
 }
 
 /**
- * Body line-height as a unitless ratio — 28/17 from the 2026-08-05
- * OpenAI-blog-scale pass, rounded to 1.647 (17 × 1.647 = 27.999px, so the
- * rendered default is unchanged). Exported because any component that
- * measures body text in pixels — e.g. Testimonials' line-clamp — must
- * derive from this rather than hard-code a number that goes stale the next
- * time the body scale moves.
+ * Body line-height as a unitless ratio. Originally 28/17 from the
+ * 2026-08-05 OpenAI-blog-scale pass; body dropped to 15px later the same
+ * day (Marco's call) and the RATIO was kept, so the reading rhythm carries
+ * over — 15 × 1.647 ≈ 24.7px.
+ *
+ * Exported because any component that measures body text in pixels — e.g.
+ * Testimonials' line-clamp — must derive from this rather than hard-code a
+ * number that goes stale the next time the body scale moves. That is
+ * exactly the bug that had Testimonials clamping at 4.8 lines.
  */
 export const BODY_LINE_HEIGHT = 1.647;
 
@@ -78,16 +81,22 @@ export const typescale = {
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** H3 — Subsections */
+  /** H3 — Subsections. 18px (Marco's call 2026-08-05, was 20px).
+   *
+   *  ⚠️ This is now IDENTICAL to `h4` — same size, same weight, same
+   *  leading, same tracking. The two levels are currently told apart only
+   *  by the margins `SectionHeading` applies (h3 `mt-16 mb-6`, h4 `mb-3`).
+   *  On a page that nests h4 under h3 they will read as one level. See
+   *  docs/TYPOGRAPHY-BACKLOG.md — flagged for Marco, not yet ruled. */
   h3: {
     fontFamily: "var(--font-sans)",
-    fontSize: scaled("20px"),
+    fontSize: scaled("18px"),
     fontWeight: 500,
     lineHeight: 1.4,
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** H4 — Sub-subsections */
+  /** H4 — Sub-subsections. See the ⚠️ on `h3` above: identical spec. */
   h4: {
     fontFamily: "var(--font-sans)",
     fontSize: scaled("18px"),
@@ -96,10 +105,12 @@ export const typescale = {
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** Case study body text — site-wide body standard (17/28, OpenAI blog
-   *  scale 2026-08-05). Also inlined on the home bio (HomeLayout) —
-   *  change the two together. The `body` element default in globals.css
-   *  stays 14/1.6 (UI chrome inherits it).
+  /** Case study body text — site-wide body standard. 15px at the tuned
+   *  1.647 ratio (≈24.7px leading); was 17/28 from the OpenAI-blog-scale
+   *  pass earlier on 2026-08-05, dropped to 15px the same day. Also
+   *  inlined on the home bio (HomeLayout) — change the two together. The
+   *  `body` element default in globals.css stays 14/1.6 (UI chrome
+   *  inherits it), so body copy now sits just 1px above site chrome.
    *
    *  line-height is UNITLESS (`BODY_LINE_HEIGHT`) so it tracks the Theme
    *  Palette font-size slider. It was pinned at "28px" until 2026-08-05:
@@ -107,7 +118,7 @@ export const typescale = {
    *  line-height does not, the ratio collapsed 1.65 → 1.33 at the +4
    *  end of the slider and the prose went cramped. */
   body: {
-    fontSize: scaled("17px"),
+    fontSize: scaled("15px"),
     lineHeight: BODY_LINE_HEIGHT,
     letterSpacing: "-0.01em",
   } as CSSProperties,

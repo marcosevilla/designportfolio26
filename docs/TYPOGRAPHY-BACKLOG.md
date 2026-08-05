@@ -124,8 +124,22 @@ redesigned…" takeaway lines under research findings:
 - `app/work/upsells/UpsellsContent.tsx` — lines 188, 197, 206, 215, 224
 - `app/work/knowledge-base/KnowledgeBaseContent.tsx` — lines 159, 168, 177, 186
 
-Consistent intent, no token. **Fix:** add `typescale.bodySm` (15px, unitless leading,
-scaled) and swap all 10.
+Consistent intent, no token.
+
+**⚠️ CHANGED 2026-08-05 — body dropped 17px → 15px, so these are now the SAME SIZE as body
+copy.** They were one step down from 17px prose; they are now identical to it and carry no
+size de-emphasis at all, only `--color-fg-tertiary`. The original "add a `bodySm` token at
+15px" fix would now be a no-op alias for `body`.
+
+**Revised fix — needs a design call, not a mechanical swap:**
+- **(a)** Accept colour alone as the de-emphasis and delete the `text-[15px]` classes as
+  redundant. Simplest, and arguably correct — these are asides, not a second reading size.
+- **(b)** Add `typescale.bodySm` at **13px** and swap all 10, keeping a real size step.
+  13px is already the most common chrome size in the codebase (11 uses), so it does not
+  invent a new step.
+
+Recommend **(a)**: at a 15px body, a 13px aside is small enough to strain, and the tertiary
+colour already does the work.
 
 ## ⑦ Two hygiene gaps
 
@@ -138,14 +152,33 @@ Both belong in `app/globals.css` next to the existing `-webkit-font-smoothing` b
 
 ## Open questions for Marco (no code until ruled)
 
-1. **`typescale.subtitle` is 16px, smaller than the 17px body.** Flagged 2026-08-05 and
-   still open. Bump to ~20px, or is the hero subtitle deliberately quieter than prose?
+1. **⚠️ `h3` and `h4` are now byte-identical** — both `18px / 500 / 1.4 / −0.01em` after
+   the 2026-08-05 h3 20→18 change. `SectionHeading` separates them by margin only
+   (h3 `mt-16 mb-6`, h4 `mb-3`), so nested h4s read as the same level as their parent h3.
+
+   **Latent, not live:** the only `level={4}` consumers are `upsells` (10 uses),
+   `knowledge-base` (10) and `compendium` (7), and all three are in `LOCKED_SLUGS` — they
+   render the LockGate placeholder today. This surfaces the moment one is unlocked.
+
+   Options: **(a)** drop h4 to 16px — restores a real step, but 16px against a 15px body
+   is a very thin distinction; **(b)** keep both at 18px and differentiate h4 by weight
+   (400 vs h3's 500) or by colour (`--color-fg-secondary`); **(c)** decide the studies only
+   need three heading levels and convert the h4s to h3s.
+
+   Recommend **(b) by weight** — it keeps the size rhythm Marco just tuned and gives a
+   genuine visual difference without inventing a new size step.
+
 2. **`display` and `caseStudyHero` are byte-identical.** Collapse to one token with an
    alias, or keep both as separate semantic slots?
 
-~~3. Does UI chrome scale with the font-size slider?~~ **RULED 2026-08-05** — see the
-ruling under ①. Neither question above blocks any item in this backlog; both are
-refinements to tokens that are already wired correctly.
+3. ~~`typescale.subtitle` is smaller than body~~ **CLOSED 2026-08-05** — subtitle is 16px
+   and body dropped to 15px, so the subtitle is now correctly larger than body copy.
+
+~~Does UI chrome scale with the font-size slider?~~ **RULED 2026-08-05** — see the ruling
+under ①.
+
+Question 1 blocks nothing in this backlog but should be settled before any of
+`upsells` / `knowledge-base` / `compendium` comes out of `LOCKED_SLUGS`.
 
 ---
 

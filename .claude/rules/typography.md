@@ -35,11 +35,11 @@ Three weights system-wide: 400 body/labels, 500 titles/UI, 600 reserved emphasis
 | Hero statement (h1) — homepage | 600 | clamp(28-32px) | `typescale.display`, streams word-by-word during intro |
 | Hero name label — homepage | 400 | 14px | Inline in Hero.tsx, tertiary color, always visible |
 | Case study hero h1 | 500 | clamp(32px, 4vw, 48px) / 1.1 | `typescale.caseStudyHero` (= `display`) — OpenAI ref is 64/1.0/500; Marco chose the softer 48 cap |
-| Case study hero subtitle | 400 | 16px / 26 line-height | `typescale.subtitle` — ⚠️ now SMALLER than 17px body; open question flagged 2026-08-05 |
+| Case study hero subtitle | 400 | 16px / 1.625 (=26px) | `typescale.subtitle` — was smaller than the old 17px body, which read as odd. Body dropped to 15px on 2026-08-05, so the subtitle is now correctly LARGER than body. That open question is closed. |
 | Section h2 (case study) | 500 | 30px / 1.32 | `typescale.h2` — real sentence-case heading (mono ALL-CAPS label era is in git history; `sectionLabel` token still exists for other surfaces) |
-| Section h3 | 500 | 20px / 1.4 | `typescale.h3` |
+| Section h3 | 500 | **18px** / 1.4 | `typescale.h3` — was 20px until 2026-08-05. ⚠️ now identical to h4, see below |
 | Section h4 | 500 | 18px / 1.4 | `typescale.h4` |
-| Body / case study prose | 400 | 17px / **1.647** (=28px), −0.01em | `typescale.body` — body-content standard (2026-08-05), same spec inlined on the home bio (HomeLayout). The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it; do not bump it with these two. |
+| Body / case study prose | 400 | **15px** / 1.647 (≈24.7px), −0.01em | `typescale.body` — body-content standard. Was 17/28 from the OpenAI pass; Marco dropped it to 15px later the same day (2026-08-05). Same spec inlined on the home bio (HomeLayout) — change the two together. The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it; do not bump it with these two. Body copy now sits just **1px** above site chrome. |
 | QuickStats value | 500 | 24px | `typescale.statValue` |
 | PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
 | NextProject title | 500 | 22px | `typescale.nextProjectTitle` |
@@ -51,6 +51,18 @@ Three weights system-wide: 400 body/labels, 500 titles/UI, 600 reserved emphasis
 | Nav (mobile) | 400 | 14px | `typescale.navMobile` |
 | Page titles (/work, /writing) | 500 | 24px | `typescale.pageTitle` |
 | Marquee | 400 | 14px | inline |
+
+### ⚠️ `h3` and `h4` are currently IDENTICAL
+
+Since 2026-08-05 both are `18px / 500 / 1.4 / −0.01em`. `SectionHeading` tells them apart
+only by margin (h3 `mt-16 mb-6`, h4 `mb-3`), so on a page that nests h4 under h3 the two
+levels read as one.
+
+**This is latent, not live.** The only pages using `level={4}` are `upsells` (10),
+`knowledge-base` (10) and `compendium` (7) — and all three are in `LOCKED_SLUGS`, so they
+render the LockGate placeholder rather than their headings. It becomes visible the moment
+any of those three is unlocked. Options and the recommendation are in
+`docs/TYPOGRAPHY-BACKLOG.md`; awaiting Marco's ruling.
 
 ### ⚠️ Line-heights in `typescale` must be UNITLESS
 
