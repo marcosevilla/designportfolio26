@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ELEV, neutral, primary, danger, RADIUS, TYPE, W,
 } from "./canary-polished-tokens";
@@ -46,32 +47,79 @@ const APP_H =
 const SHELL_W = APP_W;
 const SHELL_H = APP_H + CHROME_H; // 896
 
+const EASE = [0.25, 0.46, 0.45, 0.94] as const;
+
 // ─── Primitives ────────────────────────────────────────────────────────────
 
-function Checkbox() {
+function Checkbox({
+  checked,
+  onClick,
+  itemId,
+}: {
+  checked: boolean;
+  onClick: () => void;
+  itemId: string;
+}) {
   return (
-    <div
+    <button
+      type="button"
+      data-demo={`check-${itemId}`}
+      onClick={onClick}
+      aria-pressed={checked}
       style={{
         width: 16,
         height: 16,
-        border: `1.5px solid ${neutral[300]}`,
+        padding: 0,
+        border: checked ? "none" : `1.5px solid ${neutral[300]}`,
         borderRadius: RADIUS.xs,
-        backgroundColor: neutral[0],
+        backgroundColor: checked ? primary[500] : neutral[0],
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
-    />
+    >
+      {checked && (
+        <span
+          style={{
+            color: neutral[0],
+            fontSize: 11,
+            lineHeight: 1,
+            fontWeight: W.semibold,
+          }}
+        >
+          ✓
+        </span>
+      )}
+    </button>
   );
 }
 
-function AvailabilitySwitch({ on }: { on: boolean }) {
+function AvailabilitySwitch({
+  on,
+  onClick,
+  itemId,
+}: {
+  on: boolean;
+  onClick: () => void;
+  itemId: string;
+}) {
   return (
-    <div
+    <button
+      type="button"
+      data-demo={`toggle-${itemId}`}
+      onClick={onClick}
+      aria-pressed={on}
       style={{
         width: 36,
         height: 20,
+        padding: 0,
+        border: "none",
         borderRadius: RADIUS.full,
         backgroundColor: on ? primary[500] : neutral[300],
         position: "relative",
         flexShrink: 0,
+        cursor: "pointer",
       }}
     >
       <div
@@ -87,7 +135,31 @@ function AvailabilitySwitch({ on }: { on: boolean }) {
           transition: "transform 160ms",
         }}
       />
-    </div>
+    </button>
+  );
+}
+
+function TrashButton({ itemId, onClick }: { itemId: string; onClick: () => void }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      type="button"
+      data-demo={`trash-${itemId}`}
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 0,
+        border: "none",
+        background: "transparent",
+        cursor: "pointer",
+      }}
+    >
+      <Icon path={ICONS.trashCan} size={18} color={hover ? danger[500] : neutral[500]} />
+    </button>
   );
 }
 
@@ -126,84 +198,156 @@ function ItemRow({
   item,
   available,
   first,
+  checked,
+  onToggleAvailability,
+  onToggleSelect,
+  onDelete,
 }: {
   item: LibraryItem;
   available: boolean;
   first: boolean;
+  checked: boolean;
+  onToggleAvailability: () => void;
+  onToggleSelect: () => void;
+  onDelete: () => void;
 }) {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: COLUMNS,
-        alignItems: "center",
-        height: ROW_H,
-        borderTop: first ? "none" : `1px solid ${neutral[100]}`,
-      }}
-    >
-      <Checkbox />
+  const dimStyle = {
+    opacity: available ? 1 : 0.45,
+    transition: "opacity 200ms",
+  } as const;
 
-      <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.image}
-          alt=""
-          width={THUMB}
-          height={THUMB}
-          loading="lazy"
-          style={{
-            width: THUMB,
-            height: THUMB,
-            borderRadius: RADIUS.md,
-            objectFit: "cover",
-            flexShrink: 0,
-          }}
-        />
+  return (
+    <motion.div
+      layout
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.38, ease: EASE }}
+      style={{ overflow: "hidden" }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: COLUMNS,
+          alignItems: "center",
+          height: ROW_H,
+          borderTop: first ? "none" : `1px solid ${neutral[100]}`,
+        }}
+      >
+        <Checkbox checked={checked} onClick={onToggleSelect} itemId={item.id} />
+
+        <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.image}
+            alt=""
+            width={THUMB}
+            height={THUMB}
+            loading="lazy"
+            style={{
+              width: THUMB,
+              height: THUMB,
+              borderRadius: RADIUS.md,
+              objectFit: "cover",
+              flexShrink: 0,
+              filter: available ? "none" : "grayscale(1)",
+              transition: "filter 200ms",
+            }}
+          />
+          <span
+            style={{
+              ...TYPE.body,
+              fontWeight: W.medium,
+              color: neutral[900],
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              ...dimStyle,
+            }}
+          >
+            {item.name}
+          </span>
+        </span>
+
         <span
           style={{
             ...TYPE.body,
-            fontWeight: W.medium,
-            color: neutral[900],
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            color: item.posCode ? neutral[600] : neutral[400],
           }}
         >
-          {item.name}
+          {item.posCode ?? "—"}
         </span>
-      </span>
 
-      <span
-        style={{
-          ...TYPE.body,
-          color: item.posCode ? neutral[600] : neutral[400],
-        }}
-      >
-        {item.posCode ?? "—"}
-      </span>
+        <span style={{ ...TYPE.body, color: neutral[600], ...dimStyle }}>
+          {formatMenus(item.menus)}
+        </span>
 
-      <span style={{ ...TYPE.body, color: neutral[600] }}>
-        {formatMenus(item.menus)}
-      </span>
+        <span style={{ ...TYPE.body, color: neutral[900], ...dimStyle }}>
+          ${item.price.toFixed(2)}
+        </span>
 
-      <span style={{ ...TYPE.body, color: neutral[900] }}>
-        ${item.price.toFixed(2)}
-      </span>
-
-      <span style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
-        <AvailabilitySwitch on={available} />
-        <Icon path={ICONS.pencil} size={18} color={neutral[500]} />
-        <Icon path={ICONS.trashCan} size={18} color={neutral[500]} />
-      </span>
-    </div>
+        <span style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
+          <AvailabilitySwitch on={available} onClick={onToggleAvailability} itemId={item.id} />
+          <Icon path={ICONS.pencil} size={18} color={neutral[500]} />
+          <TrashButton itemId={item.id} onClick={onDelete} />
+        </span>
+      </div>
+    </motion.div>
   );
 }
 
 // ─── App ───────────────────────────────────────────────────────────────────
 
 function Library() {
-  const [available] = useState<Record<string, boolean>>(() =>
+  const [items, setItems] = useState<LibraryItem[]>(LIBRARY_ITEMS);
+  const [available, setAvailable] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(LIBRARY_ITEMS.map((item) => [item.id, true])),
+  );
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [pendingDelete, setPendingDelete] = useState<LibraryItem | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const toggle = (id: string) =>
+    setAvailable((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const toggleSelect = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2400);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const doomed = pendingDelete;
+    setPendingDelete(null);
+    setItems((prev) => prev.filter((i) => i.id !== doomed.id));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.delete(doomed.id);
+      return next;
+    });
+    showToast("Item deleted");
+  };
+
+  const bulkDelete = () => {
+    const n = selected.size;
+    setItems((prev) => prev.filter((i) => !selected.has(i.id)));
+    setSelected(new Set());
+    showToast(`${n} item${n === 1 ? "" : "s"} deleted`);
+  };
+
+  useEffect(
+    () => () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    },
+    [],
   );
 
   return (
@@ -310,7 +454,7 @@ function Library() {
                       background: "transparent",
                       color: active ? primary[500] : neutral[600],
                       fontWeight: active ? W.medium : W.regular,
-                      cursor: active ? "default" : "default",
+                      cursor: "default",
                     }}
                   >
                     {tab}
@@ -359,18 +503,171 @@ function Library() {
                   overflow: "hidden",
                 }}
               >
-                {LIBRARY_ITEMS.map((item, i) => (
-                  <ItemRow
-                    key={item.id}
-                    item={item}
-                    available={available[item.id]}
-                    first={i === 0}
-                  />
-                ))}
+                <AnimatePresence initial={false}>
+                  {items.map((item, i) => (
+                    <ItemRow
+                      key={item.id}
+                      item={item}
+                      available={available[item.id]}
+                      first={i === 0}
+                      checked={selected.has(item.id)}
+                      onToggleAvailability={() => toggle(item.id)}
+                      onToggleSelect={() => toggleSelect(item.id)}
+                      onDelete={() => setPendingDelete(item)}
+                    />
+                  ))}
+                </AnimatePresence>
               </div>
             </div>
           </div>
         </div>
+
+        <AnimatePresence>
+          {selected.size > 0 && (
+            <motion.button
+              type="button"
+              data-demo="bulk-delete"
+              onClick={bulkDelete}
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 16, opacity: 0 }}
+              transition={{ duration: 0.28, ease: EASE }}
+              style={{
+                position: "absolute",
+                right: 24,
+                bottom: 20,
+                height: 40,
+                paddingInline: 20,
+                borderRadius: RADIUS.full,
+                backgroundColor: danger[500],
+                color: neutral[0],
+                ...TYPE.body,
+                fontWeight: W.medium,
+                border: "none",
+                boxShadow: ELEV.lg,
+                cursor: "pointer",
+              }}
+            >
+              Delete {selected.size} item{selected.size === 1 ? "" : "s"}
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {pendingDelete && (
+            <motion.div
+              key="scrim"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(19,24,34,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.2, ease: EASE }}
+                style={{
+                  width: 400,
+                  backgroundColor: neutral[0],
+                  borderRadius: RADIUS.lg,
+                  boxShadow: ELEV.overlay,
+                  padding: 24,
+                }}
+              >
+                <h4 style={{ ...TYPE.bodyL, fontWeight: W.semibold, color: neutral[900], margin: 0 }}>
+                  Delete item?
+                </h4>
+                <p style={{ ...TYPE.body, color: neutral[600], marginTop: 8, marginBottom: 0 }}>
+                  Remove &ldquo;{pendingDelete.name}&rdquo; from your item library? It will also be
+                  removed from any menus that use it.
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                    marginTop: 20,
+                  }}
+                >
+                  <button
+                    type="button"
+                    data-demo="modal-cancel"
+                    onClick={() => setPendingDelete(null)}
+                    style={{
+                      height: 36,
+                      paddingInline: 16,
+                      borderRadius: RADIUS.md,
+                      border: `1px solid ${neutral[200]}`,
+                      backgroundColor: neutral[0],
+                      color: neutral[700],
+                      ...TYPE.body,
+                      fontWeight: W.medium,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    data-demo="modal-confirm"
+                    onClick={confirmDelete}
+                    style={{
+                      height: 36,
+                      paddingInline: 16,
+                      borderRadius: RADIUS.md,
+                      border: "none",
+                      backgroundColor: danger[500],
+                      color: neutral[0],
+                      ...TYPE.body,
+                      fontWeight: W.medium,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              key={toast}
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 12, opacity: 0 }}
+              transition={{ duration: 0.2, ease: EASE }}
+              style={{
+                position: "absolute",
+                bottom: 20,
+                left: "50%",
+                x: "-50%",
+                backgroundColor: neutral[800],
+                color: neutral[0],
+                ...TYPE.body,
+                paddingInline: 16,
+                height: 36,
+                display: "flex",
+                alignItems: "center",
+                borderRadius: RADIUS.md,
+                boxShadow: ELEV.lg,
+              }}
+            >
+              {toast}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
