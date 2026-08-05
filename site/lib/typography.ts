@@ -29,11 +29,21 @@ function scaledClamp(min: string, preferred: string, max: string): string {
  */
 export const BODY_LINE_HEIGHT = 1.647;
 
+/**
+ * CONSOLIDATED 2026-08-05 (Marco's call: "I don't want a dozen styles").
+ * 15 tokens → 8. Absorbed: `caseStudyHero` → `display` (was byte-identical),
+ * `h4` → `h3` (was byte-identical), `pageTitle`/`statValue`/
+ * `nextProjectTitle` → `title`. Deleted dead (0 consumers): `sectionLabel`,
+ * `nav`, `navMobile` — the latter two orphaned when SiteHeader was
+ * unmounted site-wide 2026-07-20. Before re-adding a token, check whether
+ * an existing one plus a one-property override does the job.
+ */
 export const typescale = {
-  /** Case-study H1 — 2026-08-05 OpenAI-blog-scale pass: tops out at
-   *  48px (Marco's softer call vs the reference's 64px), weight 500 to
-   *  keep that size from going heavy. The homepage h1 keeps its own
-   *  inline 16px spec — this scale is for study pages only. */
+  /** Display — case-study H1s and the LockGate placeholder hero.
+   *  2026-08-05 OpenAI-blog-scale pass: tops out at 48px (Marco's softer
+   *  call vs the reference's 64px), weight 500 to keep that size from
+   *  going heavy. The homepage h1 keeps its own inline 16px spec — this
+   *  scale is for study pages only. */
   display: {
     fontFamily: "var(--font-sans)",
     fontSize: scaledClamp("32px", "4vw", "48px"),
@@ -42,18 +52,12 @@ export const typescale = {
     letterSpacing: "-0.02em",
   } as CSSProperties,
 
-  /** Case Study Hero title — same display scale as `display`
-   *  (LockGate page placeholders share it). */
-  caseStudyHero: {
-    fontFamily: "var(--font-sans)",
-    fontSize: scaledClamp("32px", "4vw", "48px"),
-    fontWeight: 500,
-    lineHeight: 1.1,
-    letterSpacing: "-0.02em",
-  } as CSSProperties,
-
-  /** Page titles — /work, /writing, /play */
-  pageTitle: {
+  /** Mid-size titles — page titles (/writing), QuickStats values,
+   *  NextProject link title. Merged from `pageTitle` + `statValue` +
+   *  `nextProjectTitle` in the 2026-08-05 consolidation; stats gained
+   *  slider scaling (per the same-day ruling) and NextProject stepped
+   *  22 → 24. */
+  title: {
     fontFamily: "var(--font-sans)",
     fontSize: scaled("24px"),
     fontWeight: 500,
@@ -61,18 +65,9 @@ export const typescale = {
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** Section label — case study h2 ("Problem", "Solution") rendered as small tertiary label */
-  sectionLabel: {
-    fontFamily: "var(--font-sans)",
-    fontSize: "14px",
-    fontWeight: 500,
-    lineHeight: 1.4,
-    color: "var(--color-fg-tertiary)",
-  } as CSSProperties,
-
   /** H2 — case-study section heading (2026-08-05: real 30px heading,
-   *  OpenAI blog scale — replaces the mono-uppercase label era, which
-   *  lives on in `sectionLabel` and git history). */
+   *  OpenAI blog scale — the mono-uppercase label era lives in git
+   *  history). */
   h2: {
     fontFamily: "var(--font-sans)",
     fontSize: scaled("30px"),
@@ -81,23 +76,15 @@ export const typescale = {
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** H3 — Subsections. 18px (Marco's call 2026-08-05, was 20px).
-   *
-   *  ⚠️ This is now IDENTICAL to `h4` — same size, same weight, same
-   *  leading, same tracking. The two levels are currently told apart only
-   *  by the margins `SectionHeading` applies (h3 `mt-16 mb-6`, h4 `mb-3`).
-   *  On a page that nests h4 under h3 they will read as one level. See
-   *  docs/TYPOGRAPHY-BACKLOG.md — flagged for Marco, not yet ruled. */
+  /** H3 — subsections AND sub-subsections. 18px (Marco's call
+   *  2026-08-05, was 20px); the separate `h4` token was absorbed here the
+   *  same day once the sizes converged. `SectionHeading` still renders a
+   *  real `<h4>` element for `level={4}` (document outline is unchanged)
+   *  and tells the levels apart by margin (h3 `mt-16 mb-6`, h4 `mb-3`).
+   *  ⚠️ On a page that nests h4 under h3 the two levels read the same —
+   *  see docs/TYPOGRAPHY-BACKLOG.md open question 1 (latent: every
+   *  `level={4}` consumer is in LOCKED_SLUGS today). */
   h3: {
-    fontFamily: "var(--font-sans)",
-    fontSize: scaled("18px"),
-    fontWeight: 500,
-    lineHeight: 1.4,
-    letterSpacing: "-0.01em",
-  } as CSSProperties,
-
-  /** H4 — Sub-subsections. See the ⚠️ on `h3` above: identical spec. */
-  h4: {
     fontFamily: "var(--font-sans)",
     fontSize: scaled("18px"),
     fontWeight: 500,
@@ -130,15 +117,6 @@ export const typescale = {
     lineHeight: 1.625,
   } as CSSProperties,
 
-  /** QuickStats value — big number */
-  statValue: {
-    fontFamily: "var(--font-sans)",
-    fontSize: "24px",
-    fontWeight: 500,
-    lineHeight: 1.1,
-    letterSpacing: "-0.01em",
-  } as CSSProperties,
-
   /** PullQuote text */
   pullQuote: {
     fontFamily: "var(--font-sans)",
@@ -148,34 +126,11 @@ export const typescale = {
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** NextProject title */
-  nextProjectTitle: {
-    fontFamily: "var(--font-sans)",
-    fontSize: scaled("22px"),
-    fontWeight: 500,
-    lineHeight: 1.2,
-    letterSpacing: "-0.01em",
-  } as CSSProperties,
-
   /** Small sans label — year badges, card meta, list row details (replaces old mono label) */
   label: {
     fontFamily: "var(--font-sans)",
     fontSize: "11px",
     fontWeight: 400,
     letterSpacing: 0,
-  } as CSSProperties,
-
-  /** Nav links — desktop 16px, sans */
-  nav: {
-    fontFamily: "var(--font-sans)",
-    fontWeight: 400,
-    fontSize: "16px",
-  } as CSSProperties,
-
-  /** Nav links — mobile variant */
-  navMobile: {
-    fontFamily: "var(--font-sans)",
-    fontWeight: 400,
-    fontSize: "14px",
   } as CSSProperties,
 } as const;

@@ -28,7 +28,7 @@ export default function NextProject({
         </span>
         <span
           className="tracking-tight text-(--color-accent) transition-colors duration-200 group-hover:text-(--color-fg) block"
-          style={typescale.nextProjectTitle}
+          style={typescale.title}
         >
           {title} &rarr;
         </span>

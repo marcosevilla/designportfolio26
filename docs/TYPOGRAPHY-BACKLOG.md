@@ -3,10 +3,15 @@
 Queued follow-ups from the 2026-08-05 type-system audit. Findings are numbered as they
 were reported in that session, so the numbering skips items already closed.
 
-**Closed already (commit `ce9070c`, branch `fix/body-lineheight-unitless`):**
-- ② px line-heights in `typescale.body` / `typescale.subtitle` → unitless.
+**Closed already (branch `fix/body-lineheight-unitless`):**
+- ② px line-heights in `typescale.body` / `typescale.subtitle` → unitless (`ce9070c`).
 - ⑧ Stale `LINE_HEIGHT_PX = 22.4` comment + constant in `Testimonials.tsx` (was clipping
-  the 6-line clamp at 4.8 lines).
+  the 6-line clamp at 4.8 lines) (`ce9070c`).
+- ④ Dead tokens — CLOSED by the 2026-08-05 consolidation: the typescale is now **8 tokens**
+  (was 15). `sectionLabel`/`nav`/`navMobile` deleted; `caseStudyHero`→`display`,
+  `h4`→`h3`, `pageTitle`+`statValue`+`nextProjectTitle`→`title`. QuickStats gained slider
+  scaling in the merge (the `statValue` row of the ① ruling — done); NextProject title
+  stepped 22→24.
 
 **Owned by another session, do not touch here:**
 - ⑤ `StudyMetaRow.tsx` hard-codes `fontSize: 11` / `fontSize: 14` where `typescale.label`
@@ -37,15 +42,10 @@ second scale living in chat, nav, modals, TOC, overlays and the music widget.
 **Why it matters:** the Theme Palette font-size slider moves case-study prose and headings
 but freezes nav, labels, stats, chat, TOC and modals. Dragging it desynchronizes the page.
 
-Only 9 of 15 tokens are built with `scaled()`. Fixed-size tokens:
-
-| Token | Size | Consumers | Disposition |
-|---|---|---|---|
-| `sectionLabel` | 14px | **0** | delete — see ④ |
-| `nav` | 16px | **0** | delete — see ④ |
-| `navMobile` | 14px | **0** | delete — see ④ |
-| `statValue` | 24px | 1 (`QuickStats`) | **scale** |
-| `label` | 11px | 26 | **leave fixed** (see ruling) |
+Token-level status after the 2026-08-05 consolidation: **7 of 8 tokens scale**; `label`
+(11px, 26 consumers) is the only fixed one, per the ruling below. The dead tokens are
+deleted and `QuickStats` scales via `title`. What remains of ① is the **hardcoded
+inline sizes in components**, not the tokens.
 
 It is also inconsistent *within a single file*: `CaseStudyList.tsx:746` uses
 `calc(16px + var(--font-size-offset))` while `:757` and `:996` are bare `11px`.
@@ -63,7 +63,7 @@ measured rather than flowed. So the line is drawn by container, not by "chrome v
 | Surface | Files | Sizes today |
 |---|---|---|
 | Sticky table of contents | `case-study/InlineTOC.tsx` (3 sites) | 12px |
-| QuickStats numbers | `case-study/QuickStats.tsx` via `statValue` | 24px |
+| ~~QuickStats numbers~~ | ~~via `statValue`~~ **DONE** — scales via `title` since the consolidation | 24px |
 | Demo captions | `DemoStage.tsx:147,185` | 13px |
 | Chat, entire surface | `chat/ChatPanel.tsx` (10/13/14/15), `ChatBar.tsx` (12), `ChatMessage.tsx` (14), `ChipPrompt.tsx` (12), `ChatMessageActions.tsx` (11), `CaseStudyCardUnfurl.tsx` (11/14) | 10–15px |
 | Modals + overlays | `PasswordModal.tsx` (12/13/16), `LockGate.tsx` (11/12), `ChangelogOverlay.tsx` (11/13/14/16), `NavOverlay.tsx` (12), `HamburgerMenu.tsx` (12/32), `MobileNav.tsx` (12) | 11–32px |
@@ -168,8 +168,8 @@ Both belong in `app/globals.css` next to the existing `-webkit-font-smoothing` b
    Recommend **(b) by weight** — it keeps the size rhythm Marco just tuned and gives a
    genuine visual difference without inventing a new size step.
 
-2. **`display` and `caseStudyHero` are byte-identical.** Collapse to one token with an
-   alias, or keep both as separate semantic slots?
+2. ~~`display` and `caseStudyHero` are byte-identical~~ **CLOSED 2026-08-05** — merged
+   into `display` in the consolidation.
 
 3. ~~`typescale.subtitle` is smaller than body~~ **CLOSED 2026-08-05** — subtitle is 16px
    and body dropped to 15px, so the subtitle is now correctly larger than body copy.
@@ -217,13 +217,15 @@ once that lands.
 
 ## Suggested sequence
 
-Nothing is blocked — ① was the only item awaiting a ruling and it has one.
+Nothing is blocked. ④ is done (the consolidation); what's left:
 
-1. **④** — delete the three dead tokens + their rule rows. Smallest, zero risk, and it
-   shrinks ①'s surface before you start it.
-2. **③ + ⑥** — add `studySubtitleItalic` and `bodySm`, swap the 12 call sites. Mechanical.
-3. **⑦** — `font-synthesis: none` and `::selection` in `globals.css`. Two additions.
-4. **①** — the sweep. Largest, and best done last so the dead tokens are already gone.
+1. **③ + ⑥** — the italic-subtitle twins, and the design call on the `text-[15px]`
+   paragraphs. Note post-consolidation: prefer reusing a token + a one-property override
+   over minting `studySubtitleItalic` — Marco explicitly wants FEWER tokens
+   (e.g. `{...typescale.subtitle, fontStyle: "italic", fontSize: ...}` or just accept
+   `subtitle` as-is for those two heroes).
+2. **⑦** — `font-synthesis: none` and `::selection` in `globals.css`. Two additions.
+3. **①** — the component-level sweep (chat, modals, TOC, demo captions). Largest.
 
 **Verification for ①** (the ratio-holds check that caught the original bug): pin a node,
 sample `getComputedStyle` across `--font-size-offset` values `-4px / 0 / +2px / +4px`, and

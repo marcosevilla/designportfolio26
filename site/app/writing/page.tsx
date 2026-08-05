@@ -11,7 +11,7 @@ export default function WritingPage() {
   return (
     <div className="max-w-content mx-auto px-4 sm:px-8">
       <FadeIn>
-        <h1 className="tracking-tight" style={typescale.pageTitle}>
+        <h1 className="tracking-tight" style={typescale.title}>
           Writing
         </h1>
       </FadeIn>
