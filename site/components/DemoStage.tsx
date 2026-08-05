@@ -210,7 +210,7 @@ function StageCore({
     const compute = () =>
       setFsScale(
         Math.max(
-          1,
+          MIN_INLINE_SCALE,
           Math.min(
             (window.innerHeight - 112) / stageHeight,
             (window.innerWidth - 128) / stageWidth,
