@@ -43,8 +43,9 @@ export const typescale = {
    *  Caps at 40px (Marco stepped the whole heading ramp down late
    *  2026-08-05; the OpenAI-pass 48 cap lasted a day, the reference's 64
    *  was never used). Mobile min stays 32 — only the desktop cap moved.
-   *  Weight 500 keeps the size from going heavy. The homepage h1 keeps
-   *  its own inline 16px spec — this scale is for study pages only. */
+   *  Weight 500 keeps the size from going heavy. The homepage name h1
+   *  borrows ONLY this token's fontSize (2026-08-05, was inline 16px) —
+   *  its face is Fraunces w400/0em tracking, inline in HomeLayout. */
   display: {
     fontFamily: "var(--font-sans)",
     fontSize: scaledClamp("32px", "4vw", "40px"),

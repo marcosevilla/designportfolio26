@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Fraunces, Libre_Baskerville, Inter } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
 
 /**
  * Inter is the PRODUCT typeface, not a site typeface — it exists only so the
@@ -17,6 +17,11 @@ const inter = Inter({
   display: "swap",
 });
 
+/**
+ * Fraunces is the tertiary SITE face — display serif for the homepage name
+ * (HomeLayout h1) only. Loaded as a full variable font so the optical-size
+ * axis serves the true display cut at 40px. Keep it off prose and chrome.
+ */
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["normal", "italic"],
@@ -24,13 +29,6 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-const libreBaskerville = Libre_Baskerville({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-baskerville",
-  display: "swap",
-});
 import MobileNav from "@/components/MobileNav";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import ViewportFade from "@/components/ViewportFade";
@@ -87,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable} ${libreBaskerville.variable} ${inter.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable} ${fraunces.variable} ${inter.variable}`}>
       <body>
         {/* defaultTheme="light" (not "system"): ThemeStateProvider forces
             first visits to light anyway, so "system" only produced a dark

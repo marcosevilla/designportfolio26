@@ -18,10 +18,13 @@ import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { RESUME_URL } from "@/lib/resume-content";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
+import { typescale } from "@/lib/typography";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
-const BASKERVILLE = "var(--font-geist-sans), system-ui, sans-serif";
+/** Tertiary site face — the name only. Fraunces' optical-size axis gives
+ *  a true display cut at this size; serif fallbacks, never the sans. */
+const FRAUNCES = "var(--font-fraunces), Georgia, serif";
 
 /** Home ↔ About page swap. The two surfaces read as neighbours on a
  *  horizontal axis — About lives to the right of home — so home leaves
@@ -260,11 +263,15 @@ export default function HomeLayout({
               >
                 <h1
                   style={{
-                    fontFamily: BASKERVILLE,
-                    fontSize: "calc(16px + var(--font-size-offset))",
-                    fontWeight: 600,
-                    letterSpacing: "-0.02em",
-                    lineHeight: "24px",
+                    fontFamily: FRAUNCES,
+                    // Size/rhythm from the display token so the name rides
+                    // the ramp and the font-size slider; face/weight/track
+                    // stay inline — Fraunces wants none of Geist's negative
+                    // tracking, and 500 would muddy its thins at this size.
+                    fontSize: typescale.display.fontSize,
+                    fontWeight: 400,
+                    letterSpacing: "0em",
+                    lineHeight: 1.1,
                     color: "var(--color-fg)",
                   }}
                 >
