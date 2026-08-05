@@ -97,9 +97,11 @@ export default function FBOrderingContent() {
           </Grid>
         </FadeIn>
 
-        {/* ── TEMPORARY mount for visual dev (Task 3, 2026-08-04) — static
-            Item Library specimen (specimen #3). Structure is correct;
-            final caption/polish lands in Task 5. ── */}
+        {/* ── Staff item library — the menu-CMS half of the same product
+            (Marco 2026-08-04). Rebuilt from the polished Figma frames
+            (Canary Polished Visuals, frame 56:6548) and styled from
+            canary-polished-tokens. Same DemoStage chrome as the two
+            specimens above: pause/play, restart, fullscreen. */}
         <FadeIn className="pt-10">
           <Grid>
             <Col md="1-12" lg="2-11">

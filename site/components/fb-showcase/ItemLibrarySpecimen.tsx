@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
+import DemoStage, { type DemoStep } from "@/components/DemoStage";
 import {
   ELEV, neutral, primary, danger, RADIUS, TYPE, W,
 } from "./canary-polished-tokens";
@@ -14,10 +15,10 @@ import {
 /**
  * Canary's Item Library — the menu-CMS half of F&B Ordering, staff-side.
  * Recreated from Figma frame `56:6548` (Canary Polished Visuals) at the same
- * 1177px shell as `OrderDashboardSpecimen`. Static pass only: shell, chrome,
- * tabs, and the 8-row table render, but nothing is wired up yet — no toggle,
- * no edit/delete, no tab switching, no "Create new item". Interactions land
- * in a later specimen pass; this one just has to look right next to #2.
+ * 1177px shell as `OrderDashboardSpecimen`. Interactive: availability toggle,
+ * row multi-select with bulk-delete pill, single-row delete with confirm
+ * modal + toast. Tab switching and "Create new item" stay inert — out of
+ * scope for the demo. Wrapped in the same DemoStage choreography as #2.
  *
  * Deliberate deviations from the frame (Marco's call, 2026-08-04):
  * 1. Row content is the guest cart specimen's izakaya menu, not the frame's
@@ -673,6 +674,39 @@ function Library() {
   );
 }
 
+// ─── Choreography ──────────────────────────────────────────────────────────
+
+/**
+ * ~16s loop (Marco's beats, 2026-08-04): availability off/on → bulk-select
+ * reveal (no destruction) → single delete with confirm + toast. `after` pads
+ * cover the switch transition (160ms), pill slide (280ms), modal enter
+ * (200ms), row collapse (380ms) + toast (2.4s).
+ */
+const LIBRARY_DEMO_SCRIPT: DemoStep[] = [
+  { type: "wait", ms: 600 },
+  { type: "tap", target: "toggle-oysters", after: 1500 },  // off — row dims
+  { type: "tap", target: "toggle-oysters", after: 1100 },  // back on
+  { type: "tap", target: "check-edamame", after: 900 },    // pill slides in
+  { type: "tap", target: "check-wagyu-burger", after: 1400 }, // "Delete 2 items"
+  { type: "tap", target: "check-edamame", after: 700 },    // count drops to 1
+  { type: "tap", target: "check-wagyu-burger", after: 1100 }, // pill slides out
+  { type: "tap", target: "trash-sparkling", after: 1300 }, // modal in
+  { type: "tap", target: "modal-confirm", after: 900 },    // collapse + toast
+  { type: "wait", ms: 2600 },                              // toast reads, loop
+];
+
 export default function ItemLibrarySpecimen() {
-  return <Library />;
+  return (
+    <MotionConfig reducedMotion="user">
+      <DemoStage
+        ariaLabel="Demonstration of the staff item-library management screen"
+        script={LIBRARY_DEMO_SCRIPT}
+        stageWidth={SHELL_W}
+        stageHeight={SHELL_H}
+        childRadius={RADIUS.lg}
+      >
+        <Library />
+      </DemoStage>
+    </MotionConfig>
+  );
 }
