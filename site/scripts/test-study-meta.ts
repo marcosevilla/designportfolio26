@@ -20,7 +20,7 @@ function assertEqual(actual: unknown, expected: unknown, label: string) {
 }
 
 console.log("getStudyMeta — reconciled values (Marco's rulings 2026-08-05)");
-assertEqual(getStudyMeta("fb-ordering").year, "2026", "fb-ordering year is the plain launch year");
+assertEqual(getStudyMeta("fb-ordering").year, "2025–26", "fb-ordering year is the compact en-dash range");
 assertEqual(getStudyMeta("fb-ordering").role, "Lead designer", "fb-ordering role is Lead designer");
 assertEqual(getStudyMeta("fb-ordering").company, "Canary Technologies", "fb-ordering company uses the full name");
 assertEqual(getStudyMeta("compendium").year, "2024–2025", "compendium year uses the en-dash range");

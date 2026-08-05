@@ -66,7 +66,7 @@ update this table in the same commit.
 
 | Study | company | role | year | metric |
 |-------|---------|------|------|--------|
-| fb-ordering | Canary Technologies | Lead designer | 2026 | 0→1, 100% ownership |
+| fb-ordering | Canary Technologies | Lead designer | 2025–26 | 0→1, 100% ownership |
 | compendium | Canary | Product designer | 2024–2025 | $1.51M CARR · +230% YoY · 44% attach |
 | upsells | Canary | Lead designer | 2025 | $6.94M CARR · +10% measured lift |
 | checkin | Canary | Product designer | 2024 | ~6,000 Wyndham properties |
@@ -78,10 +78,11 @@ update this table in the same commit.
 Four reconciliation rulings landed here (Marco, 2026-08-05): fb-ordering and ai-workflow years use
 the en-dash range; compendium's role drops "100% design ownership"; knowledge-base's role is
 "Product designer" (not "Lead designer") and its year keeps the "shipped 2026" note.
-Superseded for fb-ordering by Marco's metadata-row feedback later that day: year is plain "2026",
-role is "Lead designer", company is "Canary Technologies" (the other Canary studies keep "Canary" —
-scope was fb-ordering only). The same feedback removed the company mark/monogram from `StudyMetaRow`
-entirely, so `lib/study-logos.ts` and `CanaryMark.tsx` were deleted.
+Superseded for fb-ordering by Marco's metadata-row feedback later that day: year is the compact
+"2025–26" (shown in the row's mono-uppercase eyebrow, not as a pill), role is "Lead designer",
+company is "Canary Technologies" (the other Canary studies keep "Canary" — scope was fb-ordering
+only). The same feedback removed the company mark/monogram from `StudyMetaRow` entirely, so
+`lib/study-logos.ts` and `CanaryMark.tsx` were deleted.
 
 ## Written drafts
 Written case study content lives in `case-studies/` (repo root). Each `.md` file is the narrative draft, and doubles as the chat system-prompt source via `lib/chat/case-study-content.ts`. Read the relevant one when working on a specific case study page.
