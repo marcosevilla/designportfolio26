@@ -91,6 +91,36 @@ visuals that aren't there), not a rendering defect.
 
 ---
 
+## Site-wide — theme system
+
+### Theme toggle does not reliably flip colors (inline styles beat the `.dark` cascade)
+
+Surfaced 2026-08-05 while verifying the case-study metadata row in dark
+mode. Two independent subagents hit it: clicking the on-page theme
+toggle does not visibly change colors, because `applyColoredTheme()`
+pins **resolved** color values as inline styles on `documentElement`.
+Inline styles win over the `.dark` class stylesheet cascade, so the
+class flips but the painted colors don't.
+
+Workaround used for QA: set `localStorage.theme` and reload, or write
+the dark-palette CSS variables directly via JS. Fighting the toggle
+does not work.
+
+**Why not fixed:** entirely outside the metadata-row plan's scope —
+pre-existing behavior in the theme system, untouched by
+`feature/study-meta-row`. Fixing it means changing how
+`applyColoredTheme()` writes values (e.g. set CSS variables on a
+scoped rule rather than inline on the root, or clear the inline styles
+on toggle), which is a theme-system change deserving its own pass.
+
+**Why it matters beyond QA:** if this reproduces for a real visitor
+rather than only under automation, the light/dark toggle is broken on
+the live site. That needs confirming by hand before deciding how hard
+to chase it — Marco, click the toggle on a normal page load and see
+whether colors actually change.
+
+---
+
 ## Pass 1 summary (2026-08-01, all 8 routes)
 
 Fixed: portrait playground frame crop (de2e14a), ai-workflow
