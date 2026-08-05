@@ -795,7 +795,7 @@ function StageCore({
           collapse to 0 and overflow stays scrollable. */}
       <div
         ref={wellRef}
-        className="px-4 py-12 sm:py-16"
+        className="scrollbar-hide px-4 py-12 sm:py-16"
         style={{ overflowX: "auto" }}
       >
         <div style={{ width: "fit-content", marginInline: "auto" }}>

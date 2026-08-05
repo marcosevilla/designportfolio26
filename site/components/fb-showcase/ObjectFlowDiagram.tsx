@@ -580,7 +580,7 @@ export default function ObjectFlowDiagram() {
       </div>
 
       <div
-        className="w-full overflow-x-auto"
+        className="scrollbar-hide w-full overflow-x-auto"
         onClick={() => (pinned ? setPinned(null) : setReplay((r) => r + 1))}
         role="img"
         aria-label={VIEW_META[view].aria}

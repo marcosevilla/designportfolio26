@@ -20,6 +20,7 @@ Reusable wrapper for any prototype specimen: auto-playing ghost-cursor demo (fro
 - `prefers-reduced-motion` ⇒ no auto-play, starts interactive.
 - `type` steps accept an optional per-step `charMs` (default 120); typing is prefix-aware — if a field already holds a value that's a prefix of the target text, typing resumes after it instead of clearing and retyping from scratch.
 - **Inline fit-scale floored at `MIN_INLINE_SCALE = 0.7`** — never smaller than desktop size, pans horizontally below that. The well is **block + `margin-inline: auto`**, NOT flex centering: flex `items-center` pushes overflow off BOTH edges and strands the left half unreachable.
+- The well carries **`.scrollbar-hide`** (globals.css utility, shared with the mobile pill carousel) — the native track read as clutter under every demo. Chrome only; scrolling/panning is unaffected. `ObjectFlowDiagram.tsx`'s `overflow-x-auto` wrapper carries it too. ⚠️ Below ~820px the diagram now pans with **no visible affordance** — parked, see `docs/CURRENT-STATE.md`.
 - Cursor motion: WAAPI arc (perpendicular bow, random side) with split accelerate/settle easing + ±2px landing scatter. Travel 450–1100ms. Cursor fill 16% white, blur 1.5px.
 
 ### Hard-won gotchas — do not regress
