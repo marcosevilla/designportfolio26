@@ -5,6 +5,7 @@ import ObjectFlowDiagram from "@/components/fb-showcase/ObjectFlowDiagram";
 import FnbCartSpecimen from "@/components/fb-showcase/FnbCartSpecimen";
 import OrderDashboardSpecimen from "@/components/fb-showcase/OrderDashboardSpecimen";
 import ItemLibrarySpecimen from "@/components/fb-showcase/ItemLibrarySpecimen";
+import OutletDetailsSpecimen from "@/components/fb-showcase/OutletDetailsSpecimen";
 import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -106,6 +107,17 @@ export default function FBOrderingContent() {
           <Grid>
             <Col md="1-12" lg="2-11">
               <ItemLibrarySpecimen />
+            </Col>
+          </Grid>
+        </FadeIn>
+
+        {/* ── TEMP: Task 4 eyeball mount for the outlet-details specimen
+            (static shell/top-bar/form only — DemoStage wrap + preview
+            land in Tasks 5–6). Remove once the specimen is fully wired. */}
+        <FadeIn className="pt-10">
+          <Grid>
+            <Col md="1-12" lg="2-11">
+              <OutletDetailsSpecimen />
             </Col>
           </Grid>
         </FadeIn>
