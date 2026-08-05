@@ -22,10 +22,11 @@ Thumbs.db
 *.swp
 *.swo
 
-# Claude Code — only .claude/rules/ is version-controlled.
+# Claude Code — only .claude/rules/ and .claude/skills/ are version-controlled.
 # Anchored to root with a leading slash; nested .claude/ dirs stay fully ignored.
 /.claude/*
 !/.claude/rules/
+!/.claude/skills/
 site/.claude/
 .superpowers/
 
