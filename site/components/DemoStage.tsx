@@ -532,7 +532,19 @@ function StageCore({
           // their inputs), which would scroll the page — pin scroll around it.
           const sx = window.scrollX;
           const sy = window.scrollY;
-          el.click();
+          // Scripted taps carry off-screen coordinates instead of the 0,0 that
+          // el.click() implies. Dev overlays that anchor UI to the click point
+          // (Agentation's annotation layer) read clientX/clientY and would
+          // otherwise open an annotation on every demo tap.
+          el.dispatchEvent(
+            new MouseEvent("click", {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+              clientX: -1,
+              clientY: -1,
+            }),
+          );
           if (
             el instanceof HTMLInputElement ||
             el instanceof HTMLTextAreaElement
