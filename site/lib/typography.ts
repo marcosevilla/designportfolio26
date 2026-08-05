@@ -16,6 +16,16 @@ function scaledClamp(min: string, preferred: string, max: string): string {
   return `clamp(calc(${min} + ${off}), calc(${preferred} + ${off}), calc(${max} + ${off}))`;
 }
 
+/**
+ * Body line-height as a unitless ratio — 28/17 from the 2026-08-05
+ * OpenAI-blog-scale pass, rounded to 1.647 (17 × 1.647 = 27.999px, so the
+ * rendered default is unchanged). Exported because any component that
+ * measures body text in pixels — e.g. Testimonials' line-clamp — must
+ * derive from this rather than hard-code a number that goes stale the next
+ * time the body scale moves.
+ */
+export const BODY_LINE_HEIGHT = 1.647;
+
 export const typescale = {
   /** Case-study H1 — 2026-08-05 OpenAI-blog-scale pass: tops out at
    *  48px (Marco's softer call vs the reference's 64px), weight 500 to
@@ -86,20 +96,27 @@ export const typescale = {
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** Case study body text — site-wide body standard (17/28, ≈1.65,
-   *  OpenAI blog scale 2026-08-05). Also inlined on the home bio
-   *  (HomeLayout) — change the two together. The `body` element default
-   *  in globals.css stays 14/1.6 (UI chrome inherits it). */
+  /** Case study body text — site-wide body standard (17/28, OpenAI blog
+   *  scale 2026-08-05). Also inlined on the home bio (HomeLayout) —
+   *  change the two together. The `body` element default in globals.css
+   *  stays 14/1.6 (UI chrome inherits it).
+   *
+   *  line-height is UNITLESS (`BODY_LINE_HEIGHT`) so it tracks the Theme
+   *  Palette font-size slider. It was pinned at "28px" until 2026-08-05:
+   *  because `fontSize` scales with --font-size-offset and a px
+   *  line-height does not, the ratio collapsed 1.65 → 1.33 at the +4
+   *  end of the slider and the prose went cramped. */
   body: {
     fontSize: scaled("17px"),
-    lineHeight: "28px",
+    lineHeight: BODY_LINE_HEIGHT,
     letterSpacing: "-0.01em",
   } as CSSProperties,
 
-  /** Case study hero subtitle, NextProject description */
+  /** Case study hero subtitle, NextProject description.
+   *  Unitless for the same reason as `body` above — 26/16 exactly. */
   subtitle: {
     fontSize: scaled("16px"),
-    lineHeight: "26px",
+    lineHeight: 1.625,
   } as CSSProperties,
 
   /** QuickStats value — big number */

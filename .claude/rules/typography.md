@@ -39,7 +39,7 @@ Three weights system-wide: 400 body/labels, 500 titles/UI, 600 reserved emphasis
 | Section h2 (case study) | 500 | 30px / 1.32 | `typescale.h2` — real sentence-case heading (mono ALL-CAPS label era is in git history; `sectionLabel` token still exists for other surfaces) |
 | Section h3 | 500 | 20px / 1.4 | `typescale.h3` |
 | Section h4 | 500 | 18px / 1.4 | `typescale.h4` |
-| Body / case study prose | 400 | 17px / 28px, −0.01em | `typescale.body` — body-content standard (2026-08-05), same spec inlined on the home bio (HomeLayout). The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it; do not bump it with these two. |
+| Body / case study prose | 400 | 17px / **1.647** (=28px), −0.01em | `typescale.body` — body-content standard (2026-08-05), same spec inlined on the home bio (HomeLayout). The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it; do not bump it with these two. |
 | QuickStats value | 500 | 24px | `typescale.statValue` |
 | PullQuote | 400 | clamp(18-22px) | `typescale.pullQuote` |
 | NextProject title | 500 | 22px | `typescale.nextProjectTitle` |
@@ -51,6 +51,21 @@ Three weights system-wide: 400 body/labels, 500 titles/UI, 600 reserved emphasis
 | Nav (mobile) | 400 | 14px | `typescale.navMobile` |
 | Page titles (/work, /writing) | 500 | 24px | `typescale.pageTitle` |
 | Marquee | 400 | 14px | inline |
+
+### ⚠️ Line-heights in `typescale` must be UNITLESS
+
+`fontSize` in this scale is `calc(Npx + var(--font-size-offset))`, so it moves with the
+Theme Palette font-size slider. A **px** line-height does not — the ratio silently
+collapses as the user drags. `body` was pinned at `"28px"` and `subtitle` at `"26px"`
+until 2026-08-05; at slider +4 that took body from 1.65 → **1.33** (cramped) and at −4 to
+2.15 (airy). Both are now unitless (`BODY_LINE_HEIGHT = 1.647`, `subtitle` 1.625), which
+holds the ratio at every setting. **Never reintroduce a px line-height in `typescale`.**
+
+Anything that measures body text in pixels must derive from the exported
+`BODY_LINE_HEIGHT`, not restate the number — `Testimonials`' line-clamp hard-coded `22.4`
+from the pre-2026-08-05 14/22.4 era and was silently clipping at 4.8 lines instead of 6.
+It now sizes its clamp in `em` (`COLLAPSED_LINES * BODY_LINE_HEIGHT`), which resolves
+against the element's own scaled font-size.
 
 The 2026-08-03 h3/h4 token-vs-component drift was RESOLVED 2026-08-05: `SectionHeading` renders `typescale.h3`/`typescale.h4` directly (20/18). Marquee card title keeps −0.01em at 14px (deliberate, `Heading / Card Title`).
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { TESTIMONIALS, type Testimonial } from "@/lib/testimonials";
-import { typescale } from "@/lib/typography";
+import { BODY_LINE_HEIGHT, typescale } from "@/lib/typography";
 
 /** Collapsed cards show this many lines of the quote. The recommendations
  *  range from ~55 to ~200 words, so without a clamp the block would run
@@ -10,10 +10,16 @@ import { typescale } from "@/lib/typography";
  *  every long card resting at an identical height. */
 const COLLAPSED_LINES = 6;
 
-/** typescale.body pins line-height at a fixed 22.4px (it deliberately
- *  does NOT scale with --font-size-offset), so N lines is exactly
- *  N × 22.4px at every font-size setting. */
-const LINE_HEIGHT_PX = 22.4;
+/** Collapsed height, in `em`, so it resolves against the card's own
+ *  font-size (`typescale.body` = calc(17px + --font-size-offset)) and
+ *  stays exactly COLLAPSED_LINES lines at every slider setting.
+ *
+ *  This was a hard-coded `22.4` until 2026-08-05 — a leftover from the
+ *  14/22.4 body era. Body moved to 17/28 on 2026-08-05 and this constant
+ *  didn't, so the clamp was cutting at 134.4px ≈ 4.8 lines and clipping
+ *  the sixth line through its middle. Derive from BODY_LINE_HEIGHT, never
+ *  restate the number. */
+const COLLAPSED_EM = COLLAPSED_LINES * BODY_LINE_HEIGHT;
 
 /** Small mono meta chrome — matches the city labels in Hero's experience
  *  list and the marquee's COMPANY • YEAR row. */
@@ -78,9 +84,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           ...typescale.body,
           color: "var(--color-fg-secondary)",
           overflow: "hidden",
-          maxHeight: expanded
-            ? undefined
-            : `${COLLAPSED_LINES * LINE_HEIGHT_PX}px`,
+          maxHeight: expanded ? undefined : `${COLLAPSED_EM}em`,
           // Fade the clipped edge so a quote cut mid-sentence reads as
           // truncated rather than broken. This masks the TEXT, not the
           // backdrop, so it needs no fill to blend into — which matters
