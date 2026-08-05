@@ -35,7 +35,7 @@ const APP_W = 1177; // matches OrderDashboardSpecimen
 const CHROME_H = 36; // shared WindowChrome
 const CONTENT_W = APP_W - NAV_W; // 961
 const TITLE_H = 52; // "Food and Beverage Ordering" (mirrors #2's HEADER_H)
-const TABS_H = 56; // tab row incl. underline
+const TABS_H = 44; // tab row incl. underline
 const TABLE_W = 900; // centered in the 961 content column
 const ROW_H = 72; // 40px thumb + 16px padding each side
 const THUMB = 40;
@@ -43,9 +43,9 @@ const THUMB = 40;
 const COLUMNS = "36px 1fr 128px 208px 96px 128px";
 const APP_H =
   TITLE_H + TABS_H + 36 /* col headers */ +
-  8 * ROW_H + 20; /* bottom pad */ // 740
+  8 * ROW_H + 20; /* bottom pad */ // 728
 const SHELL_W = APP_W;
-const SHELL_H = APP_H + CHROME_H; // 776
+const SHELL_H = APP_H + CHROME_H; // 764
 
 const EASE = [0.25, 0.46, 0.45, 0.94] as const;
 
@@ -406,7 +406,6 @@ function Library() {
                 display: "flex",
                 alignItems: "center",
                 gap: 24,
-                borderBottom: `1px solid ${neutral[100]}`,
               }}
             >
               {LIBRARY_TABS.map((tab) => {
@@ -438,13 +437,13 @@ function Library() {
                 type="button"
                 style={{
                   marginLeft: "auto",
-                  height: 36,
-                  paddingInline: 16,
+                  height: 28,
+                  paddingInline: 12,
                   backgroundColor: primary[500],
                   color: neutral[0],
                   border: "none",
                   borderRadius: RADIUS.md,
-                  ...TYPE.body,
+                  ...TYPE.bodyS,
                   fontWeight: W.medium,
                   cursor: "default",
                 }}
