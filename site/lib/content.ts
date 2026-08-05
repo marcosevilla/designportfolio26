@@ -68,3 +68,28 @@ export function getCaseStudy(slug: string): CaseStudy | null {
 export function getAllSlugs(): string[] {
   return getCaseStudies().map((s) => s.slug);
 }
+
+export type StudyMeta = {
+  company: string;
+  role: string;
+  year: string;
+};
+
+/**
+ * The case-study metadata row's data source. MDX frontmatter is the single
+ * source of truth for company/role/year — do not duplicate these into a
+ * slug-keyed const (see .claude/rules/case-studies.md on slug-set drift).
+ * Throws rather than returning blanks so a renamed or missing MDX file
+ * fails the build loudly instead of rendering an empty row.
+ */
+export function getStudyMeta(slug: string): StudyMeta {
+  const study = getCaseStudy(slug);
+  if (!study) {
+    throw new Error(`getStudyMeta: no MDX file found for slug "${slug}"`);
+  }
+  return {
+    company: study.company ?? "",
+    role: study.role ?? "",
+    year: study.year,
+  };
+}

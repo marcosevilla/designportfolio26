@@ -1,5 +1,5 @@
 export const STUDY_TAGS: Record<string, string[]> = {
-  "fb-ordering": ["0→1", "Mobile", "CMS", "Workflow"],
+  "fb-ordering": ["0→1", "Mobile", "Desktop", "CMS", "Workflow"],
   "compendium": ["Enterprise", "Desktop", "Mobile", "CMS", "Revenue Impact", "Design Systems"],
   "upsells": ["Enterprise", "Desktop", "Mobile", "Revenue Impact", "Workflow"],
   "checkin": ["Enterprise", "Mobile", "Desktop", "Revenue Impact", "Workflow", "Design Systems"],
