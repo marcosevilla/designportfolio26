@@ -35,8 +35,11 @@ Reusable wrapper for any prototype specimen: auto-playing ghost-cursor demo (fro
 ## Existing specimens
 - `FnbCartSpecimen.tsx` + `fnb-specimen-data.ts` — guest mobile ordering. iPhone shell 300×630, 4px bezel, r32/26; interior renders at 390pt logical scaled by `SCREEN_SCALE` (resize via `SHELL_W/H` only); status bar follows screen color (screens tuck −1px under it — scale-transform seam fix). Safari bar shows `dining.canaryhq.com` (invented URL). Assets: `public/images/fb-ordering/specimen/` (14 webp, ~412KB).
 - `OrderDashboardSpecimen.tsx` + `order-dashboard-data.ts` + `order-dashboard-icons.ts` — staff order management, 1177px wide.
+- `ItemLibrarySpecimen.tsx` + `item-library-data.ts` — staff item-library CMS table (availability toggle, bulk-select, delete w/ confirm + toast), 1177px wide, izakaya data shared with the cart specimen.
 
 **Pattern:** a specimen is a self-contained component that wraps *itself* in DemoStage. Mount the specimen, not DemoStage directly.
+
+**Shared staff-side infra:** `admin-shell.tsx` (Sidebar/WindowChrome/Icon/PROPERTY/NAV_SECTIONS) + `mdi-icons.ts` (renamed from `order-dashboard-icons.ts`) are SHARED by both staff-side specimens (OrderDashboardSpecimen + ItemLibrarySpecimen). Visual contract: any change to either file requires re-verifying both specimens.
 
 ## Canary polished tokens
 `components/fb-showcase/canary-polished-tokens.ts` — Inter ramp / `#2858c4` primary / cool neutrals / space + radius + elevation, transcribed from `docs/figma-migration/POLISHED-TOKENS.md`. **This is SHARED infra — import it, don't re-transcribe.**
