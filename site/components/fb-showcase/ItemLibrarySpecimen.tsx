@@ -125,11 +125,11 @@ function ColumnHeaders() {
 function ItemRow({
   item,
   available,
-  last,
+  first,
 }: {
   item: LibraryItem;
   available: boolean;
-  last: boolean;
+  first: boolean;
 }) {
   return (
     <div
@@ -138,7 +138,7 @@ function ItemRow({
         gridTemplateColumns: COLUMNS,
         alignItems: "center",
         height: ROW_H,
-        borderTop: last ? "none" : `1px solid ${neutral[100]}`,
+        borderTop: first ? "none" : `1px solid ${neutral[100]}`,
       }}
     >
       <Checkbox />
@@ -364,7 +364,7 @@ function Library() {
                     key={item.id}
                     item={item}
                     available={available[item.id]}
-                    last={i === LIBRARY_ITEMS.length - 1}
+                    first={i === 0}
                   />
                 ))}
               </div>
