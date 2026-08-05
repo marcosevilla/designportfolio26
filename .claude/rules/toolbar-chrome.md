@@ -17,11 +17,18 @@ paths:
 
 # Toolbar / chrome
 
-## GlobalToolbar (CURRENT system, shipped 2026-08-05 per the Aug 2026 Figma `controls` frame, node 264:4254)
-`components/GlobalToolbar.tsx`, mounted once in `app/layout.tsx`. Fixed top bar on EVERY
-route, `z-[150]`, floating over all content. The `<header>` is `pointer-events-none`; only
-the two clusters take clicks. Inner row = `h-14` on the page canvas
-(`max-w-(--grid-max) px-4 sm:px-8`) so the clusters track the content edges.
+## GlobalToolbar (CURRENT system, shipped 2026-08-05; un-FIXED to an in-flow row later the same day on Marco's call)
+`components/GlobalToolbar.tsx`, mounted once in `app/layout.tsx` (before `<main>`). An
+IN-FLOW row at the top of every route — `position: static`, scrolls away with the page.
+The fixed z-150 pointer-transparent era lasted one day; if it ever returns, MobileNav's
+inset coupling returns with it (see Mobile case studies below). Geometry: `pt-6` canvas
+(`max-w-(--grid-max) px-4 sm:px-8`) → `Grid`/`Col` on **`CONTENT_BAND`** (`md
+CONTENT_BAND_MD`) → `h-9` flex row. On the CONTENT_BAND the pixel glyph is left-aligned
+with the "Marco Sevilla" h1 and the right cluster is flush with the bio's right edge
+(verified 382/382 left and 1058/1058 optical right at 1440; the right cluster wrapper
+carries `-mr-2` to cancel the last 32px button's ~8px internal glyph inset).
+⚠️ Known off-by-a-hair: in the 1024–1199 window `.case-canvas` shifts case-study content
+right 200px for the TOC, but the toolbar (mounted outside it) doesn't follow.
 
 - **Left — PixelRain music entry** (`components/PixelRain.tsx`): 30×20 canvas, 7×5 LED
   grid of 2.5px cells seeded with the exact Figma glyph arrangement; pixels step DOWN one
@@ -36,17 +43,33 @@ the two clusters take clicks. Inner row = `h-14` on the page canvas
   file is kept but unmounted site-wide (SiteHeader, also unmounted, is its only reference).
 - **Music player**: `music/MusicPlayerPanel.tsx` — the old dock's expanded card (LED
   visualizer + transport + scrubber), portaled to `document.body` at z-200, left-anchored
-  under the trigger and clamped to the viewport (`PANEL_WIDTH = 300`). Open/close
-  lifecycle (outside-pointerdown excluding the trigger + panel via `.music-player-panel`,
-  Esc) lives in GlobalToolbar, not the panel. **`MusicMiniWidget.tsx` (bottom-right dock
+  under the trigger and clamped to the viewport. **`PANEL_WIDTH = 340` is exported from
+  the panel and imported by GlobalToolbar's clamp** — change it in one place. The popover
+  tracks scroll (capture listener) since the anchor is in-flow now. Sized up 2026-08-05
+  for touch: 340 wide (+ `max-w-[calc(100vw-16px)]`), viz 148 tall, transport buttons
+  `.bio-toolbar-btn--lg` (40px, globals.css), corner controls 28px with filled triangle
+  carets (local `CaretIcon`). Type is on tokens: title `typescale.h3`, artist
+  `typescale.label`, times `typescale.monoLabel` + `tabular-nums`. Open/close lifecycle
+  (outside-pointerdown excluding the trigger + panel via `.music-player-panel`, Esc)
+  lives in GlobalToolbar, not the panel. **`MusicMiniWidget.tsx` (bottom-right dock
   FAB + EmittingNotes) was DELETED** — recover from git if the dock ever returns. ChatFab
   still owns the bottom-right `.floating-dock`.
-- **Mobile case studies**: MobileNav's sticky Back/hamburger bar is also `h-14` and insets
-  its row (`pl-[64px] pr-[92px]`, `sm:` 80/108) so the toolbar clusters and Back/hamburger
-  read as ONE 56px glass band — toolbar z-150 floats over MobileNav z-50. Change one
-  layer's geometry and you must re-check the other.
+- **Mobile case studies**: the inset coupling is GONE (2026-08-05, same day it was
+  added) — MobileNav's sticky bar is a plain `px-5` row again because nothing floats over
+  it; the in-flow toolbar renders BELOW the sticky bar and scrolls away. Do not restore
+  the `pl-[64px] pr-[92px]` insets unless the toolbar goes fixed again.
 - The h1 rows in HomeLayout and Hero (About) are name-only now — the controls that rode
   there 2026-07-20 → 2026-08-05 moved into this bar.
+- **HomeLayout's paddingTop is coupled to this bar's height**: the wrapper clamp is
+  `clamp(40px, 7vh, 88px)` = the pre-toolbar `clamp(96px, 12vh, 144px)` minus the
+  toolbar's ~60px (pt-6 + h-9), keeping the name at its old optical position. Resize the
+  toolbar and re-derive that clamp.
+- **Icon ruling (2026-08-05, reverses 2026-06-04)**: control icons are FILLED — Moon
+  solid, Sun's core disc solid (rays stroked), transport Play/Pause/Skip solid with rect
+  bars, panel carets solid triangles. `PaintBrushIcon` is DELETED from Icons.tsx — the
+  palette trigger is now a 15px disc filled `var(--color-accent)` (+ hairline
+  `--color-border`): the active theme's own color; mono aliases accent→fg so it always
+  contrasts with the bg.
 
 ## ⚠️ Historical below — components that no longer exist
 The "Unified Toolbar" system below was shipped 2026-05-02, but **`HeroToolbar.tsx` and `MobileToolbar.tsx` are both gone from the tree** (verified 2026-08-04). `SiteHeader` was also unmounted site-wide on 2026-07-20 (component kept for salvage); its contents moved into HomeLayout's h1 row. Treat the section below as historical intent and verify against the live components before acting on it.

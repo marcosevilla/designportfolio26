@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaletteRow } from "./PaletteSwatches";
 import { useChangelogOverlay } from "@/lib/ChangelogOverlayContext";
-import { ChangelogIcon, MoonIcon, PaintBrushIcon, SunIcon } from "./Icons";
+import { ChangelogIcon, MoonIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
 import {
   Tooltip,
@@ -137,7 +137,22 @@ function PaletteButton({
             />
           }
         >
-          <PaintBrushIcon size={15} />
+          {/* Swatch = the ACTIVE theme's color, not a generic glyph
+              (replaced the paintbrush 2026-08-05). --color-accent is the
+              selected colored theme's brand color; the mono default
+              aliases it to --color-fg, so the disc always contrasts with
+              the page bg. Hairline border covers the edge cases. */}
+          <span
+            aria-hidden
+            style={{
+              display: "block",
+              width: 15,
+              height: 15,
+              borderRadius: "50%",
+              backgroundColor: "var(--color-accent)",
+              border: "1px solid var(--color-border)",
+            }}
+          />
         </TooltipTrigger>
         <TooltipContent>Settings</TooltipContent>
       </Tooltip>

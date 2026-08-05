@@ -192,15 +192,6 @@ export function SettingsIcon({ size = 16, className, style }: IconProps) {
   );
 }
 
-export function PaintBrushIcon({ size = 16, className, style }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
-      <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
-    </svg>
-  );
-}
-
 export function PaletteIcon({ size = 18, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -213,10 +204,13 @@ export function PaletteIcon({ size = 18, className }: IconProps) {
   );
 }
 
+// Sun/moon render FILLED (core disc / crescent solid) per the 2026-08-05
+// icon ruling: toolbar control icons are solid, not stroked. The sun's
+// rays stay stroked — filling them would just fatten the silhouette.
 export function SunIcon({ size = 16, className, style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none" />
       <path d="M12 2v2" />
       <path d="M12 20v2" />
       <path d="m4.93 4.93 1.41 1.41" />
@@ -231,7 +225,7 @@ export function SunIcon({ size = 16, className, style }: IconProps) {
 
 export function MoonIcon({ size = 16, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className={className} style={style}>
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   );
@@ -239,11 +233,12 @@ export function MoonIcon({ size = 16, className, style }: IconProps) {
 
 // ── Transport (music player) ──
 
-// Transport icons render thin/stroked (strokeWidth 1.5, no fill) to match
-// the header icon family — every icon-button glyph shares one line style.
+// Transport icons render FILLED (2026-08-05 ruling — control icons are
+// solid; the round stroke keeps corners soft so they sit with the rest
+// of the family). Bars are rects, not lines, so the fill carries them.
 export function PlayIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
       <path d="M8 5.5L19 12 8 18.5z" />
     </svg>
   );
@@ -251,17 +246,17 @@ export function PlayIcon({ size = 18, className, style }: IconProps) {
 
 export function PauseIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <line x1="9" y1="5.5" x2="9" y2="18.5" />
-      <line x1="15" y1="5.5" x2="15" y2="18.5" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" className={className} style={style}>
+      <rect x="7" y="5" width="3.5" height="14" rx="1.25" />
+      <rect x="13.5" y="5" width="3.5" height="14" rx="1.25" />
     </svg>
   );
 }
 
 export function SkipBackIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <line x1="6.5" y1="6" x2="6.5" y2="18" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <rect x="5.5" y="6" width="1.5" height="12" rx="0.75" stroke="none" />
       <path d="M19 6.5L10 12l9 5.5z" />
     </svg>
   );
@@ -269,8 +264,8 @@ export function SkipBackIcon({ size = 18, className, style }: IconProps) {
 
 export function SkipForwardIcon({ size = 18, className, style }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <line x1="17.5" y1="6" x2="17.5" y2="18" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+      <rect x="17" y="6" width="1.5" height="12" rx="0.75" stroke="none" />
       <path d="M5 6.5L14 12 5 17.5z" />
     </svg>
   );

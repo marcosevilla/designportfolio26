@@ -11,8 +11,8 @@ import {
   PauseIcon,
   SkipBackIcon,
   SkipForwardIcon,
-  ChevronUpIcon,
 } from "@/components/Icons";
+import { typescale } from "@/lib/typography";
 import InsetScrubber from "./InsetScrubber";
 import {
   Tooltip,
@@ -23,12 +23,17 @@ import {
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+/** Card width — GlobalToolbar's popover clamp imports this so the two
+ *  can't drift. The card itself also caps at calc(100vw - 16px) so it
+ *  never overflows a phone viewport. */
+export const PANEL_WIDTH = 340;
+
 // Peek heights for the collapsed visualizer — the top edge of the LED
 // screen stays visible so it can be clicked back open; hovering the
 // player nudges it out a little further.
 const PEEK_REST = 10;
 const PEEK_HOVER = 20;
-const VIZ_HEIGHT = 132;
+const VIZ_HEIGHT = 148;
 
 function formatTime(sec: number): string {
   if (!isFinite(sec) || sec < 0) return "0:00";
@@ -37,22 +42,30 @@ function formatTime(sec: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function ArrowIcon({ dir, size = 11 }: { dir: "left" | "right"; size?: number }) {
+/** Filled triangle caret — the corner controls' glyph (collapse chevron,
+ *  scene prev/next). Filled per the 2026-08-05 icon ruling: control icons
+ *  are solid, not stroked. */
+function CaretIcon({
+  dir,
+  size = 13,
+}: {
+  dir: "up" | "left" | "right";
+  size?: number;
+}) {
+  const rotate =
+    dir === "up" ? undefined : dir === "left" ? "rotate(-90 8 8)" : "rotate(90 8 8)";
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 16 16"
-      fill="none"
+      fill="currentColor"
       stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
+      strokeWidth="1.5"
       strokeLinejoin="round"
       aria-hidden
-      style={dir === "left" ? { transform: "scaleX(-1)" } : undefined}
     >
-      <path d="M3 8h10" />
-      <path d="M9 4l4 4-4 4" />
+      <path d="M8 4.5L13.5 11h-11z" transform={rotate} />
     </svg>
   );
 }
@@ -76,7 +89,7 @@ function MiniButton({
             type="button"
             onClick={onClick}
             aria-label={label}
-            className="bio-toolbar-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+            className="bio-toolbar-btn bio-toolbar-btn--lg focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
           />
         }
       >
@@ -108,8 +121,8 @@ function VizCornerButton({
             aria-label={label}
             className="flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
             style={{
-              width: 22,
-              height: 22,
+              width: 28,
+              height: 28,
               borderRadius: 4,
               backgroundColor: "var(--color-bg)",
               border: "0.5px solid var(--color-border)",
@@ -132,11 +145,15 @@ function VizCornerButton({
  * scrubber below. Extracted from the retired bottom-right MusicMiniWidget
  * dock (2026-08-05, git-recoverable) when the music entry point moved to
  * the GlobalToolbar's pixel-rain button. Positioning comes from the
- * caller (GlobalToolbar portals it below the trigger, top-left); open /
- * close lifecycle (outside click, Esc) also lives in the caller.
+ * caller (GlobalToolbar portals it below the trigger); open / close
+ * lifecycle (outside click, Esc) also lives in the caller.
+ *
+ * Sized up 2026-08-05 (300 → 340 wide, 40px transport buttons, filled
+ * icons) for touch friendliness; type sits on the typescale tokens
+ * (h3 title / label artist / monoLabel times).
  *
  * Hovering anywhere on the card reveals the screen's floating corner
- * controls — scene prev/next arrows top-right, collapse chevron top-left.
+ * controls — scene prev/next carets top-right, collapse caret top-left.
  * When collapsed, the screen's top edge stays "peeking" (a little taller
  * while hovering); clicking the peek expands it again.
  */
@@ -179,8 +196,9 @@ export default function MusicPlayerPanel({
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       exit={{ opacity: 0, y: -8, filter: "blur(8px)" }}
       transition={{ duration: 0.26, ease: EASE }}
-      className="music-player-panel w-[300px] flex flex-col overflow-hidden"
+      className="music-player-panel flex flex-col overflow-hidden max-w-[calc(100vw-16px)]"
       style={{
+        width: PANEL_WIDTH,
         backgroundColor: "var(--color-bg)",
         border: "0.5px solid var(--color-border)",
         borderRadius: 4,
@@ -202,7 +220,7 @@ export default function MusicPlayerPanel({
         {/* LED screen — full height when open; collapsed it keeps a
             clickable "peek" of its top edge that grows slightly on
             player hover. Corner controls float over the screen on
-            hover: collapse chevron top-left, scene arrows top-right. */}
+            hover: collapse caret top-left, scene carets top-right. */}
         <motion.div
           animate={{ height: vizHeight }}
           transition={{ duration: 0.3, ease: EASE }}
@@ -237,7 +255,7 @@ export default function MusicPlayerPanel({
                   label="Hide visualizer"
                   onClick={() => setVizOpen(false)}
                 >
-                  <ChevronUpIcon size={11} />
+                  <CaretIcon dir="up" />
                 </VizCornerButton>
               </div>
               <div className="flex items-center gap-1 pointer-events-auto">
@@ -245,60 +263,47 @@ export default function MusicPlayerPanel({
                   label="Previous scene"
                   onClick={() => cycleScene(-1)}
                 >
-                  <ArrowIcon dir="left" />
+                  <CaretIcon dir="left" />
                 </VizCornerButton>
                 <VizCornerButton
                   label="Next scene"
                   onClick={() => cycleScene(1)}
                 >
-                  <ArrowIcon dir="right" />
+                  <CaretIcon dir="right" />
                 </VizCornerButton>
               </div>
             </motion.div>
           )}
         </motion.div>
 
-        <div className="flex flex-col px-3 py-3">
+        <div className="flex flex-col px-4 py-3.5">
           {/* Always visible — transport left, track info right. */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 shrink-0">
               <MiniButton label="Previous track" tooltip="Previous" onClick={prev}>
-                <SkipBackIcon size={14} />
+                <SkipBackIcon size={18} />
               </MiniButton>
               <MiniButton
                 label={isPlaying ? "Pause" : "Play"}
                 tooltip={isPlaying ? "Pause" : "Play"}
                 onClick={() => void togglePlay()}
               >
-                {isPlaying ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+                {isPlaying ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
               </MiniButton>
               <MiniButton label="Next track" tooltip="Next" onClick={next}>
-                <SkipForwardIcon size={14} />
+                <SkipForwardIcon size={18} />
               </MiniButton>
             </div>
             <div className="flex flex-col min-w-0 flex-1 items-end text-right">
               <p
                 className="truncate w-full"
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: "var(--color-fg)",
-                  letterSpacing: "-0.01em",
-                  lineHeight: 1.3,
-                }}
+                style={{ ...typescale.h3, color: "var(--color-fg)" }}
               >
                 {currentTrack.title}
               </p>
               <p
                 className="truncate w-full"
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 11.5,
-                  fontWeight: 400,
-                  color: "var(--color-fg-tertiary)",
-                  lineHeight: 1.3,
-                }}
+                style={{ ...typescale.label, color: "var(--color-fg-tertiary)" }}
               >
                 {currentTrack.artist}
               </p>
@@ -308,18 +313,14 @@ export default function MusicPlayerPanel({
           {/* Scrubber — always visible. Elapsed | bar | total. */}
           <div>
             <div
-              className="flex items-center gap-2 pt-2"
+              className="flex items-center gap-2 pt-2.5"
               style={{
-                fontFamily:
-                  "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                fontSize: 11,
-                fontWeight: 500,
-                color: "var(--color-fg-tertiary)",
-                letterSpacing: "0.04em",
+                ...typescale.monoLabel,
                 lineHeight: 1,
+                color: "var(--color-fg-tertiary)",
               }}
             >
-              <span className="tabular-nums shrink-0" style={{ minWidth: 30 }}>
+              <span className="tabular-nums shrink-0" style={{ minWidth: 34 }}>
                 {formatTime(displayTime)}
               </span>
               <div className="flex-1 min-w-0">
@@ -334,14 +335,14 @@ export default function MusicPlayerPanel({
                   onCommit={() => {
                     requestAnimationFrame(() => setScrubbing(false));
                   }}
-                  restingHeight={2}
-                  expandedHeight={3}
-                  thumbSize={10}
+                  restingHeight={3}
+                  expandedHeight={4}
+                  thumbSize={12}
                 />
               </div>
               <span
                 className="tabular-nums shrink-0 text-right"
-                style={{ minWidth: 30 }}
+                style={{ minWidth: 34 }}
               >
                 {formatTime(duration)}
               </span>

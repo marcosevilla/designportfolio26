@@ -104,12 +104,14 @@ export default function RootLayout({
                   Skip to content
                 </a>
                 <MobileNav />
-                {/* Global toolbar (2026-08-05, Aug 2026 Figma) — fixed
-                    top bar on every route, above all content: pixel-rain
-                    music entry left, theme toggle + palette right. It
-                    replaces the per-page h1-row controls (HomeLayout /
-                    Hero) and the bottom-right music dock FAB. The older
-                    SiteHeader stays unmounted (kept for salvage). */}
+                {/* Global toolbar (2026-08-05, Aug 2026 Figma) — in-flow
+                    row at the top of every route, on the CONTENT_BAND
+                    columns: pixel-rain music entry left, theme toggle +
+                    theme swatch right. Scrolls with the page (un-fixed
+                    later the same day, Marco's call). It replaces the
+                    per-page h1-row controls (HomeLayout / Hero) and the
+                    bottom-right music dock FAB. The older SiteHeader
+                    stays unmounted (kept for salvage). */}
                 <GlobalToolbar />
                 <InlineEditorProvider>
                   {/* No width cap here — each page owns its measure. Case

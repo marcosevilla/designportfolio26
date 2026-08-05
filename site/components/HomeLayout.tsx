@@ -195,11 +195,14 @@ export default function HomeLayout({
 
       {/* Single centered column layout. Home is a 600px column (see
           inner wrapper); About mode is a 650px column for the bio read.
-          paddingTop = SiteHeader height (~38) + breathing room. */}
+          paddingTop is the toolbar→name gap now: the in-flow
+          GlobalToolbar above already spends ~60px (pt-6 + h-9), so this
+          clamp is the old 96/12vh/144 minus that — the name keeps its
+          pre-toolbar optical position. */}
       <div
         className="mx-auto"
         style={{
-          paddingTop: "clamp(96px, 12vh, 144px)",
+          paddingTop: "clamp(40px, 7vh, 88px)",
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -246,8 +249,10 @@ export default function HomeLayout({
               {/* Page heading — display-size serif name above the bio.
                   The site controls that used to sit flush right on this
                   row (time / weather, light-dark toggle, palette picker)
-                  moved into the fixed GlobalToolbar (2026-08-05); this
-                  also un-squeezes the h1 at narrow widths. */}
+                  moved into the GlobalToolbar (2026-08-05) — the in-flow
+                  row above this section, on the same CONTENT_BAND, so
+                  its clusters align with the name/bio edges; this also
+                  un-squeezes the h1 at narrow widths. */}
               <motion.div
                 initial={introInitial}
                 animate={{

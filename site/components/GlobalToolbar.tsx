@@ -3,9 +3,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence } from "framer-motion";
+import Grid, { Col } from "@/components/layout/Grid";
+import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import HeaderToolbar from "./HeaderToolbar";
 import PixelRain from "./PixelRain";
-import MusicPlayerPanel from "./music/MusicPlayerPanel";
+import MusicPlayerPanel, { PANEL_WIDTH } from "./music/MusicPlayerPanel";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import {
   Tooltip,
@@ -14,24 +16,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const PANEL_WIDTH = 300; // MusicPlayerPanel's w-[300px]
-
 /**
- * Global toolbar — fixed to the viewport top on EVERY route, floating
- * above all page content (Aug 2026 Figma `controls` frame, node
- * 264:4254). The bar itself is pointer-transparent; only the two
- * clusters take clicks:
+ * Global toolbar — an in-flow row at the top of every route (un-fixed
+ * 2026-08-05 on Marco's call; the fixed z-150 era lasted one day). It sits
+ * on the CONTENT_BAND columns — the same band the page content reads on —
+ * so on the homepage the pixel glyph is left-aligned with "Marco Sevilla"
+ * and the controls are right-aligned with the bio's edge. It scrolls away
+ * with the page.
  *
  * - Left: the PixelRain LED glyph — the music player's single entry
- *   point (migrated here from the retired bottom-right dock FAB).
- *   Clicking it opens the player card below the glyph and starts
+ *   point. Clicking it opens the player card below the glyph and starts
  *   playback on first open.
- * - Right: light/dark toggle + theme palette (HeaderToolbar). Time /
- *   weather (LocalStatus) was dropped from the chrome per the same
- *   Figma pass.
- *
- * The inner row shares the page canvas (--grid-max + px-4 sm:px-8) so
- * the clusters align with the content edges at every width.
+ * - Right: light/dark toggle + theme swatch (HeaderToolbar).
  */
 export default function GlobalToolbar() {
   const [musicOpen, setMusicOpen] = useState(false);
@@ -67,49 +63,55 @@ export default function GlobalToolbar() {
   }, [musicOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[150] pointer-events-none">
-      {/* h-14 matches MobileNav's case-study bar exactly, so on mobile
-          case studies the two layers read as ONE 56px band (MobileNav
-          insets its Back/hamburger around these clusters). */}
-      <div className="mx-auto flex h-14 w-full max-w-(--grid-max) items-center justify-between gap-4 px-4 sm:px-8">
-        <TooltipProvider delay={100}>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  ref={triggerRef}
-                  type="button"
-                  onClick={toggleMusic}
-                  aria-label={musicOpen ? "Close music player" : "Open music player"}
-                  aria-expanded={musicOpen}
-                  // -m-2/p-2 grows the hit area without moving the
-                  // glyph off the canvas edge.
-                  className="pointer-events-auto -m-2 p-2 cursor-pointer transition-colors duration-150 text-(--color-fg-secondary) hover:text-(--color-accent) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
-                  style={
-                    isPlaying || musicOpen
-                      ? { color: "var(--color-accent)" }
-                      : undefined
+    <header className="w-full max-w-(--grid-max) mx-auto px-4 sm:px-8 pt-6">
+      <Grid>
+        <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+          <div className="flex h-9 items-center justify-between">
+            <TooltipProvider delay={100}>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      ref={triggerRef}
+                      type="button"
+                      onClick={toggleMusic}
+                      aria-label={
+                        musicOpen ? "Close music player" : "Open music player"
+                      }
+                      aria-expanded={musicOpen}
+                      // -m-2/p-2 grows the hit area without moving the
+                      // glyph off the band's left edge.
+                      className="-m-2 p-2 cursor-pointer transition-colors duration-150 text-(--color-fg-secondary) hover:text-(--color-accent) focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+                      style={
+                        isPlaying || musicOpen
+                          ? { color: "var(--color-accent)" }
+                          : undefined
+                      }
+                    />
                   }
-                />
-              }
-            >
-              <PixelRain />
-            </TooltipTrigger>
-            <TooltipContent>Music</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <div className="pointer-events-auto">
-          <HeaderToolbar />
-        </div>
-      </div>
+                >
+                  <PixelRain />
+                </TooltipTrigger>
+                <TooltipContent>Music</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {/* -mr-2 pulls the last button's glyph (15px centered in the
+                32px box → ~8px inset) optically flush with the band edge. */}
+            <div className="-mr-2">
+              <HeaderToolbar />
+            </div>
+          </div>
+        </Col>
+      </Grid>
       <MusicPopover open={musicOpen} anchorRef={triggerRef} />
     </header>
   );
 }
 
-/** Portal so the header's pointer-events/fixed context never clips the
- *  card. Left-aligned to the trigger (top-left toolbar corner), clamped
- *  so the 300px card can't slide off narrow viewports. */
+/** Portal so no ancestor stacking/overflow context clips the card.
+ *  Left-aligned to the trigger, clamped so the card can't slide off
+ *  narrow viewports. Tracks scroll — the toolbar is in-flow now, so the
+ *  anchor moves with the page. */
 function MusicPopover({
   open,
   anchorRef,
@@ -138,7 +140,11 @@ function MusicPopover({
     };
     update();
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
   }, [open, anchorRef]);
 
   if (!mounted) return null;
