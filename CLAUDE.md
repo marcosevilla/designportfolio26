@@ -107,6 +107,7 @@ Reference docs live in `docs/`. Read the relevant ones based on the task — don
 | `PORTFOLIO-AUDIT.md` | Full site audit with prioritized recommendations (P0-P3) |
 | `QA-FINDINGS.md` | Open visual-QA findings awaiting Marco's ruling |
 | `PERF-BACKLOG.md` | Performance backlog — **ON HOLD** by Marco's call, don't re-pitch at session start |
+| `TYPOGRAPHY-BACKLOG.md` | Queued type-system cleanups from the 2026-08-05 audit + the deliberate exemptions |
 | `LOGO-LAB-HANDOFF.md` | Building the interactive 3D logo (`/dev/logo-lab`) — read before any 3D logo work |
 | `LAYOUT-REFERENCE.html` | Visual reference for the grid system (open in a browser) |
 | `figma-migration/POLISHED-TOKENS.md` | Canary polished token system + restyle pipeline |
