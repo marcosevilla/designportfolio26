@@ -39,19 +39,52 @@ but freezes nav, labels, stats, chat, TOC and modals. Dragging it desynchronizes
 
 Only 9 of 15 tokens are built with `scaled()`. Fixed-size tokens:
 
-| Token | Size | Should scale? |
-|---|---|---|
-| `sectionLabel` | 14px | dead token — see ④ |
-| `statValue` | 24px | yes |
-| `label` | 11px | Marco's call — 11px is already at the floor, +4 → 15px may be fine |
-| `nav` | 16px | yes |
-| `navMobile` | 14px | yes |
+| Token | Size | Consumers | Disposition |
+|---|---|---|---|
+| `sectionLabel` | 14px | **0** | delete — see ④ |
+| `nav` | 16px | **0** | delete — see ④ |
+| `navMobile` | 14px | **0** | delete — see ④ |
+| `statValue` | 24px | 1 (`QuickStats`) | **scale** |
+| `label` | 11px | 26 | **leave fixed** (see ruling) |
 
 It is also inconsistent *within a single file*: `CaseStudyList.tsx:746` uses
 `calc(16px + var(--font-size-offset))` while `:757` and `:996` are bare `11px`.
 
-**Approach:** decide the policy first (does chrome scale with the slider, or only
-content?), then apply. This is the one item that needs a ruling before code.
+### RULING (Marco, 2026-08-05): the slider is a READING control, not a global zoom
+
+The slider is the only text-size control on the site. Someone who drags it to +4 because
+17px prose is too small currently still gets 10px chat text and 11px meta labels — the
+smallest text we ship, and exactly what they needed help with. That is an accessibility
+gap, not just an inconsistency. But scaling *everything* would push layouts that were
+measured rather than flowed. So the line is drawn by container, not by "chrome vs content":
+
+**SCALE — things people read, living in flexible containers:**
+
+| Surface | Files | Sizes today |
+|---|---|---|
+| Sticky table of contents | `case-study/InlineTOC.tsx` (3 sites) | 12px |
+| QuickStats numbers | `case-study/QuickStats.tsx` via `statValue` | 24px |
+| Demo captions | `DemoStage.tsx:147,185` | 13px |
+| Chat, entire surface | `chat/ChatPanel.tsx` (10/13/14/15), `ChatBar.tsx` (12), `ChatMessage.tsx` (14), `ChipPrompt.tsx` (12), `ChatMessageActions.tsx` (11), `CaseStudyCardUnfurl.tsx` (11/14) | 10–15px |
+| Modals + overlays | `PasswordModal.tsx` (12/13/16), `LockGate.tsx` (11/12), `ChangelogOverlay.tsx` (11/13/14/16), `NavOverlay.tsx` (12), `HamburgerMenu.tsx` (12/32), `MobileNav.tsx` (12) | 11–32px |
+
+**LEAVE FIXED — micro-labels pinned inside fixed-geometry chrome.** At +4 these push
+layouts whose dimensions were measured, not flowed:
+
+| Surface | Files | Why |
+|---|---|---|
+| Work marquee meta | `CaseStudyList.tsx:294,757,996` | card geometry pinned at 494×400 |
+| List-row year / company / metric | `CaseStudyList.tsx` via `typescale.label` | baseline-aligned flex row |
+| Music dock | `music/MusicMiniWidget.tsx` (11/11.5/13) | fixed dock geometry |
+| Time / weather readout | `LocalStatus.tsx:153` (11) | fixed toolbar slot |
+| Homepage name label + experience list | `Hero.tsx:28,47,59,86,412` | pinned h1-row layout |
+| `HomeNav` links | `HomeNav.tsx:197,249` (12) | nav star is position-computed off `ROW_HEIGHT` |
+
+`typescale.label` therefore stays fixed at 11px — all 26 of its consumers fall on the
+fixed side of the line, or are `fb-showcase` product specimens (exempt entirely).
+
+**Watch when implementing:** `HamburgerMenu.tsx:219` is 32px, not a micro-label — check
+what it is before sweeping it in with the overlay group.
 
 ## ③ Duplicated untokenized hero-subtitle spec
 
@@ -63,11 +96,25 @@ weight 400, explicit Geist family. It is a third subtitle spec and contradicts
 **Fix:** add `typescale.studySubtitleItalic`, import in both. Make the line-height unitless
 (26/18 = 1.444) per the rule now in `.claude/rules/typography.md`.
 
-## ④ `typescale.sectionLabel` is dead
+## ④ Three dead tokens
 
-Defined in `lib/typography.ts`, documented in `.claude/rules/typography.md`, **zero
-consumers.** Either delete the token and its rule row, or find its intended surface.
-It is the last remnant of the mono-uppercase h2 label era.
+`sectionLabel` (14px), `nav` (16px) and `navMobile` (14px) all have **zero consumers** —
+defined in `lib/typography.ts` and documented in `.claude/rules/typography.md`, rendering
+nothing. Verified 2026-08-05:
+
+```
+typescale.nav          -> 0 consumers
+typescale.navMobile    -> 0 consumers
+typescale.sectionLabel -> 0 consumers
+```
+
+`sectionLabel` is the last remnant of the mono-uppercase h2 label era. `nav` / `navMobile`
+were presumably orphaned when `SiteHeader` was unmounted site-wide (2026-07-20) — the live
+nav links are `HomeNav.tsx`'s own inline 12px.
+
+**Fix:** delete all three, and delete their rows from the rule table (the "Nav (desktop)"
+and "Nav (mobile)" rows there currently describe tokens nothing uses, which is worse than
+no documentation).
 
 ## ⑥ 15px de-emphasis paragraphs have no token
 
@@ -95,8 +142,10 @@ Both belong in `app/globals.css` next to the existing `-webkit-font-smoothing` b
    still open. Bump to ~20px, or is the hero subtitle deliberately quieter than prose?
 2. **`display` and `caseStudyHero` are byte-identical.** Collapse to one token with an
    alias, or keep both as separate semantic slots?
-3. **Does UI chrome scale with the font-size slider** (see ①), or is the slider a
-   reading-content control only?
+
+~~3. Does UI chrome scale with the font-size slider?~~ **RULED 2026-08-05** — see the
+ruling under ①. Neither question above blocks any item in this backlog; both are
+refinements to tokens that are already wired correctly.
 
 ---
 
@@ -135,5 +184,15 @@ once that lands.
 
 ## Suggested sequence
 
-④ (delete dead token) → ③ and ⑥ (new tokens, mechanical swaps) → ⑦ (two CSS lines) → ①
-last, since it is the largest sweep and needs the policy ruling first.
+Nothing is blocked — ① was the only item awaiting a ruling and it has one.
+
+1. **④** — delete the three dead tokens + their rule rows. Smallest, zero risk, and it
+   shrinks ①'s surface before you start it.
+2. **③ + ⑥** — add `studySubtitleItalic` and `bodySm`, swap the 12 call sites. Mechanical.
+3. **⑦** — `font-synthesis: none` and `::selection` in `globals.css`. Two additions.
+4. **①** — the sweep. Largest, and best done last so the dead tokens are already gone.
+
+**Verification for ①** (the ratio-holds check that caught the original bug): pin a node,
+sample `getComputedStyle` across `--font-size-offset` values `-4px / 0 / +2px / +4px`, and
+confirm the intended surfaces move while the fixed-geometry ones don't. Then eyeball the
+marquee, music dock and toolbar at +4 for layout push.
