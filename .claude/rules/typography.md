@@ -13,7 +13,7 @@ paths:
 
 # Typography
 
-Consolidated to single Geist Sans family in April 2026 (see `docs/superpowers/specs/2026-04-18-typography-consolidation-design.md`). **Libre Baskerville is the tertiary site face (2026-08-05, per the Aug 2026 Figma)** — homepage name h1 ONLY.
+Consolidated to single Geist Sans family in April 2026 (see `docs/superpowers/specs/2026-04-18-typography-consolidation-design.md`). **Libre Baskerville is the tertiary site face (2026-08-05, per the Aug 2026 Figma)** — the "Marco Sevilla" name h1 ONLY, now on BOTH the homepage (HomeLayout) and the About header (Hero), via the shared `serifName` export in `lib/typography.ts` (added 2026-08-05 when About adopted the treatment — never re-inline the spec).
 
 ## Font Stack
 Geist Sans (site chrome + prose) + Libre Baskerville (display serif, homepage name only — `--font-baskerville`, DELIBERATELY minimal load: 400 normal only, not the 2026-07 era's 400/700+italics). Representational components (URL bar, arch diagrams, teaser) use `var(--font-mono-system)` = `ui-monospace, Menlo, Monaco, monospace`. Inter is loaded too but is the PRODUCT face (Canary specimens), not site type. Tertiary-face history, all 2026-08-05 after the original Baskerville era (2026-07-13→07-20, "Baskerville out, Geist everywhere"): Fraunces (one commit) → Departure Mono pixel mono at 44px (one commit; woff2 was in `site/fonts/`, since deleted) → Libre Baskerville per Figma node 243:4032. Each era is a single `git revert` away.

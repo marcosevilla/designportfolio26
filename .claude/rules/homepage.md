@@ -25,7 +25,7 @@ paths:
 - **Nav star:** spring stiffness 350, damping 28, y = activeIndex × ROW_HEIGHT
 - **Hover:** Accent color + 8px right slide (spring 400/25)
 - **Mobile (MobileNav.tsx):** Case-study-only top bar — single ← Back link driven by `SidebarContext.backHref`. Not used on homepage.
-- **SiteHeader is unmounted site-wide** (2026-07-20) — component kept for salvage. Time/weather (LocalStatus) + theme toggle + palette (HeaderToolbar) moved into HomeLayout's h1 row. **KNOWN GAP:** About mode (`aboutMeOpen`) renders Hero instead of the h1 row, so it has no theme/status controls.
+- **SiteHeader is unmounted site-wide** (2026-07-20) — component kept for salvage. Time/weather (LocalStatus) + theme toggle + palette (HeaderToolbar) moved into HomeLayout's h1 row. The old KNOWN GAP (About mode had no theme/status controls) was CLOSED 2026-08-05: Hero's About header now renders the same serif-name row with LocalStatus + HeaderToolbar (`serifName` from `lib/typography.ts`). ⚠️ At ≤390px the name row wraps "Marco Sevilla" to two lines on BOTH surfaces (controls squeeze the h1) — pre-existing, awaiting Marco's ruling on wrap-controls-below vs smaller mobile name.
 
 ## Homepage Scroll
 - **Single continuous scroll** — SectionSnap deleted, replaced by normal document flow
