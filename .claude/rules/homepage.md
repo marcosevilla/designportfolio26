@@ -25,7 +25,7 @@ paths:
 - **Nav star:** spring stiffness 350, damping 28, y = activeIndex × ROW_HEIGHT
 - **Hover:** Accent color + 8px right slide (spring 400/25)
 - **Mobile (MobileNav.tsx):** Case-study-only top bar — single ← Back link driven by `SidebarContext.backHref`. Not used on homepage.
-- **SiteHeader is unmounted site-wide** (2026-07-20) — component kept for salvage. Time/weather (LocalStatus) + theme toggle + palette (HeaderToolbar) moved into HomeLayout's h1 row. The old KNOWN GAP (About mode had no theme/status controls) was CLOSED 2026-08-05: Hero's About header now renders the same serif-name row with LocalStatus + HeaderToolbar (`serifName` from `lib/typography.ts`). ⚠️ At ≤390px the name row wraps "Marco Sevilla" to two lines on BOTH surfaces (controls squeeze the h1) — pre-existing, awaiting Marco's ruling on wrap-controls-below vs smaller mobile name.
+- **SiteHeader is unmounted site-wide** (2026-07-20) — component kept for salvage. The h1-row-controls era (2026-07-20 → 2026-08-05: LocalStatus + HeaderToolbar beside the name on home and About) is OVER — those controls live in the fixed **GlobalToolbar** now (see `.claude/rules/toolbar-chrome.md`), LocalStatus is unmounted entirely (time/weather dropped), and both h1 rows are name-only. This also RESOLVED the ≤390px "Marco Sevilla" two-line wrap (the controls were what squeezed the h1) — verified single-line at 390 on 2026-08-05.
 
 ## Homepage Scroll
 - **Single continuous scroll** — SectionSnap deleted, replaced by normal document flow
