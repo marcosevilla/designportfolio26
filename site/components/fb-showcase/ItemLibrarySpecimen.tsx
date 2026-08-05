@@ -34,7 +34,6 @@ import {
 const APP_W = 1177; // matches OrderDashboardSpecimen
 const CHROME_H = 36; // shared WindowChrome
 const CONTENT_W = APP_W - NAV_W; // 961
-const TOPBAR_H = 56; // "Statler New York ▾" + avatar bar
 const TITLE_H = 52; // "Food and Beverage Ordering" (mirrors #2's HEADER_H)
 const TABS_H = 56; // tab row incl. underline
 const TABLE_W = 900; // centered in the 961 content column
@@ -43,10 +42,10 @@ const THUMB = 40;
 /** checkbox · item · pos code · menus · price · availability */
 const COLUMNS = "36px 1fr 128px 208px 96px 128px";
 const APP_H =
-  TOPBAR_H + TITLE_H + TABS_H + 64 /* heading row */ + 36 /* col headers */ +
-  8 * ROW_H + 20; /* bottom pad */ // 860
+  TITLE_H + TABS_H + 36 /* col headers */ +
+  8 * ROW_H + 20; /* bottom pad */ // 740
 const SHELL_W = APP_W;
-const SHELL_H = APP_H + CHROME_H; // 896
+const SHELL_H = APP_H + CHROME_H; // 776
 
 const EASE = [0.25, 0.46, 0.45, 0.94] as const;
 
@@ -167,7 +166,7 @@ function TrashButton({ itemId, onClick }: { itemId: string; onClick: () => void 
 // ─── Table ─────────────────────────────────────────────────────────────────
 
 function ColumnHeaders() {
-  const labels = ["", "Item", "POS item code", "Menus", "Price", "Availability"];
+  const labels = ["", "Item", "POS item code", "Menus", "Price", ""];
   return (
     <div
       style={{
@@ -175,6 +174,7 @@ function ColumnHeaders() {
         gridTemplateColumns: COLUMNS,
         height: 36,
         alignItems: "center",
+        paddingInline: 16,
       }}
     >
       {labels.map((l, i) => (
@@ -230,6 +230,7 @@ function ItemRow({
           gridTemplateColumns: COLUMNS,
           alignItems: "center",
           height: ROW_H,
+          paddingInline: 16,
           borderTop: first ? "none" : `1px solid ${neutral[100]}`,
         }}
       >
@@ -272,6 +273,7 @@ function ItemRow({
           style={{
             ...TYPE.body,
             color: item.posCode ? neutral[600] : neutral[400],
+            ...dimStyle,
           }}
         >
           {item.posCode ?? "—"}
@@ -379,36 +381,6 @@ function Library() {
         <Sidebar />
 
         <div style={{ width: CONTENT_W, display: "flex", flexDirection: "column" }}>
-          {/* Top bar */}
-          <div
-            style={{
-              height: TOPBAR_H,
-              flexShrink: 0,
-              display: "flex",
-              alignItems: "center",
-              paddingInline: 20,
-              borderBottom: `1px solid ${neutral[100]}`,
-            }}
-          >
-            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ ...TYPE.body, fontWeight: W.medium, color: neutral[900] }}>
-                Statler New York
-              </span>
-              <Icon path={ICONS.chevronDown} size={16} color={neutral[500]} />
-            </span>
-            <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-              <div
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: RADIUS.full,
-                  backgroundColor: neutral[200],
-                }}
-              />
-              <Icon path={ICONS.chevronDown} size={16} color={neutral[500]} />
-            </span>
-          </div>
-
           {/* Title bar */}
           <div
             style={{
@@ -462,24 +434,10 @@ function Library() {
                   </button>
                 );
               })}
-            </div>
-
-            {/* Heading row */}
-            <div
-              style={{
-                width: TABLE_W,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingTop: 20,
-              }}
-            >
-              <h3 style={{ ...TYPE.titleS, fontWeight: W.semibold, color: neutral[900], margin: 0 }}>
-                Item library
-              </h3>
               <button
                 type="button"
                 style={{
+                  marginLeft: "auto",
                   height: 36,
                   paddingInline: 16,
                   backgroundColor: primary[500],
