@@ -1,6 +1,7 @@
 "use client";
 
 import { useInlineEditor } from "@/lib/InlineEditorContext";
+import { EDITOR_SERVER_URL } from "@/lib/editor-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { SPRING_HEAVY } from "@/lib/springs";
 import { CloseIcon, EditPencilIcon } from "../Icons";
@@ -21,9 +22,16 @@ export default function FloatingToolbar() {
     unpublished,
     publishState,
     publish,
+    serverOnline,
+    serverBranch,
   } = useInlineEditor();
 
   const [placeholderCount, setPlaceholderCount] = useState(0);
+
+  const offline = serverOnline === false;
+  // Publishing from a non-main branch commits somewhere that won't deploy — say so
+  // rather than letting "Commit & push" imply the change is going live.
+  const offMain = Boolean(serverBranch) && serverBranch !== "main";
 
   // Case studies + the homepage (intro paragraphs, About bio)
   const isCaseStudy = pathname.startsWith("/work/");
@@ -73,6 +81,26 @@ export default function FloatingToolbar() {
             className="flex items-center gap-2 px-4 py-2.5 backdrop-blur-xl border border-border"
             style={{ background: "var(--color-surface-raised)" }}
           >
+            {/* Editor server down — edits would have nowhere to save to. Say it up front. */}
+            {offline && (
+              <span
+                className="text-[11px] font-mono text-amber-500 mr-1"
+                title={`No editor server on ${EDITOR_SERVER_URL}. Restart with "npm run dev" — it starts both.`}
+              >
+                editor offline
+              </span>
+            )}
+
+            {/* Working branch, when it isn't main — publishing from here won't deploy. */}
+            {!offline && offMain && (
+              <span
+                className="text-[11px] font-mono text-amber-500 mr-1"
+                title={`Editing on branch "${serverBranch}" — publishing here will not deploy the live site`}
+              >
+                {serverBranch}
+              </span>
+            )}
+
             {/* Placeholder audit count */}
             {placeholderCount > 0 && (
               <span className="text-[10px] font-mono text-red-500 mr-1" title={`${placeholderCount} image placeholder${placeholderCount !== 1 ? "s" : ""} need real images`}>
@@ -95,7 +123,7 @@ export default function FloatingToolbar() {
             {/* Save button */}
             <button
               onClick={save}
-              disabled={!isDirty || saving}
+              disabled={!isDirty || saving || offline}
               className="px-3 py-1 text-[12px] font-medium transition-colors disabled:opacity-30"
               style={{
                 color: isDirty ? "var(--color-bg)" : "var(--color-fg-secondary)",
@@ -105,25 +133,36 @@ export default function FloatingToolbar() {
               {saving ? "Saving..." : "Save"}
             </button>
 
-            {/* Publish button — commit + push, Vercel deploys. Save first (disabled while dirty). */}
-            {(unpublished || publishState !== "idle") && (
-              <button
-                onClick={publish}
-                disabled={isDirty || saving || publishState === "publishing"}
-                className="px-3 py-1 text-[12px] font-medium border transition-colors disabled:opacity-30"
-                style={{
-                  color: publishState === "published" ? "var(--color-fg-secondary)" : "var(--color-accent)",
-                  borderColor: "var(--color-accent)",
-                }}
-                title={isDirty ? "Save your edits first (Cmd+S)" : "Commit + push — live in ~1 min"}
-              >
-                {publishState === "publishing"
-                  ? "Publishing..."
-                  : publishState === "published"
-                    ? "Live in ~1 min"
-                    : "Publish"}
-              </button>
-            )}
+            {/* Commit + push, Vercel deploys. Always rendered so it's never a surprise
+                element — disabled (with a reason) when there's nothing to ship. */}
+            <button
+              onClick={publish}
+              disabled={
+                offline || isDirty || saving || !unpublished || publishState === "publishing"
+              }
+              className="px-3 py-1 text-[12px] font-medium border transition-colors disabled:opacity-30"
+              style={{
+                color: publishState === "published" ? "var(--color-fg-secondary)" : "var(--color-accent)",
+                borderColor: "var(--color-accent)",
+              }}
+              title={
+                offline
+                  ? "Editor server offline"
+                  : isDirty
+                    ? "Save your edits first (Cmd+S)"
+                    : !unpublished
+                      ? "Nothing to publish — save an edit first"
+                      : offMain
+                        ? `Commits + pushes branch "${serverBranch}" — this will NOT deploy the live site`
+                        : "Commit + push — live in ~1 min"
+              }
+            >
+              {publishState === "publishing"
+                ? "Pushing..."
+                : publishState === "published"
+                  ? offMain ? `Pushed to ${serverBranch}` : "Live in ~1 min"
+                  : "Commit & push"}
+            </button>
 
             {/* Revert button */}
             <button
@@ -160,12 +199,23 @@ export default function FloatingToolbar() {
             exit={{ opacity: 0, scale: 0.8 }}
             transition={SPRING_HEAVY}
             onClick={toggleEditMode}
-            className="w-11 h-11 flex items-center justify-center backdrop-blur-xl border border-border transition-colors hover:border-(--color-accent)"
-            style={{ background: "var(--color-surface-raised)" }}
+            className="w-11 h-11 flex items-center justify-center backdrop-blur-xl border transition-colors hover:border-(--color-accent)"
+            style={{
+              background: "var(--color-surface-raised)",
+              // Amber before you click in, so a dead server is visible without
+              // discovering it the hard way at save time.
+              borderColor: offline ? "var(--color-amber-500, #f59e0b)" : "var(--color-border)",
+            }}
             aria-label="Toggle edit mode (Cmd+E)"
-            title="Toggle edit mode (Cmd+E)"
+            title={
+              offline
+                ? `Editor server offline (${EDITOR_SERVER_URL}) — run "npm run dev" to start both`
+                : "Toggle edit mode (Cmd+E)"
+            }
           >
-            <EditPencilIcon style={{ stroke: "var(--color-fg-secondary)" }} />
+            <EditPencilIcon
+              style={{ stroke: offline ? "#f59e0b" : "var(--color-fg-secondary)" }}
+            />
           </motion.button>
         )}
       </AnimatePresence>
