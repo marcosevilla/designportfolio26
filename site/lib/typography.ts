@@ -30,6 +30,25 @@ function scaledClamp(min: string, preferred: string, max: string): string {
 export const BODY_LINE_HEIGHT = 1.647;
 
 /**
+ * The "Marco Sevilla" page-heading serif — Libre Baskerville Regular 32px,
+ * tracking −0.96px at 32px → −0.03em (em so it holds under the font-size
+ * slider), leading "normal". Figma node 243:4032 (Portfolio Aug 2026).
+ *
+ * Deliberately NOT a typescale token: it's the site wordmark, not a rung
+ * on the heading ramp. Shared by HomeLayout (home) and Hero (About) so the
+ * two renditions can't drift — this was inline in HomeLayout only until
+ * the About header adopted it on 2026-08-05.
+ */
+export const serifName: CSSProperties = {
+  fontFamily: "var(--font-baskerville), Georgia, serif",
+  fontSize: "calc(32px + var(--font-size-offset))",
+  fontWeight: 400,
+  letterSpacing: "-0.03em",
+  lineHeight: "normal",
+  color: "var(--color-fg)",
+};
+
+/**
  * CONSOLIDATED 2026-08-05 (Marco's call: "I don't want a dozen styles").
  * 15 tokens → 8. Absorbed: `caseStudyHero` → `display` (was byte-identical),
  * `h4` → `h3` (was byte-identical), `pageTitle`/`statValue`/

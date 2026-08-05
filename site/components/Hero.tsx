@@ -5,9 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PARAGRAPHS, HERO_NAME } from "@/lib/bio-content";
 import { RESUME_URL } from "@/lib/resume-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { typescale } from "@/lib/typography";
+import { serifName, typescale } from "@/lib/typography";
 import { HighlightableBio } from "./HighlightableBio";
 import Testimonials from "./Testimonials";
+import HeaderToolbar from "./HeaderToolbar";
+import LocalStatus from "./LocalStatus";
 import { HighlighterProvider } from "./HighlighterContext";
 import { ArrowRightIcon } from "./Icons";
 
@@ -430,33 +432,48 @@ export default function Hero({
                 <span>Return</span>
               </button>
 
-              <h1
-                ref={setAboutMeHeaderRef}
-                className="mt-16"
+              {/* Page heading row — the same serif name + site controls
+                  as the home page's h1 row (serifName is the one shared
+                  spec, lib/typography.ts). Mounting LocalStatus +
+                  HeaderToolbar here closes the 2026-07-20 KNOWN GAP where
+                  About mode had no theme/status controls — Hero replaces
+                  HomeLayout's h1 row in this mode, so the controls must
+                  ride along.
+
+                  mt-16 (64px) keeps the header at roughly the same y as
+                  the home page's. The side nav's setAboutMeHeaderRef
+                  callback re-measures off this h1's bounding rect, so the
+                  Return button follows. */}
+              <div className="mt-16 flex items-center justify-between gap-4">
+                <h1 ref={setAboutMeHeaderRef} style={serifName}>
+                  Marco Sevilla
+                </h1>
+                <div className="flex items-center gap-3">
+                  <LocalStatus />
+                  <HeaderToolbar />
+                </div>
+              </div>
+
+              {/* The old 16px h1 greeting, demoted to a subtitle now that
+                  the name owns the display slot. */}
+              <p
+                className="mt-4"
                 style={{
-                  // Matches the home-page "Marco Sevilla" h1 (body-scale
-                  // label, 2026-07-20 alignment system).
-                  //
-                  // mt-16 (64px) matches the home page's toolbar (≈32px)
-                  // + mb-8 (32px) stack so this header lands at roughly
-                  // the same y as "Marco Sevilla". The side nav's
-                  // setAboutMeHeaderRef callback re-measures off this
-                  // h1's bounding rect, so the Return button follows.
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "calc(16px + var(--font-size-offset))",
-                  fontWeight: 600,
-                  lineHeight: "24px",
-                  letterSpacing: "-0.02em",
-                  color: "var(--color-fg)",
+                  ...typescale.subtitle,
+                  color: "var(--color-fg-secondary)",
                 }}
               >
                 Hello, I&apos;m Marco. Product designer by day, occasionally
                 a music photographer by night.
-              </h1>
+              </p>
 
+              {/* mt-12 (48px) = the home page's name↔bio spacing (Figma
+                  spacing/3xl, gap-12 in HomeLayout). Body spec is
+                  typescale.body — this was inline 14px/26px, a leftover
+                  from before the 2026-08-05 15/1.647 site standard. */}
               <div
-                className="mt-16 text-(--color-fg-secondary) leading-[26px]"
-                style={{ fontSize: "calc(14px + var(--font-size-offset))" }}
+                className="mt-12 text-(--color-fg-secondary)"
+                style={typescale.body}
               >
                 <HighlightableBio paragraphs={aboutMeParagraphs} />
 

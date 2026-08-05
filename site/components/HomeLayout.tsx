@@ -18,11 +18,8 @@ import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { RESUME_URL } from "@/lib/resume-content";
 import HeaderToolbar from "./HeaderToolbar";
 import LocalStatus from "./LocalStatus";
+import { serifName } from "@/lib/typography";
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
-
-/** Tertiary site face — the name only (Figma: Portfolio Aug 2026,
- *  node 243:4032). Serif fallbacks, never the sans. */
-const BASKERVILLE = "var(--font-baskerville), Georgia, serif";
 
 /** Home ↔ About page swap. The two surfaces read as neighbours on a
  *  horizontal axis — About lives to the right of home — so home leaves
@@ -262,19 +259,9 @@ export default function HomeLayout({
                 }}
                 transition={{ duration: 0.9, ease: BLUR_EASE, delay: 0.1 }}
               >
-                <h1
-                  style={{
-                    fontFamily: BASKERVILLE,
-                    // Figma node 243:4032: Libre Baskerville Regular 32px,
-                    // tracking −0.96px at 32px → −0.03em (em so it holds
-                    // under the font-size slider), leading "normal".
-                    fontSize: "calc(32px + var(--font-size-offset))",
-                    fontWeight: 400,
-                    letterSpacing: "-0.03em",
-                    lineHeight: "normal",
-                    color: "var(--color-fg)",
-                  }}
-                >
+                {/* Spec lives in lib/typography.ts (serifName) — shared
+                    with the About header in Hero.tsx. */}
+                <h1 style={serifName}>
                   Marco Sevilla
                 </h1>
                 <div className="flex items-center gap-3">
