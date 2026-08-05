@@ -6,6 +6,7 @@ import FnbCartSpecimen from "@/components/fb-showcase/FnbCartSpecimen";
 import OrderDashboardSpecimen from "@/components/fb-showcase/OrderDashboardSpecimen";
 import ItemLibrarySpecimen from "@/components/fb-showcase/ItemLibrarySpecimen";
 import OutletDetailsSpecimen from "@/components/fb-showcase/OutletDetailsSpecimen";
+import OutletConfigSpecimen from "@/components/fb-showcase/OutletConfigSpecimen";
 import FadeIn from "@/components/case-study/FadeIn";
 import NextProject from "@/components/case-study/NextProject";
 import SectionHeading from "@/components/case-study/SectionHeading";
@@ -120,6 +121,19 @@ export default function FBOrderingContent() {
           <Grid>
             <Col md="1-12" lg="2-11">
               <OutletDetailsSpecimen />
+            </Col>
+          </Grid>
+        </FadeIn>
+
+        {/* ── Outlet configuration — the settings side of the same product:
+            connect menus, pick the delivery type the whole model hangs on,
+            and price out what the guest pays (Marco 2026-08-04). Rebuilt from
+            the polished Figma frames (Canary Polished Visuals, frame 64:8703
+            in section 64:9088). Same DemoStage chrome as the four above. */}
+        <FadeIn className="pt-10">
+          <Grid>
+            <Col md="1-12" lg="2-11">
+              <OutletConfigSpecimen />
             </Col>
           </Grid>
         </FadeIn>
