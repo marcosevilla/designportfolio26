@@ -401,12 +401,17 @@ export default function Hero({
                   HomeNav left rail owned this affordance at lg+, but
                   HomeNav is no longer mounted anywhere, so desktop was a
                   dead end. Shown at every breakpoint now. Sits above the
-                  h1 so it's the first thing thumbs land on. */}
+                  h1 so it's the first thing thumbs land on.
+
+                  -mt-3 cancels the button's own py-3 hit-area padding so
+                  the OPTICAL toolbar→Return gap is the wrapper's 48px —
+                  About is on the same 48 rhythm as home (Marco,
+                  2026-08-05): toolbar → Return → name, 48 apart each. */}
               <button
                 type="button"
                 onClick={() => onAboutMeChange(false)}
                 aria-label="Return to home"
-                className="group inline-flex items-center gap-1.5 mt-6 -ml-2 px-2 py-3 transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
+                className="group inline-flex items-center gap-1.5 -mt-3 -ml-2 px-2 py-3 transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                   fontSize: "12px",
@@ -433,14 +438,14 @@ export default function Hero({
               {/* Page heading — the same serif name as the home page's
                   h1 (serifName is the one shared spec, lib/typography.ts).
                   The theme/status controls that used to ride on this row
-                  live in the fixed GlobalToolbar now (2026-08-05), so
-                  About keeps them for free.
+                  live in the GlobalToolbar now (2026-08-05).
 
-                  mt-16 (64px) keeps the header at roughly the same y as
-                  the home page's. The side nav's setAboutMeHeaderRef
-                  callback re-measures off this h1's bounding rect, so the
-                  Return button follows. */}
-              <div className="mt-16">
+                  mt-9 (36px) + the button's 12px bottom hit-area padding
+                  = 48px optical Return→name gap, matching the 48 rhythm
+                  (was mt-16 from the pre-rhythm era). The side nav's
+                  setAboutMeHeaderRef callback re-measures off this h1's
+                  bounding rect, so the Return button follows. */}
+              <div className="mt-9">
                 <h1 ref={setAboutMeHeaderRef} style={serifName}>
                   Marco Sevilla
                 </h1>

@@ -69,8 +69,9 @@ right 200px for the TOC, but the toolbar (mounted outside it) doesn't follow.
   `48px` — deliberately EQUAL to the name↔bio `gap-12` so toolbar → name → bio are
   equidistant (measured 48/48). The home Grid's old `mt-8` was folded into that 48 —
   re-adding it breaks the rhythm. The toolbar's own `pt-12` positions the bar; the 48px
-  paddingTop is the bar→name gap. About's header keeps its own internal Hero spacing
-  (not on this rhythm).
+  paddingTop is the bar→name gap. About is on the SAME rhythm (Hero About branch):
+  toolbar → Return → name, 48 apart each — the Return button's -mt-3 and the name div's
+  mt-9 compensate for the button's py-3 hit-area padding so the gaps are OPTICAL 48s.
 - **Icon ruling (2026-08-05, reverses 2026-06-04)**: control icons are FILLED — Moon
   solid, Sun's core disc solid (rays stroked), transport Play/Pause/Skip solid with rect
   bars, panel carets solid triangles. `PaintBrushIcon` is DELETED from Icons.tsx — the
