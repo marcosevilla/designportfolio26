@@ -46,6 +46,7 @@ The 8 tokens:
 | `body` | 400 | 15px / 1.647 (≈24.7px), −0.01em | Case-study prose site-wide. Was 17/28 from the OpenAI pass; Marco dropped it to 15px later that day. Same spec inlined on the home bio (HomeLayout) — change the two together. The `body` **element** default in globals.css deliberately STAYS 14/1.6 — all UI chrome inherits it. Body copy sits 1px above chrome. |
 | `pullQuote` | 400 | clamp(18px, 2.5vw, 22px) / 1.4 | PullQuote |
 | `label` | 400 | 11px | Year badges, card meta, list rows — deliberately NOT slider-scaled (fixed-geometry chrome, per the 2026-08-05 ruling) |
+| `monoLabel` | 500 | 12px / 1.4, mono, uppercase, **−0.02em** | Mono-uppercase micro-label (9th token, added 2026-08-05 on Marco's ask). First consumer: StudyMetaRow eyebrow. Tracking is the tightened −0.02em, matching the marquee meta — NOT the legacy 0.08em still hardcoded at ~20 call sites (migration queued in TYPOGRAPHY-BACKLOG). Fixed size, not slider-scaled. |
 
 Non-token type that's deliberate (inline, not drift): homepage hero statement (streams during intro), hero name label 14px, card title 18/subtitle 14-15 in CaseStudyCard, list row title 16, marquee 14 — all inline in their components.
 

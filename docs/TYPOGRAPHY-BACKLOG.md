@@ -150,6 +150,19 @@ colour already does the work.
 
 Both belong in `app/globals.css` next to the existing `-webkit-font-smoothing` block.
 
+## ⑧ Migrate mono-uppercase labels onto `typescale.monoLabel` (added 2026-08-05)
+
+Marco ruled the mono-uppercase micro-label tracking is the tightened **−0.02em** and made it
+a token (`monoLabel`: mono / 12px / 500 / 1.4 / uppercase / −0.02em — first consumer is the
+StudyMetaRow eyebrow). The legacy **0.08em** is still hardcoded at ~20 call sites:
+`CaseStudyList` (297, 759, 998), `Hero` (415), `NavOverlay`, `HamburgerMenu`,
+`ChangelogOverlay`, `MobileNav`, `Testimonials`, `HomeNav` (200, 253), `PasswordModal` (×4),
+`LockGate` (×4), `ChatPanel` (307), `InlineTOC` (79, 138). Migrating means a visible
+site-wide tracking change on nav, TOC, modals and badges — do it as one reviewed sweep
+(sizes/weights/colors vary per site; the token covers family/case/tracking, override the
+rest per call site). Not done in the 2026-08-05 metadata-row session to keep that change
+reviewable.
+
 ## Open questions for Marco (no code until ruled)
 
 1. **⚠️ `h3` and `h4` are now byte-identical** — both `18px / 500 / 1.4 / −0.01em` after
