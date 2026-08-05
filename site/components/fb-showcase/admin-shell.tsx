@@ -13,6 +13,9 @@ import { ICONS } from "./mdi-icons";
 
 export const NAV_W = 216;
 
+/** WindowChrome bar height — shared by every staff-side shell height calc. */
+export const CHROME_H = 36;
+
 export const PROPERTY = {
   name: "Days Inn & Suites by Wyndham Wausau",
   short: "Days Inn & Suite…",
@@ -78,7 +81,7 @@ export function WindowChrome() {
   return (
     <div
       style={{
-        height: 36,
+        height: CHROME_H,
         flexShrink: 0,
         display: "flex",
         alignItems: "center",

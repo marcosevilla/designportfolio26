@@ -5,7 +5,7 @@ import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import DemoStage, { type DemoStep } from "@/components/DemoStage";
 import { ELEV, RADIUS, T, TYPE, W, neutral, primary } from "./canary-polished-tokens";
 import { ICONS } from "./mdi-icons";
-import { Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
+import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
 import {
   DELIVERY_FEE,
   ORDERS,
@@ -39,7 +39,7 @@ import {
 
 const APP_W = 1177;
 const APP_H = 759;
-const CHROME_H = 36; // added: minimal desktop window bar, not in the Figma frame
+// CHROME_H (minimal desktop window bar, not in the Figma frame) is shared from admin-shell
 const SHELL_W = APP_W;
 const SHELL_H = APP_H + CHROME_H;
 

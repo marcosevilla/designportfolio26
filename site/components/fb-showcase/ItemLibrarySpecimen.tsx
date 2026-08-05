@@ -7,7 +7,7 @@ import {
   ELEV, neutral, primary, danger, RADIUS, TYPE, W,
 } from "./canary-polished-tokens";
 import { ICONS } from "./mdi-icons";
-import { Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
+import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
 import {
   formatMenus, LIBRARY_ITEMS, LIBRARY_TABS, type LibraryItem,
 } from "./item-library-data";
@@ -27,12 +27,14 @@ import {
  *    1440px canvas.
  * 3. The trash icon's rest color is neutral, not the frame's red — a red
  *    glyph at rest read as an error state, not an available action.
+ * 4. Thumbnails are plain <img>, not next/image — the site ships
+ *    images.unoptimized anyway, and next/image's wrapper span fights the
+ *    fixed 40px table-cell geometry. onError falls back to ICONS.imageOff.
  */
 
 // ─── Geometry (adapted from frame 56:6548 to the 1177 shell) ──────────────
 
 const APP_W = 1177; // matches OrderDashboardSpecimen
-const CHROME_H = 36; // shared WindowChrome
 const CONTENT_W = APP_W - NAV_W; // 961
 const TITLE_H = 52; // "Food and Beverage Ordering" (mirrors #2's HEADER_H)
 const TABS_H = 44; // tab row incl. underline
@@ -66,6 +68,7 @@ function Checkbox({
       data-demo={`check-${itemId}`}
       onClick={onClick}
       aria-pressed={checked}
+      aria-label={`Select ${itemId.replace(/-/g, " ")}`}
       style={{
         width: 16,
         height: 16,
@@ -110,6 +113,7 @@ function AvailabilitySwitch({
       data-demo={`toggle-${itemId}`}
       onClick={onClick}
       aria-pressed={on}
+      aria-label={`Toggle availability for ${itemId.replace(/-/g, " ")}`}
       style={{
         width: 36,
         height: 20,
@@ -139,13 +143,22 @@ function AvailabilitySwitch({
   );
 }
 
-function TrashButton({ itemId, onClick }: { itemId: string; onClick: () => void }) {
+function TrashButton({
+  itemId,
+  itemName,
+  onClick,
+}: {
+  itemId: string;
+  itemName: string;
+  onClick: () => void;
+}) {
   const [hover, setHover] = useState(false);
   return (
     <button
       type="button"
       data-demo={`trash-${itemId}`}
       onClick={onClick}
+      aria-label={`Delete ${itemName}`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
@@ -217,6 +230,8 @@ function ItemRow({
     transition: "opacity 200ms",
   } as const;
 
+  const [imgFailed, setImgFailed] = useState(false);
+
   return (
     <motion.div
       layout
@@ -237,23 +252,41 @@ function ItemRow({
         <Checkbox checked={checked} onClick={onToggleSelect} itemId={item.id} />
 
         <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={item.image}
-            alt=""
-            width={THUMB}
-            height={THUMB}
-            loading="lazy"
-            style={{
-              width: THUMB,
-              height: THUMB,
-              borderRadius: RADIUS.md,
-              objectFit: "cover",
-              flexShrink: 0,
-              filter: available ? "none" : "grayscale(1)",
-              transition: "filter 200ms",
-            }}
-          />
+          {imgFailed ? (
+            <div
+              style={{
+                width: THUMB,
+                height: THUMB,
+                borderRadius: RADIUS.sm,
+                backgroundColor: neutral[100],
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Icon path={ICONS.imageOff} size={18} color={neutral[400]} />
+            </div>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.image}
+              alt=""
+              width={THUMB}
+              height={THUMB}
+              loading="lazy"
+              onError={() => setImgFailed(true)}
+              style={{
+                width: THUMB,
+                height: THUMB,
+                borderRadius: RADIUS.md,
+                objectFit: "cover",
+                flexShrink: 0,
+                filter: available ? "none" : "grayscale(1)",
+                transition: "filter 200ms",
+              }}
+            />
+          )}
           <span
             style={{
               ...TYPE.body,
@@ -290,7 +323,7 @@ function ItemRow({
         <span style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 12 }}>
           <AvailabilitySwitch on={available} onClick={onToggleAvailability} itemId={item.id} />
           <Icon path={ICONS.pencil} size={18} color={neutral[500]} />
-          <TrashButton itemId={item.id} onClick={onDelete} />
+          <TrashButton itemId={item.id} itemName={item.name} onClick={onDelete} />
         </span>
       </div>
     </motion.div>
