@@ -5,7 +5,7 @@ import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import DemoStage, { type DemoStep } from "@/components/DemoStage";
 import { ELEV, RADIUS, T, TYPE, W, neutral, primary } from "./canary-polished-tokens";
 import { ICONS } from "./mdi-icons";
-import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
+import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome, SHELL_SHADOW } from "./admin-shell";
 import {
   DELIVERY_FEE,
   ORDERS,
@@ -592,9 +592,9 @@ function Dashboard() {
         overflow: "hidden",
         backgroundColor: neutral[0],
         border: `1px solid ${neutral[200]}`,
-        // No elevation on the outer shell (Marco 2026-08-05): the drop
-        // shadow pooled around the rounded corners and read as a dark
-        // backing plate behind the window. The 1px border carries the edge.
+        // Ambient artifact lift, NOT the product's ELEV.lg — see SHELL_SHADOW
+        // in admin-shell.tsx for why (Marco 2026-08-05).
+        boxShadow: SHELL_SHADOW,
         display: "flex",
         flexDirection: "column",
       }}

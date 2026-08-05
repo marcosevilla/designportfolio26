@@ -2066,6 +2066,11 @@ export default function FnbCartSpecimen() {
         script={FNB_DEMO_SCRIPT}
         stageWidth={SHELL_W}
         stageHeight={SHELL_H}
+        // This specimen is the one that sits inside a panel (see the call site
+        // in FBOrderingContent), so the "Try demo" pill belongs in the PANEL's
+        // top-right corner, not floating on the phone's screen (Marco
+        // 2026-08-05). The panel carries `demo-stage-root relative` for it.
+        pillAnchor="container"
       >
         <PhoneShell />
       </DemoStage>

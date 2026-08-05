@@ -7,7 +7,7 @@ import {
   ELEV, neutral, primary, danger, RADIUS, TYPE, W,
 } from "./canary-polished-tokens";
 import { ICONS } from "./mdi-icons";
-import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome } from "./admin-shell";
+import { CHROME_H, Icon, NAV_W, Sidebar, WindowChrome, SHELL_SHADOW } from "./admin-shell";
 import {
   formatMenus, LIBRARY_ITEMS, LIBRARY_TABS, type LibraryItem,
 } from "./item-library-data";
@@ -395,7 +395,8 @@ function Library() {
         overflow: "hidden",
         backgroundColor: neutral[0],
         border: `1px solid ${neutral[200]}`,
-        // No elevation on the outer shell — see OrderDashboardSpecimen.
+        // Ambient artifact lift — see SHELL_SHADOW in admin-shell.tsx.
+        boxShadow: SHELL_SHADOW,
         display: "flex",
         flexDirection: "column",
       }}

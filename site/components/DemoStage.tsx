@@ -60,6 +60,18 @@ const MIN_INLINE_SCALE = 0.7;
  * UI into it produces an unreadable thumbnail.
  */
 const PAN_BELOW = 1200;
+
+/**
+ * Where the "Try demo" pill hangs.
+ *   "stage"     — the stage's own top-right corner (bare specimens).
+ *   "container" — the caller's wrapper, for a specimen that sits inside a panel
+ *                 (the guest phone). The caller MUST put `demo-stage-root
+ *                 relative` on that wrapper: `relative` for the pill to resolve
+ *                 against, and `demo-stage-root` so the whole panel is the hover
+ *                 target — otherwise the pointer crosses unhovered panel padding
+ *                 on its way to the pill and the pill hides mid-travel.
+ */
+export type PillAnchor = "stage" | "container";
 const DEFAULT_SETTLE = 650;
 const TARGET_TIMEOUT = 4000;
 const SCRIM_BLUR = 16;
@@ -203,6 +215,7 @@ function StageCore({
   onClosed,
   closing = false,
   onLaunch,
+  pillAnchor = "stage",
 }: {
   variant: "inline" | "fullscreen";
   script: DemoStep[];
@@ -219,6 +232,7 @@ function StageCore({
   closing?: boolean;
   /** Inline only: opens the fullscreen copy (drives the hover "Try demo" pill). */
   onLaunch?: () => void;
+  pillAnchor?: PillAnchor;
 }) {
   const [resetKey, setResetKey] = useState(0);
   const [cursorOn, setCursorOn] = useState(false);
@@ -766,7 +780,10 @@ function StageCore({
   // container, so the demo sits on the page like any other figure. The one
   // piece of chrome is the "Try demo" pill, which only appears on hover.
   return (
-    <section aria-label={ariaLabel} className="demo-stage-root relative">
+    <section
+      aria-label={ariaLabel}
+      className={pillAnchor === "stage" ? "demo-stage-root relative" : undefined}
+    >
       {/* Block + `margin-inline: auto` rather than flex centering: when the
           stage is wider than the well, flex `items-center` pushes overflow off
           BOTH edges and the left side becomes unreachable, while auto margins
@@ -782,9 +799,13 @@ function StageCore({
       </div>
       {/* The pill hangs off the SECTION, not the well — a well that pans would
           carry it out of view. `stageInset` walks it back in to the stage's own
-          right edge whenever the stage is narrower than its column. */}
+          right edge whenever the stage is narrower than its column; anchored to
+          a "container" it resolves against the caller's panel instead. */}
       {onLaunch && (
-        <TryDemoOverlayButton onClick={onLaunch} inset={stageInset} />
+        <TryDemoOverlayButton
+          onClick={onLaunch}
+          inset={pillAnchor === "stage" ? stageInset : 0}
+        />
       )}
     </section>
   );
@@ -798,12 +819,14 @@ export default function DemoStage({
   ariaLabel,
   stageWidth,
   stageHeight,
+  pillAnchor = "stage",
 }: {
   script: DemoStep[];
   children: ReactNode;
   ariaLabel: string;
   stageWidth: number;
   stageHeight: number;
+  pillAnchor?: PillAnchor;
 }) {
   const [fullscreen, setFullscreen] = useState(false);
   // Closing is a separate beat: the portal stays mounted through its exit
@@ -840,6 +863,7 @@ export default function DemoStage({
         variant="inline"
         frozen={fullscreen}
         onLaunch={open}
+        pillAnchor={pillAnchor}
         {...shared}
       >
         {children}

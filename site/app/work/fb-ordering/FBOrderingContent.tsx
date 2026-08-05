@@ -91,8 +91,13 @@ export default function FBOrderingContent() {
           <FadeIn className="pt-32">
             <Grid>
               <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+                {/* `demo-stage-root relative` hands this panel the "Try demo"
+                    pill: `relative` positions it in the PANEL's corner rather
+                    than on the phone's screen, and `demo-stage-root` makes the
+                    whole panel the hover target so the pointer doesn't cross
+                    dead padding on its way up to the pill. */}
                 <div
-                  className="rounded-[10px] border border-border px-4 py-12 sm:py-16"
+                  className="demo-stage-root relative rounded-[10px] border border-border px-4 py-12 sm:py-16"
                   style={{ background: DEMO_PANEL_BG }}
                 >
                   <FnbCartSpecimen />

@@ -16,6 +16,18 @@ export const NAV_W = 216;
 /** WindowChrome bar height — shared by every staff-side shell height calc. */
 export const CHROME_H = 36;
 
+/**
+ * Ambient lift under a staff shell (Marco 2026-08-05). Deliberately NOT
+ * `ELEV.lg` — that's the product's UI-element shadow (tight, 10% at 28px) and
+ * on a 1177px window it pooled around the corners as a dark backing plate.
+ * This is the same 3-stop artifact shadow the guest phone and DeviceShell use
+ * (`SHELL_SHADOW` in `FnbCartSpecimen.tsx`): a wide, low-opacity spread that
+ * separates the frame from the page without drawing a rim around it. Keep the
+ * two specs in sync — they exist to make the artifacts read as one family.
+ */
+export const SHELL_SHADOW =
+  "0 1px 2px rgba(0, 0, 0, 0.05), 0 12px 28px rgba(0, 0, 0, 0.08), 0 32px 56px rgba(0, 0, 0, 0.06)";
+
 export const PROPERTY = {
   name: "Days Inn & Suites by Wyndham Wausau",
   short: "Days Inn & Suite…",
