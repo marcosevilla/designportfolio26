@@ -14,7 +14,8 @@ import {
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
-import { FilterIcon, CloseIcon, GalleryIcon, LockIcon } from "./Icons";
+import { FilterIcon, CloseIcon, GalleryIcon, LockIcon, ArrowRightIcon } from "./Icons";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { galleryContent } from "@/lib/gallery-content";
@@ -481,6 +482,9 @@ const MARQUEE_DISPLAY: Record<
 // Must match the .work-marquee-track gap in globals.css.
 const MARQUEE_GAP_PX = 24;
 
+// Ties the prev/next buttons to the strip they scroll, via aria-controls.
+const MARQUEE_SCROLLER_ID = "work-marquee-scroller";
+
 // Full-bleed horizontal strip of the work cards. FREE-scroll carousel
 // (scroll-snap removed 2026-08-05 — it made trackpad gestures travel
 // net-zero; the full reasoning is on .work-marquee in globals.css).
@@ -501,6 +505,14 @@ function StudyMarquee({
   const strideRef = useRef(0);
   // Coalesces scroll events into one read per frame.
   const rafRef = useRef<number | null>(null);
+  // Arrow-button enablement. Derived from real scroll position rather than
+  // from focusedIndex, which matters because of a known geometry quirk: the
+  // last card can't fully reach the slot (the track's mirrored right padding
+  // is smaller than clientWidth − cellWidth), so an index-based "at end"
+  // would disable the button while the strip could still travel.
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   // Measure once per layout change rather than per scroll event. Free
   // scrolling emits long 60–120Hz event trains, and the old
@@ -513,12 +525,24 @@ function StudyMarquee({
     const measure = () => {
       const cell = scroller.querySelector<HTMLElement>(".work-marquee-cell");
       if (cell) strideRef.current = cell.offsetWidth + MARQUEE_GAP_PX;
+      // A resize changes maxScroll, so the end state can flip without any
+      // scroll event firing (e.g. widening the window at the far right).
+      syncEdges(scroller);
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(scroller);
     return () => ro.disconnect();
   }, []);
+
+  // 1px of slack: scrollLeft is fractional at non-integer zoom and after a
+  // smooth scroll, so an exact === comparison leaves the button enabled at
+  // a hard edge (or disabled a pixel early).
+  const syncEdges = (scroller: HTMLDivElement) => {
+    const max = scroller.scrollWidth - scroller.clientWidth;
+    setAtStart(scroller.scrollLeft <= 1);
+    setAtEnd(scroller.scrollLeft >= max - 1);
+  };
 
   // Which card owns the slot — uniform stride, so the index falls
   // straight out of scrollLeft / stride. React bails out when the
@@ -532,6 +556,20 @@ function StudyMarquee({
       if (!scroller || stride <= 0) return;
       const idx = Math.round(scroller.scrollLeft / stride);
       setFocusedIndex(Math.max(0, Math.min(studies.length - 1, idx)));
+      syncEdges(scroller);
+    });
+  };
+
+  // One card per press. This is deliberate stepping ON DEMAND, which is not
+  // what scroll-snap did wrong — snap forced stepping onto every free
+  // gesture. Pressing a button is an explicit request for "the next one".
+  const step = (direction: 1 | -1) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const stride = strideRef.current || scroller.clientWidth * 0.8;
+    scroller.scrollBy({
+      left: stride * direction,
+      behavior: reducedMotion ? "auto" : "smooth",
     });
   };
 
@@ -543,7 +581,66 @@ function StudyMarquee({
   );
 
   return (
+    <>
+      {/* Scroll affordance (2026-08-05). The strip hides its scrollbar and a
+          vertical mouse wheel scrolls the PAGE, not the strip — so before
+          this, a visitor on a plain mouse could reach only the cards already
+          on screen. Trackpad and touch users were always fine.
+
+          Sits above the strip rather than floating over the cards: the strip
+          is full-bleed and its media frames carry live WebGL art, which
+          overlay buttons would fight.
+
+          ⚠️ Alignment: this rides Grid/Col on CONTENT_BAND — the same band
+          the h1, the bio and the GlobalToolbar use. Measured at 1440 the band
+          is 382..1058, and the first card's left edge is also 382, so the
+          arrows land on the page's existing vertical spine.
+
+          Do NOT wrap this in `max-w-(--grid-max) px-4 sm:px-8`. GlobalToolbar
+          needs that because it mounts in app/layout.tsx outside any canvas;
+          here the PARENT already is the canvas — which is exactly why the
+          strip below has to break out of it with width:100vw. Adding it again
+          double-pads, and the arrows land 16px inboard at every width
+          (measured 1050/815/366 against the toolbar's 1066/836/382). */}
+        <Grid>
+          <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
+        <div className="flex justify-end">
+          {/* -mr-2 lives on a WRAPPER inside the flex row, not on the row
+              itself — that is exactly how GlobalToolbar's right cluster does
+              it, and the two must agree or the arrows won't line up with the
+              theme/music controls directly above them. */}
+          <div className="flex gap-1 -mr-2">
+          <button
+            type="button"
+            onClick={() => step(-1)}
+            disabled={atStart}
+            aria-label="Show previous projects"
+            aria-controls={MARQUEE_SCROLLER_ID}
+            className="bio-toolbar-btn"
+          >
+            {/* One icon, mirrored — ArrowRightIcon's own docblock specifies
+                scaleX(-1) on the wrapper for the left-facing variant. */}
+            <span style={{ display: "inline-flex", transform: "scaleX(-1)" }}>
+              <ArrowRightIcon size={16} />
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => step(1)}
+            disabled={atEnd}
+            aria-label="Show next projects"
+            aria-controls={MARQUEE_SCROLLER_ID}
+            className="bio-toolbar-btn"
+          >
+            <ArrowRightIcon size={16} />
+          </button>
+          </div>
+        </div>
+          </Col>
+        </Grid>
+
     <div
+      id={MARQUEE_SCROLLER_ID}
       ref={scrollerRef}
       onScroll={handleScroll}
       className="work-marquee"
@@ -569,6 +666,7 @@ function StudyMarquee({
         ))}
       </div>
     </div>
+    </>
   );
 }
 

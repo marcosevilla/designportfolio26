@@ -531,6 +531,20 @@ body::before {
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
+/* Disabled — added 2026-08-05 for the work-marquee prev/next arrows, which
+   disable at each end of the strip. Listed BEFORE nothing and AFTER the
+   hover rule on purpose: equal specificity means source order decides, so
+   this has to come second or a disabled button would still light up on
+   hover. `pointer-events: none` would also kill the hover, but it stops
+   the button reporting a tooltip/cursor at all, and a disabled button
+   should still be visible to a pointer as "there, but not now". */
+.bio-toolbar-btn:disabled,
+.bio-toolbar-btn:disabled:hover {
+  color: var(--color-fg-tertiary);
+  background: transparent;
+  cursor: default;
+}
+
 /* Pill variant of .bio-toolbar-btn for buttons with a text label (e.g. the
    "Ask me anything" chat trigger). Auto-width with side padding, same
    transparent rest / shaded hover treatment as the icon-only siblings. */
