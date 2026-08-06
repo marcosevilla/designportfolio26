@@ -41,7 +41,11 @@ export default function GeneralTaskContent({ meta }: { meta: StudyMeta }) {
         </div>
 
         {/* Hero Image */}
-        <CaseStudyHeroImage description="General Task — product overview" />
+        <CaseStudyHeroImage
+          src="/images/general-task/hero.png"
+          alt="General Task — unified workload view integrating multiple project management tools"
+          description="General Task — product overview"
+        />
 
         {/* Quick Stats */}
         <FadeIn>

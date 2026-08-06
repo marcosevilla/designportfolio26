@@ -40,7 +40,11 @@ export default function CheckinContent({ meta }: { meta: StudyMeta }) {
         </div>
 
         {/* Hero Image */}
-        <CaseStudyHeroImage description="Hotel Check-in — guest and admin flows" />
+        <CaseStudyHeroImage
+          src="/images/checkin/hero.webp"
+          alt="Hotel Check-in — guest mobile flow alongside the front-desk admin dashboard"
+          description="Hotel Check-in — guest and admin flows"
+        />
 
         {/* Quick Stats */}
         <FadeIn>
