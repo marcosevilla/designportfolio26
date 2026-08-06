@@ -24,6 +24,17 @@ const GREETING_TEXT =
 // reads as mechanical / typewriter-like, not smooth. After the last word
 // lands, the cursor disappears.
 // Replays on every fresh panel mount (AnimatePresence handles unmount).
+
+/** Deterministic ±2px jitter for the typewriter cursor's landing, keyed
+ *  on the word index. Replaces a `Math.random()` call that ran during
+ *  render — see the comment at the call site. Knuth's multiplicative
+ *  hash, so consecutive indices land far apart and the sequence reads as
+ *  random rather than as a ramp. */
+function jitterFor(index: number): number {
+  const hashed = ((index * 2654435761) >>> 0) / 4294967296; // → [0, 1)
+  return hashed * 4 - 2;
+}
+
 function AnimatedGreeting() {
   const [phase, setPhase] = useState<"blink" | "stream" | "done">("blink");
   const [wordIdx, setWordIdx] = useState(0);
@@ -121,8 +132,15 @@ function AnimatedGreeting() {
               ? { opacity: 1, x: 0 }
               : {
                   opacity: 0.55,
-                  // ±2px random horizontal jitter
-                  x: Math.random() * 4 - 2,
+                  // ±2px horizontal jitter, hashed from the word index
+                  // rather than Math.random(). Same jagged look — it
+                  // still varies per word — but it is PURE: calling
+                  // Math.random() during render meant the value changed
+                  // on any re-render of the same word, and React is free
+                  // to discard or replay a render, so the "start" of the
+                  // animation was not actually stable. (Caught by
+                  // react-hooks/purity once lint was made to run at all.)
+                  x: jitterFor(visibleWords),
                 }
           }
           animate={

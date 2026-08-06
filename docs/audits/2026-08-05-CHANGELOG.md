@@ -261,9 +261,115 @@ flagged, not fixed) and 35 warnings.
 
 Also fixed `app/dev/logo-lab/LogoScene.tsx` — a render-phase ref write, moved into an effect.
 
-### 3h. Rendering performance
+### 3h. Rendering performance — F-11, F-12, F-17, F-18, F-19, F-29, F-34, F-36
 
-See `2026-08-05-perf-fixes.md`.
+Full detail and per-fix measurements in `2026-08-05-perf-fixes.md`.
+
+| Fix | Measured |
+|---|---|
+| **F-11** Off-screen WebGL dither canvases never viewport-gated | 2,408 → **598** shader frames / 5s (**−75%**) |
+| **F-12** Per-instance accent probe + GPU readback | 8 probes / observers / synchronous `getImageData` readbacks → **1** |
+| **F-17** LedMatrix rendered behind a 10px collapsed window | 241 → **0** GL draws / 4s collapsed; 240 on re-expand |
+| **F-18** `currentTime` re-rendered the 1,563-line LedMatrix | 30 → **0** renders / 4s |
+| **F-19** AudioContext / Web Audio nodes never disconnected | Code-level; not A/B-able |
+| **F-29** PixelRain polled `getComputedStyle` at 6.7 Hz forever | 20 → **0** polls / 3s off-screen *and* tab-hidden |
+| **F-34** `CursorGlowOverlay` forced sync layout per mousemove | −76 ms renderer task time; 120 → **0** `getBoundingClientRect` per 120 moves |
+| **F-36** Reduced-motion sampled once, never re-read | Live OS flip now pauses videos + freezes all shaders |
+
+**Notable decisions:**
+- **`speed={0}`, not unmount.** Verified in the vendored library that `setCurrentSpeed(0)`
+  cancels its rAF and nulls `rafId` as documented first-class state, keeps the last frame, and
+  resets `lastRenderTime` on resume. Unmounting would flash a GL re-initialisation and churn
+  the browser's WebGL context budget.
+- **The canvas count is 8, not 9.** The audit's ninth `[data-paper-shader]` element is the
+  library's injected `<style>` tag in `<head>`. `fb-ordering` gets `FnbDitherFrame` *instead
+  of* a bare `DitherBackdrop`, so the marquee holds 8 live mounts. `perf-backlog #6` says six —
+  also wrong.
+- **PixelRain kept its poll** (gated rather than made event-driven) because the trigger button
+  has a `transition: color 150ms`; a one-shot event read would latch the pre-transition ink and
+  never catch up.
+- Both of the audit's measurement traps were respected: every A/B instruments
+  `ShaderMount.render` / `drawArrays` rather than removing canvases from the DOM (the draw
+  closure holds the ref and keeps rendering into a *detached* bitmap), and all CPU figures are
+  absolute CDP deltas, not busy-percentages.
+
+### 3i. Keyboard-operable scrubber — F-07
+
+`components/music/InsetScrubber.tsx`
+
+The scrubber advertised `role="slider"` and took focus via `tabIndex={0}` but had **no
+`onKeyDown` anywhere in the file** — a focusable dead end. Added Arrow ±5s, Shift+Arrow ±30s,
+Home, End. Also added `aria-valuetext` so a screen reader announces `"2:17"` rather than the
+raw float `137.42`; it reuses the exported `formatClock` rather than adding a third copy of
+the same M:SS formatter.
+
+### 3j. Purity fix in the chat greeting
+
+`components/chat/ChatPanel.tsx`
+
+`Math.random()` was called **during render** to jitter the typewriter cursor's landing. React
+is free to discard or replay a render, so the animation's start value was not actually stable.
+Replaced with a deterministic hash of the word index — same jagged look (verified: 8 distinct
+values well spread across the ±2px range), but pure.
+
+This was the last remaining lint **error**, so `npm run lint` now exits 0. Worth doing rather
+than silencing: lint went from "never ran" to "runs", and leaving a failing error would break
+any lint-gated CI added later.
+
+### 3k. Documented a live Tailwind v4 trap
+
+`site/app/globals.css`
+
+Tailwind v4 tree-shakes `@theme` variables that nothing references, so an unused token is not
+emitted and `var(--token)` resolves to an **empty string** at runtime — silently invalidating
+the whole declaration, with no error. `--shadow-soft` now has three consumers so it is emitted;
+**`--shadow-soft-lg` still has zero and resolves to `""`.** Left in place with a prominent
+warning comment, because deleting it discards a recorded design intent and adopting it needs a
+retune (its nearest real twin differs by 2px of blur) — that's Marco's call. The trap is now
+documented at the definition site so the next person isn't caught by it.
+
+---
+
+## 5. QA RESULT
+
+An independent QA agent — which made none of these changes — tested the full diff against the
+`pre-multiagent-audit` baseline.
+
+**Verdict: 10/10 PASS, zero confirmed regressions.**
+
+| # | Item | Verdict | Key measured value |
+|---|---|---|---|
+| 1 | All routes | PASS | 11/11 → 200, **0** console errors/warnings/exceptions |
+| 2 | Carousel | PASS | snap `none`, overscroll-x `contain` / -y `auto`; 3 gestures, **0 backsteps**; focus tracks 0→7 |
+| 3 | Chat P0 | PASS | All 3 close paths: 1 empty assistant turn mid-stream → **0** after close |
+| 4 | Performance | PASS | Dither 360→543→**0** draws/3s by scroll position; LedMatrix 240→**0**→240 |
+| 5 | Token swaps | PASS | `--shadow-soft` resolves, no shadow empty; bio 15px / 24.705px / −0.15px |
+| 6 | Ghost wordmark | PASS | 71 samples @40ms, **max 1** h1, 0 violations |
+| 7 | TOC | PASS | Marker tracks 6 sections in order, exactly one active row |
+| 8 | Themes | PASS | light / dark / mono / ember → **0** low-contrast pairs |
+| 9 | Responsive | PASS | **0** horizontal overflow at 1440 / 1024 / 768 / 390 |
+| 10 | Music | PASS | Arrow, Shift+Arrow, Home, End all work; `aria-valuetext: "0:01"` |
+
+Commands: `tsc --noEmit` exit 0 · `npm run build` succeeds, 18 routes · `npm run lint` exit 0
+(0 errors, 35 warnings) · chat parser 31/31.
+
+**The worst-case failure mode was specifically hunted and cleared.** A viewport-gated shader
+that leaves blank cards is worse than the perf problem it solves. QA measured cards 3–8 sitting
+at 0 draws on cold load, then confirmed the library still renders one frame at `speed=0` on
+uniform change (all six drew exactly 1 frame at +25ms). Across 251 frames of realistic
+scrolling, exactly **1 frame** had a visible-but-undrawn canvas — 95px wide, ~16ms. Verified
+visually with 9 screenshots in both themes.
+
+### Stated honestly by QA, not glossed
+
+- **F-22 could not be executed at runtime.** `ANTHROPIC_API_KEY` is empty in `.env.local`, so
+  the route returns 503 before reaching the check. Correct by inspection, unverified live —
+  **worth one smoke test on the Vercel preview.**
+- **Chat was tested with `fetch` stubbed.** No real Anthropic requests were made and no spend
+  was incurred.
+- **Case-study `scrollWidth` overflow** of up to 279px exists but is clamped (`scrollX` stays
+  0). Source is an invisible measuring div at `StudyMetaRow.tsx:133` in an untouched file —
+  **pre-existing, not caused by this session.**
 
 ---
 

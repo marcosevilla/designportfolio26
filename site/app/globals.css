@@ -18,6 +18,21 @@
   --color-surface-raised: #f5f4f9;
   --color-muted: #f3f3f3;
 
+  /* ⚠️ Tailwind v4 TREE-SHAKES @theme variables that nothing references,
+     so an unused token here is NOT emitted into the compiled CSS and
+     `var(--token)` resolves to an EMPTY STRING at runtime — silently
+     invalidating the whole declaration that used it, with no error.
+     Verified 2026-08-05 by compiling this file through
+     @tailwindcss/postcss before and after adding a reference.
+
+     --shadow-soft has three consumers below (.chat-input-field,
+     :focus-within, .chat-surface) so it IS emitted.
+
+     --shadow-soft-lg currently has ZERO consumers and therefore resolves
+     to "". Referencing it from an inline style or a new rule will appear
+     to do nothing. Either give it a consumer (its nearest real twin in
+     the tree differs by 2px of blur — retuning is a design call) or
+     delete it. Do not reference it as-is and assume it works. */
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-soft-lg: 0 4px 12px rgba(0, 0, 0, 0.06);
 
