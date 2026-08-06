@@ -42,7 +42,11 @@ export default function DesignSystemContent({ meta }: { meta: StudyMeta }) {
         </div>
 
         {/* Hero Image */}
-        <CaseStudyHeroImage description="Design System — component library overview" />
+        <CaseStudyHeroImage
+          src="/images/design-system/hero.png"
+          alt="Design System — component library and visual language overview"
+          description="Design System — component library overview"
+        />
 
         {/* Quick Stats */}
         <FadeIn>
