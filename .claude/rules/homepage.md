@@ -34,15 +34,23 @@ paths:
 - **Spacing:** `mt-28` (112px) between sections
 - **Scroll restoration across `key`-triggered page unmounts belongs in `useLayoutEffect`**, never `useEffect + requestAnimationFrame`. The rAF path runs after the first animation paint and visibly shifts layout mid-animation.
 
-## Work marquee (snap carousel, 2026-07-27)
+## Work marquee (FREE-scroll strip; snap removed 2026-08-05)
 Redesigned per Marco's Paper mockup. Lives in `CaseStudyList.tsx` + `.work-marquee*` rules in globals.css.
-- **Snap-scroll slot:** CSS scroll-snap carousel (`mandatory` + `snap-stop: always`); slot = content-band start via `--mq-inset`, shared by track `padding-inline` AND `scroll-padding-inline`. Scroll listener in `StudyMarquee` computes `focusedIndex` (uniform stride = cell + 24 gap).
+- **⚠️ DO NOT REINTRODUCE `scroll-snap`.** The 2026-07-27 snap carousel (`x mandatory` + `snap-stop: always`) made trackpad gestures travel **net zero**: a continuous swipe arrives as many small deltas and mandatory snap re-targeted the nearest card on every fragment, so the strip wobbled and sprang back to 0. Measured before removal — a 600px gesture traced `110→137→127→184→163→130→183→48→0`; a single 120px wheel notch traced `0→118→80→23→0`. After removal both are monotonic with zero backsteps. Full reasoning is in the comment block on `.work-marquee` in globals.css and in `docs/audits/2026-08-05-carousel-plan.md`.
+- **Free-scroll slot:** native momentum scrolling, `overscroll-behavior-x: contain` (**x-axis only** — `overflow-x: auto` computes `overflow-y` to `auto`, so an unqualified `contain` would also trap vertical page-scroll chaining on touch). Slot = content-band start via `--mq-inset`; `scroll-padding-inline` is KEPT because with snap gone it still governs focus/`scrollIntoView`. Scroll listener in `StudyMarquee` computes `focusedIndex` (uniform stride = cell + 24 gap), now cached behind a `ResizeObserver` and coalesced to one read per frame — the old per-event `querySelector` + `offsetWidth` forced a synchronous layout on every scroll event, which free scrolling makes far more frequent.
+- **OPEN (design decision, not a defect):** the strip has no scroll affordance — hidden scrollbar, no arrows/indicators, and a vertical mouse wheel scrolls the page rather than the strip. Mouse-only visitors may see only the cards already on screen. Options are written up in `docs/audits/2026-08-05-OPPORTUNITIES.md` §1.1.
 - **Focused state:** slotted card fades in panel chrome (5% fg-mix fill, `--color-border` hairline, 8px radius) + expands description (`.mq-desc` grid-rows 0fr→1fr, 450ms `--mq-ease`). Geometry is IDENTICAL in both states (padding 12/12/16, gap 16) — only bg/border + vertical desc growth transform; media fixed 494×400 at ≥768 (`.mq-frame` height pin), aspect 13/10 below.
 - **Card layout:** title row (title left + mono "COMPANY • YEAR" right) ABOVE media, description below, equal 16px row rhythm — the desc's gap lives INSIDE the collapsing row as `paddingTop` (flex gap would leave a dead gap at rest). `MARQUEE_DISPLAY` map = marquee-only display overrides (titles/org/year/descriptions; MDX untouched).
 - Track `min-height: 550px` at ≥768 stops below-content bounce mid-transition.
 - Auto-scroll was RETIRED 2026-07-20 (the 70s linear infinite version is in git).
 
-## Card/List View Toggle (CaseStudyList)
+## Card/List View Toggle (CaseStudyList) — ⚠️ DOES NOT EXIST (verified 2026-08-05)
+**None of the section below is live.** There is no `viewMode` state, no `work-view-mode`
+localStorage key, and no `CaseStudyListRow` component anywhere in the tree. `ViewToggleButton`
+is still *defined* in `CaseStudyList.tsx` but is never rendered, and `GalleryIcon` is imported
+unused. The homepage renders the marquee only. Kept below as historical intent — mount it or
+delete the leftovers, but don't trust it as a description of the current site.
+
 - **Two views:** Card (default) and List, toggled via icon buttons on "Work" header row
 - **Toggle buttons:** ViewToggleButton with instant hover color (accent on hover). Active = accent, inactive = fg-secondary.
 - **Transition:** AnimatePresence mode="wait", blur 4px + opacity fade, 200ms easeInOut
