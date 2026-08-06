@@ -363,10 +363,24 @@ visually with 9 screenshots in both themes.
 ### Stated honestly by QA, not glossed
 
 - **F-22 could not be executed at runtime.** `ANTHROPIC_API_KEY` is empty in `.env.local`, so
-  the route returns 503 before reaching the check. Correct by inspection, unverified live —
-  **worth one smoke test on the Vercel preview.**
+  the route returns 503 before reaching the check. Correct by inspection, unverified live.
 - **Chat was tested with `fetch` stubbed.** No real Anthropic requests were made and no spend
   was incurred.
+
+**Follow-up 2026-08-06 — chat verified end-to-end on a real network path.** Production issues
+`REQ POST` and streams a real reply; localhost issues `REQ POST` → `RESP 503` and shows the
+error line, which is correct for a missing API key. **F-01 is confirmed against real traffic**:
+on the 503 the transcript ends holding only the user turn, i.e. the empty assistant placeholder
+was trimmed exactly as intended — the behaviour the stubbed test could not reach.
+
+⚠️ **Measurement trap, learned the hard way and worth recording.** While smoke-testing this I
+briefly reported a false P0 ("chat never sends"). Two instrument bugs caused it: a Playwright
+`page.on("response")` handler that did `await response.text()` on `/api/chat`, which is
+`text/event-stream` — that promise does not settle until the stream closes, so the handler
+blocked and logged nothing, which read as "no request was made"; and a probe reading
+sessionStorage key `chat-turns` when the real key is **`chat-transcript`**. Never await a
+response body in a listener on this endpoint; listen on `request`/`requestfinished` instead.
+Also note `FAILED net::ERR_ABORTED` on `/api/chat` is normal SSE teardown after `event: done`.
 - **Case-study `scrollWidth` overflow** of up to 279px exists but is clamped (`scrollX` stays
   0). Source is an invisible measuring div at `StudyMetaRow.tsx:133` in an untouched file —
   **pre-existing, not caused by this session.**
