@@ -31,8 +31,9 @@ const META: React.CSSProperties = {
   color: "var(--color-fg-tertiary)",
 };
 
-/** Same panel chrome as the marquee's focused card (`.mq-cell--focused`
- *  in globals.css) — the site's one "raised panel" language. The cards
+/** The site's one "raised panel" fill — a 5% fg-over-bg mix. Was shared
+ *  with the marquee's focused card until that state was removed 2026-08-06;
+ *  the value lives on here as the testimonial panel language. The cards
  *  were unfilled hairline outlines before 2026-08-05; that read as loose
  *  floating paragraphs once the dot-grid backdrop was disabled. */
 const PANEL_BG = "color-mix(in srgb, var(--color-fg) 5%, var(--color-bg))";
