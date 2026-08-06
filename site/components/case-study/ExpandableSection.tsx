@@ -19,7 +19,13 @@ export default function ExpandableSection({
   id: string;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  // Defaults OPEN (2026-08-05, was false). Every case-study section — including
+  // "Impact & Results", the one carrying the metrics — started collapsed on
+  // phones, so a recruiter opening the site on mobile had to go hunting for the
+  // outcomes rather than landing on them. The disclosure still works; only the
+  // initial state changed, so anyone who wants to skim can still collapse.
+  // Desktop is unaffected (that branch has no toggle at all).
+  const [open, setOpen] = useState(true);
 
   return (
     <section id={id} className="scroll-mt-24">

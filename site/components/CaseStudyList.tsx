@@ -399,6 +399,17 @@ function ProjectGrid({
 // 2026-07-27) — presentation overrides, the MDX frontmatter and case
 // study pages keep their own titles. `description` is the focused-state
 // reveal: what Marco did, what he produced, and the product's value.
+// ⚠️ `year` MUST reconcile with the study's `content/*.mdx` frontmatter, which
+// is the source of truth (see .claude/rules/case-studies.md). The ONE sanctioned
+// difference is compaction: an MDX range renders here as its END year, because
+// the card meta line is a single tight "ORG • YEAR" string.
+//   fb-ordering  2025–26        → 2026   ✓ compaction
+//   ai-workflow  2025–2026      → 2026   ✓ compaction
+//   compendium   2024–2025      → 2025   ✓ compaction
+// Anything else is drift. Corrected 2026-08-05: general-task showed 2024 and
+// design-system 2025 (both are 2022 — wrong by 2–3 years), and upsells showed
+// 2026 (is 2025). A wrong date on a portfolio is a factual error, and the first
+// two are now visible since those studies were unlocked in the same change.
 const MARQUEE_DISPLAY: Record<
   string,
   { title: string; org: string; year: string; description: string }
@@ -420,7 +431,7 @@ const MARQUEE_DISPLAY: Record<
   upsells: {
     title: "Hotel Upsells",
     org: "Canary Technologies",
-    year: "2026",
+    year: "2025",
     description:
       "Redesigned hotel upselling as a configurable form system – flexible offer builder, guest purchase flow, and staff fulfillment workflows driving $6.94M CARR with a measured +10% conversion lift.",
   },
@@ -434,16 +445,29 @@ const MARQUEE_DISPLAY: Record<
   "general-task": {
     title: "Task Management for Knowledge Workers",
     org: "General Task",
-    year: "2024",
+    year: "2022",
     description:
       "Founding designer for a 0-1 productivity tool – unified tasks, calendar, and engineering workflows in one hub for knowledge workers.",
   },
   "design-system": {
     title: "Building a Design System & Visual Language",
     org: "General Task",
-    year: "2025",
+    year: "2022",
     description:
       "Built General Task's visual language from zero – design tokens, a component library, and interaction patterns powering every product surface.",
+  },
+  // Added 2026-08-05. This slug was missing from the map entirely, so its card
+  // rendered a BLANK meta line where "ORG • YEAR" belongs — the fallback is
+  // `study.metric`, and the card read as broken rather than as minimal.
+  // Copy is taken from content/knowledge-base.mdx (title/description verbatim,
+  // org from `company`), not invented. Year compacts "2024 · shipped 2026" to
+  // its ship year per the convention above.
+  "knowledge-base": {
+    title: "AI Knowledge Base",
+    org: "Canary Technologies",
+    year: "2026",
+    description:
+      "Redesigned the IA and UI of the knowledge base powering Canary's AI products — turning a flat list of freeform statements into a structured, categorized system hotels actually fill out.",
   },
   "ai-workflow": {
     title: "Prototypes as the Spec",

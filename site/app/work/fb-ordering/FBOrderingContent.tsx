@@ -331,11 +331,17 @@ export default function FBOrderingContent({ meta }: { meta: StudyMeta }) {
 
         {/* ── Next Project — restored 2026-07-26: the flagship study
             ended with no forward path (reflection bullets, then nothing) ── */}
+        {/* Points at Check-in, NOT Compendium (2026-08-05). Compendium is in
+            LOCKED_SLUGS, so the site's strongest and most complete reading
+            path was ending by walking the reader straight into the password
+            gate — the exact dead-end hazard access-gating.md warns about.
+            Check-in is the next study in the canonical order that is actually
+            open, and keeps the reader inside the Canary enterprise narrative. */}
         <FadeIn>
           <NextProject
-            title="Digital Compendium"
-            subtitle="Building a scalable hotel CMS platform from scratch"
-            href="/work/compendium"
+            title="Hotel Check-in"
+            subtitle="Rebuilding digital check-in for Wyndham's ~6,000-property portfolio"
+            href="/work/checkin"
           />
         </FadeIn>
     </CaseStudyShell>

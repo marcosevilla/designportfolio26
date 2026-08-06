@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Only PUBLIC routes belong here. Per .claude/rules/access-gating.md, a slug in
+  LOCKED_SLUGS (lib/locked-content.ts) must be removed from this file — pointing
+  search engines at a page that renders the gate placeholder is worse than not
+  listing it.
+
+  Locked as of 2026-08-05, deliberately absent: compendium, knowledge-base, upsells.
+  Added 2026-08-05 when they were unlocked: checkin, general-task, design-system.
+  Also added: /resume and /writing, which were live but omitted (finding F-51).
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://marcosevilla.com</loc>
@@ -11,5 +21,25 @@
   <url>
     <loc>https://marcosevilla.com/work/ai-workflow</loc>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://marcosevilla.com/work/checkin</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://marcosevilla.com/work/general-task</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://marcosevilla.com/work/design-system</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://marcosevilla.com/resume</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://marcosevilla.com/writing</loc>
+    <priority>0.5</priority>
   </url>
 </urlset>
