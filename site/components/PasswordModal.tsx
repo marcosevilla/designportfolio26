@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePasswordGate } from "@/lib/PasswordGateContext";
 import { LockIcon, CloseIcon, EmailIcon, LinkedInIcon } from "./Icons";
@@ -8,6 +8,20 @@ import { typescale } from "@/lib/typography";
 
 const EMAIL = "marcogsevilla@gmail.com";
 const LINKEDIN_URL = "https://www.linkedin.com/in/marcogsevilla/";
+
+/** Mono uppercase label shared by the modal's three buttons (Email /
+ *  LinkedIn / Submit). Was inlined verbatim at all three. Values unchanged.
+ *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
+ *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate visible change.
+ *  The 13px "Got a code?" divider and the 16px input are different specs
+ *  (the input's 16px is an iOS auto-zoom guard) — both left alone. */
+const MODAL_LABEL: CSSProperties = {
+  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+  fontSize: "12px",
+  fontWeight: 500,
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+};
 
 export default function PasswordModal() {
   const { isModalOpen, closeModal, attemptUnlock } = usePasswordGate();
@@ -144,11 +158,7 @@ export default function PasswordModal() {
                 href={`mailto:${EMAIL}`}
                 className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
                 style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
+                  ...MODAL_LABEL,
                   color: "var(--color-fg)",
                   background: "var(--color-bg)",
                   border: "1px solid var(--color-border)",
@@ -165,11 +175,7 @@ export default function PasswordModal() {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
                 style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
+                  ...MODAL_LABEL,
                   color: "var(--color-fg)",
                   background: "var(--color-bg)",
                   border: "1px solid var(--color-border)",
@@ -230,11 +236,7 @@ export default function PasswordModal() {
                 type="submit"
                 className="px-4 py-2 rounded-xl enabled:active:scale-[0.96] transition-[opacity,transform] duration-150 ease-out"
                 style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
+                  ...MODAL_LABEL,
                   color: "var(--color-bg)",
                   background: "var(--color-fg)",
                   cursor: value.length === 0 || submitting ? "not-allowed" : "pointer",

@@ -118,8 +118,16 @@ function TumbleGroup({
   const dragging = useRef(false);
   const last = useRef({ x: 0, y: 0, t: 0 });
   const gl = useThree((s) => s.gl);
+  // Latest-value ref for the pointer handlers below, which are installed
+  // once and must not close over a stale `motion`. Assigned in an effect,
+  // not during render — a render-phase ref write is a purity violation
+  // (React may discard or replay a render). Safe here because the ref is
+  // only ever read from pointer events and the rAF loop, both of which run
+  // after commit.
   const motionRef = useRef(motion);
-  motionRef.current = motion;
+  useEffect(() => {
+    motionRef.current = motion;
+  }, [motion]);
 
   useEffect(() => {
     const el = gl.domElement;

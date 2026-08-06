@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +26,18 @@ import FnbDitherFrame from "./FnbDitherFrame";
 import DitherBackdrop from "./DitherBackdrop";
 import { isLocked } from "@/lib/locked-content";
 
+/** Mono uppercase placeholder label for media-less frames ("Under
+ *  construction" on study cards, "Coming soon" on playground cells).
+ *  Was inlined verbatim at both sites. Values unchanged.
+ *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
+ *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate visible change. */
+const PLACEHOLDER_LABEL: CSSProperties = {
+  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+  fontSize: "11px",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  color: "var(--color-fg-tertiary)",
+};
 
 // ── View toggle button ──
 
@@ -445,13 +457,12 @@ const MARQUEE_DISPLAY: Record<
 // Must match the .work-marquee-track gap in globals.css.
 const MARQUEE_GAP_PX = 24;
 
-// Full-bleed horizontal strip of the work cards. Snap-scroll carousel
-// (2026-07-27, replaces the free overflow-x strip): one "slot" sits at
-// the content-band start — the same rest position the padding math
-// below always produced — and CSS scroll-snap (mandatory + stop:
-// always in globals.css) magnetically pulls the nearest card into it,
-// one card per swipe. The card occupying the slot grows into the
-// focused state (panel chrome + description reveal) via .mq-cell CSS.
+// Full-bleed horizontal strip of the work cards. FREE-scroll carousel
+// (scroll-snap removed 2026-08-05 — it made trackpad gestures travel
+// net-zero; the full reasoning is on .work-marquee in globals.css).
+// One "slot" sits at the content-band start, and whichever card
+// currently occupies it grows into the focused state (panel chrome +
+// description reveal) via .mq-cell CSS.
 function StudyMarquee({
   studies,
   onPreview,
@@ -461,18 +472,51 @@ function StudyMarquee({
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
+  // Cell stride (width + gap), cached. Cells are uniform, so this only
+  // changes on resize — see the ResizeObserver below.
+  const strideRef = useRef(0);
+  // Coalesces scroll events into one read per frame.
+  const rafRef = useRef<number | null>(null);
 
-  // Which card owns the slot — cells are uniform width, so the nearest
-  // snap index falls straight out of scrollLeft / (cell + gap). Runs on
-  // every scroll frame; React bails out when the index is unchanged.
-  const handleScroll = () => {
+  // Measure once per layout change rather than per scroll event. Free
+  // scrolling emits long 60–120Hz event trains, and the old
+  // querySelector + offsetWidth pair forced a synchronous layout on
+  // every one of them — on a page that already runs nine WebGL
+  // backdrops. Snap hid the cost by keeping gestures short.
+  useEffect(() => {
     const scroller = scrollerRef.current;
-    const cell = scroller?.querySelector<HTMLElement>(".work-marquee-cell");
-    if (!scroller || !cell) return;
-    const stride = cell.offsetWidth + MARQUEE_GAP_PX;
-    const idx = Math.round(scroller.scrollLeft / stride);
-    setFocusedIndex(Math.max(0, Math.min(studies.length - 1, idx)));
+    if (!scroller) return;
+    const measure = () => {
+      const cell = scroller.querySelector<HTMLElement>(".work-marquee-cell");
+      if (cell) strideRef.current = cell.offsetWidth + MARQUEE_GAP_PX;
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(scroller);
+    return () => ro.disconnect();
+  }, []);
+
+  // Which card owns the slot — uniform stride, so the index falls
+  // straight out of scrollLeft / stride. React bails out when the
+  // index is unchanged, so this is a no-op for most frames.
+  const handleScroll = () => {
+    if (rafRef.current !== null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const scroller = scrollerRef.current;
+      const stride = strideRef.current;
+      if (!scroller || stride <= 0) return;
+      const idx = Math.round(scroller.scrollLeft / stride);
+      setFocusedIndex(Math.max(0, Math.min(studies.length - 1, idx)));
+    });
   };
+
+  useEffect(
+    () => () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    },
+    [],
+  );
 
   return (
     <div
@@ -751,15 +795,7 @@ function StudyMediaFrame({
           >
             {study.title}
           </span>
-          <span
-            style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              color: "var(--color-fg-tertiary)",
-            }}
-          >
+          <span style={{ ...PLACEHOLDER_LABEL }}>
             Under construction
           </span>
         </div>
@@ -991,13 +1027,7 @@ function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
       ) : (
         <div
           className="absolute inset-0 flex items-center justify-center"
-          style={{
-            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-            fontSize: "11px",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "var(--color-fg-tertiary)",
-          }}
+          style={{ ...PLACEHOLDER_LABEL }}
         >
           Coming soon
         </div>

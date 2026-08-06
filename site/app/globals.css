@@ -830,7 +830,7 @@ video[class*="rounded-"] {
   border-radius: 8px;
   background-color: color-mix(in srgb, var(--color-bg) 70%, var(--color-surface) 30%);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
+    var(--shadow-soft),
     0 2px 6px rgba(0, 0, 0, 0.05);
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
@@ -841,7 +841,7 @@ video[class*="rounded-"] {
      too aggressive against the field's quiet inset chrome. */
   border-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
+    var(--shadow-soft),
     0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -896,7 +896,7 @@ video[class*="rounded-"] {
      rounded corners. */
   overflow: hidden;
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
+    var(--shadow-soft),
     0 8px 24px rgba(0, 0, 0, 0.06),
     0 24px 56px rgba(0, 0, 0, 0.08);
 }
@@ -1158,18 +1158,35 @@ body {
 }
 
 /* ── Work marquee ──────────────────────────────────────────────────────
-   Full-bleed snap-scroll carousel of the homepage work cards
+   Full-bleed FREE-SCROLL carousel of the homepage work cards
    (StudyMarquee in components/CaseStudyList.tsx). One "slot" sits at
    the content-band start (bio text's left edge — col 4 at lg, col 3 at
-   md, page padding on phone): scroll-snap magnetically pulls the
-   nearest card into it on release, one card per swipe (snap-stop), and
-   the slotted card grows into the focused state below. The free
-   overflow-x strip era ended 2026-07-27 (Paper mock, "project marquee"
-   page); the auto-scroll conveyor before it, 2026-07-20. */
+   md, page padding on phone); whichever card currently occupies the
+   slot grows into the focused state below.
+
+   ⚠️ SCROLL-SNAP WAS REMOVED 2026-08-05 — do not reintroduce it.
+   `scroll-snap-type: x mandatory` + `scroll-snap-stop: always` on the
+   cells made trackpad scrolling *net-zero*: a continuous gesture
+   arrives as many small deltas, and mandatory snap re-targets the
+   nearest card on every fragment, so the strip wobbled and sprang back
+   to 0 instead of travelling. Measured before the fix — a 600px
+   trackpad gesture traced 110→137→127→184→163→130→183→48→0. Native
+   momentum scrolling handles trackpad, discrete wheel and touch
+   correctly with no JS. `scroll-padding-inline` below is KEPT: with
+   snap gone it still governs focus/scrollIntoView, which is what lands
+   a keyboard-tabbed card on the slot.
+
+   History: free overflow-x strip → snap carousel 2026-07-27 (Paper
+   mock, "project marquee" page) → free scroll again 2026-08-05. The
+   auto-scroll conveyor before all of it was retired 2026-07-20. */
 .work-marquee {
   overflow-x: auto;
   scrollbar-width: none;
-  scroll-snap-type: x mandatory;
+  /* X-axis only: `overflow-x: auto` computes overflow-y to auto as
+     well, so an unqualified `overscroll-behavior: contain` would also
+     trap vertical swipe chaining and stop the page scrolling when a
+     touch gesture starts on a card. */
+  overscroll-behavior-x: contain;
   /* Slot offset — mirrors the canvas math in HomeLayout (max-w
      --grid-max, px-4 sm:px-8). Lives here (not on the track) so the
      track's padding-inline and the scroller's scroll-padding resolve
@@ -1203,12 +1220,11 @@ body {
   padding-inline: var(--mq-inset);
 }
 
-.work-marquee-cell {
-  scroll-snap-align: start;
-  /* The "resistance": a swipe settles on the adjacent card instead of
-     flinging past several. */
-  scroll-snap-stop: always;
-}
+/* .work-marquee-cell carries no scroll behaviour any more — the
+   snap-align/snap-stop pair that lived here was deleted 2026-08-05
+   (see the note on .work-marquee above). The class is still the
+   layout hook for cell width and the stride measurement in
+   StudyMarquee, so it stays in the markup. */
 
 @media (min-width: 640px) {
   .work-marquee {

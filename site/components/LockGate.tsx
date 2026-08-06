@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { usePasswordGate } from "@/lib/PasswordGateContext";
@@ -9,6 +10,19 @@ import { setCursorLabel } from "@/lib/cursor-label";
 
 const EMAIL = "marcogsevilla@gmail.com";
 const LINKEDIN_URL = "https://www.linkedin.com/in/marcogsevilla/";
+
+/** Mono uppercase label shared by the gate's three CTAs (Email / LinkedIn /
+ *  "Got a code?"). Was inlined verbatim at all three. Values unchanged.
+ *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
+ *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate visible change.
+ *  The 11px eyebrow higher up in this file is a different spec — left alone. */
+const GATE_LABEL: CSSProperties = {
+  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+  fontSize: "12px",
+  fontWeight: 500,
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+};
 
 type CardModeProps = {
   mode: "card";
@@ -257,11 +271,7 @@ function LockedPagePlaceholder({
               href={`mailto:${EMAIL}`}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
               style={{
-                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                fontSize: "12px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
+                ...GATE_LABEL,
                 color: "var(--color-fg)",
                 background: "var(--color-bg)",
                 border: "1px solid var(--color-border)",
@@ -280,11 +290,7 @@ function LockedPagePlaceholder({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
               style={{
-                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                fontSize: "12px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
+                ...GATE_LABEL,
                 color: "var(--color-fg)",
                 background: "var(--color-bg)",
                 border: "1px solid var(--color-border)",
@@ -302,11 +308,7 @@ function LockedPagePlaceholder({
               onClick={onUnlockClick}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl active:scale-[0.96] transition-transform duration-150 ease-out"
               style={{
-                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                fontSize: "12px",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
+                ...GATE_LABEL,
                 color: "var(--color-bg)",
                 background: "var(--color-fg)",
               }}

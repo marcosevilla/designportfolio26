@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PARAGRAPHS, HERO_NAME } from "@/lib/bio-content";
+import { PARAGRAPHS } from "@/lib/bio-content";
 import { RESUME_URL } from "@/lib/resume-content";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { serifName, typescale } from "@/lib/typography";
@@ -260,7 +260,6 @@ export default function Hero({
   children,
   aboutMeOpen,
   onAboutMeChange,
-  wordmarkRef: externalWordmarkRef,
   aboutMeHeaderRef: externalAboutMeHeaderRef,
   ready = true,
   hideStarForLoader = false,
@@ -272,7 +271,6 @@ export default function Hero({
   children?: React.ReactNode;
   aboutMeOpen: boolean;
   onAboutMeChange: (open: boolean) => void;
-  wordmarkRef?: React.Ref<HTMLDivElement>;
   aboutMeHeaderRef?: React.Ref<HTMLHeadingElement>;
   /** Gates the blur-in animation. While false, every motion.div sits at
    *  the initial (blurred) state. When it flips true, all panels animate
@@ -288,38 +286,13 @@ export default function Hero({
   onStarMorphComplete?: () => void;
 }) {
   const reducedMotion = usePrefersReducedMotion();
-  const initial = reducedMotion ? false : { opacity: 0, filter: "blur(12px)" };
-  const animate = ready
-    ? { opacity: 1, filter: "blur(0px)" }
-    : { opacity: 0, filter: "blur(12px)" };
-  const transition = { duration: 0.9, ease: BLUR_EASE };
 
-  // Cascade delays so the home content blurs in like a top-to-bottom
-  // domino once `ready` flips — triggered when the loader's star lands
-  // in the wordmark slot. Each step is ~70ms so the whole cascade kicks
-  // off inside ~250ms after the morph completes.
-  const tx = (delay: number) => ({ ...transition, delay });
-
-  // Track the wordmark element via state so useFitWordmark re-runs when
-  // the wordmark unmounts during AnimatePresence transitions and a fresh
-  // element mounts on return — without it, --wordmark-fontsize would
-  // stay stuck at the last-fit value (or worse, at 100px).
-  const [wordmarkEl, setWordmarkEl] = useState<HTMLDivElement | null>(null);
-
-  // Cap the fit container at the original 500px-column inner width (500 - 32
-  // for sm:px-8) so the wordmark — and the projects "Work" h2, which reads
-  // the same CSS var — stay at their original size after the body column
-  // widens to 650px.
-  useFitWordmark(wordmarkEl, 2 / 3, 468);
-
-  const setWordmarkRef = useCallback((el: HTMLDivElement | null) => {
-    setWordmarkEl(el);
-    if (typeof externalWordmarkRef === "function") {
-      externalWordmarkRef(el);
-    } else if (externalWordmarkRef && "current" in externalWordmarkRef) {
-      (externalWordmarkRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-    }
-  }, [externalWordmarkRef]);
+  // The home-branch cascade (`initial` / `animate` / `tx`), the
+  // `wordmarkEl` state and the `useFitWordmark` call that fed it were
+  // removed with the ghost-wordmark branch below — all of them existed
+  // only to animate and size that wordmark. `ready` and
+  // `hideStarForLoader` are still accepted as props so the loader
+  // handshake keeps its shape; see the note on the branch below.
 
   const setAboutMeHeaderRef = useCallback((el: HTMLHeadingElement | null) => {
     if (typeof externalAboutMeHeaderRef === "function") {
@@ -340,54 +313,31 @@ export default function Hero({
             overflow-x: hidden so outgoing slides leave the viewport
             without horizontal scroll. */}
         <AnimatePresence mode="popLayout" initial={false}>
-          {!aboutMeOpen ? (
-            <motion.div
-              key="hero-home"
-              initial={false}
-              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, x: -160, filter: "blur(12px)" }}
-              transition={{ duration: 0.4, ease: BLUR_EASE }}
-            >
-              {/* Toolbar lives in HomeLayout above this column so it can
-                  span the full window width responsive to the left rail
-                  and right chat panel; cascade animation moves with it. */}
+          {/* GHOST-WORDMARK FIX (2026-08-05). There used to be a
+              `!aboutMeOpen` branch here rendering a 48px/600 "Marco
+              Sevilla" wordmark. It was unreachable-except-harmful:
+              <Hero> is mounted at exactly ONE site (HomeLayout.tsx),
+              INSIDE that file's own `aboutMeOpen ? (...)` branch, and is
+              handed `aboutMeOpen={aboutMeOpen}` — so `!aboutMeOpen` could
+              only ever be true during the 260ms in which the About page
+              was already animating away. The branch therefore mounted a
+              full-opacity wordmark (`initial={false}`) inside a parent
+              fading to zero, flashing a ghost name on every "Return"
+              press, at the 48px fallback size.
 
-              {/* Wordmark wrapper — flex row holding the name and the
-                  star. The wrapper itself is NOT animated so the star
-                  (a child of it) isn't hidden behind the parent's
-                  opacity gate while the layoutId morph is running.
-                  Only the <h1> name participates in the cascade. */}
-              <div
-                ref={setWordmarkRef}
-                className="flex flex-col items-start"
-                style={{ width: "100%" }}
-              >
-                {/* Standalone asterisk removed — wordmark is the single
-                    brand-mark in the left column now. */}
-                <motion.h1
-                  initial={initial}
-                  animate={animate}
-                  transition={tx(0)}
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "var(--wordmark-fontsize, 48px)",
-                    fontWeight: 600,
-                    lineHeight: 1.05,
-                    letterSpacing: "-0.025em",
-                    color: "var(--color-fg)",
-                    whiteSpace: "nowrap",
-                    flex: "0 0 auto",
-                  }}
-                >
-                  {HERO_NAME}
-                </motion.h1>
-              </div>
+              The live homepage name is HomeLayout's `serifName` h1
+              (Libre Baskerville 32px) — this was the superseded 2026-07
+              treatment. Deleting it also stops `useFitWordmark` writing
+              `--wordmark-fontsize` onto <html> with no cleanup.
 
-              {/* Learn-more button removed — About is still reachable
-                  via the ABOUT link in HomeNav below. The bio text moved
-                  into the right column (see HomeLayout). */}
-            </motion.div>
-          ) : (
+              `useFitWordmark` and `PlaygroundStar` above are now inert
+              (PlaygroundStar was already never rendered, so the var has
+              no live consumer). They are deliberately LEFT IN PLACE
+              rather than deleted, because PlaygroundStar owns
+              layoutId="hero-star", which LoadingOverlay's morph pairs
+              with if the intro is ever re-enabled (SKIP_INTRO is true
+              today). Don't delete them without checking that path. */}
+          {aboutMeOpen && (
             <motion.div
               key="hero-about"
               initial={{ opacity: 0, x: 160, filter: "blur(12px)" }}

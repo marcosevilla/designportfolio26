@@ -57,7 +57,7 @@ export default function ProjectDetails({ rows }: { rows: DetailRow[] }) {
                   style={{ ...typescale.body, marginLeft: indent, lineHeight: 2 }}
                 >
                   {row.groups.map((group, g) => (
-                    <p key={g} className="py-2 text-[var(--color-fg-secondary)]">
+                    <p key={g} className="py-2 text-(--color-fg-secondary)">
                       <span className="text-(--color-fg)">{group.heading}:</span>
                       {" "}{group.items.join(", ")}
                     </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion, useMotionValue, useMotionValueEvent, animate } from "framer-motion";
 import { useSidebar } from "@/lib/SidebarContext";
@@ -14,6 +14,20 @@ const ROW_HEIGHT = 28;
 // for 900ms so it can't clobber the click target with intermediate sections it
 // passes through during the scroll.
 const SCROLL_LOCK_MS = 900;
+
+/** Mono uppercase TOC label — was inlined verbatim at the "Back" link and
+ *  every TOC row. Values unchanged.
+ *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
+ *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate, visible site-wide
+ *  change, not this const's job. */
+const TOC_LABEL: CSSProperties = {
+  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+  fontSize: "12px",
+  fontWeight: 500,
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  lineHeight: "20px",
+};
 
 export default function InlineTOC() {
   const { tocItems, activeTocId, setActiveTocIdAndLock, backHref } = useSidebar();
@@ -72,12 +86,7 @@ export default function InlineTOC() {
         className="flex items-center gap-1 transition-colors hover:text-(--color-accent) mb-6 py-1 -my-1"
         style={{
           color: "var(--color-fg-secondary)",
-          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-          fontSize: "12px",
-          fontWeight: 500,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          lineHeight: "20px",
+          ...TOC_LABEL,
         }}
       >
         <BackChevronIcon size={12} />
@@ -130,14 +139,7 @@ export default function InlineTOC() {
                 // moving anything — rows sit in 8px gaps, so ±4px is the
                 // most before adjacent link hit areas would overlap.
                 className="block transition-colors py-1 -my-1"
-                style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  lineHeight: "20px",
-                }}
+                style={{ ...TOC_LABEL }}
                 onMouseEnter={() => setHoveredIndex(index)}
               >
                 <motion.span

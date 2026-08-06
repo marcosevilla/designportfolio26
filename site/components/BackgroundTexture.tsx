@@ -146,7 +146,12 @@ export function BackgroundTexture() {
 
   // Refresh colors on mount and when theme/class changes
   useEffect(() => {
-    if (!mounted) return;
+    // DISABLED guard: the `return null` at the bottom of this component
+    // runs AFTER the hooks, so without this every visitor was paying for
+    // a <html> MutationObserver feeding colors to a canvas that is never
+    // rendered. The kill switch has to be checked in each effect, not
+    // just at the render bail.
+    if (DISABLED || !mounted) return;
     refreshColors();
 
     const observer = new MutationObserver(() => refreshColors());
@@ -294,7 +299,11 @@ export function BackgroundTexture() {
   }, [mounted, initDots, draw]);
 
   useEffect(() => {
-    if (!mounted) return;
+    // Same DISABLED guard as the color effect above. Without it every
+    // homepage visitor paid a global mousemove handler — fired on every
+    // single pointer move — feeding a cursor halo that is never drawn,
+    // for a component switched OFF for performance on 2026-08-03.
+    if (DISABLED || !mounted) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
@@ -304,8 +313,10 @@ export function BackgroundTexture() {
       mouseRef.current = { x: -1000, y: -1000 };
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseleave", handleMouseLeave);
+    // passive: the handler only records coordinates, it never calls
+    // preventDefault, so the browser must not be made to wait on it.
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    document.addEventListener("mouseleave", handleMouseLeave, { passive: true });
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);

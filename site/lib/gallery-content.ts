@@ -71,6 +71,13 @@ export type GallerySlotConfig =
       };
     };
 
+/** Soft 3-stop card lift (contact + mid + deep ambient) applied to the
+ *  layered gallery UI mocks. Was retyped verbatim at four call sites —
+ *  hoisted here so the layered cards provably share one shadow language.
+ *  Value unchanged. */
+const GALLERY_CARD_SHADOW =
+  "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))";
+
 export const galleryContent: Record<string, GallerySlotConfig[]> = {
   "fb-ordering": [
     {
@@ -87,8 +94,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         uiHeight: "92%",
         parallax: "bottom",
         uiBorderRadius: "16px",
-        uiShadow:
-          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
+        uiShadow: GALLERY_CARD_SHADOW,
       },
     },
   ],
@@ -116,8 +122,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         ui: "/images/gallery/upsells/upsells-mocks.webp",
         uiWidth: "88%",
         parallax: "bottom",
-        uiShadow:
-          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
+        uiShadow: GALLERY_CARD_SHADOW,
       },
     },
   ],
@@ -133,8 +138,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         // lifts the composite off the card fill. Shared verbatim with
         // the compendium card so the two layered cards share one shadow
         // language.
-        uiShadow:
-          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
+        uiShadow: GALLERY_CARD_SHADOW,
       },
     },
   ],
@@ -151,8 +155,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
         parallax: "bottom",
         // Same 3-stop ambient lift used on check-in + compendium so the
         // three layered cards share one shadow language.
-        uiShadow:
-          "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))",
+        uiShadow: GALLERY_CARD_SHADOW,
       },
     },
   ],

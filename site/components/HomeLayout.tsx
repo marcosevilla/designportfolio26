@@ -16,7 +16,7 @@ import {
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { RESUME_URL } from "@/lib/resume-content";
-import { serifName } from "@/lib/typography";
+import { serifName, typescale } from "@/lib/typography";
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
 /** Home ↔ About page swap. The two surfaces read as neighbours on a
@@ -118,7 +118,6 @@ export default function HomeLayout({
   // glyph, so when the loader releases the layoutId framer-motion has
   // exactly one destination element to morph into.
   const [loaderOwnsStar, setLoaderOwnsStar] = useState(true);
-  const wordmarkElRef = useRef<HTMLDivElement | null>(null);
   const aboutMeHeaderElRef = useRef<HTMLHeadingElement | null>(null);
 
   const openAbout = useCallback(() => setAboutMeOpen(true), []);
@@ -133,20 +132,25 @@ export default function HomeLayout({
     ? false
     : ({ opacity: 0, filter: "blur(12px)" } as const);
 
-  // Callback refs Hero still consumes — kept as no-ops now that the
-  // side-nav alignment logic is gone.
-  const setWordmarkRef = useCallback((el: HTMLDivElement | null) => {
-    wordmarkElRef.current = el;
-  }, []);
-
+  // Callback ref Hero still consumes — kept as a no-op now that the
+  // side-nav alignment logic is gone. (The matching wordmarkRef was
+  // dropped 2026-08-05 with the ghost-wordmark branch in Hero: the ref
+  // it fed was assigned but never read by anything.)
   const setAboutMeHeaderRef = useCallback((el: HTMLHeadingElement | null) => {
     aboutMeHeaderElRef.current = el;
   }, []);
 
   // Reset scroll position when navigating between home and About-me so
   // each page starts at the top.
+  //
+  // `behavior: "instant"` is load-bearing, not decoration. globals.css sets
+  // `html { scroll-behavior: smooth }`, and a scrollTo with NO behavior key
+  // defaults to "auto", which per spec means "use the element's computed
+  // scroll-behavior" — i.e. smooth. That animated this reset concurrently
+  // with the 0.45s page-transition slide/blur, which is exactly the
+  // "visibly shifts layout mid-animation" failure homepage.md warns about.
   useLayoutEffect(() => {
-    window.scrollTo({ top: 0, left: 0 });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [aboutMeOpen]);
 
   // Wordmark click in SiteHeader dispatches `home:return` — close About
@@ -224,7 +228,6 @@ export default function HomeLayout({
                   <Hero
                     aboutMeOpen={aboutMeOpen}
                     onAboutMeChange={setAboutMeOpen}
-                    wordmarkRef={setWordmarkRef}
                     aboutMeHeaderRef={setAboutMeHeaderRef}
                     ready={heroReady}
                     hideStarForLoader={loaderOwnsStar}
@@ -280,16 +283,11 @@ export default function HomeLayout({
                   : {})}
                 style={{
                   fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
-                  // Site-wide body standard: 15px at the 1.647 body ratio
-                  // (matches typescale.body — Marco dropped body 17→15 on
-                  // 2026-08-05). The globals.css body default stays 14/1.6
-                  // — UI chrome inherits it.
-                  // line-height is unitless for the same reason as
-                  // typescale.body: a px value would not track the Theme
-                  // Palette font-size slider and the ratio would collapse.
-                  fontSize: "calc(15px + var(--font-size-offset))",
-                  lineHeight: 1.647,
-                  letterSpacing: "-0.01em",
+                  // Site-wide body standard — the token itself, not a
+                  // restatement of it. typography.md used to require these
+                  // two to be changed together; now they can't drift.
+                  // (fontFamily stays inline: typescale.body sets none.)
+                  ...typescale.body,
                   // Body reads secondary; Em emphasis + titles keep
                   // primary ink.
                   color: "var(--color-fg-secondary)",
