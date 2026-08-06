@@ -41,38 +41,45 @@ export default function FnbDitherFrame() {
       {/* Phone mock — top-pinned, horizontally centered, cropped by the
           card's bottom edge. Paper: 430w, top 80, radius 44, 10px
           border-color outline (all × 0.57), with a soft downward
-          two-stop shadow lifting it off the dither field. */}
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: 46,
-          transform: "translateX(-50%)",
-          zIndex: 1,
-          width: 245,
-          height: 531,
-          borderRadius: 25,
-          outline: "6px solid var(--color-border)",
-          backgroundColor: "var(--color-bg)",
-          boxShadow:
-            "0 4px 10px rgba(0, 0, 0, 0.06), 0 16px 32px rgba(0, 0, 0, 0.12)",
-          overflow: "hidden",
-        }}
-      >
-        <img
-          src={MOCK_SRC}
-          alt=""
-          aria-hidden
+          two-stop shadow lifting it off the dither field.
+
+          Wrapped in .mq-media so the shared hover rule recedes just the
+          phone (not the dither behind it) — see globals.css. The wrapper
+          carries the recede transform; the phone keeps its own centering
+          transform, which the wrapper would otherwise clobber. */}
+      <div className="mq-media">
+        <div
           style={{
             position: "absolute",
-            inset: -0.5,
-            width: "calc(100% + 1px)",
-            height: "calc(100% + 1px)",
-            objectFit: "cover",
-            objectPosition: "top",
-            display: "block",
+            left: "50%",
+            top: 46,
+            transform: "translateX(-50%)",
+            zIndex: 1,
+            width: 245,
+            height: 531,
+            borderRadius: 25,
+            outline: "6px solid var(--color-border)",
+            backgroundColor: "var(--color-bg)",
+            boxShadow:
+              "0 4px 10px rgba(0, 0, 0, 0.06), 0 16px 32px rgba(0, 0, 0, 0.12)",
+            overflow: "hidden",
           }}
-        />
+        >
+          <img
+            src={MOCK_SRC}
+            alt=""
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: -0.5,
+              width: "calc(100% + 1px)",
+              height: "calc(100% + 1px)",
+              objectFit: "cover",
+              objectPosition: "top",
+              display: "block",
+            }}
+          />
+        </div>
       </div>
     </div>
   );

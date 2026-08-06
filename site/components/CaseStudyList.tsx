@@ -488,9 +488,9 @@ const MARQUEE_SCROLLER_ID = "work-marquee-scroller";
 // Full-bleed horizontal strip of the work cards. FREE-scroll carousel
 // (scroll-snap removed 2026-08-05 — it made trackpad gestures travel
 // net-zero; the full reasoning is on .work-marquee in globals.css).
-// One "slot" sits at the content-band start, and whichever card
-// currently occupies it grows into the focused state (panel chrome +
-// description reveal) via .mq-cell CSS.
+// Each card reveals its title/meta/description on hover WITHIN the frame
+// (2026-08-06, replacing the scroll-focused expand-below model); scroll
+// position now only drives the prev/next arrows.
 function StudyMarquee({
   studies,
   onPreview,
@@ -499,14 +499,14 @@ function StudyMarquee({
   onPreview: (slug: string) => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const [focusedIndex, setFocusedIndex] = useState(0);
   // Cell stride (width + gap), cached. Cells are uniform, so this only
-  // changes on resize — see the ResizeObserver below.
+  // changes on resize — see the ResizeObserver below. Drives the
+  // one-card-per-press arrow step; hover reveal is pure CSS.
   const strideRef = useRef(0);
   // Coalesces scroll events into one read per frame.
   const rafRef = useRef<number | null>(null);
   // Arrow-button enablement. Derived from real scroll position rather than
-  // from focusedIndex, which matters because of a known geometry quirk: the
+  // a card index, which matters because of a known geometry quirk: the
   // last card can't fully reach the slot (the track's mirrored right padding
   // is smaller than clientWidth − cellWidth), so an index-based "at end"
   // would disable the button while the strip could still travel.
@@ -544,18 +544,14 @@ function StudyMarquee({
     setAtEnd(scroller.scrollLeft >= max - 1);
   };
 
-  // Which card owns the slot — uniform stride, so the index falls
-  // straight out of scrollLeft / stride. React bails out when the
-  // index is unchanged, so this is a no-op for most frames.
+  // Keep the arrow buttons' enabled/disabled state in sync with the real
+  // scroll position, coalesced to one read per frame.
   const handleScroll = () => {
     if (rafRef.current !== null) return;
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
       const scroller = scrollerRef.current;
-      const stride = strideRef.current;
-      if (!scroller || stride <= 0) return;
-      const idx = Math.round(scroller.scrollLeft / stride);
-      setFocusedIndex(Math.max(0, Math.min(studies.length - 1, idx)));
+      if (!scroller) return;
       syncEdges(scroller);
     });
   };
@@ -652,16 +648,12 @@ function StudyMarquee({
       }}
     >
       <div className="work-marquee-track">
-        {studies.map((study, i) => (
+        {studies.map((study) => (
           <div
             key={study.slug}
             className="work-marquee-cell w-[520px] max-w-[80vw] shrink-0"
           >
-            <StudyCell
-              study={study}
-              onPreview={onPreview}
-              focused={i === focusedIndex}
-            />
+            <StudyCell study={study} onPreview={onPreview} />
           </div>
         ))}
       </div>
@@ -690,78 +682,69 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Marquee title row (Paper mockup 2026-07-27, moved ABOVE the media
-// frame 2026-07-27 pm): title left, mono COMPANY • YEAR pinned to the
-// right edge. Replaced the title+metric CellCaption of 2026-07-26.
-function MarqueeTitleRow({
+// Card info overlay (2026-08-06 redesign). Title + mono "COMPANY • YEAR"
+// on one baseline row, description below — the same hierarchy that used
+// to sit above/below the frame, now revealed WITHIN it on hover over a
+// scrim (see the .mq-info / .mq-media rules in globals.css). Persistent
+// on touch, where there is no hover to trigger it.
+function MarqueeInfo({
   title,
   meta,
+  description,
 }: {
   title: string;
   /** Mono right-edge label — "Company • Year". */
   meta?: string;
+  description?: string;
 }) {
   return (
-    // flex-wrap: on narrow (80vw) mobile cells the nowrap meta label
-    // drops to its own line instead of crushing the title into
-    // one-word-per-line wrapping.
-    <div className="flex flex-wrap items-baseline justify-between gap-x-2.5 gap-y-0.5 self-stretch">
-      <h3
-        style={{
-          fontFamily: "var(--font-sans)",
-          fontSize: "calc(14px + var(--font-size-offset))",
-          fontWeight: 500,
-          letterSpacing: "-0.01em",
-          lineHeight: "22px",
-          color: "var(--color-fg)",
-        }}
-      >
-        {title}
-      </h3>
-      {meta && (
-        <span
+    <div className="mq-info">
+      {/* flex-wrap: on narrow (80vw) mobile cells the nowrap meta label
+          drops to its own line instead of crushing the title. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2.5 gap-y-0.5">
+        <h3
           style={{
-            whiteSpace: "nowrap",
-            fontFamily:
-              "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-            fontSize: "calc(12px + var(--font-size-offset))",
-            fontWeight: 400,
-            textTransform: "uppercase",
-            letterSpacing: "-0.02em",
+            fontFamily: "var(--font-sans)",
+            fontSize: "calc(14px + var(--font-size-offset))",
+            fontWeight: 500,
+            letterSpacing: "-0.01em",
             lineHeight: "22px",
-            color: "color-mix(in srgb, var(--color-fg) 62%, var(--color-bg))",
+            color: "var(--color-fg)",
           }}
         >
-          {meta}
-        </span>
-      )}
-    </div>
-  );
-}
-
-// Focused-state description, below the media frame. Rendered collapsed
-// on resting cards so the expand is a pure CSS grid-rows transition (no
-// mount/unmount pop). The media→description gap lives INSIDE the
-// collapsing row as padding — mounted as a flex sibling with the cell's
-// gap, a collapsed row would still leave a dead gap at rest — and
-// matches the .mq-cell gap so all three content rows space equally.
-function MarqueeDescription({ text }: { text: string }) {
-  return (
-    <div className="mq-desc">
-      <div style={{ overflow: "hidden" }}>
+          {title}
+        </h3>
+        {meta && (
+          <span
+            style={{
+              whiteSpace: "nowrap",
+              fontFamily:
+                "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+              fontSize: "calc(12px + var(--font-size-offset))",
+              fontWeight: 400,
+              textTransform: "uppercase",
+              letterSpacing: "-0.02em",
+              lineHeight: "22px",
+              color: "color-mix(in srgb, var(--color-fg) 62%, var(--color-bg))",
+            }}
+          >
+            {meta}
+          </span>
+        )}
+      </div>
+      {description && (
         <p
           style={{
-            paddingTop: 16,
             fontFamily: "var(--font-sans)",
             fontSize: "calc(14px + var(--font-size-offset))",
             fontWeight: 400,
-            lineHeight: "22.4px",
+            lineHeight: "20px",
             color: "var(--color-fg-secondary)",
           }}
         >
-          {text}
+          {description}
         </p>
-      </div>
+      )}
     </div>
   );
 }
@@ -773,9 +756,12 @@ function MarqueeDescription({ text }: { text: string }) {
 function StudyMediaFrame({
   study,
   locked,
+  info,
 }: {
   study: CaseStudyMeta;
   locked: boolean;
+  /** Title/meta/description revealed within the frame on hover. */
+  info?: { title: string; meta?: string; description?: string };
 }) {
   const items = galleryContent[study.slug] ?? [];
   const item = items[0] ?? null;
@@ -817,6 +803,11 @@ function StudyMediaFrame({
       ) : (
         <DitherBackdrop seed={study.slug} />
       )}
+      {/* On-top media, wrapped so the shared hover rule recedes just this
+          layer while the dither behind it stays put. F&B renders none of
+          these — its mock is the phone inside FnbDitherFrame. */}
+      {study.slug !== "fb-ordering" && (
+        <div className="mq-media">
       {video &&
         study.slug !== "fb-ordering" &&
         (video.shell ? (
@@ -922,6 +913,15 @@ function StudyMediaFrame({
           </span>
         </div>
       )}
+        </div>
+      )}
+      {info && (
+        <MarqueeInfo
+          title={info.title}
+          meta={info.meta}
+          description={info.description}
+        />
+      )}
       <LockedFrameBadge locked={locked} />
       <CursorGlowOverlay />
     </div>
@@ -931,40 +931,30 @@ function StudyMediaFrame({
 function StudyCell({
   study,
   onPreview,
-  focused,
 }: {
   study: CaseStudyMeta;
   onPreview: (slug: string) => void;
-  /** True while this card occupies the marquee slot — grows the panel
-   *  chrome + description via the .mq-cell--focused CSS transitions. */
-  focused: boolean;
 }) {
   const locked = isLocked(study.slug);
   const href = STUDY_ROUTES[study.slug];
   const display = MARQUEE_DISPLAY[study.slug];
   const displayTitle = display?.title ?? study.title;
 
-  // Three content rows — title/meta ABOVE the media, description below
-  // it — with equal spacing between rows (cell gap + the description's
-  // internal padding both = 16px). Cell geometry is identical in both
-  // states: in the slot only the panel background/border fade in and
-  // the description expands, so media never changes dimensions. The
-  // "Coming soon" note is gone per the 2026-07-27 mock — LockGate's
-  // hover overlay + click gate still carry the locked state. The media
-  // + description share a wrapper so the collapsed description doesn't
-  // eat a flex gap of its own at rest.
+  // The card IS the mock frame. Title / COMPANY • YEAR / description live
+  // inside it as the .mq-info overlay, revealed on hover while the mock
+  // recedes — the card never changes size (2026-08-06 redesign). LockGate's
+  // hover overlay + click gate still carry the locked state.
   const cellInner = (
-    <div className={`mq-cell${focused ? " mq-cell--focused" : ""}`}>
-      <MarqueeTitleRow
-        title={displayTitle}
-        meta={display ? `${display.org} • ${display.year}` : study.metric}
+    <div className="mq-cell">
+      <StudyMediaFrame
+        study={study}
+        locked={locked}
+        info={{
+          title: displayTitle,
+          meta: display ? `${display.org} • ${display.year}` : study.metric,
+          description: display?.description,
+        }}
       />
-      <div className="flex flex-col self-stretch">
-        <StudyMediaFrame study={study} locked={locked} />
-        {display?.description && (
-          <MarqueeDescription text={display.description} />
-        )}
-      </div>
     </div>
   );
 

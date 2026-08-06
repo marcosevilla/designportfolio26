@@ -1231,9 +1231,11 @@ body {
       var(--mq-cols) * (var(--mq-col) + var(--grid-gap))
   );
   scroll-padding-inline: var(--mq-inset);
-  /* Focused-state transitions share one organic curve. */
+  /* Hover-reveal + focused-state transitions share one organic curve. */
   --mq-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --mq-dur: 450ms;
+  /* Hover reveal is a touch quicker than the old scroll-focus grow. */
+  --mq-hover-dur: 360ms;
 }
 
 .work-marquee::-webkit-scrollbar {
@@ -1271,67 +1273,99 @@ body {
   }
 }
 
-/* Card states (Paper mock "project marquee", 2026-07-27; geometry
-   unified 2026-07-27 pm — Marco: every card carries the focused
-   padding/gap at rest, so media NEVER changes dimensions). The only
-   focus transforms: panel background/border fading in, and the
-   vertical growth of the description expanding. */
+/* Card = the mock frame only (2026-08-06 redesign, Marco's ask). Hover
+   reveals the title / COMPANY • YEAR / description WITHIN the frame over
+   a scrim, and the mock recedes to cede room — the card NEVER changes
+   size. Replaces the 2026-07-27 scroll-focused model, where the slotted
+   card grew a 5% panel fill + border and expanded a description BELOW
+   the frame, which forced the 550px track reserve and bounced the page.
+   The old .mq-cell--focused / .mq-desc classes are gone. */
 .mq-cell {
+  display: block;
+}
+
+/* The on-top media layer — device mock / composite / image / video.
+   The dither backdrop is a SIBLING (rendered before this), so it stays
+   put; only this layer recedes on hover, keeping the ambient field
+   steady and never revealing the frame's background at its edges. */
+.mq-media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform: scale(1);
+  /* Anchored high so the mock recedes upward, freeing the lower half
+     of the frame where the info panel rises. */
+  transform-origin: 50% 28%;
+  transition: transform var(--mq-hover-dur) var(--mq-ease);
+}
+
+/* Info overlay — pinned to the frame's bottom, hidden until hover. A
+   near-solid panel (not a translucent scrim) so text stays legible over
+   any mock at any panel height: on mobile the info is persistent and the
+   description wraps to ~4 lines, pushing the title high — a soft scrim
+   let the mock bleed through it there. The blend into the mock is a
+   fixed-height fade riser above the panel (::before), so it reads the
+   same whatever the description length. */
+.mq-info {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  /* Row rhythm — must match MarqueeDescription's internal paddingTop
-     so title→media and media→description gaps stay equal. */
-  gap: 16px;
-  padding: 12px 12px 16px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background-color: transparent;
-  transition:
-    background-color var(--mq-dur) var(--mq-ease),
-    border-color var(--mq-dur) var(--mq-ease);
-}
-
-.mq-cell--focused {
-  background-color: color-mix(in srgb, var(--color-fg) 5%, var(--color-bg));
-  border-color: var(--color-border);
-}
-
-/* Description reveal — grid-rows 0fr→1fr collapse (the row's 12px top
-   gap is padding inside it, so it collapses too). */
-.mq-desc {
-  display: grid;
-  grid-template-rows: 0fr;
+  gap: 6px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--color-bg) 94%, transparent);
   opacity: 0;
+  transform: translateY(10px);
   transition:
-    grid-template-rows var(--mq-dur) var(--mq-ease),
-    opacity 350ms var(--mq-ease);
+    opacity var(--mq-hover-dur) var(--mq-ease),
+    transform var(--mq-hover-dur) var(--mq-ease);
+  pointer-events: none;
 }
 
-.mq-cell--focused .mq-desc {
-  grid-template-rows: 1fr;
-  opacity: 1;
+.mq-info::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 44px;
+  background: linear-gradient(to top, var(--color-bg), transparent);
+  pointer-events: none;
 }
 
-/* ≥768px the cells are a fixed 520 wide (media 494 inside the uniform
-   panel padding), so pin the media frame to a flat 400px height — every
-   card's media shares identical dimensions and edges in both states.
+@media (hover: hover) {
+  .mq-frame:hover .mq-media {
+    transform: scale(0.9);
+  }
+  .mq-frame:hover .mq-info {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Touch (no hover to trigger the reveal): show the info persistently
+   and leave the mock full-size. */
+@media (hover: none) {
+  .mq-info {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ≥768px the cells are a fixed 520 wide, so pin the media frame to a
+   flat 400px height — every card's media shares identical dimensions.
    Below 768 the aspect ratio governs (cells are 80vw). */
 @media (min-width: 768px) {
   .work-marquee-cell .mq-frame {
     height: 400px;
     aspect-ratio: auto;
   }
-  /* Reserve the focused card's expanded height so content below the
-     marquee doesn't bounce mid-transition (both descriptions briefly
-     half-collapsed → track momentarily shorter than either endpoint). */
-  .work-marquee-track {
-    min-height: 550px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mq-cell,
-  .mq-desc {
+  .mq-media,
+  .mq-info {
     transition: none;
   }
 }
