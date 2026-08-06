@@ -43,18 +43,27 @@ export async function* parseSseStream(
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    // SSE messages are separated by \n\n.
-    let sep: number;
-    while ((sep = buffer.indexOf("\n\n")) !== -1) {
-      const raw = buffer.slice(0, sep);
-      buffer = buffer.slice(sep + 2);
-      const ev = parseSseChunk(raw);
-      if (ev) yield ev;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      // SSE messages are separated by \n\n.
+      let sep: number;
+      while ((sep = buffer.indexOf("\n\n")) !== -1) {
+        const raw = buffer.slice(0, sep);
+        buffer = buffer.slice(sep + 2);
+        const ev = parseSseChunk(raw);
+        if (ev) yield ev;
+      }
     }
+  } finally {
+    // The consumer `break`s out of its for-await on the first terminal
+    // event, which calls this generator's .return(). Without this the body
+    // reader is never cancelled and the response is left locked and
+    // undrained — a leaked socket on any path where the server holds the
+    // connection open after the terminal event.
+    await reader.cancel().catch(() => {});
   }
 }
 

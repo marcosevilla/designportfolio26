@@ -52,7 +52,14 @@ function readStored(): ChatTurn[] {
         typeof t === "object" &&
         t !== null &&
         (t.role === "user" || t.role === "assistant") &&
-        typeof t.content === "string"
+        typeof t.content === "string" &&
+        // Drop empty assistant turns. An aborted/empty stream used to leave
+        // a `content: ""` placeholder in the transcript, which persisted
+        // here and was re-POSTed on every later submit — the Anthropic API
+        // 400s on empty content in a non-final message, so chat showed
+        // "Lost connection" forever. The submit path no longer creates one;
+        // this also cleans up any already stored from before that fix.
+        (t.role === "user" || t.content.length > 0)
     );
   } catch {
     return [];
@@ -168,6 +175,51 @@ export default function ChatBar() {
     if (open) hasOpenedRef.current = true;
   }, [open]);
 
+  // Every close path must abort the in-flight stream, not just the ones that
+  // call close() directly. Escape closes via ChatOverlayContext's own
+  // keydown handler, which only flips chatOpen — that used to leave a billed
+  // Anthropic stream running with no consumer. Watching the transition here
+  // covers Esc and any future external closer.
+  //
+  // The prev-open ref keeps this to the true→false edge only (so it can't
+  // fire on mount), and close() re-entering is harmless: it nulls abortRef
+  // before this runs, so there's no double-abort, and setChatOpen(false)
+  // when already false is a React bail-out, not a re-render loop.
+  const prevOpenRef = useRef(open);
+  useEffect(() => {
+    if (prevOpenRef.current && !open) close();
+    prevOpenRef.current = open;
+  }, [open, close]);
+
+  // Focus restore. ChatPanel focuses its textarea on mount; without this the
+  // element that had focus before opening is never returned to, and a
+  // keyboard user lands back at the top of the tab order on close.
+  //
+  // The pre-open focus is tracked with a focusin listener that is only
+  // attached while CLOSED, rather than read from document.activeElement when
+  // `open` flips true. React runs child effects before parent effects, so by
+  // the time an effect here saw the transition, ChatPanel had already moved
+  // focus into its textarea — we'd stash the textarea and restore nothing.
+  // Detaching the listener on open freezes the ref at the trigger.
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (open) return;
+    const onFocusIn = (e: FocusEvent) => {
+      if (e.target instanceof HTMLElement) restoreFocusRef.current = e.target;
+    };
+    document.addEventListener("focusin", onFocusIn);
+    return () => document.removeEventListener("focusin", onFocusIn);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) return;
+    const el = restoreFocusRef.current;
+    // The trigger may have unmounted while the panel was open (ChatFab does
+    // exactly this) — focusing a detached node silently drops focus to
+    // <body>, so only restore elements still in the document.
+    if (el && el.isConnected) el.focus();
+  }, [open]);
+
   // Keyboard avoidance on mobile. iOS Safari does NOT shrink innerHeight or
   // 100dvh when the virtual keyboard appears — but visualViewport.height does
   // track it. Mirror that height into a `--chat-vh` CSS variable so the
@@ -241,19 +293,32 @@ export default function ChatBar() {
           // Drop the empty assistant placeholder, surface a polite line.
           setTurns((prev) => prev.slice(0, -1));
           setErrorLine(`Slow down a sec — try again in ~${rateRetry}s.`);
-        } else if (terminal === "error" || (terminal === null && assistant.length === 0)) {
-          setErrorLine("Lost connection — try asking again.");
+        } else {
+          // Terminal-agnostic: if nothing streamed, the placeholder must go
+          // whatever the terminal event was. A clean `done` with no text (a
+          // refusal, or an immediate message_stop) used to match neither
+          // branch and left a `content: ""` assistant turn in the
+          // transcript, which then poisoned every later request.
           if (assistant.length === 0) {
-            // Drop the empty assistant placeholder if nothing streamed.
             setTurns((prev) => prev.slice(0, -1));
+          }
+          if (terminal === "error" || assistant.length === 0) {
+            setErrorLine("Lost connection — try asking again.");
           }
         }
       } catch (err) {
+        // Trim BEFORE the AbortError early-return. Closing the panel mid-
+        // stream (X, scrim tap, drag-dismiss, Esc) rejects the reader, and
+        // returning first left the empty placeholder behind permanently.
+        setTurns((prev) =>
+          prev.length > 0 &&
+          prev[prev.length - 1].role === "assistant" &&
+          prev[prev.length - 1].content === ""
+            ? prev.slice(0, -1)
+            : prev
+        );
         if ((err as Error).name === "AbortError") return;
         setErrorLine("Lost connection — try asking again.");
-        setTurns((prev) =>
-          prev.length > 0 && prev[prev.length - 1].content === "" ? prev.slice(0, -1) : prev
-        );
       } finally {
         setPending(false);
         abortRef.current = null;

@@ -1,6 +1,6 @@
 import "server-only";
 
-// Per-IP rate limiting via Upstash Redis. Two windows in parallel:
+// Per-IP rate limiting via Upstash Redis. Two windows, checked in order:
 //   - 8 messages per minute (catches spam loops)
 //   - 60 messages per day  (catches a determined abuser)
 // Either window tripping returns a 429.
@@ -54,14 +54,17 @@ export type RateLimitResult =
   | { ok: false; retryAfterSec: number };
 
 export async function checkRateLimit(ip: string): Promise<RateLimitResult> {
-  const [m, d] = await Promise.all([
-    getMinuteLimit().limit(ip),
-    getDailyLimit().limit(ip),
-  ]);
+  // Sequential, not Promise.all: consuming both windows on every request
+  // meant a user who tripped the 8/min window still burned one of their 60
+  // daily on each rejected message — 12 messages in a minute cost 4 × 429
+  // *and* 12 of the day's quota. Only spend a daily token once the minute
+  // window has passed. Costs one extra round trip on the success path.
+  const m = await getMinuteLimit().limit(ip);
   if (!m.success) {
     const retryAfterSec = Math.max(1, Math.ceil((m.reset - Date.now()) / 1000));
     return { ok: false, retryAfterSec };
   }
+  const d = await getDailyLimit().limit(ip);
   if (!d.success) {
     const retryAfterSec = Math.max(1, Math.ceil((d.reset - Date.now()) / 1000));
     return { ok: false, retryAfterSec };

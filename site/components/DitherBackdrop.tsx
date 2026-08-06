@@ -16,7 +16,7 @@
  * Paper-design values so the anchor composition is unchanged).
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { Dithering } from "@paper-design/shaders-react";
 
 // Shared shader identity — every card uses the same shape/type/dot size
@@ -86,49 +86,90 @@ export function seededDitherParams(seed: string): DitherParams {
  * gets rewritten by applyColoredTheme(), so a hidden probe element +
  * getComputedStyle is the only reliable resolver; a MutationObserver
  * on <html> re-resolves on theme/dark-mode flips.
+ *
+ * ⚠️ PERF (fixes audit F-12): this resolver is a MODULE SINGLETON, not a
+ * per-instance hook. It used to be per-instance, so each of the nine
+ * mounted DitherBackdrops appended its own probe <div> to <body>, made
+ * its own 1×1 canvas, registered its own MutationObserver on <html>, and
+ * on every theme flip ran getComputedStyle + fillRect + a SYNCHRONOUS
+ * getImageData GPU readback — one theme toggle fanned out to 9 probe
+ * reads and 9 pixel readbacks. Now: one probe, one observer, one readback
+ * per theme change, broadcast to every subscriber. Resolved value is
+ * byte-identical to the old path (same probe style, same readback).
  */
-export function useAccentColor(): string | null {
-  const [accent, setAccent] = useState<string | null>(null);
+type AccentListener = (accent: string) => void;
 
-  useEffect(() => {
-    const probe = document.createElement("div");
-    probe.style.position = "absolute";
-    probe.style.visibility = "hidden";
-    probe.style.pointerEvents = "none";
-    probe.style.color = DITHER_TINT;
-    document.body.appendChild(probe);
+const accentListeners = new Set<AccentListener>();
+let accentValue: string | null = null;
+let stopAccentResolver: (() => void) | null = null;
 
-    // getComputedStyle hands back `color(srgb …)` for color-mix
-    // results, which the shader's color parser can't read (it falls
-    // back to black). fillStyle round-trips preserve that syntax too,
-    // so normalize by actually painting a pixel and reading it back —
-    // getImageData always returns plain 0-255 RGB.
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = 1;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    const resolve = () => {
-      const raw = getComputedStyle(probe).color;
-      if (!ctx) return setAccent(raw);
+function startAccentResolver() {
+  const probe = document.createElement("div");
+  probe.style.position = "absolute";
+  probe.style.visibility = "hidden";
+  probe.style.pointerEvents = "none";
+  probe.style.color = DITHER_TINT;
+  document.body.appendChild(probe);
+
+  // getComputedStyle hands back `color(srgb …)` for color-mix
+  // results, which the shader's color parser can't read (it falls
+  // back to black). fillStyle round-trips preserve that syntax too,
+  // so normalize by actually painting a pixel and reading it back —
+  // getImageData always returns plain 0-255 RGB.
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 1;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+  const resolve = () => {
+    const raw = getComputedStyle(probe).color;
+    let next = raw;
+    if (ctx) {
       ctx.fillStyle = raw;
       ctx.fillRect(0, 0, 1, 1);
       const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-      setAccent(
-        `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`
-      );
-    };
-    resolve();
+      next = `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+    }
+    // <html> mutates for reasons other than the palette (font-size
+    // offset, scroll-lock styles) — only wake the shaders on a real
+    // color change.
+    if (next === accentValue) return;
+    accentValue = next;
+    accentListeners.forEach((listener) => listener(next));
+  };
 
-    const observer = new MutationObserver(resolve);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "style"],
-    });
-    return () => {
-      observer.disconnect();
-      probe.remove();
-    };
-  }, []);
+  resolve();
 
+  const observer = new MutationObserver(resolve);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "style"],
+  });
+
+  stopAccentResolver = () => {
+    observer.disconnect();
+    probe.remove();
+    accentValue = null;
+  };
+}
+
+/** Ref-counted subscription — the probe exists only while something needs it. */
+function subscribeAccent(listener: AccentListener): () => void {
+  accentListeners.add(listener);
+  if (!stopAccentResolver) startAccentResolver();
+  else if (accentValue !== null) listener(accentValue);
+
+  return () => {
+    accentListeners.delete(listener);
+    if (accentListeners.size === 0) {
+      stopAccentResolver?.();
+      stopAccentResolver = null;
+    }
+  };
+}
+
+export function useAccentColor(): string | null {
+  const [accent, setAccent] = useState<string | null>(null);
+  useEffect(() => subscribeAccent(setAccent), []);
   return accent;
 }
 
@@ -143,6 +184,40 @@ export function useReducedMotion(): boolean {
     return () => mq.removeEventListener("change", update);
   }, []);
   return reduced;
+}
+
+/**
+ * Viewport gate (fixes audit F-11). Nine of these canvases mount at once
+ * in the work marquee; the vendored `ShaderMount` pauses on tab hide
+ * (`visibilitychange`) but has NO IntersectionObserver, so every one of
+ * them kept a rAF + GL draw running while its card was scrolled off
+ * screen.
+ *
+ * Generous margin so a card is already animating before it scrolls in —
+ * the gate must never be something a visitor can see engage.
+ */
+const VIEWPORT_ROOT_MARGIN = "200px";
+
+function useInViewport(ref: RefObject<HTMLElement | null>): boolean {
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // No IO support ⇒ fail open, never leave the art frozen.
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: VIEWPORT_ROOT_MARGIN }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref]);
+
+  return inView;
 }
 
 // ── Component ──
@@ -160,32 +235,43 @@ export default function DitherBackdrop({
 }) {
   const accent = useAccentColor();
   const reducedMotion = useReducedMotion();
-
-  if (!accent) return null;
+  // The host div carries the geometry the shader div used to own, so the
+  // IntersectionObserver has a node to watch without changing layout.
+  const hostRef = useRef<HTMLDivElement>(null);
+  const inViewport = useInViewport(hostRef);
 
   const params = { ...seededDitherParams(seed), ...overrides };
 
+  // `speed={0}` over unmounting, deliberately: ShaderMount.setCurrentSpeed
+  // cancels its rAF outright at speed 0 (shader-mount.js:340-349) and the
+  // canvas keeps its last drawn frame, so the art holds still instead of
+  // going blank. Resuming resets `lastRenderTime` to now, so the wave
+  // picks up exactly where it froze — no time jump, and no GL context
+  // teardown/re-init flash on scroll-back (which unmounting would cause,
+  // and would also churn through the browser's WebGL context budget).
+  const speed = reducedMotion || !inViewport ? 0 : params.speed;
+
   return (
     // Oversized bleed past every card edge (matches the F&B card's
-    // 436×335-on-420×323 composition from the Paper design). colorBack
-    // stays transparent; the cell's ink-mix fill is the backdrop, and
-    // the tint lets it show through the dots.
-    <Dithering
-      speed={reducedMotion ? 0 : params.speed}
-      frame={params.frame}
-      shape={DITHER_SHAPE}
-      type={DITHER_TYPE}
-      size={DITHER_SIZE}
-      scale={params.scale}
-      offsetX={params.offsetX}
-      offsetY={params.offsetY}
-      colorBack="#00000000"
-      colorFront={accent}
-      style={{
-        position: "absolute",
-        inset: -8,
-        zIndex: 0,
-      }}
-    />
+    // 436×335-on-420×323 composition from the Paper design).
+    <div ref={hostRef} style={{ position: "absolute", inset: -8, zIndex: 0 }}>
+      {/* colorBack stays transparent; the cell's ink-mix fill is the
+          backdrop, and the tint lets it show through the dots. */}
+      {accent && (
+        <Dithering
+          speed={speed}
+          frame={params.frame}
+          shape={DITHER_SHAPE}
+          type={DITHER_TYPE}
+          size={DITHER_SIZE}
+          scale={params.scale}
+          offsetX={params.offsetX}
+          offsetY={params.offsetY}
+          colorBack="#00000000"
+          colorFront={accent}
+          style={{ position: "absolute", inset: 0 }}
+        />
+      )}
+    </div>
   );
 }

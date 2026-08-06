@@ -94,9 +94,20 @@ export default function PixelRain({ className }: { className?: string }) {
       Math.round(r * Y_PITCH * dpr),
     );
 
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    // Last ink we painted with. Under reduced motion the cells never move,
+    // so an unchanged ink means the whole repaint is a no-op — skip it.
+    let lastInk: string | null = null;
+
     const draw = () => {
+      const ink = getComputedStyle(canvas).color;
+      if (reduceMotion && ink === lastInk) return;
+      lastInk = ink;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = getComputedStyle(canvas).color;
+      ctx.fillStyle = ink;
       for (const [c, r, shade] of cells) {
         ctx.globalAlpha = shade === "light" ? LIGHT_ALPHA : 1;
         ctx.fillRect(xs[c], ys[r], cellPx, cellPx);
@@ -108,10 +119,6 @@ export default function PixelRain({ className }: { className?: string }) {
       }
       ctx.globalAlpha = 1;
     };
-
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
 
     const step = () => {
       // Everything falls one row; cells past the last row despawn.
@@ -127,11 +134,60 @@ export default function PixelRain({ className }: { className?: string }) {
     };
 
     draw();
-    const id = window.setInterval(() => {
-      if (!reduceMotion) step();
-      draw(); // repaint even when static so theme/hover ink stays live
-    }, TICK_MS);
-    return () => window.clearInterval(id);
+
+    // ── Ticker gating (fixes audit F-29) ──────────────────────────────
+    // The 150ms interval used to run forever, on every route, in every
+    // tab — setInterval is throttled in background tabs but never
+    // suspended, so the glyph kept polling getComputedStyle at ~6.7 Hz
+    // behind a hidden tab and after the (in-flow) toolbar had scrolled
+    // away. Now the interval only exists while the canvas is both on
+    // screen and in a visible tab; it is torn down, not skipped, so a
+    // hidden tab costs literally nothing.
+    //
+    // The tick stays the ink sampler rather than becoming purely
+    // event-driven: the trigger button carries `transition: color 150ms`
+    // (globals.css `.bio-toolbar-btn` / the toolbar's `transition-colors`),
+    // so a one-shot read on hover/theme events would latch the colour
+    // from *before* the transition. Polling at the animation cadence is
+    // what keeps the hover ink correct, and it costs nothing once gated.
+    let id = 0;
+    const running = () => id !== 0;
+    const start = () => {
+      if (running()) return;
+      draw();
+      id = window.setInterval(() => {
+        if (!reduceMotion) step();
+        draw(); // repaint so theme/hover ink stays live
+      }, TICK_MS);
+    };
+    const stop = () => {
+      if (!running()) return;
+      window.clearInterval(id);
+      id = 0;
+    };
+
+    let onScreen = true;
+    const sync = () => (onScreen && !document.hidden ? start() : stop());
+
+    const io =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => {
+              onScreen = entry.isIntersecting;
+              sync();
+            },
+            { rootMargin: "100px" },
+          );
+    io?.observe(canvas);
+    document.addEventListener("visibilitychange", sync);
+    sync();
+
+    return () => {
+      stop();
+      io?.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
   }, []);
 
   return (

@@ -73,6 +73,20 @@ export function extractArtifact(raw: string): { text: string; slug: string | nul
   return { text: raw.slice(0, m.index).trimEnd(), slug };
 }
 
+// A trailing artifact marker that hasn't finished streaming yet — the tag has
+// opened but its closing `/>` hasn't arrived. `[^>]*` can't match a completed
+// marker, so this only ever strips a partial one.
+const PARTIAL_ARTIFACT_REGEX = /\n\s*<artifact[^>]*$/;
+
+/** Strips a half-streamed `<artifact slug="joi` tail. ARTIFACT_REGEX requires
+ *  the closing `/>`, so mid-stream the marker matches nothing and
+ *  extractArtifact hands back the raw text — printing the half-typed tag into
+ *  the transcript until the final chunk lands. Callers pass streaming text
+ *  through here first. */
+export function stripPartialArtifact(raw: string): string {
+  return raw.replace(PARTIAL_ARTIFACT_REGEX, "");
+}
+
 /** Flatten markdown links to their label text and drop any artifact marker.
  *  Used by the copy button so recruiters paste clean prose. */
 export function plainTextFromMarkup(raw: string): string {

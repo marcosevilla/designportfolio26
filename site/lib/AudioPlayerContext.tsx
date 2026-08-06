@@ -18,7 +18,6 @@ interface AudioPlayerState {
   currentIndex: number;
   currentTrack: Track;
   isPlaying: boolean;
-  currentTime: number;
   duration: number;
   // UI
   session: PlayerSession;
@@ -43,6 +42,18 @@ interface AudioPlayerState {
 }
 
 const Ctx = createContext<AudioPlayerState | null>(null);
+
+/**
+ * Playhead clock, split out of the main context (fixes audit F-18).
+ *
+ * `timeupdate` fires ~4 Hz, and `currentTime` used to live in the same
+ * `useMemo` as the transport — so the context value changed identity four
+ * times a second during playback and every consumer re-rendered with it,
+ * including the 1,500-line `LedMatrix` that already runs its own rAF loop.
+ * Now only whoever actually draws the playhead subscribes to the clock;
+ * the transport value stays referentially stable across ticks.
+ */
+const ClockCtx = createContext<number>(0);
 
 const PREV_THRESHOLD_MS = 3000; // Spotify-style: restart, then prev within 3s
 
@@ -106,7 +117,29 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       el.removeEventListener("pause", onPause);
       el.removeEventListener("ended", onEnded);
       el.pause();
-      el.src = "";
+      // Fixes audit F-19: `el.src = ""` makes the browser resolve the
+      // empty string against the document URL and issue a media request
+      // for the current page.
+      el.removeAttribute("src");
+      el.load();
+      // Fixes audit F-19: the Web Audio graph was created into refs and
+      // never torn down — no disconnect, no close. Harmless in prod (the
+      // provider is app-level and lives for the session) but Fast Refresh
+      // in dev walked straight into Chrome's ~6-AudioContext-per-document
+      // ceiling, after which the visualizer silently stops getting data.
+      try {
+        sourceRef.current?.disconnect();
+        analyserRef.current?.disconnect();
+        const ctx = audioCtxRef.current;
+        if (ctx && ctx.state !== "closed") void ctx.close().catch(() => {});
+      } catch {
+        /* already torn down */
+      }
+      sourceRef.current = null;
+      analyserRef.current = null;
+      audioCtxRef.current = null;
+      freqDataRef.current = null;
+      timeDataRef.current = null;
     };
   }, []);
 
@@ -260,7 +293,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       currentIndex,
       currentTrack,
       isPlaying,
-      currentTime,
       duration,
       session,
       overlayOpen,
@@ -278,11 +310,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       getTimeDomainData,
       getSampleRate,
     }),
+    // `currentTime` is deliberately NOT here — see ClockCtx (audit F-18).
     [
       currentIndex,
       currentTrack,
       isPlaying,
-      currentTime,
       duration,
       session,
       overlayOpen,
@@ -301,11 +333,23 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     ]
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={value}>
+      {/* `children` is a stable element, so a clock tick re-renders only
+          ClockCtx consumers — not the tree. */}
+      <ClockCtx.Provider value={currentTime}>{children}</ClockCtx.Provider>
+    </Ctx.Provider>
+  );
 }
 
 export function useAudioPlayer() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("useAudioPlayer must be used inside <AudioPlayerProvider>");
   return ctx;
+}
+
+/** Playhead position in seconds. Subscribe ONLY where the time is drawn —
+ *  this value changes ~4×/s while a track plays (audit F-18). */
+export function useAudioClock(): number {
+  return useContext(ClockCtx);
 }

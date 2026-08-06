@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
@@ -702,11 +702,23 @@ void main() {
 }`;
 
 // ── Component ────────────────────────────────────────────────────────────
-export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number } = {}) {
+function LedMatrix({
+  height = DEFAULT_HEIGHT,
+  /** False parks the render loop (audit F-17) — the GL context, programs,
+   *  sim textures and particle state all stay alive, so re-activating is
+   *  instant and the last frame remains on screen. */
+  active = true,
+}: { height?: number; active?: boolean } = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reducedMotion = usePrefersReducedMotion();
   const heightRef = useRef(height);
   heightRef.current = height;
+
+  // Read inside the rAF closure so pausing never re-runs the GL setup.
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  // Assigned by the GL effect below; restarts the loop after a park.
+  const resumeRef = useRef<(() => void) | null>(null);
 
   const audio = useAudioPlayer();
   const { activeScenes } = useVisualizerScene();
@@ -1494,7 +1506,11 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
 
       // Reduced motion renders exactly one frame — never self-reschedule,
       // or each open/close of the player stacks a permanent render loop.
-      if (!reducedMotion) raf = requestAnimationFrame(draw);
+      // `activeRef` parks the loop when the visualizer is collapsed
+      // (audit F-17): the loop used to reschedule unconditionally, so a
+      // 148px shader kept drawing behind a 10px overflow-hidden window.
+      if (!reducedMotion && activeRef.current) raf = requestAnimationFrame(draw);
+      else raf = 0;
     };
 
     if (reducedMotion) {
@@ -1510,7 +1526,14 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
       };
     }
 
-    raf = requestAnimationFrame(draw);
+    // Unpark hook for the `active` effect below — cancels any in-flight
+    // frame first so a fast collapse/expand can't stack two loops.
+    resumeRef.current = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(draw);
+    };
+
+    if (activeRef.current) raf = requestAnimationFrame(draw);
 
     // Click → spawn pebble ripple stack
     const handleClick = (e: MouseEvent) => {
@@ -1541,6 +1564,7 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
 
     return () => {
       cancelAnimationFrame(raf);
+      resumeRef.current = null;
       canvas.removeEventListener("click", handleClick);
       window.removeEventListener("resize", handleResize);
       themeObserver.disconnect();
@@ -1553,6 +1577,14 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
     };
   }, [reducedMotion]);
 
+  // Restart the parked loop when the visualizer expands again (F-17).
+  // Kept out of the GL effect on purpose — putting `active` in its deps
+  // would tear down and rebuild the whole WebGL context on every
+  // collapse, replaying the boot fade and dropping the sim textures.
+  useEffect(() => {
+    if (active && !reducedMotion) resumeRef.current?.();
+  }, [active, reducedMotion]);
+
   return (
     <canvas
       ref={canvasRef}
@@ -1561,3 +1593,9 @@ export default function LedMatrix({ height = DEFAULT_HEIGHT }: { height?: number
     />
   );
 }
+
+// memo (audit F-18): the panel above re-renders on every playhead tick
+// while scrubbing/hovering. LedMatrix's own context subscriptions still
+// re-render it when the track or transport state actually changes —
+// memo only drops the parent-driven churn.
+export default memo(LedMatrix);

@@ -119,7 +119,151 @@ need a design decision.
 
 ## 3. Technical and performance fixes
 
-*(pending — filled in as fixes land)*
+Finding IDs (F-nn) refer to `2026-08-05-technical-audit.md`, which has the full reasoning
+and line references for each. 68 findings were catalogued; the ones acted on are below.
+
+### 3a. Chat — F-01, the only P0
+
+`components/chat/ChatBar.tsx`, `app/api/chat/route.ts`, `lib/chat/rate-limit.ts`
+
+**One tap on the mobile scrim permanently broke chat for the session, across reloads.**
+Submitting pushes an empty assistant placeholder turn before streaming. On abort, the catch
+block returned on `AbortError` *before* the line that trims that placeholder — so the empty
+turn stayed in state, got persisted to `sessionStorage` (surviving reload), and was included
+in the message array on every later submit. The Anthropic API rejects empty content on a
+non-final message with a 400, so the user saw "Lost connection — try asking again." forever.
+
+Fixed by trimming before the early return, making the empty-assistant check
+terminal-agnostic, filtering empty assistant turns out of `readStored` (so anyone already
+carrying a poisoned session recovers), and rejecting empty content server-side.
+
+**Proved, not assumed** — two independent ways: a harness that extracts the *actual shipped
+source text* of the four changed functions and executes them (17/17 pass, and the same
+assertions **fail** when run against `git show HEAD:`, confirming they are real regression
+tests); and end-to-end in the running app with an abort-aware stubbed stream, confirming the
+empty turn is present in sessionStorage mid-stream and gone after Escape.
+
+Also fixed alongside it:
+- **F-03** — Escape closed the panel via a different path than the X button and never
+  aborted, leaving a billed Anthropic stream running with no consumer. All close paths now abort.
+- **F-26** — the SSE reader was never cancelled on an early `break`.
+- **F-08** — partially-streamed `<artifact>` markup rendered as literal text mid-stream.
+- **F-20/21/22** — rate-limited requests still consumed the daily quota; an unbounded message
+  array was validated before throttling; the route never required the last message to be a
+  user turn.
+
+### 3b. Chat focus restore — F-06
+
+`components/ChatFab.tsx`
+
+Closing the chat panel left keyboard focus on `<body>`, stranding keyboard users at the top
+of the document. ChatBar stashes and restores `activeElement`, but that cannot work for the
+FAB: the FAB is conditionally rendered, so opening the panel unmounts it and closing mounts a
+*new* node — the stashed reference is detached and the `isConnected` guard correctly declines.
+
+ChatFab now focuses itself when the panel closes (returning focus to the control that opened
+a dialog is the expected behaviour anyway).
+
+⚠️ **The obvious implementation is wrong, and this is worth not re-breaking.** Guarding on
+`activeElement === document.body` fails: the panel plays a ~460ms exit animation and stays
+mounted *with focus* the whole time, so at the moment the effect runs, focus is still on the
+panel's textarea. Measured trace — FAB remounts at t≈763ms, focus stays on the textarea until
+t≈1201ms, and only falls to `<body>` at t≈1228ms when the panel finally unmounts. The
+condition is therefore "focus is inside the dying panel, **or** nowhere".
+
+Verified: focus lands back on the FAB via both Escape and the X button; FAB position is
+byte-identical (1380,840,44,44) before and after the wrapper element was added.
+
+### 3c. TOC highlighting — F-04
+
+`components/case-study/TOCObserver.tsx`
+
+The observer wrote the active id for *every* intersecting entry in a batch, so the last entry
+in an unordered array won, and a section leaving the band never cleared. The TOC marker landed
+on the wrong item whenever two section boundaries crossed together — on every case study.
+
+Now tracks a `Set` of intersecting sections and picks the bottom-most. The correct logic
+already existed in `HomeNav.tsx` — but that component is unmounted, so the good code was the
+dead code and the naive version was what shipped.
+
+### 3d. Home ↔ About scroll reset — F-02
+
+`components/HomeLayout.tsx`
+
+`window.scrollTo({ top: 0, left: 0 })` with no `behavior` key defaults to `"auto"`, which per
+spec means *use the element's computed `scroll-behavior`* — and `globals.css` sets
+`html { scroll-behavior: smooth }`. So the "instant reset" animated, concurrently with the
+0.45s page transition. Now `behavior: "instant"`.
+
+### 3e. Ghost wordmark — F-56
+
+`components/Hero.tsx`, `components/HomeLayout.tsx`
+
+`<Hero>` is mounted at exactly one site, *inside* HomeLayout's own `aboutMeOpen ? (...)`
+branch, and is passed `aboutMeOpen`. So Hero's internal `!aboutMeOpen` branch could only ever
+be true during the 260ms in which About was already animating away — mounting a full-opacity
+48px "Marco Sevilla" wordmark (the superseded 2026-07 treatment) inside a parent fading to
+zero. Every "Return" press flashed a ghost name.
+
+Removed, along with its now-dead cascade (`initial`/`animate`/`tx`), the `wordmarkEl` state,
+the `useFitWordmark` call, and the unused `wordmarkRef` prop and its plumbing in HomeLayout.
+This also stops `useFitWordmark` writing `--wordmark-fontsize` onto `<html>` with no cleanup
+and no consumer.
+
+`useFitWordmark` and `PlaygroundStar` are **deliberately left defined** — `PlaygroundStar`
+owns `layoutId="hero-star"`, which `LoadingOverlay`'s morph pairs with if the intro is ever
+re-enabled. Don't delete them without checking that path.
+
+Verified: sampled the DOM every 40ms through the full transition — never two "Marco Sevilla"
+headings simultaneously (39/39 samples), `--wordmark-fontsize` no longer set on `<html>`, home
+h1 still Libre Baskerville 32px.
+
+### 3f. Disabled component still costing every visitor — F-10
+
+`components/BackgroundTexture.tsx`
+
+The dot-grid canvas was switched off on 2026-08-03 *for performance* via `DISABLED = true`.
+But the `return null` sits **after** the hooks, so two effects still ran on every homepage
+visit: a non-passive global `mousemove` handler (firing on every pointer move) feeding a
+cursor halo that is never drawn, and a `<html>` MutationObserver refreshing colors for a
+canvas that does not exist. Both effects now check the kill switch, and the listeners are
+passive.
+
+### 3g. Lint had never run — F-13
+
+`site/eslint.config.mjs` (new), `site/package.json`
+
+The project had `eslint@9` and `eslint-config-next@16` in devDependencies but **no config file
+anywhere**, and `npm run lint` called `next lint`, which Next 16 removed (the arg parser read
+"lint" as a directory: *"no such directory: .../site/lint"*). So lint had never executed, and
+the 11 inline `eslint-disable` comments in the tree were suppressing rules that were not
+configured.
+
+Added a flat config (`eslint-config-next@16` exports a real flat-config array, so no
+`FlatCompat` shim is needed) and pointed the script at `eslint .`.
+
+**Severities were graded rather than the code mass-edited.** The first run surfaced 67
+findings, none of them runtime defects:
+- 29 × `no-img-element` — **off**. `images.unoptimized: true` is set site-wide, so `next/image`
+  buys only a wrapper, and the fixed-geometry product specimens explicitly don't want one.
+- 20 × `set-state-in-effect`, 6 × `immutability`, 2 × `preserve-manual-memoization`,
+  `exhaustive-deps` — **warn**. Almost all are the standard SSR-safe "read localStorage on
+  mount and hydrate" pattern. Real backlog, not breakage.
+- 3 × `no-unescaped-entities` — **off**. The site uses straight apostrophes universally: 462 of
+  them, zero typographic. Exactly 3 trip the rule, purely because they sit in JSX text nodes
+  rather than string literals. Fixing only those 3 would *create* inconsistency. Moving all 462
+  to smart punctuation is a real typography improvement but it is a copy decision for Marco.
+- `purity` and `refs` kept as **errors** — they can produce wrong output, not just slow output.
+
+Result: **1 error remaining** (`chat/ChatPanel.tsx:125`, `Math.random()` during render — a
+purity violation, low risk in practice since it only renders client-side while streaming;
+flagged, not fixed) and 35 warnings.
+
+Also fixed `app/dev/logo-lab/LogoScene.tsx` — a render-phase ref write, moved into an effect.
+
+### 3h. Rendering performance
+
+See `2026-08-05-perf-fixes.md`.
 
 ---
 

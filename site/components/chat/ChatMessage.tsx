@@ -9,7 +9,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { parseChatMarkup, extractArtifact } from "./parseChatMarkup";
+import { parseChatMarkup, extractArtifact, stripPartialArtifact } from "./parseChatMarkup";
 import CaseStudyCardUnfurl from "./CaseStudyCardUnfurl";
 import ChatMessageActions from "./ChatMessageActions";
 import { isStudySlug } from "@/lib/chat/study-metadata";
@@ -117,6 +117,11 @@ export default function ChatMessage({
   }
 
   const { slug } = extractArtifact(turn.content);
+  // Mid-stream the artifact marker arrives a character at a time and matches
+  // neither ARTIFACT_REGEX nor anything else — so the half-typed tag printed
+  // as literal text until the last chunk landed. Strip the partial tail while
+  // streaming; once the stream ends, extractArtifact takes the whole marker.
+  const body = streaming ? stripPartialArtifact(turn.content) : turn.content;
 
   return (
     <motion.div {...FADE_IN}>
@@ -129,7 +134,7 @@ export default function ChatMessage({
           whiteSpace: "pre-wrap",
         }}
       >
-        <RenderSegments raw={turn.content} onClose={onClose} />
+        <RenderSegments raw={body} onClose={onClose} />
         {streaming && (
           <span
             aria-hidden

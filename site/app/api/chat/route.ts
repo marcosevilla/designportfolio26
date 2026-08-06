@@ -23,11 +23,17 @@ export const dynamic = "force-dynamic";
 
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_TURNS = 30;
+// Hard cap on array length, checked before the per-item loop. Without it a
+// single unauthenticated POST could carry 100k messages and force an O(n)
+// validation pass (and an Upstash round trip) before any limit applied.
+// Anything above MAX_TURNS would be trimmed away anyway.
+const MAX_MESSAGES = 100;
 
 type Message = { role: "user" | "assistant"; content: string };
 
 function isValidMessages(value: unknown): value is Message[] {
   if (!Array.isArray(value)) return false;
+  if (value.length > MAX_MESSAGES) return false;
   for (const m of value) {
     if (typeof m !== "object" || m === null) return false;
     const role = (m as { role?: unknown }).role;
@@ -35,6 +41,11 @@ function isValidMessages(value: unknown): value is Message[] {
     if (role !== "user" && role !== "assistant") return false;
     if (typeof content !== "string") return false;
     if (content.length > MAX_MESSAGE_CHARS) return false;
+    // Anthropic 400s on an empty-content message that isn't the final turn.
+    // A stale `content: ""` assistant placeholder in a client's stored
+    // transcript used to make every request fail; reject it here so a bad
+    // transcript can't brick chat.
+    if (content.length === 0) return false;
   }
   return true;
 }
@@ -94,6 +105,15 @@ export async function POST(req: NextRequest) {
   // can land on an assistant turn if the conversation is exactly 31+ long
   // and the cut boundary is odd. Drop the leading assistant if present.
   const safeMessages = trimmed[0]?.role === "assistant" ? trimmed.slice(1) : trimmed;
+
+  // The transcript is fully client-controlled, so a crafted request could end
+  // on an assistant turn — an assistant-prefill vector for steering the reply
+  // past the system prompt, plus fabricated "assistant said X" history. The
+  // real client always posts [...turns, userTurn], so this never fires on the
+  // success path.
+  if (safeMessages[safeMessages.length - 1]?.role !== "user") {
+    return Response.json({ reason: "bad_shape" }, { status: 400 });
+  }
 
   // 4. Stream from Anthropic
   const anthropic = getAnthropic();

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useAudioPlayer } from "@/lib/AudioPlayerContext";
+import { useAudioClock, useAudioPlayer } from "@/lib/AudioPlayerContext";
 import { useVisualizerScene } from "@/lib/VisualizerSceneContext";
 import { SCENES } from "@/lib/visualizer-scenes";
 import LedMatrix from "@/components/LedMatrix";
@@ -165,13 +165,15 @@ export default function MusicPlayerPanel({
   const {
     isPlaying,
     currentTrack,
-    currentTime,
     duration,
     togglePlay,
     next,
     prev,
     seek,
   } = useAudioPlayer();
+  // Separate subscription (audit F-18) — this is the only thing in the
+  // player that needs the ~4 Hz playhead.
+  const currentTime = useAudioClock();
   const { scene, setOnlyScene } = useVisualizerScene();
 
   const [vizOpen, setVizOpen] = useState(true);
@@ -227,7 +229,12 @@ export default function MusicPlayerPanel({
           className="relative overflow-hidden shrink-0"
           style={{ borderBottom: "0.5px solid var(--color-border)" }}
         >
-          <LedMatrix height={VIZ_HEIGHT} />
+          {/* `active={vizOpen}` fixes audit F-17: collapsed, this box is
+              10px tall with overflow hidden, but the matrix kept rendering
+              its full 148px of pixels behind it every frame. The canvas
+              stays MOUNTED (its GL programs, sim textures and particle
+              state survive) — only the rAF loop parks. */}
+          <LedMatrix height={VIZ_HEIGHT} active={vizOpen} />
 
           {/* Collapsed: the whole peek strip is the expand control. */}
           {!vizOpen && (

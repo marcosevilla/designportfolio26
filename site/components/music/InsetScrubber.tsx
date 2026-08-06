@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+// Same M:SS formatter the LED clock uses — reused rather than restated so
+// the announced value and the displayed value can't drift.
+import { formatClock } from "@/lib/dot-font";
 
 /** Inset timeline scrubber. Thin resting track + thumb-on-hover; meant
  *  to sit between two static time labels in a single bottom row of a
@@ -38,6 +41,42 @@ export default function InsetScrubber({
     return ratio * max;
   };
 
+  // Keyboard operation. This element advertises role="slider" and takes
+  // focus via tabIndex, but had no key handling at all — a focusable dead
+  // end for anyone not using a pointer. Arrow ±5s, Shift+Arrow ±30s,
+  // Home/End to the ends; each seeks and commits like a pointer release.
+  const seekTo = (next: number) => {
+    if (max <= 0) return;
+    onChange(Math.max(0, Math.min(max, next)));
+    onCommit?.();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (max <= 0) return;
+    const step = e.shiftKey ? 30 : 5;
+    switch (e.key) {
+      case "ArrowRight":
+      case "ArrowUp":
+        seekTo(value + step);
+        break;
+      case "ArrowLeft":
+      case "ArrowDown":
+        seekTo(value - step);
+        break;
+      case "Home":
+        seekTo(0);
+        break;
+      case "End":
+        seekTo(max);
+        break;
+      default:
+        return;
+    }
+    // Only reached when a key was handled — otherwise the early `return`
+    // above leaves Tab, Escape and friends alone.
+    e.preventDefault();
+  };
+
   return (
     <div
       role="slider"
@@ -45,7 +84,10 @@ export default function InsetScrubber({
       aria-valuemin={0}
       aria-valuemax={max || 0}
       aria-valuenow={value}
+      // Without this a screen reader announces the raw float ("137.42").
+      aria-valuetext={formatClock(value)}
       tabIndex={0}
+      onKeyDown={handleKeyDown}
       className="relative w-full cursor-pointer select-none touch-none py-2 -my-2"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

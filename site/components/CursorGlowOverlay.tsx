@@ -26,29 +26,67 @@ export default function CursorGlowOverlay() {
     if (!parent) return;
     if (!window.matchMedia("(pointer: fine)").matches) return;
 
-    const move = (e: MouseEvent) => {
-      const rect = parent.getBoundingClientRect();
-      parent.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
-      parent.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
+    // ── Rect caching (fixes audit F-34) ───────────────────────────────
+    // `move` used to call getBoundingClientRect() on every mousemove and
+    // then write two CSS custom properties on the same element. The write
+    // invalidates layout, so the *next* event's read forced a synchronous
+    // recalc — read → write → read, per mousemove, on the hovered card.
+    // Now the rect is measured once on enter and refreshed only when it
+    // can actually change (scroll while hovered, resize), and the writes
+    // are rAF-coalesced so a burst of mousemoves paints once per frame.
+    let rect: DOMRect | null = null;
+    let raf = 0;
+    let lastX = 0;
+    let lastY = 0;
+
+    const measure = () => {
+      rect = parent.getBoundingClientRect();
     };
+    const flush = () => {
+      raf = 0;
+      if (!rect) return;
+      parent.style.setProperty("--mouse-x", `${lastX - rect.left}px`);
+      parent.style.setProperty("--mouse-y", `${lastY - rect.top}px`);
+    };
+    const move = (e: MouseEvent) => {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (!raf) raf = requestAnimationFrame(flush);
+    };
+    // Only listen for scroll while hovered — one card is hovered at a
+    // time, so this never becomes a per-card global scroll listener.
+    const scrollOpts = { passive: true, capture: true } as const;
     const enter = (e: MouseEvent) => {
       setIsHovered(true);
-      move(e);
+      measure();
+      lastX = e.clientX;
+      lastY = e.clientY;
+      flush();
+      window.addEventListener("scroll", measure, scrollOpts);
       parent.style.transition = "transform 350ms ease-out";
       parent.style.transform = `scale(${GLOW.hoverScale})`;
     };
     const leave = () => {
       setIsHovered(false);
+      window.removeEventListener("scroll", measure, scrollOpts);
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
       parent.style.transform = "scale(1)";
     };
 
-    parent.addEventListener("mousemove", move);
+    parent.addEventListener("mousemove", move, { passive: true });
     parent.addEventListener("mouseenter", enter);
     parent.addEventListener("mouseleave", leave);
+    window.addEventListener("resize", measure, { passive: true });
     return () => {
+      if (raf) cancelAnimationFrame(raf);
       parent.removeEventListener("mousemove", move);
       parent.removeEventListener("mouseenter", enter);
       parent.removeEventListener("mouseleave", leave);
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure, scrollOpts);
     };
   }, []);
 
