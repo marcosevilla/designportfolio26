@@ -159,6 +159,21 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
       },
     },
   ],
-  "design-system": [],
+  "design-system": [
+    {
+      layers: {
+        // The General Task component/token board (radii, buttons, inputs,
+        // toggles, shadows) — the most legibly "design system" of the
+        // exported frames. Floats on the themed dither canvas like the
+        // other layered cards, replacing the old "Under construction"
+        // fallback. Same asset as the page hero (wired in PR #12).
+        ui: "/images/design-system/hero.png",
+        uiWidth: "96%",
+        parallax: "bottom",
+        uiBorderRadius: "12px",
+        uiShadow: GALLERY_CARD_SHADOW,
+      },
+    },
+  ],
   "ai-workflow": [], // media dropped 2026-08-01 pending portfolio permission — card shows the construction frame for now
 };

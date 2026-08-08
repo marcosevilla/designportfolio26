@@ -940,6 +940,13 @@ function StudyCell({
   const display = MARQUEE_DISPLAY[study.slug];
   const displayTitle = display?.title ?? study.title;
 
+  // A locked card offers a media teaser (the preview lightbox) only when
+  // the study actually has gallery media. With no media the lightbox
+  // renders nothing, so the click was a silent no-op — instead let
+  // LockGate fall back to its `requestUnlock` default and open the gate
+  // modal, which is the honest action for a locked, media-less study.
+  const hasPreview = firstStudyMedia(study.slug) !== null;
+
   // The card IS the mock frame. Title / COMPANY • YEAR / description live
   // inside it as the .mq-info overlay, revealed on hover while the mock
   // recedes — the card never changes size (2026-08-06 redesign). LockGate's
@@ -979,7 +986,7 @@ function StudyCell({
     <LockGate
       mode="card"
       locked={locked}
-      onActivate={() => onPreview(study.slug)}
+      onActivate={hasPreview ? () => onPreview(study.slug) : undefined}
     >
       {cell}
     </LockGate>
