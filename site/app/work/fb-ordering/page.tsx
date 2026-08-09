@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Modernizing food & beverage ordering for hotels — Marco Sevilla",
     description:
       "A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.",
+    images: [
+      {
+        url: "/images/fb-ordering/fb-ordering-dashboard.webp",
+        width: 1920,
+        height: 1247,
+        alt: "F&B ordering staff dashboard",
+      },
+    ],
   },
 };
 

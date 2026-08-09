@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Hotel Check-in — Marco Sevilla",
     description:
       "Modernizing software for the world's largest global hotel chains. Designing seamless digital check-in, compendium, and omni-channel communication solutions.",
+    images: [
+      {
+        url: "/images/checkin/hero.webp",
+        width: 1600,
+        height: 676,
+        alt: "Canary digital check-in flow on mobile",
+      },
+    ],
   },
 };
 

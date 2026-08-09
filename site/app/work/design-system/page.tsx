@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     title: "Design System — Marco Sevilla",
     description:
       "Creating a design system for a productivity startup. Championing and executing a visual language overhaul to streamline product development.",
+    images: [
+      {
+        url: "/images/design-system/hero.png",
+        width: 2048,
+        height: 1280,
+        alt: "General Task design system component overview",
+      },
+    ],
   },
 };
 
