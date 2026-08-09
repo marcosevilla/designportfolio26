@@ -160,12 +160,12 @@ export const typescale = {
     letterSpacing: 0,
   } as CSSProperties,
 
-  /** Mono-uppercase micro-label — the case-study eyebrow (StudyMetaRow),
-   *  and the intended single home for the site's mono uppercase labels.
-   *  Tracking is the tightened -0.02em (Marco, 2026-08-05 — matches the
-   *  marquee meta / list section headings, NOT the legacy 0.08em still
-   *  hardcoded at ~20 call sites; migration queued in TYPOGRAPHY-BACKLOG).
-   *  Fixed size on purpose: micro-labels don't scale with the slider. */
+  /** Mono-uppercase micro-label — the single home for the site's mono
+   *  uppercase labels (eyebrow, nav, TOC, modals, badges — the legacy
+   *  0.08em sites were swept onto this token 2026-08-09, backlog ⑧).
+   *  Tracking is the tightened -0.02em (Marco, 2026-08-05).
+   *  Fixed size on purpose: micro-labels don't scale with the slider.
+   *  Call sites spread the token, then override size/color/line-height. */
   monoLabel: {
     fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
     fontSize: "12px",

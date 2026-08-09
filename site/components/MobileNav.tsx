@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSidebar } from "@/lib/SidebarContext";
 import { BackChevronIcon } from "./Icons";
 import HamburgerMenu from "./HamburgerMenu";
+import { typescale } from "@/lib/typography";
 
 export default function MobileNav() {
   const { tocItems, backHref } = useSidebar();
@@ -24,11 +25,7 @@ export default function MobileNav() {
           href={backHref ?? "/#projects"}
           className="tap-target flex items-center gap-1 transition-colors"
           style={{
-            fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-            fontSize: "12px",
-            fontWeight: 500,
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
+            ...typescale.monoLabel,
             color: "var(--color-fg-secondary)",
           }}
         >

@@ -363,11 +363,7 @@ export default function Hero({
                 aria-label="Return to home"
                 className="group inline-flex items-center gap-1.5 -mt-3 -ml-2 px-2 py-3 transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
                 style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
+                  ...typescale.monoLabel,
                   lineHeight: 1,
                   color: "var(--color-fg-secondary)",
                   background: "none",

@@ -29,14 +29,11 @@ import { isLocked } from "@/lib/locked-content";
 
 /** Mono uppercase placeholder label for media-less frames ("Under
  *  construction" on study cards, "Coming soon" on playground cells).
- *  Was inlined verbatim at both sites. Values unchanged.
- *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
- *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate visible change. */
+ *  monoLabel token at the placeholder's own 11px/regular weight. */
 const PLACEHOLDER_LABEL: CSSProperties = {
-  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+  ...typescale.monoLabel,
   fontSize: "11px",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
+  fontWeight: 400,
   color: "var(--color-fg-tertiary)",
 };
 
@@ -303,12 +300,7 @@ function SectionLinkButton({
   const className =
     "group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)";
   const style: React.CSSProperties = {
-    fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-    fontSize: "12px",
-    fontWeight: 500,
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
-    lineHeight: 1.4,
+    ...typescale.monoLabel,
     color: icon === "lock" ? "var(--color-fg-tertiary)" : "var(--color-fg)",
     background: "none",
     border: 0,

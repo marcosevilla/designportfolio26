@@ -10,17 +10,11 @@ const EMAIL = "marcogsevilla@gmail.com";
 const LINKEDIN_URL = "https://www.linkedin.com/in/marcogsevilla/";
 
 /** Mono uppercase label shared by the modal's three buttons (Email /
- *  LinkedIn / Submit). Was inlined verbatim at all three. Values unchanged.
- *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
- *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate visible change.
+ *  LinkedIn / Submit) — the monoLabel token verbatim.
  *  The 13px "Got a code?" divider and the 16px input are different specs
  *  (the input's 16px is an iOS auto-zoom guard) — both left alone. */
 const MODAL_LABEL: CSSProperties = {
-  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-  fontSize: "12px",
-  fontWeight: 500,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
+  ...typescale.monoLabel,
 };
 
 export default function PasswordModal() {
@@ -226,7 +220,7 @@ export default function PasswordModal() {
                   // viewport when the input is focused on mobile.
                   fontSize: "16px",
                   textTransform: "uppercase",
-                  letterSpacing: "0.08em",
+                  letterSpacing: typescale.monoLabel.letterSpacing,
                   color: "var(--color-fg)",
                   background: "var(--color-bg)",
                   border: `1px solid ${error ? "var(--color-accent)" : "var(--color-border)"}`,

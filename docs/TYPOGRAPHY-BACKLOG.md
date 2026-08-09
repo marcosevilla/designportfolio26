@@ -150,18 +150,17 @@ colour already does the work.
 
 Both belong in `app/globals.css` next to the existing `-webkit-font-smoothing` block.
 
-## ⑧ Migrate mono-uppercase labels onto `typescale.monoLabel` (added 2026-08-05)
+## ⑧ ~~Migrate mono-uppercase labels onto `typescale.monoLabel`~~ — CLOSED 2026-08-09
 
-Marco ruled the mono-uppercase micro-label tracking is the tightened **−0.02em** and made it
-a token (`monoLabel`: mono / 12px / 500 / 1.4 / uppercase / −0.02em — first consumer is the
-StudyMetaRow eyebrow). The legacy **0.08em** is still hardcoded at ~20 call sites:
-`CaseStudyList` (297, 759, 998), `Hero` (415), `NavOverlay`, `HamburgerMenu`,
-`ChangelogOverlay`, `MobileNav`, `Testimonials`, `HomeNav` (200, 253), `PasswordModal` (×4),
-`LockGate` (×4), `ChatPanel` (307), `InlineTOC` (79, 138). Migrating means a visible
-site-wide tracking change on nav, TOC, modals and badges — do it as one reviewed sweep
-(sizes/weights/colors vary per site; the token covers family/case/tracking, override the
-rest per call site). Not done in the 2026-08-05 metadata-row session to keep that change
-reviewable.
+Swept in one pass: every production `letterSpacing: "0.08em"` mono-label site now spreads
+`typescale.monoLabel` and re-states only its deliberate overrides (11px placeholder/badge
+sizes, 10px chat badge, per-site colors and line-heights). Files: `Hero`, `CaseStudyList`
+(PLACEHOLDER_LABEL + SectionLabelButton), `NavOverlay`, `ChangelogOverlay`,
+`HamburgerMenu` (NAV_LABEL_STYLE), `MobileNav`, `HomeNav` (Return + nav links),
+`PasswordModal` (MODAL_LABEL + the 16px input keeps its iOS-zoom size but takes the token
+tracking), `LockGate` (GATE_LABEL + 11px badge), `ChatPanel` (Beta badge), `InlineTOC`
+(TOC_LABEL). Visible change: site-wide mono-label tracking 0.08em → −0.02em, per Marco's
+2026-08-05 ruling. fb-showcase / dev labs / type-tuner untouched (exempt).
 
 ## Open questions for Marco (no code until ruled)
 

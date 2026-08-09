@@ -12,16 +12,10 @@ const EMAIL = "marcogsevilla@gmail.com";
 const LINKEDIN_URL = "https://www.linkedin.com/in/marcogsevilla/";
 
 /** Mono uppercase label shared by the gate's three CTAs (Email / LinkedIn /
- *  "Got a code?"). Was inlined verbatim at all three. Values unchanged.
- *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
- *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate visible change.
- *  The 11px eyebrow higher up in this file is a different spec — left alone. */
+ *  "Got a code?") — the monoLabel token verbatim.
+ *  The 11px badge lower in this file sizes down off the same token. */
 const GATE_LABEL: CSSProperties = {
-  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-  fontSize: "12px",
-  fontWeight: 500,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
+  ...typescale.monoLabel,
 };
 
 type CardModeProps = {
@@ -152,11 +146,8 @@ export function LockedFrameBadge({ locked }: { locked: boolean }) {
     >
       <span
         style={{
-          fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+          ...typescale.monoLabel,
           fontSize: "11px",
-          fontWeight: 500,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
           color: "var(--color-fg-tertiary)",
         }}
       >

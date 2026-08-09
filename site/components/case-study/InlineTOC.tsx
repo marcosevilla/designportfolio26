@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useMotionValue, useMotionValueEvent, animate } from "framer-motion";
 import { useSidebar } from "@/lib/SidebarContext";
 import { BackChevronIcon } from "../Icons";
+import { typescale } from "@/lib/typography";
 
 const STAR_SPRING = { type: "spring" as const, stiffness: 300, damping: 34 };
 const LINK_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
@@ -15,17 +16,10 @@ const ROW_HEIGHT = 28;
 // passes through during the scroll.
 const SCROLL_LOCK_MS = 900;
 
-/** Mono uppercase TOC label — was inlined verbatim at the "Back" link and
- *  every TOC row. Values unchanged.
- *  ⚠️ tracking is the LEGACY 0.08em; typescale.monoLabel is -0.02em.
- *  Migrating is TYPOGRAPHY-BACKLOG ⑧ — a deliberate, visible site-wide
- *  change, not this const's job. */
+/** Mono uppercase TOC label — the monoLabel token with the TOC's own
+ *  20px line-height (rows are position-computed off this). */
 const TOC_LABEL: CSSProperties = {
-  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-  fontSize: "12px",
-  fontWeight: 500,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
+  ...typescale.monoLabel,
   lineHeight: "20px",
 };
 

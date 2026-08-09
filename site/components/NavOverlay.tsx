@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useNavOverlay } from "@/lib/NavOverlayContext";
+import { typescale } from "@/lib/typography";
 import { NAV_ITEMS, useActiveSection, type NavItem } from "./HomeNav";
 import ConnectLinks from "./ConnectLinks";
 
@@ -228,13 +229,8 @@ export default function NavOverlay() {
                     onClick={(e) => handleClick(e, item)}
                     className="block transition-colors hover:text-(--color-accent)"
                     style={{
-                      fontFamily:
-                        "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                      fontSize: 12,
-                      fontWeight: 500,
+                      ...typescale.monoLabel,
                       lineHeight: "22px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
                       color: active
                         ? "var(--color-accent)"
                         : "var(--color-fg-secondary)",

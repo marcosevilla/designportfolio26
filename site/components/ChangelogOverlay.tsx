@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useChangelogOverlay } from "@/lib/ChangelogOverlayContext";
 import type { ChangelogGroup } from "@/lib/changelog";
 import { CloseIcon } from "./Icons";
+import { typescale } from "@/lib/typography";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -106,12 +107,9 @@ export default function ChangelogOverlay({ groups }: { groups: ChangelogGroup[] 
                   <h3
                     className="mb-4"
                     style={{
-                      fontFamily: MONO,
+                      ...typescale.monoLabel,
                       fontSize: 11,
-                      fontWeight: 500,
                       color: "var(--color-fg-tertiary)",
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
                       lineHeight: 1,
                     }}
                   >

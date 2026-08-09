@@ -25,6 +25,7 @@ import { useSidebar } from "@/lib/SidebarContext";
 import { HOME_NAV_ITEMS } from "./HomeNav";
 import { BackChevronIcon, CloseIcon } from "./Icons";
 import ConnectLinks from "./ConnectLinks";
+import { typescale } from "@/lib/typography";
 
 const PANEL_SPRING = { type: "spring" as const, stiffness: 380, damping: 33 };
 const BACKDROP_EASE = [0.22, 1, 0.36, 1] as const;
@@ -47,11 +48,7 @@ function HamburgerIcon({ size = 16 }: { size?: number }) {
 }
 
 const NAV_LABEL_STYLE: React.CSSProperties = {
-  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-  fontSize: "12px",
-  fontWeight: 500,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
+  ...typescale.monoLabel,
   lineHeight: 1,
 };
 

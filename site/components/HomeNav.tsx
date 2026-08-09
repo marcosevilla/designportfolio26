@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useMotionValue, useMotionValueEvent, animate }
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import ConnectLinks from "./ConnectLinks";
 import { ArrowRightIcon } from "./Icons";
+import { typescale } from "@/lib/typography";
 
 const BLUR_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -193,11 +194,7 @@ export default function HomeNav({
             transition={{ duration: 0.32, ease: BLUR_EASE }}
             className="group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent) self-start"
             style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-              fontSize: "12px",
-              fontWeight: 500,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
+              ...typescale.monoLabel,
               // line-height 1 keeps the cap-top at the box-top so the
               // button visually top-aligns with the About-me h1, which
               // also uses line-height 1.
@@ -245,12 +242,8 @@ export default function HomeNav({
                 onClick={(e) => handleClick(e, item)}
                 className="block transition-colors"
                 style={{
-                  fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-                  fontSize: "12px",
-                  fontWeight: 500,
+                  ...typescale.monoLabel,
                   lineHeight: "20px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
                 }}
                 onMouseEnter={() => setHoveredIndex(index)}
               >

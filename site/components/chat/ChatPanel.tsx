@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import ChatMessage, { type ChatTurn } from "./ChatMessage";
 import ChipPrompt from "./ChipPrompt";
+import { typescale } from "@/lib/typography";
 
 const GREETING_TEXT =
   "Hi, I'm Marco. Ask me about my work, my process, or anything else you're curious about.";
@@ -317,12 +318,9 @@ export default function ChatPanel({
             </span>
             <span
               style={{
-                fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
+                ...typescale.monoLabel,
                 fontSize: "10px",
-                fontWeight: 500,
                 color: "var(--color-fg-tertiary)",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
                 lineHeight: 1,
               }}
             >
