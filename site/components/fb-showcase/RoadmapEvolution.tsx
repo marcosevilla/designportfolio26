@@ -319,7 +319,7 @@ export default function RoadmapEvolution() {
   const handleMouseEnter = useCallback((id: string) => {
     setHoveredId(id);
     pause();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   const handleMouseLeave = useCallback(() => {

@@ -268,7 +268,7 @@ function ItemRow({
               <Icon path={ICONS.imageOff} size={18} color={neutral[400]} />
             </div>
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
+             
             <img
               src={item.image}
               alt=""

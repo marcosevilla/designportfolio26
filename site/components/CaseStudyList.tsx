@@ -14,7 +14,7 @@ import {
 import { ALL_TAGS, getMatchingSlugs } from "@/lib/study-tags";
 import { typescale } from "@/lib/typography";
 import { SPRING_HEAVY } from "@/lib/springs";
-import { FilterIcon, CloseIcon, GalleryIcon, LockIcon, ArrowRightIcon } from "./Icons";
+import { CloseIcon, LockIcon, ArrowRightIcon } from "./Icons";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
@@ -36,34 +36,6 @@ const PLACEHOLDER_LABEL: CSSProperties = {
   fontWeight: 400,
   color: "var(--color-fg-tertiary)",
 };
-
-// ── View toggle button ──
-
-// Same pill chrome as the buttons in HeroToolbar (.bio-toolbar-btn) so this
-// row reads as the same family as the palette / music / marquee icons up top.
-function ViewToggleButton({
-  active,
-  onClick,
-  label,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      aria-pressed={active}
-      className={`bio-toolbar-btn${active ? " bio-toolbar-btn--active" : ""}`}
-    >
-      {children}
-    </button>
-  );
-}
 
 // ── Component ──
 

@@ -380,7 +380,7 @@ function SideSheet({
                   : `1px solid ${neutral[200]}`,
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            { }
             <img
               src={item.image}
               alt=""

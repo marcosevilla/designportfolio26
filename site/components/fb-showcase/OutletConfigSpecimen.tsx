@@ -548,7 +548,7 @@ function GuestPreview() {
           overflow: "hidden",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- images.unoptimized is on site-wide; the fixed-geometry shell doesn't want next/image's wrapper (same call as specimen #4). */}
+        { }
         <img
           src={HERO_SRC}
           alt=""

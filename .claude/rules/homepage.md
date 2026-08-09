@@ -48,20 +48,12 @@ Redesigned per Marco's Paper mockup. Lives in `CaseStudyList.tsx` + `.work-marqu
   - `MARQUEE_DISPLAY` map = marquee-only display overrides (titles/org/year/descriptions; MDX untouched). Media fixed 520×400 at ≥768 (`.mq-frame` height pin, cell has no padding now), aspect 13/10 below.
 - Auto-scroll was RETIRED 2026-07-20 (the 70s linear infinite version is in git).
 
-## Card/List View Toggle (CaseStudyList) — ⚠️ DOES NOT EXIST (verified 2026-08-05)
-**None of the section below is live.** There is no `viewMode` state, no `work-view-mode`
-localStorage key, and no `CaseStudyListRow` component anywhere in the tree. `ViewToggleButton`
-is still *defined* in `CaseStudyList.tsx` but is never rendered, and `GalleryIcon` is imported
-unused. The homepage renders the marquee only. Kept below as historical intent — mount it or
-delete the leftovers, but don't trust it as a description of the current site.
-
-- **Two views:** Card (default) and List, toggled via icon buttons on "Work" header row
-- **Toggle buttons:** ViewToggleButton with instant hover color (accent on hover). Active = accent, inactive = fg-secondary.
-- **Transition:** AnimatePresence mode="wait", blur 4px + opacity fade, 200ms easeInOut
-- **Persistence:** localStorage key `work-view-mode`, SSR-safe (hydrated flag)
-- **FadeIn:** Only on initial page load; after first toggle, `hasToggled` ref skips FadeIn
-- **List view rows:** CaseStudyListRow — full-width link, flex items-baseline: year (48px, mono 11px) | title (heading 16px, weight 500, spring nudge 8px on hover) | company · role (mono 11px, hidden <sm) | metric (mono 11px, hidden <md)
-- **Dividers:** 1px solid --color-border between rows + top border on container
+## Card/List View Toggle — DELETED (2026-08-09)
+The card/list toggle never shipped (no `viewMode` state, no `work-view-mode` key, no
+`CaseStudyListRow` anywhere — verified 2026-08-05). The leftovers (`ViewToggleButton`
+definition + unused `FilterIcon`/`GalleryIcon` imports in `CaseStudyList.tsx`) were deleted
+2026-08-09 per this section's own "mount it or delete" instruction. The homepage renders the
+marquee only. The old spec is in git history if the idea ever returns.
 
 ## Bento Cards (CaseStudyCard) — HISTORICAL
 ⚠️ Superseded by the marquee/frame system (`FRAME_BG` / `STUDY_FRAME_BG` color-mix). Kept for reference:
