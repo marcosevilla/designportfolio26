@@ -5,11 +5,11 @@ import { isLocked } from "@/lib/locked-content";
 import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Design System — Marco Sevilla",
+  title: "General Task Design System — Marco Sevilla",
   description:
     "Creating a design system for a productivity startup. Championing and executing a visual language overhaul to streamline product development.",
   openGraph: {
-    title: "Design System — Marco Sevilla",
+    title: "General Task Design System — Marco Sevilla",
     description:
       "Creating a design system for a productivity startup. Championing and executing a visual language overhaul to streamline product development.",
     images: [
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
 };
 
 export default function DesignSystemPage() {
-  const meta = getStudyMeta("design-system");
+  const meta = getStudyMeta("general-task-design-system");
 
   return (
     <LockGate
       mode="page"
-      locked={isLocked("design-system")}
-      title="Building a visual language 0-1"
+      locked={isLocked("general-task-design-system")}
+      title="General Task Design System"
       subtitle="Creating a scalable design system for a productivity startup"
       backHref="/#projects"
     >

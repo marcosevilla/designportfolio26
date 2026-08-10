@@ -29,13 +29,13 @@ function describe(label: string, fn: () => void) {
 describe("extractArtifact", () => {
   expect(
     "extracts trailing artifact marker",
-    extractArtifact("Some text.\n<artifact slug=\"fb-ordering\" />"),
-    { text: "Some text.", slug: "fb-ordering" }
+    extractArtifact("Some text.\n<artifact slug=\"canary-food-and-beverage-ordering\" />"),
+    { text: "Some text.", slug: "canary-food-and-beverage-ordering" }
   );
   expect(
     "tolerates trailing whitespace",
-    extractArtifact("Reply.\n<artifact slug=\"upsells\" />\n   "),
-    { text: "Reply.", slug: "upsells" }
+    extractArtifact("Reply.\n<artifact slug=\"canary-guest-upsells\" />\n   "),
+    { text: "Reply.", slug: "canary-guest-upsells" }
   );
   expect(
     "no marker means slug=null",
@@ -49,15 +49,15 @@ describe("extractArtifact", () => {
   );
   expect(
     "ignores marker mid-text (must be on own trailing line)",
-    extractArtifact("Mid <artifact slug=\"fb-ordering\" /> text."),
-    { text: "Mid <artifact slug=\"fb-ordering\" /> text.", slug: null }
+    extractArtifact("Mid <artifact slug=\"canary-food-and-beverage-ordering\" /> text."),
+    { text: "Mid <artifact slug=\"canary-food-and-beverage-ordering\" /> text.", slug: null }
   );
 });
 
 describe("plainTextFromMarkup", () => {
   expect(
     "flattens study link to label",
-    plainTextFromMarkup("I led [F&B Mobile Ordering](study:fb-ordering)."),
+    plainTextFromMarkup("I led [F&B Mobile Ordering](study:canary-food-and-beverage-ordering)."),
     "I led F&B Mobile Ordering."
   );
   expect(
@@ -72,7 +72,7 @@ describe("plainTextFromMarkup", () => {
   );
   expect(
     "drops trailing artifact marker",
-    plainTextFromMarkup("Reply.\n<artifact slug=\"fb-ordering\" />"),
+    plainTextFromMarkup("Reply.\n<artifact slug=\"canary-food-and-beverage-ordering\" />"),
     "Reply."
   );
   expect(
@@ -89,12 +89,12 @@ describe("plainTextFromMarkup", () => {
 
 describe("parseChatMarkup → AST shape", () => {
   // We test the structural shape rather than React rendering.
-  const ast = parseChatMarkup("Hi [F&B](study:fb-ordering) and [me](contact:email).");
+  const ast = parseChatMarkup("Hi [F&B](study:canary-food-and-beverage-ordering) and [me](contact:email).");
   expect("ast length", ast.length, 5);
   expect("first segment text", (ast[0] as { kind: string; text?: string }).kind, "text");
   expect("first segment text content", (ast[0] as { text: string }).text, "Hi ");
   expect("second segment is link", (ast[1] as { kind: string }).kind, "link");
-  expect("second segment href", (ast[1] as { href: string }).href, "/work/fb-ordering");
+  expect("second segment href", (ast[1] as { href: string }).href, "/work/canary-food-and-beverage-ordering");
   expect("second segment label", (ast[1] as { label: string }).label, "F&B");
   expect("fourth segment href is mailto", (ast[3] as { href: string }).href, "mailto:marcogsevilla@gmail.com");
 
@@ -142,10 +142,10 @@ describe("parseChatMarkup → bold + italic emphasis", () => {
   );
   expect(
     "emphasis works alongside links",
-    parseChatMarkup("Check **[F&B](study:fb-ordering)** for details."),
+    parseChatMarkup("Check **[F&B](study:canary-food-and-beverage-ordering)** for details."),
     [
       { kind: "text", text: "Check **" },
-      { kind: "link", label: "F&B", href: "/work/fb-ordering", external: false, inApp: false },
+      { kind: "link", label: "F&B", href: "/work/canary-food-and-beverage-ordering", external: false, inApp: false },
       { kind: "text", text: "** for details." },
     ]
   );

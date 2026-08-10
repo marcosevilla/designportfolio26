@@ -23,8 +23,8 @@ const STATS = [
 const TOC_ITEMS = [
   { id: "overview", label: "Overview" },
   { id: "role", label: "Role" },
-  { id: "checkin", label: "Check-in" },
-  { id: "compendium", label: "Compendium" },
+  { id: "canary-mobile-check-in", label: "Check-in" },
+  { id: "canary-guest-hub", label: "Compendium" },
   { id: "messaging", label: "Messaging" },
   { id: "international", label: "International" },
 ];
@@ -34,8 +34,8 @@ export default function CheckinContent({ meta }: { meta: StudyMeta }) {
     <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Modernizing Hotel Software</h1>
-          <StudyMetaRow slug="checkin" {...meta} />
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Canary Mobile Check-in</h1>
+          <StudyMetaRow slug="canary-mobile-check-in" {...meta} />
           <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing digital check-in, compendium, and omni-channel communication solutions for the world&apos;s largest hotel chains.</p>
         </div>
 
@@ -90,7 +90,7 @@ export default function CheckinContent({ meta }: { meta: StudyMeta }) {
 
         {/* Digital Check-in */}
         <FadeIn className="pt-32">
-          <ExpandableSection title="Digital Check-in" id="checkin">
+          <ExpandableSection title="Digital Check-in" id="canary-mobile-check-in">
             <TwoCol>
               <TwoCol.Left>
                 <p className="mb-5">
@@ -133,7 +133,7 @@ export default function CheckinContent({ meta }: { meta: StudyMeta }) {
 
         {/* Compendium */}
         <FadeIn className="pt-32">
-          <ExpandableSection title="Compendium" id="compendium">
+          <ExpandableSection title="Compendium" id="canary-guest-hub">
             <TwoCol>
               <TwoCol.Left>
                 <p className="mb-5">

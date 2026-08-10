@@ -318,9 +318,9 @@ export default function KnowledgeBaseContent({ meta }: { meta: StudyMeta }) {
         {/* ── Next Project ── */}
         <FadeIn>
           <NextProject
-            title="Digital Compendium"
+            title="Canary Guest Hub"
             subtitle="A digital guest hub built on the same structured property data"
-            href="/work/compendium"
+            href="/work/canary-guest-hub"
           />
         </FadeIn>
     </CaseStudyShell>

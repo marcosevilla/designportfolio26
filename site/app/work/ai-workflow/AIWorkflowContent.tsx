@@ -249,9 +249,9 @@ export default function AIWorkflowContent({ meta }: { meta: StudyMeta }) {
           {/* Next Project */}
           <div className="mt-32 pt-16 border-t border-border">
             <NextProject
-              title="F&B Mobile Ordering"
+              title="Canary Food & Beverage Ordering"
               subtitle="A 0-to-1 food & beverage ordering platform for hotels"
-              href="/work/fb-ordering"
+              href="/work/canary-food-and-beverage-ordering"
             />
           </div>
     </CaseStudyShell>

@@ -36,8 +36,8 @@ export default function DesignSystemContent({ meta }: { meta: StudyMeta }) {
     <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Creating a Design System for a Productivity Startup</h1>
-          <StudyMetaRow slug="design-system" {...meta} />
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>General Task Design System</h1>
+          <StudyMetaRow slug="general-task-design-system" {...meta} />
           <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>Championing and executing a design system and visual language overhaul by securing leadership approval, facilitating design sprints, and collaborating with developers for implementation.</p>
         </div>
 
@@ -463,9 +463,9 @@ export default function DesignSystemContent({ meta }: { meta: StudyMeta }) {
         <FadeIn>
           <div className="mt-32 pt-16 border-t border-border">
             <NextProject
-              title="F&B Mobile Ordering"
+              title="Canary Food & Beverage Ordering"
               subtitle="A mobile, app-less food ordering system for hotel guests"
-              href="/work/fb-ordering"
+              href="/work/canary-food-and-beverage-ordering"
             />
           </div>
         </FadeIn>

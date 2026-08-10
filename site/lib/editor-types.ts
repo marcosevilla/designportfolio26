@@ -59,12 +59,12 @@ export function flexSourcePattern(text: string): RegExp {
 }
 
 export const SLUG_TO_FILE: Record<string, string> = {
-  "fb-ordering": "app/work/fb-ordering/FBOrderingContent.tsx",
-  "compendium": "app/work/compendium/CompendiumContent.tsx",
-  "upsells": "app/work/upsells/UpsellsContent.tsx",
-  "checkin": "app/work/checkin/CheckinContent.tsx",
+  "canary-food-and-beverage-ordering": "app/work/canary-food-and-beverage-ordering/FBOrderingContent.tsx",
+  "canary-guest-hub": "app/work/canary-guest-hub/CompendiumContent.tsx",
+  "canary-guest-upsells": "app/work/canary-guest-upsells/UpsellsContent.tsx",
+  "canary-mobile-check-in": "app/work/canary-mobile-check-in/CheckinContent.tsx",
   "general-task": "app/work/general-task/GeneralTaskContent.tsx",
-  "design-system": "app/work/design-system/DesignSystemContent.tsx",
+  "general-task-design-system": "app/work/general-task-design-system/DesignSystemContent.tsx",
   "knowledge-base": "app/work/knowledge-base/KnowledgeBaseContent.tsx",
   "ai-workflow": "app/work/ai-workflow/AIWorkflowContent.tsx",
 };

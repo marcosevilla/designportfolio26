@@ -36,8 +36,8 @@ export default function CompendiumContent({ meta }: { meta: StudyMeta }) {
     <CaseStudyShell tocItems={TOC_ITEMS}>
         <Grid>
           <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-            <h1 className="text-(--color-fg)" style={typescale.display}>Digital Compendium</h1>
-            <StudyMetaRow slug="compendium" {...meta} />
+            <h1 className="text-(--color-fg)" style={typescale.display}>Canary Guest Hub</h1>
+            <StudyMetaRow slug="canary-guest-hub" {...meta} />
             {/* Same intro treatment as F&B: italic tertiary one-liner hook,
                 then body paragraphs at secondary. */}
             <p className="mt-6 italic text-(--color-fg-tertiary)">Hotels print their guest guides. Guests never read them.</p>
@@ -321,9 +321,9 @@ export default function CompendiumContent({ meta }: { meta: StudyMeta }) {
               so readers who finished the study were hitting a wall.
               Restore the Upsells link when it ships publicly. */}
           <NextProject
-            title="F&B Mobile Ordering"
+            title="Canary Food & Beverage Ordering"
             subtitle="A 0-to-1 food & beverage ordering platform for hotels"
-            href="/work/fb-ordering"
+            href="/work/canary-food-and-beverage-ordering"
           />
         </FadeIn>
     </CaseStudyShell>

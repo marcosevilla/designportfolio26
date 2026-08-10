@@ -6,9 +6,9 @@
  */
 export const LOCKED_SLUGS: ReadonlySet<string> = new Set([
   // Work case studies
-  "compendium", // re-locked 2026-07-27 (unlocked 2026-07-18, pulled back to in-progress)
+  "canary-guest-hub", // re-locked 2026-07-27 (unlocked 2026-07-18, pulled back to in-progress)
   "knowledge-base",
-  "upsells", // stays locked: 17 live ImagePlaceholders, incl. an 8-up gallery headed "The Work"
+  "canary-guest-upsells", // stays locked: 17 live ImagePlaceholders, incl. an 8-up gallery headed "The Work"
   // UNLOCKED 2026-08-05: checkin, general-task, design-system. All three have
   // ZERO placeholder boxes and passed the 2026-08-01 QA sweep, so the gate was
   // costing reach for nothing — 6 of 8 studies locked meant every hard revenue

@@ -1,4 +1,4 @@
-# Digital Compendium
+# Canary Guest Hub
 
 ---
 
@@ -7,7 +7,7 @@
 ```
 [TODO: Cover image — Compendium builder interface alongside guest mobile experience, 16:9]
 
-DIGITAL COMPENDIUM
+CANARY GUEST HUB
 A scalable hotel CMS platform built from scratch
 
 Canary Technologies • 2024–2025 • Lead Designer
@@ -24,7 +24,7 @@ Systems Thinking • CMS Design • Mobile
 ```
 ← Back to Work
 
-# Digital Compendium
+# Canary Guest Hub
 
 A digital guest hub that replaces printed hotel compendiums — a CMS vertical enough for hospitality but flexible enough to scale across thousands of properties.
 

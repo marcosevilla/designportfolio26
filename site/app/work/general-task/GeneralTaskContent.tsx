@@ -35,7 +35,7 @@ export default function GeneralTaskContent({ meta }: { meta: StudyMeta }) {
     <CaseStudyShell tocItems={TOC_ITEMS} band>
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Building Productivity Software for Engineers</h1>
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>General Task</h1>
           <StudyMetaRow slug="general-task" {...meta} />
           <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>Designing a web-based task management tool that gives software engineers a holistic view of their workload by integrating popular project management tools in one surface.</p>
         </div>
@@ -348,7 +348,7 @@ export default function GeneralTaskContent({ meta }: { meta: StudyMeta }) {
           <NextProject
             title="General Task Design System"
             subtitle="Building a scalable design system for a productivity startup"
-            href="/work/design-system"
+            href="/work/general-task-design-system"
           />
         </div>
     </CaseStudyShell>

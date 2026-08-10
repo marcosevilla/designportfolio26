@@ -1,4 +1,4 @@
-# Hotel Check-in
+# Canary Mobile Check-in
 
 ---
 
@@ -7,7 +7,7 @@
 ```
 [TODO: Cover image — Check-in dashboard and guest mobile experience, 16:9]
 
-HOTEL CHECK-IN
+CANARY MOBILE CHECK-IN
 Modernizing hotel software
 
 Canary Technologies • 2024 • Product Designer

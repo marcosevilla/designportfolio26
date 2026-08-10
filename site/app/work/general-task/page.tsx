@@ -30,7 +30,7 @@ export default function GeneralTaskPage() {
     <LockGate
       mode="page"
       locked={isLocked("general-task")}
-      title="Unified hub for knowledge work"
+      title="General Task"
       subtitle="Building productivity software for software engineers"
       backHref="/#projects"
     >

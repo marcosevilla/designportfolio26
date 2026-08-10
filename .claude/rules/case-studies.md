@@ -18,12 +18,15 @@ The dynamic `app/work/[slug]/` route is long gone — every study is a dedicated
 ## Dedicated Routes (Custom React Components)
 These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + TOCObserver), expandable sections, stats:
 
-1. **F&B Ordering** (`/work/fb-ordering`) - Canary, 2025
-2. **Digital Compendium** (`/work/compendium`) - Canary, 2024
-3. **Upsells Forms** (`/work/upsells`) - Canary Technologies, 2025
-4. **Hotel Check-in** (`/work/checkin`) - Canary Technologies, 2024
+Slugs + canonical titles renamed 2026-08-10 (Marco: one canonical name per study across MDX,
+page title, H1, drafts, chat; permanent redirects from the old paths live in next.config.mjs):
+
+1. **Canary Food & Beverage Ordering** (`/work/canary-food-and-beverage-ordering`) - Canary, 2025
+2. **Canary Guest Hub** (`/work/canary-guest-hub`) - Canary, 2024
+3. **Canary Guest Upsells** (`/work/canary-guest-upsells`) - Canary Technologies, 2025
+4. **Canary Mobile Check-in** (`/work/canary-mobile-check-in`) - Canary Technologies, 2024
 5. **General Task** (`/work/general-task`) - General Task, 2022
-6. **Design System** (`/work/design-system`) - General Task, 2022
+6. **General Task Design System** (`/work/general-task-design-system`) - General Task, 2022
 7. **How I Work with AI** (`/work/ai-workflow`) - Personal, 2026
 
 (`knowledge-base` also has a route.)
@@ -66,13 +69,13 @@ update this table in the same commit.
 
 | Study | company | role | year | metric |
 |-------|---------|------|------|--------|
-| fb-ordering | Canary Technologies | Lead designer | 2025–26 | 0→1, 100% ownership |
-| compendium | Canary | Product designer | 2024–2025 | $1.51M CARR · +230% YoY · 44% attach |
-| upsells | Canary | Lead designer | 2025 | $6.94M CARR · +10% measured lift |
-| checkin | Canary | Product designer | 2024 | ~6,000 Wyndham properties |
+| canary-food-and-beverage-ordering | Canary Technologies | Lead designer | 2025–26 | 0→1, 100% ownership |
+| canary-guest-hub | Canary | Product designer | 2024–2025 | $1.51M CARR · +230% YoY · 44% attach |
+| canary-guest-upsells | Canary | Lead designer | 2025 | $6.94M CARR · +10% measured lift |
+| canary-mobile-check-in | Canary | Product designer | 2024 | ~6,000 Wyndham properties |
 | knowledge-base | Canary | Product designer | 2024 · shipped 2026 | 2 AI products, one KB |
 | general-task | General Task | Founding designer | 2022 | 0→1 product |
-| design-system | General Task | Founding designer | 2022 | 0→1 system |
+| general-task-design-system | General Task | Founding designer | 2022 | 0→1 system |
 | ai-workflow | Personal | Designer + builder | 2025–2026 | ~50 prototypes · 8-PR ship |
 
 Four reconciliation rulings landed here (Marco, 2026-08-05): fb-ordering and ai-workflow years use

@@ -79,7 +79,7 @@ const GALLERY_CARD_SHADOW =
   "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.04))";
 
 export const galleryContent: Record<string, GallerySlotConfig[]> = {
-  "fb-ordering": [
+  "canary-food-and-beverage-ordering": [
     {
       video: "/videos/fb-guest-ordering.mp4",
       aspect: "4 / 3",
@@ -98,7 +98,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
       },
     },
   ],
-  compendium: [
+  "canary-guest-hub": [
     // Replaced the previous layered composite (lifestyle bg + mobile
     // mock) with a high-quality dashboard video. Source 1716x1080 @
     // 4.9 Mbps, stream-copied with +faststart for web streaming.
@@ -112,7 +112,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
       zoom: 1.32,
     },
   ],
-  upsells: [
+  "canary-guest-upsells": [
     // Replaced the hotel-room photo cover (2026-07-15): the themed
     // canvas (teal CARD_TINT wash) is the backdrop, and the Figma mock
     // composite (form builder + guest phone + responses side sheet,
@@ -126,7 +126,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
       },
     },
   ],
-  checkin: [
+  "canary-mobile-check-in": [
     {
       layers: {
         bg: "/images/gallery/checkin/check-in.webp",
@@ -159,7 +159,7 @@ export const galleryContent: Record<string, GallerySlotConfig[]> = {
       },
     },
   ],
-  "design-system": [
+  "general-task-design-system": [
     {
       layers: {
         // The General Task component/token board (radii, buttons, inputs,

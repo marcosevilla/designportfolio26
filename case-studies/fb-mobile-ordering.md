@@ -1,4 +1,4 @@
-# F&B Mobile Ordering
+# Canary Food & Beverage Ordering
 
 ---
 
@@ -7,7 +7,7 @@
 ```
 [TODO: Cover image — hero shot of guest ordering flow on mobile, 16:9]
 
-F&B MOBILE ORDERING
+CANARY FOOD & BEVERAGE ORDERING
 End-to-end mobile ordering that drives hotel revenue
 
 Canary Technologies • 2025 • Lead Designer
@@ -24,7 +24,7 @@ Interaction Design • Mobile • User Research
 ```
 ← Back to Work
 
-# F&B Mobile Ordering
+# Canary Food & Beverage Ordering
 
 A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.
 

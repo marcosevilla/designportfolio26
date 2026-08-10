@@ -16,13 +16,13 @@ const CASE_STUDIES_DIR = join(process.cwd(), "..", "case-studies");
 // Page slug → markdown filename (without extension). Filenames diverge from
 // slugs because the markdown drafts predate the page-slug naming.
 const FILENAME_BY_SLUG: Record<StudySlug, string | null> = {
-  "fb-ordering": "fb-mobile-ordering",
-  compendium: "compendium",
-  upsells: "upsells-forms",
-  checkin: "hotel-checkin",
+  "canary-food-and-beverage-ordering": "fb-mobile-ordering",
+  "canary-guest-hub": "canary-guest-hub",
+  "canary-guest-upsells": "upsells-forms",
+  "canary-mobile-check-in": "hotel-checkin",
   "knowledge-base": "knowledge-base-redesign",
   "general-task": "general-task",
-  "design-system": "design-system",
+  "general-task-design-system": "general-task-design-system",
   "ai-workflow": "ai-workflow",
 };
 

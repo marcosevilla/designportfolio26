@@ -5,11 +5,11 @@ import { isLocked } from "@/lib/locked-content";
 import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Modernizing food & beverage ordering for hotels — Marco Sevilla",
+  title: "Canary Food & Beverage Ordering — Marco Sevilla",
   description:
     "A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.",
   openGraph: {
-    title: "Modernizing food & beverage ordering for hotels — Marco Sevilla",
+    title: "Canary Food & Beverage Ordering — Marco Sevilla",
     description:
       "A mobile, app-less food and beverage ordering system that lets hotel guests browse menus and place room service orders from their phone.",
     images: [
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
 };
 
 export default function FBOrderingPage() {
-  const meta = getStudyMeta("fb-ordering");
+  const meta = getStudyMeta("canary-food-and-beverage-ordering");
 
   return (
     <LockGate
       mode="page"
-      locked={isLocked("fb-ordering")}
-      title="Mobile ordering for hotels"
+      locked={isLocked("canary-food-and-beverage-ordering")}
+      title="Canary Food & Beverage Ordering"
       subtitle="Designing a 0→1 mobile ordering system for hotels"
       backHref="/#projects"
     >

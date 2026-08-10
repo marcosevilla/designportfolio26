@@ -379,28 +379,28 @@ const MARQUEE_DISPLAY: Record<
   string,
   { title: string; org: string; year: string; description: string }
 > = {
-  "fb-ordering": {
+  "canary-food-and-beverage-ordering": {
     title: "Food & Beverage Ordering Platform",
     org: "Canary Technologies",
     year: "2026",
     description:
       "Designed 0-1 food & beverage platform for hotels end-to-end – mobile ordering experience for guests, content management system, and staff order management.",
   },
-  compendium: {
+  "canary-guest-hub": {
     title: "Guest Experience Hub & CMS",
     org: "Canary Technologies",
     year: "2025",
     description:
       "Designed a hotel CMS platform from scratch – structured content builder for staff, guest-facing mobile hub, and the foundation now driving $1.51M CARR at +230% YoY.",
   },
-  upsells: {
+  "canary-guest-upsells": {
     title: "Hotel Upsells",
     org: "Canary Technologies",
     year: "2025",
     description:
       "Redesigned hotel upselling as a configurable form system – flexible offer builder, guest purchase flow, and staff fulfillment workflows driving $6.94M CARR with a measured +10% conversion lift.",
   },
-  checkin: {
+  "canary-mobile-check-in": {
     title: "Expedited Guest Check-in",
     org: "Canary Technologies",
     year: "2024",
@@ -414,7 +414,7 @@ const MARQUEE_DISPLAY: Record<
     description:
       "Founding designer for a 0-1 productivity tool – unified tasks, calendar, and engineering workflows in one hub for knowledge workers.",
   },
-  "design-system": {
+  "general-task-design-system": {
     title: "Building a Design System & Visual Language",
     org: "General Task",
     year: "2022",
@@ -762,7 +762,7 @@ function StudyMediaFrame({
           2026-07-20-dither-card-backdrops-design.md). F&B composes its
           own inside FnbDitherFrame (pinned to the original Paper
           params) along with the phone mock. */}
-      {study.slug === "fb-ordering" ? (
+      {study.slug === "canary-food-and-beverage-ordering" ? (
         <FnbDitherFrame />
       ) : (
         <DitherBackdrop seed={study.slug} />
@@ -770,10 +770,10 @@ function StudyMediaFrame({
       {/* On-top media, wrapped so the shared hover rule recedes just this
           layer while the dither behind it stays put. F&B renders none of
           these — its mock is the phone inside FnbDitherFrame. */}
-      {study.slug !== "fb-ordering" && (
+      {study.slug !== "canary-food-and-beverage-ordering" && (
         <div className="mq-media">
       {video &&
-        study.slug !== "fb-ordering" &&
+        study.slug !== "canary-food-and-beverage-ordering" &&
         (video.shell ? (
           // Specimen system (prototype): the video renders as a contained
           // artifact inside a DeviceShell on the themed canvas, never
@@ -1143,14 +1143,14 @@ const HIDDEN_SLUGS = new Set<string>([]);
 // render as <Link>; every other card is a static, non-interactive
 // media cell (the fullscreen gallery carousel was removed 2026-07-14).
 const STUDY_ROUTES: Record<string, string> = {
-  "fb-ordering": "/work/fb-ordering",
-  compendium: "/work/compendium",
+  "canary-food-and-beverage-ordering": "/work/canary-food-and-beverage-ordering",
+  "canary-guest-hub": "/work/canary-guest-hub",
   "ai-workflow": "/work/ai-workflow",
   "knowledge-base": "/work/knowledge-base",
-  upsells: "/work/upsells",
-  checkin: "/work/checkin",
+  "canary-guest-upsells": "/work/canary-guest-upsells",
+  "canary-mobile-check-in": "/work/canary-mobile-check-in",
   "general-task": "/work/general-task",
-  "design-system": "/work/design-system",
+  "general-task-design-system": "/work/general-task-design-system",
 };
 
 

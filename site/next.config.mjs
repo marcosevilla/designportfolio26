@@ -27,6 +27,13 @@ const nextConfig = {
     return [
       { source: "/work", destination: "/#projects", permanent: false },
       { source: "/play", destination: "/#playground", permanent: false },
+      // Slug rename 2026-08-10 (Marco: one canonical name per study).
+      // Permanent so any pre-rename links keep working.
+      { source: "/work/fb-ordering", destination: "/work/canary-food-and-beverage-ordering", permanent: true },
+      { source: "/work/compendium", destination: "/work/canary-guest-hub", permanent: true },
+      { source: "/work/upsells", destination: "/work/canary-guest-upsells", permanent: true },
+      { source: "/work/checkin", destination: "/work/canary-mobile-check-in", permanent: true },
+      { source: "/work/design-system", destination: "/work/general-task-design-system", permanent: true },
     ];
   },
 };

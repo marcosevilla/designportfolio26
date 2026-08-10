@@ -37,8 +37,8 @@ export default function UpsellsContent({ meta }: { meta: StudyMeta }) {
 
         {/* Title + Subtitle */}
         <div>
-          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Upsells Forms</h1>
-          <StudyMetaRow slug="upsells" {...meta} />
+          <h1 className="tracking-tight text-(--color-fg)" style={typescale.display}>Canary Guest Upsells</h1>
+          <StudyMetaRow slug="canary-guest-upsells" {...meta} />
           <p className="mt-6 text-(--color-fg-secondary)" style={typescale.subtitle}>A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.</p>
         </div>
 
@@ -419,9 +419,9 @@ export default function UpsellsContent({ meta }: { meta: StudyMeta }) {
         {/* ── Next Project ── */}
         <FadeIn>
           <NextProject
-            title="Hotel Check-in"
+            title="Canary Mobile Check-in"
             subtitle="Modernizing software for the world's largest hotel chains"
-            href="/work/checkin"
+            href="/work/canary-mobile-check-in"
           />
         </FadeIn>
     </CaseStudyShell>

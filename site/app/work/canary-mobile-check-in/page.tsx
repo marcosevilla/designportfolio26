@@ -5,11 +5,11 @@ import { isLocked } from "@/lib/locked-content";
 import { getStudyMeta } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Hotel Check-in — Marco Sevilla",
+  title: "Canary Mobile Check-in — Marco Sevilla",
   description:
     "Modernizing software for the world's largest global hotel chains. Designing seamless digital check-in, compendium, and omni-channel communication solutions.",
   openGraph: {
-    title: "Hotel Check-in — Marco Sevilla",
+    title: "Canary Mobile Check-in — Marco Sevilla",
     description:
       "Modernizing software for the world's largest global hotel chains. Designing seamless digital check-in, compendium, and omni-channel communication solutions.",
     images: [
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
 };
 
 export default function CheckinPage() {
-  const meta = getStudyMeta("checkin");
+  const meta = getStudyMeta("canary-mobile-check-in");
 
   return (
     <LockGate
       mode="page"
-      locked={isLocked("checkin")}
-      title="Hotel Check-in"
+      locked={isLocked("canary-mobile-check-in")}
+      title="Canary Mobile Check-in"
       subtitle="Modernizing software for the world's largest hotel chains"
       backHref="/#projects"
     >

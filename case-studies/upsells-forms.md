@@ -1,4 +1,4 @@
-# Upsells Forms
+# Canary Guest Upsells
 
 ---
 
@@ -7,7 +7,7 @@
 ```
 [TODO: Cover image — split of form builder (hotel staff) and guest-facing form modal on mobile, 16:9]
 
-UPSELLS FORMS
+CANARY GUEST UPSELLS
 A flexible form system for hotel upsells
 
 Canary Technologies • 2025 • Lead Designer
@@ -24,7 +24,7 @@ Workflow Design • Form Systems • Mobile
 ```
 ← Back to Work
 
-# Upsells Forms
+# Canary Guest Upsells
 
 A configurable form system that lets hotels collect custom guest information at the point of upsell purchase — turning simple add-ons into structured service requests.
 

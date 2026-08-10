@@ -5,13 +5,13 @@
 //   - the CaseStudyCardUnfurl client component for the gradient + metadata
 
 export const STUDY_SLUGS = [
-  "fb-ordering",
-  "compendium",
-  "upsells",
-  "checkin",
+  "canary-food-and-beverage-ordering",
+  "canary-guest-hub",
+  "canary-guest-upsells",
+  "canary-mobile-check-in",
   "knowledge-base",
   "general-task",
-  "design-system",
+  "general-task-design-system",
   "ai-workflow",
 ] as const;
 
@@ -29,36 +29,36 @@ export type StudyMeta = {
 };
 
 export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
-  "fb-ordering": {
-    slug: "fb-ordering",
-    title: "Mobile ordering for hotels",
+  "canary-food-and-beverage-ordering": {
+    slug: "canary-food-and-beverage-ordering",
+    title: "Canary Food & Beverage Ordering",
     company: "Canary",
     role: "Lead designer",
     year: "2025–2026",
     metric: "0→1, 100% ownership",
     gradient: ["#EF5A3C", "#ED4F2F"],
   },
-  compendium: {
-    slug: "compendium",
-    title: "Hotel guest hub",
+  "canary-guest-hub": {
+    slug: "canary-guest-hub",
+    title: "Canary Guest Hub",
     company: "Canary",
     role: "Product designer",
     year: "2024–2025",
     metric: "$1.51M CARR · +230% YoY",
     gradient: ["#2563EB", "#1D4ED8"],
   },
-  upsells: {
-    slug: "upsells",
-    title: "Upsells Forms",
+  "canary-guest-upsells": {
+    slug: "canary-guest-upsells",
+    title: "Canary Guest Upsells",
     company: "Canary",
     role: "Lead designer",
     year: "2025",
     metric: "$6.94M CARR · +10% lift",
     gradient: ["#0D9488", "#0F766E"],
   },
-  checkin: {
-    slug: "checkin",
-    title: "Hotel Check-in",
+  "canary-mobile-check-in": {
+    slug: "canary-mobile-check-in",
+    title: "Canary Mobile Check-in",
     company: "Canary",
     role: "Product designer",
     year: "2024",
@@ -76,16 +76,16 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
   },
   "general-task": {
     slug: "general-task",
-    title: "Unified hub for knowledge work",
+    title: "General Task",
     company: "General Task",
     role: "Founding designer",
     year: "2022",
     metric: "0→1 product",
     gradient: ["#334155", "#1E293B"],
   },
-  "design-system": {
-    slug: "design-system",
-    title: "Building a visual language 0→1",
+  "general-task-design-system": {
+    slug: "general-task-design-system",
+    title: "General Task Design System",
     company: "General Task",
     role: "Founding designer",
     year: "2022",

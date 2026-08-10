@@ -44,8 +44,8 @@ export default function FBOrderingContent({ meta }: { meta: StudyMeta }) {
 
         <Grid>
           <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-            <h1 className="text-(--color-fg)" style={typescale.display}>Modernizing food &amp; beverage ordering for hotels</h1>
-            <StudyMetaRow slug="fb-ordering" {...meta} />
+            <h1 className="text-(--color-fg)" style={typescale.display}>Canary Food &amp; Beverage Ordering</h1>
+            <StudyMetaRow slug="canary-food-and-beverage-ordering" {...meta} />
             <p className="mt-6 text-(--color-fg-secondary)">I designed a 0-1 food &amp; beverage ordering platform specifically for hotels. This was the latest addition to Canary&apos;s suite of products aimed at increasing hotel efficiency and increasing their ancillary revenue. Through a scrappy and highly iterative approach, our team developed launched the MVP in about four months to several pilot customers and over $50k in committed ARR.</p>
             {/* Solution paragraphs folded into the intro (Marco 2026-07-26) */}
             <p className="mt-3 text-(--color-fg-secondary)">We built a mobile-first ordering experience for our guests that served as an extension to our existing guest experience platform. Guests can browse available menu items, add to their carts, and then send their orders to hotel staff easily. To manage inbound orders, we built a dashboard and notification system that enabled operators to easily notify their kitchen staff and complete fulfillment.</p>
@@ -339,9 +339,9 @@ export default function FBOrderingContent({ meta }: { meta: StudyMeta }) {
             open, and keeps the reader inside the Canary enterprise narrative. */}
         <FadeIn>
           <NextProject
-            title="Hotel Check-in"
+            title="Canary Mobile Check-in"
             subtitle="Rebuilding digital check-in for Wyndham's ~6,000-property portfolio"
-            href="/work/checkin"
+            href="/work/canary-mobile-check-in"
           />
         </FadeIn>
     </CaseStudyShell>

@@ -3,7 +3,7 @@ import { parseChatMarkup, plainTextFromMarkup, extractArtifact } from "../compon
 
 console.log("=== CRITICAL TEST: Regex lastIndex Reset (Streaming Safety) ===");
 {
-  const text = "Link [A](study:fb-ordering) and [B](study:compendium).";
+  const text = "Link [A](study:canary-food-and-beverage-ordering) and [B](study:canary-guest-hub).";
   const ast1 = parseChatMarkup(text);
   const ast2 = parseChatMarkup(text);
   const ast3 = parseChatMarkup(text);
@@ -19,7 +19,7 @@ console.log("=== CRITICAL TEST: Regex lastIndex Reset (Streaming Safety) ===");
 console.log("\n=== CRITICAL TEST: Artifact Trailing-Only (Security) ===");
 {
   const cases = [
-    { text: "text\n<artifact slug=\"fb-ordering\" />", expectSlug: "fb-ordering" },
+    { text: "text\n<artifact slug=\"fb-ordering\" />", expectSlug: "canary-food-and-beverage-ordering" },
     { text: "<artifact slug=\"fb-ordering\" />\ntext", expectSlug: null },
     { text: "text <artifact slug=\"fb-ordering\" /> text", expectSlug: null },
   ];
@@ -48,7 +48,7 @@ console.log("\n=== CRITICAL TEST: Allowlist Enforcement ===");
 console.log("\n=== CRITICAL TEST: Plain-Text Flattening ===");
 {
   const cases = [
-    { input: "Check [F&B](study:fb-ordering).", expect: "Check F&B." },
+    { input: "Check [F&B](study:canary-food-and-beverage-ordering).", expect: "Check F&B." },
     { input: "[Contact](contact:email) me.", expect: "Contact me." },
   ];
   
