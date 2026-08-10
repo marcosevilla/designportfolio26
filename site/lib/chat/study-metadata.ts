@@ -33,7 +33,7 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
     slug: "fb-ordering",
     title: "Mobile ordering for hotels",
     company: "Canary",
-    role: "Sole designer",
+    role: "Lead designer",
     year: "2025–2026",
     metric: "0→1, 100% ownership",
     gradient: ["#EF5A3C", "#ED4F2F"],

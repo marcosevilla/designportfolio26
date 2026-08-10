@@ -38,18 +38,6 @@ Team             1 Designer, 3 Engineers (Joanne Chevalier, Andrea Bradshaw, Luc
 
 ---
 
-### Quick Stats
-
-```
-┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
-│  100%            │  30              │  93/100          │  6.5 hrs        │
-│  Design          │  Iterations in   │  Issues shipped  │  Saved per 100  │
-│  ownership       │  4-day sprint    │  (96% complete)  │  orders (est.)  │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
-```
-
----
-
 ### The Problem
 
 Hotels lose significant F&B revenue when guests have to call the front desk to order room service — a process that ties up understaffed front desks, leads to misheard orders, and creates enough friction that many guests just open DoorDash instead. One hotel we spoke to described their breakfast system using door hangers — guests would forget to hang them, staff would miss pickups, and complaints piled up. Physical menus required sanitization, were expensive to print, and costly to update when items changed.
