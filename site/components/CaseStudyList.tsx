@@ -380,42 +380,42 @@ const MARQUEE_DISPLAY: Record<
   { title: string; org: string; year: string; description: string }
 > = {
   "canary-food-and-beverage-ordering": {
-    title: "Food & Beverage Ordering Platform",
+    title: "Canary Food & Beverage Ordering",
     org: "Canary Technologies",
     year: "2026",
     description:
       "Designed 0-1 food & beverage platform for hotels end-to-end – mobile ordering experience for guests, content management system, and staff order management.",
   },
   "canary-guest-hub": {
-    title: "Guest Experience Hub & CMS",
+    title: "Canary Guest Hub",
     org: "Canary Technologies",
     year: "2025",
     description:
       "Designed a hotel CMS platform from scratch – structured content builder for staff, guest-facing mobile hub, and the foundation now driving $1.51M CARR at +230% YoY.",
   },
   "canary-guest-upsells": {
-    title: "Hotel Upsells",
+    title: "Canary Guest Upsells",
     org: "Canary Technologies",
     year: "2025",
     description:
       "Redesigned hotel upselling as a configurable form system – flexible offer builder, guest purchase flow, and staff fulfillment workflows driving $6.94M CARR with a measured +10% conversion lift.",
   },
   "canary-mobile-check-in": {
-    title: "Expedited Guest Check-in",
+    title: "Canary Mobile Check-in",
     org: "Canary Technologies",
     year: "2024",
     description:
       "Modernized digital check-in for the world's largest hotel chains – guest identity verification, payment capture, and front-desk tooling across Wyndham's ~6,000-property portfolio.",
   },
   "general-task": {
-    title: "Task Management for Knowledge Workers",
+    title: "General Task",
     org: "General Task",
     year: "2022",
     description:
       "Founding designer for a 0-1 productivity tool – unified tasks, calendar, and engineering workflows in one hub for knowledge workers.",
   },
   "general-task-design-system": {
-    title: "Building a Design System & Visual Language",
+    title: "General Task Design System",
     org: "General Task",
     year: "2022",
     description:
