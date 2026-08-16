@@ -19,7 +19,6 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Grid, { Col } from "@/components/layout/Grid";
 import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import { galleryContent } from "@/lib/gallery-content";
-import { setCursorLabel } from "@/lib/cursor-label";
 import LockGate, { LockedFrameBadge } from "./LockGate";
 import DeviceShell from "./DeviceShell";
 import CursorGlowOverlay from "./CursorGlowOverlay";
@@ -334,26 +333,11 @@ function ProjectGrid({
       {/* Testimonials moved to the About surface, under the bio
           (2026-08-03) — see components/Testimonials.tsx. */}
 
-      {/* Playground / experiments get their own label so the page reads
-          as two sections: client work above, sidequests below. Label +
-          cells stack single-column on the centered middle-6 band
-          (2026-07-20 centering pass). */}
-      {PLAYGROUND_CARDS.length > 0 && (
-        <>
-          <Grid>
-            <Col md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-              <SectionLabel>Just for fun</SectionLabel>
-            </Col>
-          </Grid>
-          <Grid className="gap-y-16">
-            {PLAYGROUND_CARDS.map((card) => (
-              <Col key={`play-${card.slug}`} md={CONTENT_BAND_MD} lg={CONTENT_BAND}>
-                <PlaygroundCell card={card} />
-              </Col>
-            ))}
-          </Grid>
-        </>
-      )}
+      {/* The "Just for fun" section is GONE (2026-08-15, Marco's call).
+          Its cards run at the tail of the marquee above instead, so the
+          page reads as one continuous body of work rather than
+          client-work-then-sidequests. Work stays first: a reviewer who
+          only sees two cards sees two Canary case studies. */}
     </div>
   );
 }
@@ -620,31 +604,31 @@ function StudyMarquee({
             <StudyCell study={study} onPreview={onPreview} />
           </div>
         ))}
+        {/* Sidequests run after the client work, in the same track and the
+            same cell class — the arrows measure their stride off
+            .work-marquee-cell, so these must keep the identical width or
+            one press would travel the wrong distance. */}
+        {PLAYGROUND_CARDS.map((card) => (
+          <div
+            key={`play-${card.slug}`}
+            className="work-marquee-cell w-[520px] max-w-[80vw] shrink-0"
+          >
+            <PlaygroundMarqueeCell card={card} />
+          </div>
+        ))}
       </div>
     </div>
     </>
   );
 }
 
-// Section label — Geist Mono at body size, primary ink
-// ("Select work", "Just for fun").
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h2
-      style={{
-        fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
-        fontWeight: 400,
-        fontSize: "calc(14px + var(--font-size-offset))",
-        lineHeight: "22.4px",
-        textTransform: "uppercase",
-        letterSpacing: "-0.02em",
-        color: "var(--color-fg)",
-      }}
-    >
-      {children}
-    </h2>
-  );
-}
+// SectionLabel DELETED 2026-08-15. It rendered "Just for fun" and, once
+// upon a time, "Select work" — the marquee dropped its own label on
+// 2026-07-20 and the playground section was folded into the strip on
+// 2026-08-15, leaving zero consumers. Deleted rather than parked, per the
+// mount-it-or-delete rule in .claude/rules/homepage.md (same call as
+// ViewToggleButton, 2026-08-09). It's a 16-line styled <h2> — recover it
+// from git if a section header is ever wanted again.
 
 // Card info overlay (2026-08-06 redesign). Title + mono "COMPANY • YEAR"
 // on one baseline row, description below — the same hierarchy that used
@@ -1056,66 +1040,98 @@ function MediaPreviewLightbox({
   );
 }
 
-// Playground cells share the same chrome and caption typography as
-// case study cells. Non-interactive since the dedicated /play subpages
-// were removed.
-function PlaygroundCell({ card }: { card: PlaygroundCard }) {
-  // Pure-visual cell — caption removed 2026-07-15 (title/description
-  // still live on the card data in lib/playground-cards.ts). Titles
-  // surface through the cursor chat bubble, same as the study cells.
-  return (
-    <div
-      className="flex flex-col h-full w-full"
-      onMouseEnter={() => setCursorLabel(card.title)}
-      onMouseLeave={() => setCursorLabel(null)}
-    >
-      <PlaygroundMediaFrame card={card} />
+// Playground cells run at the TAIL of the work marquee (2026-08-15,
+// Marco: drop the "Just for fun" header and fold the cards into the
+// carousel). They adopt the study cell's exact geometry — same .mq-cell
+// / .mq-frame, same 520px width, same 13/10 → 400px height — so the
+// uniform stride the prev/next arrows measure off .work-marquee-cell is
+// unchanged. What they deliberately DON'T adopt:
+//
+//   • No DitherBackdrop. Every study card carries a live WebGL canvas and
+//     there are already nine of them with no IntersectionObserver (see
+//     .claude/rules/homepage.md — the GPU process sits ~53%). Four more
+//     canvases to paint a backdrop that's fully covered on the landscape
+//     cards was a bad trade. The quieter 4% FRAME_BG wash stands in, which
+//     is also what these frames already used.
+//   • No CursorGlowOverlay — playground cells have never had the rim glow.
+//   • No LockGate. Sidequests are never gated.
+function PlaygroundMarqueeCell({ card }: { card: PlaygroundCard }) {
+  // With the section header gone, this mono line is the ONLY signal that
+  // separates a sidequest from client work — a study card's reads
+  // "CANARY TECHNOLOGIES • 2026", this one reads "PERSONAL • JUL 2026".
+  const meta = `${card.org ?? "Personal"} • ${card.year}`;
+
+  const cellInner = (
+    <div className="mq-cell">
+      <div
+        // Geometry copied from StudyMediaFrame, not approximated: .mq-frame
+        // pins 400px at ≥768 and the 13/10 aspect carries the 80vw mobile
+        // cells, so a playground card and a study card are never a pixel
+        // apart in the same row.
+        className="mq-frame w-full overflow-hidden relative aspect-[13/10]"
+        style={{
+          backgroundColor: FRAME_BG,
+          border: "0.5px solid var(--color-border)",
+          borderRadius: 4,
+        }}
+      >
+        {card.video ? (
+          // .mq-media is what the shared hover rule scales to 0.9, so the
+          // video recedes behind the info panel exactly like a study mock.
+          <div className="mq-media">
+            <AutoplayVideo
+              src={card.video}
+              poster={card.poster}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                // Landscape captures fill the frame. Portrait phone captures
+                // (Pajamagrams 628×1080, Custom Wrapped 648×1080) are
+                // PILLARBOXED instead — object-cover on a 13/10 frame crops
+                // a portrait clip to a sliver and ate Pajamagrams' title in
+                // the old layout. The frame bg fills the sides.
+                objectFit: isWide(card) ? "cover" : "contain",
+                display: "block",
+              }}
+            />
+          </div>
+        ) : (
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{ ...PLACEHOLDER_LABEL }}
+          >
+            Coming soon
+          </div>
+        )}
+        <MarqueeInfo
+          title={card.title}
+          meta={meta}
+          description={card.description}
+        />
+      </div>
     </div>
   );
-}
 
-// Playground media — autoplay loop of the card's demo video. Landscape
-// cards keep the fixed 323px frame; portrait captures (Pajamagrams,
-// Custom Wrapped) share a taller frame so the phone videos read
-// properly instead of a cover-cropped sliver. Portrait frames are
-// width-capped: at full band width the fixed-height frame goes
-// near-square and object-cover crops the top of the capture out of
-// view (Pajamagrams lost its title through the whole 900–1199 window).
-// "Coming soon" placeholder when no video yet.
-function PlaygroundMediaFrame({ card }: { card: PlaygroundCard }) {
+  // Cards with a live URL open it in a new tab. Cards without one render as
+  // an inert div — no href, no cursor-pointer, no focus ring — so an
+  // undeployed sidequest reads as "a thing to look at" rather than a broken
+  // link sitting among eight clickable cards.
+  if (!card.href) {
+    return <div className="flex flex-col h-full w-full text-left">{cellInner}</div>;
+  }
+
   return (
-    <div
-      className={`w-full overflow-hidden relative ${
-        isWide(card) ? "h-[323px]" : "max-w-[420px] mx-auto h-[560px] lg:h-[640px]"
-      }`}
-      style={{
-        backgroundColor: FRAME_BG,
-        border: "0.5px solid var(--color-border)",
-        borderRadius: 4,
-      }}
+    <a
+      href={card.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Open ${card.title} in a new tab`}
+      className="flex flex-col h-full w-full text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--color-accent)"
     >
-      {card.video ? (
-        <AutoplayVideo
-          src={card.video}
-          poster={card.poster}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          }}
-        />
-      ) : (
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ ...PLACEHOLDER_LABEL }}
-        >
-          Coming soon
-        </div>
-      )}
-    </div>
+      {cellInner}
+    </a>
   );
 }
 

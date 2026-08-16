@@ -1,13 +1,27 @@
 /**
- * Single source of truth for the Playground roster. Consumed by
- * `components/Playground.tsx` (homepage section) and `app/play/page.tsx`
- * (the standalone Play index). Add a new card here, drop a video into
- * `public/videos/playground/`, and it shows up in both places.
+ * Single source of truth for the Playground roster. Since 2026-08-15 these
+ * render as cells at the TAIL of the homepage work marquee — the separate
+ * "Just for fun" section below the strip is gone, so client work and
+ * sidequests read as one continuous body of work. Add a card here, drop a
+ * video into `public/videos/`, and it appears at the end of the strip.
+ *
+ * (The old docblock named `components/Playground.tsx` and `app/play/page.tsx`
+ * as consumers. Both were deleted in May 2026 — `CaseStudyList.tsx` is the
+ * only consumer.)
  */
 export type PlaygroundCard = {
   slug: string;
   title: string;
   year: string;
+  /** Shown in the marquee card's mono meta line as "ORG • YEAR". Defaults
+   *  to "Personal" — with the section header gone, this line is the only
+   *  thing distinguishing a sidequest from client work. */
+  org?: string;
+  /** Live URL. When set the card links out in a new tab; when absent the
+   *  card renders as a non-interactive cell with no pointer affordance, so
+   *  a card that goes nowhere doesn't read as broken next to the work
+   *  cards, which all navigate. */
+  href?: string;
   description?: string;
   /** Path under /public — e.g. "/videos/six-degrees.mp4". When set, the
    *  card renders an autoplay loop muted video. */
@@ -27,6 +41,7 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     slug: "photography-portfolio",
     title: "Photography Portfolio",
     year: "Jul 2026",
+    href: "https://photo-canvas-theta.vercel.app",
     description:
       "Design explorations for my concert photography portfolio.",
     video: "/videos/photography-portfolio.mp4",
@@ -36,12 +51,14 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     slug: "six-degrees",
     title: "Six Degrees",
     year: "Feb 2026 →",
+    href: "https://six-degrees-topaz.vercel.app",
     description:
       "I turned my favorite roadtrip game into a digital experience. The object is to connect two random actors through a chain of shared films and co-stars. Built with Claude.",
     video: "/videos/six-degrees.mp4",
     aspect: "1756 / 1080",
   },
   {
+    // No `href` — not deployed anywhere yet. Renders non-clickable.
     slug: "pajamagrams",
     title: "Pajamagrams",
     year: "Jan 2026",
@@ -50,6 +67,8 @@ export const PLAYGROUND_CARDS: PlaygroundCard[] = [
     aspect: "628 / 1080",
   },
   {
+    // No `href` — not deployed, and it's the personal gift project, so
+    // whether it should be public at all is Marco's call. Non-clickable.
     slug: "custom-wrapped",
     title: "Custom Wrapped",
     year: "Nov 2025",
