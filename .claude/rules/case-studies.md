@@ -21,15 +21,20 @@ These have rich custom implementations with sidebar TOC (via SidebarTOCBridge + 
 Slugs + canonical titles renamed 2026-08-10 (Marco: one canonical name per study across MDX,
 page title, H1, drafts, chat; permanent redirects from the old paths live in next.config.mjs):
 
-1. **Canary Food & Beverage Ordering** (`/work/canary-food-and-beverage-ordering`) - Canary, 2025
-2. **Canary Guest Hub** (`/work/canary-guest-hub`) - Canary, 2024
-3. **Canary Guest Upsells** (`/work/canary-guest-upsells`) - Canary Technologies, 2025
-4. **Canary Mobile Check-in** (`/work/canary-mobile-check-in`) - Canary Technologies, 2024
-5. **General Task** (`/work/general-task`) - General Task, 2022
-6. **General Task Design System** (`/work/general-task-design-system`) - General Task, 2022
-7. **How I Work with AI** (`/work/ai-workflow`) - Personal, 2026
+1. **Canary Food & Beverage Ordering** (`/work/canary-food-and-beverage-ordering`)
+2. **Canary Guest Hub** (`/work/canary-guest-hub`)
+3. **Canary Guest Upsells** (`/work/canary-guest-upsells`)
+4. **Canary Mobile Check-in** (`/work/canary-mobile-check-in`)
+5. **General Task** (`/work/general-task`)
+6. **General Task Design System** (`/work/general-task-design-system`)
+7. **How I Work with AI** (`/work/ai-workflow`)
 
 (`knowledge-base` also has a route.)
+
+⚠️ Company/role/year deliberately do NOT appear in this list — the **MDX Frontmatter Metadata**
+table below is the single source. This list used to carry its own company/year pairs, they drifted
+out of sync with that table, and the stale values propagated into the `case-studies/*.md` drafts
+(fixed 2026-08-15).
 
 ## Homepage Card Order
 1. F&B Ordering (newest Canary work, 100% ownership)

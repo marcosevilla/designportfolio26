@@ -10,7 +10,7 @@
 CANARY GUEST HUB
 A scalable hotel CMS platform built from scratch
 
-Canary Technologies • 2024–2025 • Lead Designer
+Canary • 2024–2025 • Lead Designer
 
 Systems Thinking • CMS Design • Mobile
 ```
@@ -30,7 +30,7 @@ A digital guest hub that replaces printed hotel compendiums — a CMS vertical e
 
 ---
 
-Company          Canary Technologies
+Company          Canary
 Timeline         18 months (May 2024 – present)
 Role             Lead Designer (100% design ownership)
 Team             1 Designer, 3–5 Engineers (Adil Shaikh, Austin Irvine, Tommy Slater, Andrea Bradshaw, Luciano Guasco), 1 PM (Nico Garnier)

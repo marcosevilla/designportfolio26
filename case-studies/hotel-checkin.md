@@ -10,7 +10,7 @@
 CANARY MOBILE CHECK-IN
 Modernizing hotel software
 
-Canary Technologies • 2024 • Product Designer
+Canary • 2024 • Product Designer
 
 Enterprise Software • Mobile • B2B2C
 ```
@@ -30,7 +30,7 @@ Designing digital check-in, compendium, and omni-channel communication solutions
 
 ---
 
-Company          Canary Technologies
+Company          Canary
 Timeline         2024
 Role             Product Designer
 Team             Product Designer, PM, Engineering

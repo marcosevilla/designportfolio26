@@ -32,7 +32,7 @@ export const STUDY_METADATA: Record<StudySlug, StudyMeta> = {
   "canary-food-and-beverage-ordering": {
     slug: "canary-food-and-beverage-ordering",
     title: "Canary Food & Beverage Ordering",
-    company: "Canary",
+    company: "Canary Technologies",
     role: "Lead designer",
     year: "2025–2026",
     metric: "0→1, 100% ownership",

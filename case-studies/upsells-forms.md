@@ -10,7 +10,7 @@
 CANARY GUEST UPSELLS
 A flexible form system for hotel upsells
 
-Canary Technologies • 2025 • Lead Designer
+Canary • 2025 • Lead Designer
 
 Workflow Design • Form Systems • Mobile
 ```
@@ -30,7 +30,7 @@ A configurable form system that lets hotels collect custom guest information at 
 
 ---
 
-Company          Canary Technologies
+Company          Canary
 Timeline         5 months (Apr – Sep 2025)
 Role             Lead Designer (63% upsells ownership)
 Team             1 Designer, 3 Engineers, 1 PM (Becca Aleynik), Tech Lead (Adil Shaikh)

@@ -10,7 +10,7 @@
 KNOWLEDGE BASE REDESIGN
 Restructuring the AI brain that powers hotel chatbots and voice
 
-Canary Technologies • 2024 • Lead Designer
+Canary • 2024 · shipped 2026 • Lead Designer
 
 Information Architecture • AI Systems • User Research
 ```
@@ -30,7 +30,7 @@ A ground-up redesign of the information architecture and UI for Canary's AI know
 
 ---
 
-Company          Canary Technologies
+Company          Canary
 Timeline         3 months (Jan – Mar 2024)
 Role             Lead Designer (IA and UI design)
 Team             1 Designer, PM (Kevin Li), Staff Designer (Wenjun Zhao, design review)
