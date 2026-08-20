@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { typescale } from "@/lib/typography";
+import { useNoHover } from "@/lib/useNoHover";
 
 export default function NextProject({
   title,
@@ -14,6 +15,9 @@ export default function NextProject({
   href: string;
 }) {
   const [hovered, setHovered] = useState(false);
+  // Touch devices can't hover — keep the description expanded there or
+  // it never appears at all.
+  const noHover = useNoHover();
 
   return (
     <div className="pt-24 pb-12 mt-8">
@@ -34,7 +38,7 @@ export default function NextProject({
         </span>
         <div
           className="grid transition-[grid-template-rows] duration-300 ease-out"
-          style={{ gridTemplateRows: hovered ? "1fr" : "0fr" }}
+          style={{ gridTemplateRows: hovered || noHover ? "1fr" : "0fr" }}
         >
           <div className="overflow-hidden">
             <span className="block mt-2 text-(--color-fg-secondary)" style={typescale.subtitle}>

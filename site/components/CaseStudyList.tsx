@@ -982,6 +982,18 @@ function MediaPreviewLightbox({
     return () => window.removeEventListener("keydown", onKey);
   }, [slug, onClose]);
 
+  // Scroll lock while open (same pattern as ChangelogOverlay) — without
+  // it a touch drag that misses the media scrolls the homepage behind
+  // the backdrop.
+  useEffect(() => {
+    if (!slug) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [slug]);
+
   if (!mounted) return null;
 
   return createPortal(
@@ -1000,6 +1012,35 @@ function MediaPreviewLightbox({
           aria-modal="true"
           aria-label="Media preview"
         >
+          {/* Explicit close affordance — on touch there is no Esc key and
+              no zoom-out cursor to signal that the backdrop dismisses. */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close preview"
+            className="absolute flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+            style={{
+              top: "max(env(safe-area-inset-top, 0px), 12px)",
+              right: 12,
+              width: 44,
+              height: 44,
+              borderRadius: 4,
+              color: "rgba(255, 255, 255, 0.8)",
+            }}
+          >
+            <svg
+              width={18}
+              height={18}
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              aria-hidden
+            >
+              <path d="M3 3l10 10M13 3L3 13" />
+            </svg>
+          </button>
           <motion.div
             initial={{ scale: 0.96 }}
             animate={{ scale: 1 }}

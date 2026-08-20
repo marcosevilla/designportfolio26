@@ -136,24 +136,50 @@ function LockedCardWrapper({
 export function LockedFrameBadge({ locked }: { locked: boolean }) {
   if (!locked) return null;
   return (
-    <div
-      className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-out pointer-events-none"
-      style={{
-        background: "color-mix(in oklab, var(--color-bg) 50%, transparent)",
-        backdropFilter: "blur(2px)",
-        WebkitBackdropFilter: "blur(2px)",
-      }}
-    >
-      <span
+    <>
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-out pointer-events-none"
         style={{
-          ...typescale.monoLabel,
-          fontSize: "11px",
-          color: "var(--color-fg-tertiary)",
+          background: "color-mix(in oklab, var(--color-bg) 50%, transparent)",
+          backdropFilter: "blur(2px)",
+          WebkitBackdropFilter: "blur(2px)",
         }}
       >
-        In progress — click to preview
-      </span>
-    </div>
+        <span
+          style={{
+            ...typescale.monoLabel,
+            fontSize: "11px",
+            color: "var(--color-fg-tertiary)",
+          }}
+        >
+          In progress — click to preview
+        </span>
+      </div>
+      {/* Touch devices never see the hover overlay above, which made
+          locked and unlocked cards pixel-identical on phones — a tap
+          then "unexpectedly" opened a preview instead of the study. A
+          persistent corner chip carries the signal there; hidden on
+          hover-capable devices via .locked-frame-chip in globals.css. */}
+      <div
+        className="locked-frame-chip absolute top-2 right-2 items-center pointer-events-none"
+        style={{
+          padding: "4px 8px",
+          background: "color-mix(in srgb, var(--color-bg) 85%, transparent)",
+          border: "1px solid var(--color-border)",
+          borderRadius: 4,
+        }}
+      >
+        <span
+          style={{
+            ...typescale.monoLabel,
+            fontSize: "10px",
+            color: "var(--color-fg-secondary)",
+          }}
+        >
+          In progress
+        </span>
+      </div>
+    </>
   );
 }
 

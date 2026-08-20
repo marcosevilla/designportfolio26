@@ -519,6 +519,18 @@ body::before {
   }
 }
 
+/* Locked-card corner chip (LockGate.LockedFrameBadge) — the hover overlay
+   can't fire on touch, so the chip is the only lock signal there. Hidden
+   wherever hover exists (the overlay covers those). */
+.locked-frame-chip {
+  display: none;
+}
+@media (hover: none) {
+  .locked-frame-chip {
+    display: flex;
+  }
+}
+
 /* Larger variant — the music player's transport buttons (2026-08-05
    touch-friendliness pass). Same chrome, 40px box. */
 .bio-toolbar-btn--lg {

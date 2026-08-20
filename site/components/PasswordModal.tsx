@@ -52,6 +52,17 @@ export default function PasswordModal() {
     return () => window.removeEventListener("keydown", onKey);
   }, [isModalOpen, closeModal]);
 
+  // Scroll lock while open (same pattern as ChangelogOverlay) — on touch
+  // the page behind the backdrop otherwise pans under any stray drag.
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isModalOpen]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
@@ -109,7 +120,7 @@ export default function PasswordModal() {
               ref={closeButtonRef}
               onClick={closeModal}
               aria-label="Close"
-              className="absolute top-2 right-2 flex items-center justify-center w-10 h-10 rounded-full active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
+              className="absolute top-2 right-2 flex items-center justify-center w-11 h-11 rounded-full active:scale-[0.96] transition-[color,transform] duration-150 ease-out"
               style={{ color: "var(--color-fg-tertiary)" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-fg)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-fg-tertiary)"; }}
@@ -150,7 +161,7 @@ export default function PasswordModal() {
             <div className="grid grid-cols-2 gap-2">
               <a
                 href={`mailto:${EMAIL}`}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
+                className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
                 style={{
                   ...MODAL_LABEL,
                   color: "var(--color-fg)",
@@ -167,7 +178,7 @@ export default function PasswordModal() {
                 href={LINKEDIN_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
+                className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl active:scale-[0.96] transition-[color,border-color,transform] duration-150 ease-out"
                 style={{
                   ...MODAL_LABEL,
                   color: "var(--color-fg)",
@@ -213,7 +224,7 @@ export default function PasswordModal() {
                 aria-invalid={error || undefined}
                 autoComplete="off"
                 spellCheck={false}
-                className="flex-1 px-3 py-2 rounded-xl outline-none"
+                className="flex-1 px-3 py-2.5 rounded-xl outline-none"
                 style={{
                   fontFamily: "var(--font-geist-mono), ui-monospace, Menlo, monospace",
                   // 16px minimum prevents iOS Safari from auto-zooming the
@@ -228,7 +239,7 @@ export default function PasswordModal() {
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl enabled:active:scale-[0.96] transition-[opacity,transform] duration-150 ease-out"
+                className="px-4 py-2.5 rounded-xl enabled:active:scale-[0.96] transition-[opacity,transform] duration-150 ease-out"
                 style={{
                   ...MODAL_LABEL,
                   color: "var(--color-bg)",
