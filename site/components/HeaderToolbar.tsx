@@ -7,6 +7,8 @@ import { PaletteRow } from "./PaletteSwatches";
 import { useChangelogOverlay } from "@/lib/ChangelogOverlayContext";
 import { ChangelogIcon, MoonIcon, SunIcon } from "./Icons";
 import { useThemeState } from "./ThemeToggle";
+import BottomSheet, { useIsMobileViewport } from "@/components/ui/BottomSheet";
+import { typescale } from "@/lib/typography";
 import {
   Tooltip,
   TooltipContent,
@@ -113,6 +115,33 @@ function PortalPopover({
   );
 }
 
+/** Sheet body for the mobile palette — 44px swatches (HIG touch minimum;
+ *  the desktop popover's 16px circles are unusable on a phone) wrapped
+ *  into rows, with the active theme named so the selection is legible
+ *  without a hover state. */
+function PaletteSheetContent() {
+  const themeState = useThemeState();
+  if (!themeState.mounted) return null;
+  return (
+    <div className="px-5 pb-2">
+      <div className="flex items-baseline justify-between pb-4">
+        <span
+          style={{ ...typescale.monoLabel, color: "var(--color-fg-tertiary)" }}
+        >
+          Theme
+        </span>
+        <span
+          className="capitalize"
+          style={{ ...typescale.label, color: "var(--color-fg-secondary)" }}
+        >
+          {themeState.themeFamily}
+        </span>
+      </div>
+      <PaletteRow swatchSize={44} wrap />
+    </div>
+  );
+}
+
 function PaletteButton({
   open,
   onToggle,
@@ -121,6 +150,7 @@ function PaletteButton({
   onToggle: () => void;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const isMobile = useIsMobileViewport();
   return (
     <>
       <Tooltip>
@@ -158,9 +188,19 @@ function PaletteButton({
         </TooltipTrigger>
         <TooltipContent>Settings</TooltipContent>
       </Tooltip>
-      <PortalPopover open={open} anchorRef={triggerRef}>
-        <PaletteRow />
-      </PortalPopover>
+      {isMobile ? (
+        <BottomSheet
+          open={open}
+          onClose={() => open && onToggle()}
+          ariaLabel="Theme picker"
+        >
+          <PaletteSheetContent />
+        </BottomSheet>
+      ) : (
+        <PortalPopover open={open} anchorRef={triggerRef}>
+          <PaletteRow />
+        </PortalPopover>
+      )}
     </>
   );
 }
@@ -210,7 +250,12 @@ export default function HeaderToolbar() {
     const onPointer = (e: PointerEvent) => {
       const target = e.target as Node;
       if (pillRef.current?.contains(target)) return;
-      const inPopover = (target as Element | null)?.closest?.(".chat-surface");
+      // .bottom-sheet: taps inside the mobile palette sheet must not
+      // read as "outside" — the sheet would unmount before the tapped
+      // swatch's click event fires.
+      const inPopover = (target as Element | null)?.closest?.(
+        ".chat-surface, .bottom-sheet",
+      );
       if (inPopover) return;
       setPaletteOpen(false);
     };
