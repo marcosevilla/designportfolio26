@@ -141,6 +141,11 @@ export default function BottomSheet({
             borderRadius: "16px 16px 0 0",
             boxShadow: "0 -8px 32px rgba(0, 0, 0, 0.18)",
             paddingBottom: "max(env(safe-area-inset-bottom, 0px), 16px)",
+            // Landscape notch clearance — viewport-fit=cover disables
+            // iOS's automatic letterboxing, so the inset-x-0 sheet runs
+            // under the sensor housing without these (0 in portrait).
+            paddingLeft: "env(safe-area-inset-left, 0px)",
+            paddingRight: "env(safe-area-inset-right, 0px)",
             maxHeight: "85dvh",
           }}
         >

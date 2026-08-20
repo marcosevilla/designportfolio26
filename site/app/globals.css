@@ -188,6 +188,10 @@ html {
 body {
   font-family: var(--font-sans);
   font-size: calc(14px + var(--font-size-offset));
+  /* Landscape notch clearance — viewport-fit=cover (layout.tsx) disables
+     iOS's automatic letterboxing; these are 0 everywhere else. */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   /* Site-wide body standard: 14/22.4. Unitless 1.6 (not 22.4px) so
      elements that change font-size without setting line-height scale
      proportionally instead of inheriting a pinned pixel value. */

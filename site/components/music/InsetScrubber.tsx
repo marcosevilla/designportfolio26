@@ -95,9 +95,16 @@ export default function InsetScrubber({
       onKeyDown={handleKeyDown}
       // Touch: the ~19px hit strip (py-2) is too thin for the site's only
       // drag interaction — grow to the 44px minimum without shifting the
-      // layout (22px padding each side + the hairline track ≈ 47px).
+      // layout. Asymmetric on purpose: the top extension is capped at
+      // 12px so the strip stays below the 40px transport buttons above
+      // (a symmetric 22px reached ~8px into their visible bottom edge
+      // and stole their taps into a seek-to-0:00); the balance goes
+      // downward into the panel's own bottom padding, which is dead
+      // space. 12 + ~4px track + 28 ≈ 44.
       className={`relative w-full cursor-pointer select-none touch-none ${
-        noHover ? "py-[22px] -my-[22px]" : "py-2 -my-2"
+        noHover
+          ? "pt-[12px] -mt-[12px] pb-[28px] -mb-[28px]"
+          : "py-2 -my-2"
       }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
