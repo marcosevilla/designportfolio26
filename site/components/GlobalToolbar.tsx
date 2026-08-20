@@ -8,6 +8,7 @@ import { CONTENT_BAND, CONTENT_BAND_MD } from "@/lib/layout-presets";
 import HeaderToolbar from "./HeaderToolbar";
 import PixelRain from "./PixelRain";
 import MusicPlayerPanel, { PANEL_WIDTH } from "./music/MusicPlayerPanel";
+import BottomSheet, { useIsMobileViewport } from "@/components/ui/BottomSheet";
 import { useAudioPlayer } from "@/lib/AudioPlayerContext";
 import {
   Tooltip,
@@ -33,6 +34,7 @@ export default function GlobalToolbar() {
   const [musicOpen, setMusicOpen] = useState(false);
   const { session, isPlaying, play } = useAudioPlayer();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const isMobile = useIsMobileViewport();
 
   const toggleMusic = () => {
     setMusicOpen((open) => {
@@ -48,7 +50,15 @@ export default function GlobalToolbar() {
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as Node;
       if (triggerRef.current?.contains(target)) return;
-      if ((target as Element | null)?.closest?.(".music-player-panel")) return;
+      // .bottom-sheet: on mobile the panel lives in a sheet whose grabber
+      // and padding sit outside .music-player-panel — taps there must not
+      // read as "outside" (the sheet owns its own scrim/drag dismissal).
+      if (
+        (target as Element | null)?.closest?.(
+          ".music-player-panel, .bottom-sheet",
+        )
+      )
+        return;
       setMusicOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
@@ -103,7 +113,28 @@ export default function GlobalToolbar() {
           </div>
         </Col>
       </Grid>
-      <MusicPopover open={musicOpen} anchorRef={triggerRef} />
+      {isMobile ? (
+        <BottomSheet
+          open={musicOpen}
+          onClose={() => setMusicOpen(false)}
+          ariaLabel="Music player"
+        >
+          {/* The sheet supplies the surface chrome — strip the card's
+              own border/shadow/width so it fills the sheet edge-to-edge
+              (inline style wins over the max-w class). */}
+          <MusicPlayerPanel
+            style={{
+              width: "100%",
+              maxWidth: "100%",
+              border: 0,
+              borderRadius: 0,
+              boxShadow: "none",
+            }}
+          />
+        </BottomSheet>
+      ) : (
+        <MusicPopover open={musicOpen} anchorRef={triggerRef} />
+      )}
     </header>
   );
 }

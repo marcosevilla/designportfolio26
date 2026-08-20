@@ -13,6 +13,7 @@ import {
   SkipForwardIcon,
 } from "@/components/Icons";
 import { typescale } from "@/lib/typography";
+import { useNoHover } from "@/lib/useNoHover";
 import InsetScrubber from "./InsetScrubber";
 import {
   Tooltip,
@@ -119,7 +120,9 @@ function VizCornerButton({
             type="button"
             onClick={onClick}
             aria-label={label}
-            className="flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
+            // viz-corner-btn: (pointer: coarse) hit-area growth in
+            // globals.css — 28px visual stays, effective target ≥44.
+            className="viz-corner-btn relative flex items-center justify-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-(--color-accent)"
             style={{
               width: 28,
               height: 28,
@@ -178,6 +181,9 @@ export default function MusicPlayerPanel({
 
   const [vizOpen, setVizOpen] = useState(true);
   const [hovered, setHovered] = useState(false);
+  // Touch devices never fire mouseenter — the corner controls (collapse,
+  // scene prev/next) would be unreachable. Show them persistently there.
+  const noHover = useNoHover();
   const [scrubbing, setScrubbing] = useState(false);
   const [scrubValue, setScrubValue] = useState(0);
   const displayTime = scrubbing ? scrubValue : currentTime;
@@ -248,8 +254,9 @@ export default function MusicPlayerPanel({
             />
           )}
 
-          {/* Open + player hovered anywhere: floating corner controls. */}
-          {vizOpen && hovered && (
+          {/* Open + player hovered anywhere (or any touch device):
+              floating corner controls. */}
+          {vizOpen && (hovered || noHover) && (
             <motion.div
               key="viz-controls"
               initial={{ opacity: 0 }}

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 // Same M:SS formatter the LED clock uses — reused rather than restated so
 // the announced value and the displayed value can't drift.
 import { formatClock } from "@/lib/dot-font";
+import { useNoHover } from "@/lib/useNoHover";
 
 /** Inset timeline scrubber. Thin resting track + thumb-on-hover; meant
  *  to sit between two static time labels in a single bottom row of a
@@ -30,7 +31,11 @@ export default function InsetScrubber({
   const [dragging, setDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const expanded = hovered || dragging;
+  // No hover on touch devices means the thumb would be invisible at rest
+  // and the affordance unreachable — keep the scrubber permanently in its
+  // expanded state there.
+  const noHover = useNoHover();
+  const expanded = noHover || hovered || dragging;
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
 
   const valueAtClientX = (clientX: number) => {
@@ -88,7 +93,11 @@ export default function InsetScrubber({
       aria-valuetext={formatClock(value)}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="relative w-full cursor-pointer select-none touch-none py-2 -my-2"
+      // Touch: the ~19px hit strip (py-2) is too thin for the site's only
+      // drag interaction — grow to ~28px+ without shifting the layout.
+      className={`relative w-full cursor-pointer select-none touch-none ${
+        noHover ? "py-3.5 -my-3.5" : "py-2 -my-2"
+      }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onPointerDown={(e) => {

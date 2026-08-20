@@ -511,6 +511,12 @@ body::before {
     position: absolute;
     inset: -14px -8px;
   }
+  /* Music visualizer corner controls — 28px visual, ≥44 effective. */
+  .viz-corner-btn::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
 }
 
 /* Larger variant — the music player's transport buttons (2026-08-05
