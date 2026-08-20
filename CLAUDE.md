@@ -4,6 +4,11 @@
 > Detail that only matters when touching specific files lives in `.claude/rules/*.md` (path-scoped,
 > auto-loads on demand). Status and history live in `docs/`. See "Where things live" below.
 
+## 🎯 Job-hunt link (added 2026-08-20)
+- **This site is a job-hunt asset first.** Hunt state: `~/.claude/projects/-Users-marcosevilla-Developer-job-hunt/memory/job-hunt-status.md` (living status) + `~/Developer/job-hunt/this-week.md` (current moves) + campaign arc in `~/Developer/job-hunt/_research/audits/career-assessment-2026-08-19.md`.
+- **Before any polish work, check whether it serves the current move.** If it doesn't, name it gently — portfolio polish is Marco's documented avoidance loop. Pipeline > polish.
+- Gate awareness: `site/lib/site-gate.ts` can 401-wall the whole site. If it's ON while recruiters have the link, flag it.
+
 ## Safety Rules
 - Always commit working state before starting a new feature or risky change
 - Commit between phases of multi-step features (not just before starting)
