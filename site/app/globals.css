@@ -517,6 +517,14 @@ body::before {
     position: absolute;
     inset: -8px;
   }
+  /* Chat panel close/send — 36px visual, 44 effective. Kept to -4px (not
+     the tap-target -14/-8) so the send button's hit area doesn't creep
+     over the composer textarea beside it. */
+  .chat-ctl-btn::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+  }
 }
 
 /* Locked-card corner chip (LockGate.LockedFrameBadge) — the hover overlay
@@ -1049,6 +1057,10 @@ body {
    same curve as the body push. Below lg the sheet covers the dock. */
 .floating-dock {
   transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Clear the iOS home-indicator swipe zone — the Tailwind bottom-4 on
+     the layout wrapper is a flat 16px with no safe-area awareness. This
+     unlayered rule outranks the layered utility. */
+  bottom: max(calc(env(safe-area-inset-bottom, 0px) + 8px), 16px);
 }
 @media (min-width: 1024px) {
   [data-chat-open="true"] .floating-dock {

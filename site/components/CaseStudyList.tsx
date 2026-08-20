@@ -269,7 +269,7 @@ function SectionLinkButton({
   children: React.ReactNode;
 }) {
   const className =
-    "group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)";
+    "tap-target group inline-flex items-center gap-1.5 transition-colors cursor-pointer focus:outline-none hover:text-(--color-accent) focus-visible:text-(--color-accent)";
   const style: React.CSSProperties = {
     ...typescale.monoLabel,
     color: icon === "lock" ? "var(--color-fg-tertiary)" : "var(--color-fg)",

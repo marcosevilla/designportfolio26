@@ -125,7 +125,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
           aria-controls={quoteId}
-          className="mt-4 cursor-pointer transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
+          className="tap-target mt-4 cursor-pointer transition-colors hover:text-(--color-accent) focus-visible:text-(--color-accent) focus:outline-none"
           style={{
             // monoLabel token (12px, −0.02em) — was the legacy 11px/0.08em
             // spec, one of the call sites queued in TYPOGRAPHY-BACKLOG.

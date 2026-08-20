@@ -331,7 +331,7 @@ export default function ChatPanel({
             type="button"
             onClick={onClose}
             aria-label="Close chat"
-            className="rounded-full w-9 h-9 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+            className="chat-ctl-btn relative rounded-full w-9 h-9 inline-flex items-center justify-center active:scale-[0.96] transition-[background-color,color,transform] duration-150 ease-out hover:bg-(--color-muted) focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
             style={{ color: "var(--color-fg-secondary)", cursor: "pointer" }}
           >
             <CloseIcon size={12} />
@@ -450,7 +450,7 @@ export default function ChatPanel({
             onClick={() => send(value)}
             disabled={!canSend}
             aria-label="Send message"
-            className="shrink-0 rounded-full w-9 h-9 inline-flex items-center justify-center enabled:active:scale-[0.96] transition-[background-color,color,transform,opacity] duration-150 ease-out hover:bg-(--color-muted) disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
+            className="chat-ctl-btn shrink-0 relative rounded-full w-9 h-9 inline-flex items-center justify-center enabled:active:scale-[0.96] transition-[background-color,color,transform,opacity] duration-150 ease-out hover:bg-(--color-muted) disabled:opacity-40 focus:outline-none focus-visible:ring-1 focus-visible:ring-(--color-accent)"
             style={{ color: "var(--color-accent)", cursor: canSend ? "pointer" : "not-allowed" }}
           >
             <SendIcon size={18} />

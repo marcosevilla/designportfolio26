@@ -358,7 +358,7 @@ export default function HomeLayout({
                 <button
                   type="button"
                   onClick={() => setAboutMeOpen(true)}
-                  className="dotted-link--inline group inline-flex items-center gap-1.5 self-start cursor-pointer"
+                  className="tap-target dotted-link--inline group inline-flex items-center gap-1.5 self-start cursor-pointer"
                   style={{
                     font: "inherit",
                     fontStyle: "normal",
@@ -409,7 +409,7 @@ export default function HomeLayout({
                       href={RESUME_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="dotted-link--inline"
+                      className="tap-target dotted-link--inline"
                       style={{ fontStyle: "normal", fontWeight: 400 }}
                     >
                       Resume
@@ -418,14 +418,14 @@ export default function HomeLayout({
                       href="https://www.linkedin.com/in/marcogsevilla/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="dotted-link--inline"
+                      className="tap-target dotted-link--inline"
                       style={{ fontStyle: "normal", fontWeight: 400 }}
                     >
                       LinkedIn
                     </a>
                     <a
                       href="mailto:marcogsevilla@gmail.com"
-                      className="dotted-link--inline"
+                      className="tap-target dotted-link--inline"
                       style={{ fontStyle: "normal", fontWeight: 400 }}
                     >
                       Email
