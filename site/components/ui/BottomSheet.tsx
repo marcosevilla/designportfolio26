@@ -9,12 +9,16 @@ import {
   useReducedMotion,
 } from "framer-motion";
 
-/** Matches the chat sheet's mobile breakpoint (globals.css @max-1023px)
- *  so every sheet-vs-popover switch on the site flips at the same width. */
+/** Matches the chat sheet's mobile breakpoint (globals.css @max-1023px),
+ *  plus wide touch-only devices (iPad Pro, iPad landscape ≥1024px CSS
+ *  width) — anchored hover-style popovers with 16px targets are exactly
+ *  what the sheet exists to replace there. */
 export function useIsMobileViewport(): boolean {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
+    const mq = window.matchMedia(
+      "(max-width: 1023px), ((hover: none) and (pointer: coarse))",
+    );
     const update = () => setIsMobile(mq.matches);
     update();
     mq.addEventListener("change", update);
@@ -87,7 +91,16 @@ export default function BottomSheet({
     : {
         initial: { y: "100%" },
         animate: { y: 0 },
-        exit: { y: "100%" },
+        // Exit is a quicker tween so dismissal feels immediate — same
+        // split as the chat sheet (spring in, tween out).
+        exit: {
+          y: "100%",
+          transition: {
+            type: "tween" as const,
+            duration: 0.28,
+            ease: [0.4, 0, 1, 1] as const,
+          },
+        },
         // Same spring as the chat sheet so the two feel like one system.
         transition: { type: "spring" as const, stiffness: 420, damping: 42 },
       };

@@ -511,11 +511,14 @@ body::before {
     position: absolute;
     inset: -14px -8px;
   }
-  /* Music visualizer corner controls — 28px visual, ≥44 effective. */
+  /* Music visualizer corner controls — 28px visual, taller effective.
+     Horizontal growth capped at -2px: the scene prev/next pair sit gap-1
+     (4px) apart, so anything wider has Next stealing taps from the
+     visible right edge of Previous. */
   .viz-corner-btn::after {
     content: "";
     position: absolute;
-    inset: -8px;
+    inset: -8px -2px;
   }
   /* Chat panel close/send — 36px visual, 44 effective. Kept to -4px (not
      the tap-target -14/-8) so the send button's hit area doesn't creep

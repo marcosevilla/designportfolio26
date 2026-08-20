@@ -94,9 +94,10 @@ export default function InsetScrubber({
       tabIndex={0}
       onKeyDown={handleKeyDown}
       // Touch: the ~19px hit strip (py-2) is too thin for the site's only
-      // drag interaction — grow to ~28px+ without shifting the layout.
+      // drag interaction — grow to the 44px minimum without shifting the
+      // layout (22px padding each side + the hairline track ≈ 47px).
       className={`relative w-full cursor-pointer select-none touch-none ${
-        noHover ? "py-3.5 -my-3.5" : "py-2 -my-2"
+        noHover ? "py-[22px] -my-[22px]" : "py-2 -my-2"
       }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

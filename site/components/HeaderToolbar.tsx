@@ -145,9 +145,11 @@ function PaletteSheetContent() {
 function PaletteButton({
   open,
   onToggle,
+  onClose,
 }: {
   open: boolean;
   onToggle: () => void;
+  onClose: () => void;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const isMobile = useIsMobileViewport();
@@ -189,11 +191,11 @@ function PaletteButton({
         <TooltipContent>Settings</TooltipContent>
       </Tooltip>
       {isMobile ? (
-        <BottomSheet
-          open={open}
-          onClose={() => open && onToggle()}
-          ariaLabel="Theme picker"
-        >
+        // onClose MUST be idempotent (set-false, never a toggle): a scrim
+        // tap fires pointerdown (HeaderToolbar's outside handler closes)
+        // AND click (the exiting scrim's frozen onClose closure fires) —
+        // a toggle would flip the sheet straight back open.
+        <BottomSheet open={open} onClose={onClose} ariaLabel="Theme picker">
           <PaletteSheetContent />
         </BottomSheet>
       ) : (
@@ -277,6 +279,7 @@ export default function HeaderToolbar() {
           <PaletteButton
             open={paletteOpen}
             onToggle={() => setPaletteOpen((v) => !v)}
+            onClose={() => setPaletteOpen(false)}
           />
         </div>
       </div>

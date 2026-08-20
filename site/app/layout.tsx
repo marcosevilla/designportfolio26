@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
@@ -53,6 +53,14 @@ import ChangelogOverlay from "@/components/ChangelogOverlay";
 import { ChangelogOverlayProvider } from "@/lib/ChangelogOverlayContext";
 import { getChangelog } from "@/lib/changelog";
 import "./globals.css";
+
+// viewport-fit=cover is what makes every env(safe-area-inset-*) in the
+// app actually resolve on notched iPhones (chat header/composer, the
+// bottom sheets, the floating dock) — without it iOS reports 0 for all
+// of them and the safe-area math is dead code.
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "Marco Sevilla — Product Designer",
